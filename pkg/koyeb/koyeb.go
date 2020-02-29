@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"errors"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -11,10 +12,12 @@ import (
 
 var (
 	// Used for flags.
-	cfgFile string
-	apiurl  string
-	token   string
-	debug   bool
+	file         string
+	cfgFile      string
+	apiurl       string
+	token        string
+	outputFormat string
+	debug        bool
 
 	rootCmd = &cobra.Command{
 		Use:   "koyeb",
@@ -25,7 +28,51 @@ var (
 		Short: "Init configuration",
 		Run:   Init,
 	}
+
+	getCmd = &cobra.Command{
+		Use:     "get [resource]",
+		Aliases: []string{"g", "list"},
+		Short:   "Display one or many resources",
+	}
+	describeCmd = &cobra.Command{
+		Use:     "describe [resource]",
+		Aliases: []string{"d", "desc", "show"},
+		Short:   "Display one resources",
+	}
+	updateCmd = &cobra.Command{
+		Use:     "update [resource]",
+		Aliases: []string{"u", "update", "edit"},
+		Short:   "Update one resources",
+	}
+	createCmd = &cobra.Command{
+		Use:     "create [resource]",
+		Aliases: []string{"c", "new"},
+		Short:   "Create a resource from a file",
+	}
+	deleteCmd = &cobra.Command{
+		Use:     "delete [resource]",
+		Aliases: []string{"del", "rm"},
+		Short:   "Delete resources by name and id",
+	}
 )
+
+func notImplemented(cmd *cobra.Command, args []string) error {
+	return errors.New("Not implemented")
+}
+
+func Log(cmd *cobra.Command, args []string) {
+	log.Infof("Cmd %v", cmd)
+	log.Infof("Cmd has parent %v", cmd.HasParent())
+	log.Infof("Cmd parent %v", cmd.Parent())
+	log.Infof("Args %v", args)
+}
+
+func genericArgs(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("requires a resource argument")
+	}
+	return nil
+}
 
 func Run() error {
 	return rootCmd.Execute()
@@ -42,6 +89,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.koyeb.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
 	rootCmd.PersistentFlags().String("url", "app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
@@ -50,6 +98,43 @@ func init() {
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
 	rootCmd.AddCommand(initCmd)
+
+	// Create
+	rootCmd.AddCommand(createCmd)
+	createCmd.AddCommand(createStackCommand)
+	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createStackCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createManagedStoreCommand)
+	createManagedStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createManagedStoreCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createDeliveryCommand)
+	createDeliveryCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createDeliveryCommand.MarkFlagRequired("file")
+
+	// Get
+	rootCmd.AddCommand(getCmd)
+	getCmd.AddCommand(getStackCommand)
+	getCmd.AddCommand(getManagedStoreCommand)
+	getCmd.AddCommand(getDeliveryCommand)
+
+	// Describe
+	rootCmd.AddCommand(describeCmd)
+	describeCmd.AddCommand(describeStackCommand)
+	describeCmd.AddCommand(describeManagedStoreCommand)
+	describeCmd.AddCommand(describeDeliveryCommand)
+
+	// Update
+	rootCmd.AddCommand(updateCmd)
+	updateCmd.AddCommand(updateStackCommand)
+	updateCmd.AddCommand(updateManagedStoreCommand)
+	updateCmd.AddCommand(updateDeliveryCommand)
+
+	// Delete
+	rootCmd.AddCommand(deleteCmd)
+	deleteCmd.AddCommand(deleteStackCommand)
+	deleteCmd.AddCommand(deleteManagedStoreCommand)
+	deleteCmd.AddCommand(deleteDeliveryCommand)
+
 }
 
 func initConfig() {
