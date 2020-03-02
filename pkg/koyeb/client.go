@@ -16,6 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	apiclient "github.com/koyeb/koyeb-cli/pkg/kclient/client"
+	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
 )
 
 func getApiClient() *apiclient.AccountAccountProto {
@@ -106,7 +107,37 @@ func getField(item interface{}, field string) string {
 	return "<empty>"
 }
 
+type CommonErrorInterface interface {
+	GetPayload() *apimodel.CommonError
+}
+type CommonErrorWithFieldInterface interface {
+	GetPayload() *apimodel.CommonErrorWithFields
+}
+
 func apiError(err error) {
+
+	switch er := err.(type) {
+	case CommonErrorInterface:
+		log.Error(er)
+		payload := er.GetPayload()
+		log.Errorf("Status code %d - Error: %s - Message: %s", payload.Status, payload.Code, payload.Message)
+	case CommonErrorWithFieldInterface:
+		log.Error(er)
+		payload := er.GetPayload()
+		log.Errorf("Status code %d - Error: %s - Message: %s", payload.Status, payload.Code, payload.Message)
+		for _, f := range payload.Fields {
+			log.Errorf("%s: %s", f.Field, f.Description)
+		}
+	case *runtime.APIError:
+		e := er.Response.(runtime.ClientResponse)
+		if debug {
+			respBody := e.Body()
+			body, _ := ioutil.ReadAll(respBody)
+			log.Errorf("%s", body)
+		}
+	default:
+		log.Error(err)
+	}
 
 	er, ok := err.(*runtime.APIError)
 	if ok {
@@ -117,8 +148,5 @@ func apiError(err error) {
 			log.Errorf("%s", body)
 		}
 		log.Errorf("%s", e.Message())
-
-	} else {
-		log.Error(err)
 	}
 }
