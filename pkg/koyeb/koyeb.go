@@ -91,7 +91,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
-	rootCmd.PersistentFlags().String("url", "app.koyeb.com", "url of the api")
+	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
 	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
