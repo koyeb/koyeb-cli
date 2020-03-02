@@ -113,6 +113,7 @@ func init() {
 
 	// Get
 	rootCmd.AddCommand(getCmd)
+	getCmd.AddCommand(getAllCommand)
 	getCmd.AddCommand(getStackCommand)
 	getCmd.AddCommand(getManagedStoreCommand)
 	getCmd.AddCommand(getDeliveryCommand)
