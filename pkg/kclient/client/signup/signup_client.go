@@ -27,15 +27,15 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	PasswordlessLogin(params *PasswordlessLoginParams) (*PasswordlessLoginOK, error)
+	PasswordlessLogin(params *PasswordlessLoginParams, authInfo runtime.ClientAuthInfoWriter) (*PasswordlessLoginOK, error)
 
-	ResetPassword(params *ResetPasswordParams) (*ResetPasswordOK, error)
+	ResetPassword(params *ResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ResetPasswordOK, error)
 
-	Signup(params *SignupParams) (*SignupOK, error)
+	Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWriter) (*SignupOK, error)
 
-	UpdatePassword(params *UpdatePasswordParams) (*UpdatePasswordOK, error)
+	UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordOK, error)
 
-	Validate(params *ValidateParams) (*ValidateOK, error)
+	Validate(params *ValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -43,7 +43,7 @@ type ClientService interface {
 /*
   PasswordlessLogin passwordless login API
 */
-func (a *Client) PasswordlessLogin(params *PasswordlessLoginParams) (*PasswordlessLoginOK, error) {
+func (a *Client) PasswordlessLogin(params *PasswordlessLoginParams, authInfo runtime.ClientAuthInfoWriter) (*PasswordlessLoginOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPasswordlessLoginParams()
@@ -58,6 +58,7 @@ func (a *Client) PasswordlessLogin(params *PasswordlessLoginParams) (*Passwordle
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &PasswordlessLoginReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -77,7 +78,7 @@ func (a *Client) PasswordlessLogin(params *PasswordlessLoginParams) (*Passwordle
 /*
   ResetPassword reset password API
 */
-func (a *Client) ResetPassword(params *ResetPasswordParams) (*ResetPasswordOK, error) {
+func (a *Client) ResetPassword(params *ResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ResetPasswordOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewResetPasswordParams()
@@ -92,6 +93,7 @@ func (a *Client) ResetPassword(params *ResetPasswordParams) (*ResetPasswordOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ResetPasswordReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -111,7 +113,7 @@ func (a *Client) ResetPassword(params *ResetPasswordParams) (*ResetPasswordOK, e
 /*
   Signup signup API
 */
-func (a *Client) Signup(params *SignupParams) (*SignupOK, error) {
+func (a *Client) Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWriter) (*SignupOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSignupParams()
@@ -126,6 +128,7 @@ func (a *Client) Signup(params *SignupParams) (*SignupOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &SignupReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -145,7 +148,7 @@ func (a *Client) Signup(params *SignupParams) (*SignupOK, error) {
 /*
   UpdatePassword update password API
 */
-func (a *Client) UpdatePassword(params *UpdatePasswordParams) (*UpdatePasswordOK, error) {
+func (a *Client) UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdatePasswordParams()
@@ -160,6 +163,7 @@ func (a *Client) UpdatePassword(params *UpdatePasswordParams) (*UpdatePasswordOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdatePasswordReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -179,7 +183,7 @@ func (a *Client) UpdatePassword(params *UpdatePasswordParams) (*UpdatePasswordOK
 /*
   Validate validate API
 */
-func (a *Client) Validate(params *ValidateParams) (*ValidateOK, error) {
+func (a *Client) Validate(params *ValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewValidateParams()
@@ -194,6 +198,7 @@ func (a *Client) Validate(params *ValidateParams) (*ValidateOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ValidateReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

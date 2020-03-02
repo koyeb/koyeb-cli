@@ -28,10 +28,12 @@ func getApiClient() *apiclient.AccountAccountProto {
 	log.Debugf("Using host: %s", u.Host)
 	transport := httptransport.New(u.Host, "", nil)
 	transport.SetDebug(debug)
-	authInfo := httptransport.BearerToken(token)
-	transport.DefaultAuthentication = authInfo
 
 	return apiclient.New(transport, strfmt.Default)
+}
+
+func getAuth() runtime.ClientAuthInfoWriter {
+	return httptransport.BearerToken(token)
 }
 
 type ApiResources interface {

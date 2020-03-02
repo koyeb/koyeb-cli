@@ -118,7 +118,7 @@ func getDeliveries(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			p := deliveries.NewGetDeliveryParams()
 			p.ID = arg
-			resp, err := client.Deliveries.GetDelivery(p)
+			resp, err := client.Deliveries.GetDelivery(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
@@ -139,7 +139,7 @@ func getDeliveries(cmd *cobra.Command, args []string) error {
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.Deliveries.ListDeliveries(p)
+			resp, err := client.Deliveries.ListDeliveries(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
@@ -177,7 +177,7 @@ func createDeliveries(cmd *cobra.Command, args []string) error {
 	for _, delivery := range all.Deliveries {
 		p := deliveries.NewNewDeliveryParams()
 		p.SetBody(delivery.GetNewBody())
-		resp, err := client.Deliveries.NewDelivery(p)
+		resp, err := client.Deliveries.NewDelivery(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -194,7 +194,7 @@ func deleteDeliveries(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			p := deliveries.NewDeleteDeliveryParams()
 			p.ID = arg
-			resp, err := client.Deliveries.DeleteDelivery(p)
+			resp, err := client.Deliveries.DeleteDelivery(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue

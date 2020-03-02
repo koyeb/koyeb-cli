@@ -27,9 +27,9 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetActivities(params *GetActivitiesParams) (*GetActivitiesOK, error)
+	GetActivities(params *GetActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*GetActivitiesOK, error)
 
-	GetNotifications(params *GetNotificationsParams) (*GetNotificationsOK, error)
+	GetNotifications(params *GetNotificationsParams, authInfo runtime.ClientAuthInfoWriter) (*GetNotificationsOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -37,7 +37,7 @@ type ClientService interface {
 /*
   GetActivities get activities API
 */
-func (a *Client) GetActivities(params *GetActivitiesParams) (*GetActivitiesOK, error) {
+func (a *Client) GetActivities(params *GetActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*GetActivitiesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetActivitiesParams()
@@ -52,6 +52,7 @@ func (a *Client) GetActivities(params *GetActivitiesParams) (*GetActivitiesOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetActivitiesReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -71,7 +72,7 @@ func (a *Client) GetActivities(params *GetActivitiesParams) (*GetActivitiesOK, e
 /*
   GetNotifications get notifications API
 */
-func (a *Client) GetNotifications(params *GetNotificationsParams) (*GetNotificationsOK, error) {
+func (a *Client) GetNotifications(params *GetNotificationsParams, authInfo runtime.ClientAuthInfoWriter) (*GetNotificationsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetNotificationsParams()
@@ -86,6 +87,7 @@ func (a *Client) GetNotifications(params *GetNotificationsParams) (*GetNotificat
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetNotificationsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

@@ -27,7 +27,7 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetStorageSummary(params *GetStorageSummaryParams) (*GetStorageSummaryOK, error)
+	GetStorageSummary(params *GetStorageSummaryParams, authInfo runtime.ClientAuthInfoWriter) (*GetStorageSummaryOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -35,7 +35,7 @@ type ClientService interface {
 /*
   GetStorageSummary get storage summary API
 */
-func (a *Client) GetStorageSummary(params *GetStorageSummaryParams) (*GetStorageSummaryOK, error) {
+func (a *Client) GetStorageSummary(params *GetStorageSummaryParams, authInfo runtime.ClientAuthInfoWriter) (*GetStorageSummaryOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStorageSummaryParams()
@@ -50,6 +50,7 @@ func (a *Client) GetStorageSummary(params *GetStorageSummaryParams) (*GetStorage
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStorageSummaryReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

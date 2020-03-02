@@ -27,61 +27,61 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	BrowseStack(params *BrowseStackParams) (*BrowseStackOK, error)
+	BrowseStack(params *BrowseStackParams, authInfo runtime.ClientAuthInfoWriter) (*BrowseStackOK, error)
 
-	CancelStackObjectExecution(params *CancelStackObjectExecutionParams) (*CancelStackObjectExecutionOK, error)
+	CancelStackObjectExecution(params *CancelStackObjectExecutionParams, authInfo runtime.ClientAuthInfoWriter) (*CancelStackObjectExecutionOK, error)
 
-	DeleteStack(params *DeleteStackParams) (*DeleteStackOK, error)
+	DeleteStack(params *DeleteStackParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteStackOK, error)
 
-	DisableStack(params *DisableStackParams) (*DisableStackOK, error)
+	DisableStack(params *DisableStackParams, authInfo runtime.ClientAuthInfoWriter) (*DisableStackOK, error)
 
-	DisableStackSource(params *DisableStackSourceParams) (*DisableStackSourceOK, error)
+	DisableStackSource(params *DisableStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*DisableStackSourceOK, error)
 
-	DisableStackWorkflow(params *DisableStackWorkflowParams) (*DisableStackWorkflowOK, error)
+	DisableStackWorkflow(params *DisableStackWorkflowParams, authInfo runtime.ClientAuthInfoWriter) (*DisableStackWorkflowOK, error)
 
-	EnableStack(params *EnableStackParams) (*EnableStackOK, error)
+	EnableStack(params *EnableStackParams, authInfo runtime.ClientAuthInfoWriter) (*EnableStackOK, error)
 
-	EnableStackSource(params *EnableStackSourceParams) (*EnableStackSourceOK, error)
+	EnableStackSource(params *EnableStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*EnableStackSourceOK, error)
 
-	EnableStackWorkflow(params *EnableStackWorkflowParams) (*EnableStackWorkflowOK, error)
+	EnableStackWorkflow(params *EnableStackWorkflowParams, authInfo runtime.ClientAuthInfoWriter) (*EnableStackWorkflowOK, error)
 
-	GetStack(params *GetStackParams) (*GetStackOK, error)
+	GetStack(params *GetStackParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackOK, error)
 
-	GetStackObjectExecution(params *GetStackObjectExecutionParams) (*GetStackObjectExecutionOK, error)
+	GetStackObjectExecution(params *GetStackObjectExecutionParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackObjectExecutionOK, error)
 
-	GetStackObjectInfo(params *GetStackObjectInfoParams) (*GetStackObjectInfoOK, error)
+	GetStackObjectInfo(params *GetStackObjectInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackObjectInfoOK, error)
 
-	GetStackSource(params *GetStackSourceParams) (*GetStackSourceOK, error)
+	GetStackSource(params *GetStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackSourceOK, error)
 
-	GetStackSourceStats(params *GetStackSourceStatsParams) (*GetStackSourceStatsOK, error)
+	GetStackSourceStats(params *GetStackSourceStatsParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackSourceStatsOK, error)
 
-	GetStackStats(params *GetStackStatsParams) (*GetStackStatsOK, error)
+	GetStackStats(params *GetStackStatsParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackStatsOK, error)
 
-	GetStackWorkflow(params *GetStackWorkflowParams) (*GetStackWorkflowOK, error)
+	GetStackWorkflow(params *GetStackWorkflowParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackWorkflowOK, error)
 
-	GetStackWorkflowStats(params *GetStackWorkflowStatsParams) (*GetStackWorkflowStatsOK, error)
+	GetStackWorkflowStats(params *GetStackWorkflowStatsParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackWorkflowStatsOK, error)
 
-	ListStackEvents(params *ListStackEventsParams) (*ListStackEventsOK, error)
+	ListStackEvents(params *ListStackEventsParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackEventsOK, error)
 
-	ListStackObjectExecutions(params *ListStackObjectExecutionsParams) (*ListStackObjectExecutionsOK, error)
+	ListStackObjectExecutions(params *ListStackObjectExecutionsParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackObjectExecutionsOK, error)
 
-	ListStackSources(params *ListStackSourcesParams) (*ListStackSourcesOK, error)
+	ListStackSources(params *ListStackSourcesParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackSourcesOK, error)
 
-	ListStackWorkflows(params *ListStackWorkflowsParams) (*ListStackWorkflowsOK, error)
+	ListStackWorkflows(params *ListStackWorkflowsParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackWorkflowsOK, error)
 
-	ListStacks(params *ListStacksParams) (*ListStacksOK, error)
+	ListStacks(params *ListStacksParams, authInfo runtime.ClientAuthInfoWriter) (*ListStacksOK, error)
 
-	NewStack(params *NewStackParams) (*NewStackOK, error)
+	NewStack(params *NewStackParams, authInfo runtime.ClientAuthInfoWriter) (*NewStackOK, error)
 
-	RelaunchStackObjectExecution(params *RelaunchStackObjectExecutionParams) (*RelaunchStackObjectExecutionOK, error)
+	RelaunchStackObjectExecution(params *RelaunchStackObjectExecutionParams, authInfo runtime.ClientAuthInfoWriter) (*RelaunchStackObjectExecutionOK, error)
 
-	SyncStackSource(params *SyncStackSourceParams) (*SyncStackSourceOK, error)
+	SyncStackSource(params *SyncStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*SyncStackSourceOK, error)
 
-	UpdateStack(params *UpdateStackParams) (*UpdateStackOK, error)
+	UpdateStack(params *UpdateStackParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateStackOK, error)
 
-	UpdateStack2(params *UpdateStack2Params) (*UpdateStack2OK, error)
+	UpdateStack2(params *UpdateStack2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateStack2OK, error)
 
-	ValidateStack(params *ValidateStackParams) (*ValidateStackOK, error)
+	ValidateStack(params *ValidateStackParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateStackOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -89,7 +89,7 @@ type ClientService interface {
 /*
   BrowseStack browse stack API
 */
-func (a *Client) BrowseStack(params *BrowseStackParams) (*BrowseStackOK, error) {
+func (a *Client) BrowseStack(params *BrowseStackParams, authInfo runtime.ClientAuthInfoWriter) (*BrowseStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewBrowseStackParams()
@@ -104,6 +104,7 @@ func (a *Client) BrowseStack(params *BrowseStackParams) (*BrowseStackOK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &BrowseStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -123,7 +124,7 @@ func (a *Client) BrowseStack(params *BrowseStackParams) (*BrowseStackOK, error) 
 /*
   CancelStackObjectExecution cancel stack object execution API
 */
-func (a *Client) CancelStackObjectExecution(params *CancelStackObjectExecutionParams) (*CancelStackObjectExecutionOK, error) {
+func (a *Client) CancelStackObjectExecution(params *CancelStackObjectExecutionParams, authInfo runtime.ClientAuthInfoWriter) (*CancelStackObjectExecutionOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCancelStackObjectExecutionParams()
@@ -138,6 +139,7 @@ func (a *Client) CancelStackObjectExecution(params *CancelStackObjectExecutionPa
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &CancelStackObjectExecutionReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -157,7 +159,7 @@ func (a *Client) CancelStackObjectExecution(params *CancelStackObjectExecutionPa
 /*
   DeleteStack delete stack API
 */
-func (a *Client) DeleteStack(params *DeleteStackParams) (*DeleteStackOK, error) {
+func (a *Client) DeleteStack(params *DeleteStackParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteStackParams()
@@ -172,6 +174,7 @@ func (a *Client) DeleteStack(params *DeleteStackParams) (*DeleteStackOK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -191,7 +194,7 @@ func (a *Client) DeleteStack(params *DeleteStackParams) (*DeleteStackOK, error) 
 /*
   DisableStack disable stack API
 */
-func (a *Client) DisableStack(params *DisableStackParams) (*DisableStackOK, error) {
+func (a *Client) DisableStack(params *DisableStackParams, authInfo runtime.ClientAuthInfoWriter) (*DisableStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDisableStackParams()
@@ -206,6 +209,7 @@ func (a *Client) DisableStack(params *DisableStackParams) (*DisableStackOK, erro
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DisableStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -225,7 +229,7 @@ func (a *Client) DisableStack(params *DisableStackParams) (*DisableStackOK, erro
 /*
   DisableStackSource disable stack source API
 */
-func (a *Client) DisableStackSource(params *DisableStackSourceParams) (*DisableStackSourceOK, error) {
+func (a *Client) DisableStackSource(params *DisableStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*DisableStackSourceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDisableStackSourceParams()
@@ -240,6 +244,7 @@ func (a *Client) DisableStackSource(params *DisableStackSourceParams) (*DisableS
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DisableStackSourceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -259,7 +264,7 @@ func (a *Client) DisableStackSource(params *DisableStackSourceParams) (*DisableS
 /*
   DisableStackWorkflow disable stack workflow API
 */
-func (a *Client) DisableStackWorkflow(params *DisableStackWorkflowParams) (*DisableStackWorkflowOK, error) {
+func (a *Client) DisableStackWorkflow(params *DisableStackWorkflowParams, authInfo runtime.ClientAuthInfoWriter) (*DisableStackWorkflowOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDisableStackWorkflowParams()
@@ -274,6 +279,7 @@ func (a *Client) DisableStackWorkflow(params *DisableStackWorkflowParams) (*Disa
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DisableStackWorkflowReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -293,7 +299,7 @@ func (a *Client) DisableStackWorkflow(params *DisableStackWorkflowParams) (*Disa
 /*
   EnableStack enable stack API
 */
-func (a *Client) EnableStack(params *EnableStackParams) (*EnableStackOK, error) {
+func (a *Client) EnableStack(params *EnableStackParams, authInfo runtime.ClientAuthInfoWriter) (*EnableStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewEnableStackParams()
@@ -308,6 +314,7 @@ func (a *Client) EnableStack(params *EnableStackParams) (*EnableStackOK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &EnableStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -327,7 +334,7 @@ func (a *Client) EnableStack(params *EnableStackParams) (*EnableStackOK, error) 
 /*
   EnableStackSource enable stack source API
 */
-func (a *Client) EnableStackSource(params *EnableStackSourceParams) (*EnableStackSourceOK, error) {
+func (a *Client) EnableStackSource(params *EnableStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*EnableStackSourceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewEnableStackSourceParams()
@@ -342,6 +349,7 @@ func (a *Client) EnableStackSource(params *EnableStackSourceParams) (*EnableStac
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &EnableStackSourceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -361,7 +369,7 @@ func (a *Client) EnableStackSource(params *EnableStackSourceParams) (*EnableStac
 /*
   EnableStackWorkflow enable stack workflow API
 */
-func (a *Client) EnableStackWorkflow(params *EnableStackWorkflowParams) (*EnableStackWorkflowOK, error) {
+func (a *Client) EnableStackWorkflow(params *EnableStackWorkflowParams, authInfo runtime.ClientAuthInfoWriter) (*EnableStackWorkflowOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewEnableStackWorkflowParams()
@@ -376,6 +384,7 @@ func (a *Client) EnableStackWorkflow(params *EnableStackWorkflowParams) (*Enable
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &EnableStackWorkflowReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -395,7 +404,7 @@ func (a *Client) EnableStackWorkflow(params *EnableStackWorkflowParams) (*Enable
 /*
   GetStack get stack API
 */
-func (a *Client) GetStack(params *GetStackParams) (*GetStackOK, error) {
+func (a *Client) GetStack(params *GetStackParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackParams()
@@ -410,6 +419,7 @@ func (a *Client) GetStack(params *GetStackParams) (*GetStackOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -429,7 +439,7 @@ func (a *Client) GetStack(params *GetStackParams) (*GetStackOK, error) {
 /*
   GetStackObjectExecution get stack object execution API
 */
-func (a *Client) GetStackObjectExecution(params *GetStackObjectExecutionParams) (*GetStackObjectExecutionOK, error) {
+func (a *Client) GetStackObjectExecution(params *GetStackObjectExecutionParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackObjectExecutionOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackObjectExecutionParams()
@@ -444,6 +454,7 @@ func (a *Client) GetStackObjectExecution(params *GetStackObjectExecutionParams) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackObjectExecutionReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -463,7 +474,7 @@ func (a *Client) GetStackObjectExecution(params *GetStackObjectExecutionParams) 
 /*
   GetStackObjectInfo get stack object info API
 */
-func (a *Client) GetStackObjectInfo(params *GetStackObjectInfoParams) (*GetStackObjectInfoOK, error) {
+func (a *Client) GetStackObjectInfo(params *GetStackObjectInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackObjectInfoOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackObjectInfoParams()
@@ -478,6 +489,7 @@ func (a *Client) GetStackObjectInfo(params *GetStackObjectInfoParams) (*GetStack
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackObjectInfoReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -497,7 +509,7 @@ func (a *Client) GetStackObjectInfo(params *GetStackObjectInfoParams) (*GetStack
 /*
   GetStackSource get stack source API
 */
-func (a *Client) GetStackSource(params *GetStackSourceParams) (*GetStackSourceOK, error) {
+func (a *Client) GetStackSource(params *GetStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackSourceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackSourceParams()
@@ -512,6 +524,7 @@ func (a *Client) GetStackSource(params *GetStackSourceParams) (*GetStackSourceOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackSourceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -531,7 +544,7 @@ func (a *Client) GetStackSource(params *GetStackSourceParams) (*GetStackSourceOK
 /*
   GetStackSourceStats get stack source stats API
 */
-func (a *Client) GetStackSourceStats(params *GetStackSourceStatsParams) (*GetStackSourceStatsOK, error) {
+func (a *Client) GetStackSourceStats(params *GetStackSourceStatsParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackSourceStatsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackSourceStatsParams()
@@ -546,6 +559,7 @@ func (a *Client) GetStackSourceStats(params *GetStackSourceStatsParams) (*GetSta
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackSourceStatsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -565,7 +579,7 @@ func (a *Client) GetStackSourceStats(params *GetStackSourceStatsParams) (*GetSta
 /*
   GetStackStats get stack stats API
 */
-func (a *Client) GetStackStats(params *GetStackStatsParams) (*GetStackStatsOK, error) {
+func (a *Client) GetStackStats(params *GetStackStatsParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackStatsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackStatsParams()
@@ -580,6 +594,7 @@ func (a *Client) GetStackStats(params *GetStackStatsParams) (*GetStackStatsOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackStatsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -599,7 +614,7 @@ func (a *Client) GetStackStats(params *GetStackStatsParams) (*GetStackStatsOK, e
 /*
   GetStackWorkflow get stack workflow API
 */
-func (a *Client) GetStackWorkflow(params *GetStackWorkflowParams) (*GetStackWorkflowOK, error) {
+func (a *Client) GetStackWorkflow(params *GetStackWorkflowParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackWorkflowOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackWorkflowParams()
@@ -614,6 +629,7 @@ func (a *Client) GetStackWorkflow(params *GetStackWorkflowParams) (*GetStackWork
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackWorkflowReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -633,7 +649,7 @@ func (a *Client) GetStackWorkflow(params *GetStackWorkflowParams) (*GetStackWork
 /*
   GetStackWorkflowStats get stack workflow stats API
 */
-func (a *Client) GetStackWorkflowStats(params *GetStackWorkflowStatsParams) (*GetStackWorkflowStatsOK, error) {
+func (a *Client) GetStackWorkflowStats(params *GetStackWorkflowStatsParams, authInfo runtime.ClientAuthInfoWriter) (*GetStackWorkflowStatsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetStackWorkflowStatsParams()
@@ -648,6 +664,7 @@ func (a *Client) GetStackWorkflowStats(params *GetStackWorkflowStatsParams) (*Ge
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetStackWorkflowStatsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -667,7 +684,7 @@ func (a *Client) GetStackWorkflowStats(params *GetStackWorkflowStatsParams) (*Ge
 /*
   ListStackEvents list stack events API
 */
-func (a *Client) ListStackEvents(params *ListStackEventsParams) (*ListStackEventsOK, error) {
+func (a *Client) ListStackEvents(params *ListStackEventsParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackEventsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListStackEventsParams()
@@ -682,6 +699,7 @@ func (a *Client) ListStackEvents(params *ListStackEventsParams) (*ListStackEvent
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListStackEventsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -701,7 +719,7 @@ func (a *Client) ListStackEvents(params *ListStackEventsParams) (*ListStackEvent
 /*
   ListStackObjectExecutions list stack object executions API
 */
-func (a *Client) ListStackObjectExecutions(params *ListStackObjectExecutionsParams) (*ListStackObjectExecutionsOK, error) {
+func (a *Client) ListStackObjectExecutions(params *ListStackObjectExecutionsParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackObjectExecutionsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListStackObjectExecutionsParams()
@@ -716,6 +734,7 @@ func (a *Client) ListStackObjectExecutions(params *ListStackObjectExecutionsPara
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListStackObjectExecutionsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -735,7 +754,7 @@ func (a *Client) ListStackObjectExecutions(params *ListStackObjectExecutionsPara
 /*
   ListStackSources list stack sources API
 */
-func (a *Client) ListStackSources(params *ListStackSourcesParams) (*ListStackSourcesOK, error) {
+func (a *Client) ListStackSources(params *ListStackSourcesParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackSourcesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListStackSourcesParams()
@@ -750,6 +769,7 @@ func (a *Client) ListStackSources(params *ListStackSourcesParams) (*ListStackSou
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListStackSourcesReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -769,7 +789,7 @@ func (a *Client) ListStackSources(params *ListStackSourcesParams) (*ListStackSou
 /*
   ListStackWorkflows list stack workflows API
 */
-func (a *Client) ListStackWorkflows(params *ListStackWorkflowsParams) (*ListStackWorkflowsOK, error) {
+func (a *Client) ListStackWorkflows(params *ListStackWorkflowsParams, authInfo runtime.ClientAuthInfoWriter) (*ListStackWorkflowsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListStackWorkflowsParams()
@@ -784,6 +804,7 @@ func (a *Client) ListStackWorkflows(params *ListStackWorkflowsParams) (*ListStac
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListStackWorkflowsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -803,7 +824,7 @@ func (a *Client) ListStackWorkflows(params *ListStackWorkflowsParams) (*ListStac
 /*
   ListStacks list stacks API
 */
-func (a *Client) ListStacks(params *ListStacksParams) (*ListStacksOK, error) {
+func (a *Client) ListStacks(params *ListStacksParams, authInfo runtime.ClientAuthInfoWriter) (*ListStacksOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListStacksParams()
@@ -818,6 +839,7 @@ func (a *Client) ListStacks(params *ListStacksParams) (*ListStacksOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListStacksReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -837,7 +859,7 @@ func (a *Client) ListStacks(params *ListStacksParams) (*ListStacksOK, error) {
 /*
   NewStack new stack API
 */
-func (a *Client) NewStack(params *NewStackParams) (*NewStackOK, error) {
+func (a *Client) NewStack(params *NewStackParams, authInfo runtime.ClientAuthInfoWriter) (*NewStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNewStackParams()
@@ -852,6 +874,7 @@ func (a *Client) NewStack(params *NewStackParams) (*NewStackOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &NewStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -871,7 +894,7 @@ func (a *Client) NewStack(params *NewStackParams) (*NewStackOK, error) {
 /*
   RelaunchStackObjectExecution relaunch stack object execution API
 */
-func (a *Client) RelaunchStackObjectExecution(params *RelaunchStackObjectExecutionParams) (*RelaunchStackObjectExecutionOK, error) {
+func (a *Client) RelaunchStackObjectExecution(params *RelaunchStackObjectExecutionParams, authInfo runtime.ClientAuthInfoWriter) (*RelaunchStackObjectExecutionOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewRelaunchStackObjectExecutionParams()
@@ -886,6 +909,7 @@ func (a *Client) RelaunchStackObjectExecution(params *RelaunchStackObjectExecuti
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &RelaunchStackObjectExecutionReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -905,7 +929,7 @@ func (a *Client) RelaunchStackObjectExecution(params *RelaunchStackObjectExecuti
 /*
   SyncStackSource sync stack source API
 */
-func (a *Client) SyncStackSource(params *SyncStackSourceParams) (*SyncStackSourceOK, error) {
+func (a *Client) SyncStackSource(params *SyncStackSourceParams, authInfo runtime.ClientAuthInfoWriter) (*SyncStackSourceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSyncStackSourceParams()
@@ -920,6 +944,7 @@ func (a *Client) SyncStackSource(params *SyncStackSourceParams) (*SyncStackSourc
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &SyncStackSourceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -939,7 +964,7 @@ func (a *Client) SyncStackSource(params *SyncStackSourceParams) (*SyncStackSourc
 /*
   UpdateStack update stack API
 */
-func (a *Client) UpdateStack(params *UpdateStackParams) (*UpdateStackOK, error) {
+func (a *Client) UpdateStack(params *UpdateStackParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateStackParams()
@@ -954,6 +979,7 @@ func (a *Client) UpdateStack(params *UpdateStackParams) (*UpdateStackOK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -973,7 +999,7 @@ func (a *Client) UpdateStack(params *UpdateStackParams) (*UpdateStackOK, error) 
 /*
   UpdateStack2 update stack2 API
 */
-func (a *Client) UpdateStack2(params *UpdateStack2Params) (*UpdateStack2OK, error) {
+func (a *Client) UpdateStack2(params *UpdateStack2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateStack2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateStack2Params()
@@ -988,6 +1014,7 @@ func (a *Client) UpdateStack2(params *UpdateStack2Params) (*UpdateStack2OK, erro
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateStack2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -1007,7 +1034,7 @@ func (a *Client) UpdateStack2(params *UpdateStack2Params) (*UpdateStack2OK, erro
 /*
   ValidateStack validate stack API
 */
-func (a *Client) ValidateStack(params *ValidateStackParams) (*ValidateStackOK, error) {
+func (a *Client) ValidateStack(params *ValidateStackParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateStackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewValidateStackParams()
@@ -1022,6 +1049,7 @@ func (a *Client) ValidateStack(params *ValidateStackParams) (*ValidateStackOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ValidateStackReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

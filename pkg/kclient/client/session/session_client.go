@@ -27,11 +27,11 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	Login(params *LoginParams) (*LoginOK, error)
+	Login(params *LoginParams, authInfo runtime.ClientAuthInfoWriter) (*LoginOK, error)
 
-	Logout(params *LogoutParams) (*LogoutOK, error)
+	Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutOK, error)
 
-	RefreshToken(params *RefreshTokenParams) (*RefreshTokenOK, error)
+	RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -39,7 +39,7 @@ type ClientService interface {
 /*
   Login login API
 */
-func (a *Client) Login(params *LoginParams) (*LoginOK, error) {
+func (a *Client) Login(params *LoginParams, authInfo runtime.ClientAuthInfoWriter) (*LoginOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLoginParams()
@@ -54,6 +54,7 @@ func (a *Client) Login(params *LoginParams) (*LoginOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &LoginReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -73,7 +74,7 @@ func (a *Client) Login(params *LoginParams) (*LoginOK, error) {
 /*
   Logout logout API
 */
-func (a *Client) Logout(params *LogoutParams) (*LogoutOK, error) {
+func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLogoutParams()
@@ -88,6 +89,7 @@ func (a *Client) Logout(params *LogoutParams) (*LogoutOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &LogoutReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -107,7 +109,7 @@ func (a *Client) Logout(params *LogoutParams) (*LogoutOK, error) {
 /*
   RefreshToken refresh token API
 */
-func (a *Client) RefreshToken(params *RefreshTokenParams) (*RefreshTokenOK, error) {
+func (a *Client) RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewRefreshTokenParams()
@@ -122,6 +124,7 @@ func (a *Client) RefreshToken(params *RefreshTokenParams) (*RefreshTokenOK, erro
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &RefreshTokenReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

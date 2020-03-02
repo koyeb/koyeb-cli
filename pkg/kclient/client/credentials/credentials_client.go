@@ -27,17 +27,17 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteCredential(params *DeleteCredentialParams) (*DeleteCredentialOK, error)
+	DeleteCredential(params *DeleteCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteCredentialOK, error)
 
-	GetCredential(params *GetCredentialParams) (*GetCredentialOK, error)
+	GetCredential(params *GetCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*GetCredentialOK, error)
 
-	ListCredentials(params *ListCredentialsParams) (*ListCredentialsOK, error)
+	ListCredentials(params *ListCredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*ListCredentialsOK, error)
 
-	NewCredential(params *NewCredentialParams) (*NewCredentialOK, error)
+	NewCredential(params *NewCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*NewCredentialOK, error)
 
-	UpdateCredential(params *UpdateCredentialParams) (*UpdateCredentialOK, error)
+	UpdateCredential(params *UpdateCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateCredentialOK, error)
 
-	UpdateCredential2(params *UpdateCredential2Params) (*UpdateCredential2OK, error)
+	UpdateCredential2(params *UpdateCredential2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateCredential2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -45,7 +45,7 @@ type ClientService interface {
 /*
   DeleteCredential delete credential API
 */
-func (a *Client) DeleteCredential(params *DeleteCredentialParams) (*DeleteCredentialOK, error) {
+func (a *Client) DeleteCredential(params *DeleteCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteCredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteCredentialParams()
@@ -60,6 +60,7 @@ func (a *Client) DeleteCredential(params *DeleteCredentialParams) (*DeleteCreden
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteCredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -79,7 +80,7 @@ func (a *Client) DeleteCredential(params *DeleteCredentialParams) (*DeleteCreden
 /*
   GetCredential get credential API
 */
-func (a *Client) GetCredential(params *GetCredentialParams) (*GetCredentialOK, error) {
+func (a *Client) GetCredential(params *GetCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*GetCredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetCredentialParams()
@@ -94,6 +95,7 @@ func (a *Client) GetCredential(params *GetCredentialParams) (*GetCredentialOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetCredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -113,7 +115,7 @@ func (a *Client) GetCredential(params *GetCredentialParams) (*GetCredentialOK, e
 /*
   ListCredentials list credentials API
 */
-func (a *Client) ListCredentials(params *ListCredentialsParams) (*ListCredentialsOK, error) {
+func (a *Client) ListCredentials(params *ListCredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*ListCredentialsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListCredentialsParams()
@@ -128,6 +130,7 @@ func (a *Client) ListCredentials(params *ListCredentialsParams) (*ListCredential
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListCredentialsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -147,7 +150,7 @@ func (a *Client) ListCredentials(params *ListCredentialsParams) (*ListCredential
 /*
   NewCredential new credential API
 */
-func (a *Client) NewCredential(params *NewCredentialParams) (*NewCredentialOK, error) {
+func (a *Client) NewCredential(params *NewCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*NewCredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNewCredentialParams()
@@ -162,6 +165,7 @@ func (a *Client) NewCredential(params *NewCredentialParams) (*NewCredentialOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &NewCredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -181,7 +185,7 @@ func (a *Client) NewCredential(params *NewCredentialParams) (*NewCredentialOK, e
 /*
   UpdateCredential update credential API
 */
-func (a *Client) UpdateCredential(params *UpdateCredentialParams) (*UpdateCredentialOK, error) {
+func (a *Client) UpdateCredential(params *UpdateCredentialParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateCredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateCredentialParams()
@@ -196,6 +200,7 @@ func (a *Client) UpdateCredential(params *UpdateCredentialParams) (*UpdateCreden
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateCredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -215,7 +220,7 @@ func (a *Client) UpdateCredential(params *UpdateCredentialParams) (*UpdateCreden
 /*
   UpdateCredential2 update credential2 API
 */
-func (a *Client) UpdateCredential2(params *UpdateCredential2Params) (*UpdateCredential2OK, error) {
+func (a *Client) UpdateCredential2(params *UpdateCredential2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateCredential2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateCredential2Params()
@@ -230,6 +235,7 @@ func (a *Client) UpdateCredential2(params *UpdateCredential2Params) (*UpdateCred
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateCredential2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

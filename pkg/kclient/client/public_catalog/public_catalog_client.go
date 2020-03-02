@@ -27,159 +27,163 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetCatalogIntegrationMixin0(params *GetCatalogIntegrationMixin0Params) (*GetCatalogIntegrationMixin0OK, error)
+	GetCatalogIntegration(params *GetCatalogIntegrationParams, authInfo runtime.ClientAuthInfoWriter) (*GetCatalogIntegrationOK, error)
 
-	GetCatalogService(params *GetCatalogServiceParams) (*GetCatalogServiceOK, error)
+	GetCatalogServiceMixin0(params *GetCatalogServiceMixin0Params, authInfo runtime.ClientAuthInfoWriter) (*GetCatalogServiceMixin0OK, error)
 
-	ListCatalogIntegrations(params *ListCatalogIntegrationsParams) (*ListCatalogIntegrationsOK, error)
+	ListCatalogIntegrationsMixin0(params *ListCatalogIntegrationsMixin0Params, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogIntegrationsMixin0OK, error)
 
-	ListCatalogServiceIntegrationsMixin0(params *ListCatalogServiceIntegrationsMixin0Params) (*ListCatalogServiceIntegrationsMixin0OK, error)
+	ListCatalogServiceIntegrations(params *ListCatalogServiceIntegrationsParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogServiceIntegrationsOK, error)
 
-	ListCatalogServices(params *ListCatalogServicesParams) (*ListCatalogServicesOK, error)
+	ListCatalogServices(params *ListCatalogServicesParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogServicesOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  GetCatalogIntegrationMixin0 get catalog integration mixin0 API
+  GetCatalogIntegration get catalog integration API
 */
-func (a *Client) GetCatalogIntegrationMixin0(params *GetCatalogIntegrationMixin0Params) (*GetCatalogIntegrationMixin0OK, error) {
+func (a *Client) GetCatalogIntegration(params *GetCatalogIntegrationParams, authInfo runtime.ClientAuthInfoWriter) (*GetCatalogIntegrationOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetCatalogIntegrationMixin0Params()
+		params = NewGetCatalogIntegrationParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetCatalogIntegrationMixin0",
+		ID:                 "GetCatalogIntegration",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/integrations/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetCatalogIntegrationMixin0Reader{formats: a.formats},
+		Reader:             &GetCatalogIntegrationReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetCatalogIntegrationMixin0OK)
+	success, ok := result.(*GetCatalogIntegrationOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetCatalogIntegrationMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetCatalogIntegration: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-  GetCatalogService get catalog service API
+  GetCatalogServiceMixin0 get catalog service mixin0 API
 */
-func (a *Client) GetCatalogService(params *GetCatalogServiceParams) (*GetCatalogServiceOK, error) {
+func (a *Client) GetCatalogServiceMixin0(params *GetCatalogServiceMixin0Params, authInfo runtime.ClientAuthInfoWriter) (*GetCatalogServiceMixin0OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetCatalogServiceParams()
+		params = NewGetCatalogServiceMixin0Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetCatalogService",
+		ID:                 "GetCatalogServiceMixin0",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/services/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetCatalogServiceReader{formats: a.formats},
+		Reader:             &GetCatalogServiceMixin0Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetCatalogServiceOK)
+	success, ok := result.(*GetCatalogServiceMixin0OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetCatalogService: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetCatalogServiceMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-  ListCatalogIntegrations list catalog integrations API
+  ListCatalogIntegrationsMixin0 list catalog integrations mixin0 API
 */
-func (a *Client) ListCatalogIntegrations(params *ListCatalogIntegrationsParams) (*ListCatalogIntegrationsOK, error) {
+func (a *Client) ListCatalogIntegrationsMixin0(params *ListCatalogIntegrationsMixin0Params, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogIntegrationsMixin0OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListCatalogIntegrationsParams()
+		params = NewListCatalogIntegrationsMixin0Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListCatalogIntegrations",
+		ID:                 "ListCatalogIntegrationsMixin0",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/integrations",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListCatalogIntegrationsReader{formats: a.formats},
+		Reader:             &ListCatalogIntegrationsMixin0Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListCatalogIntegrationsOK)
+	success, ok := result.(*ListCatalogIntegrationsMixin0OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListCatalogIntegrations: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListCatalogIntegrationsMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-  ListCatalogServiceIntegrationsMixin0 list catalog service integrations mixin0 API
+  ListCatalogServiceIntegrations list catalog service integrations API
 */
-func (a *Client) ListCatalogServiceIntegrationsMixin0(params *ListCatalogServiceIntegrationsMixin0Params) (*ListCatalogServiceIntegrationsMixin0OK, error) {
+func (a *Client) ListCatalogServiceIntegrations(params *ListCatalogServiceIntegrationsParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogServiceIntegrationsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListCatalogServiceIntegrationsMixin0Params()
+		params = NewListCatalogServiceIntegrationsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListCatalogServiceIntegrationsMixin0",
+		ID:                 "ListCatalogServiceIntegrations",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/services/{id}/integrations",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListCatalogServiceIntegrationsMixin0Reader{formats: a.formats},
+		Reader:             &ListCatalogServiceIntegrationsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListCatalogServiceIntegrationsMixin0OK)
+	success, ok := result.(*ListCatalogServiceIntegrationsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListCatalogServiceIntegrationsMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListCatalogServiceIntegrations: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
   ListCatalogServices list catalog services API
 */
-func (a *Client) ListCatalogServices(params *ListCatalogServicesParams) (*ListCatalogServicesOK, error) {
+func (a *Client) ListCatalogServices(params *ListCatalogServicesParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogServicesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListCatalogServicesParams()
@@ -194,6 +198,7 @@ func (a *Client) ListCatalogServices(params *ListCatalogServicesParams) (*ListCa
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListCatalogServicesReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

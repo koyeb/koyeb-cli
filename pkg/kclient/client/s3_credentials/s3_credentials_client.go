@@ -27,17 +27,17 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteS3Credential(params *DeleteS3CredentialParams) (*DeleteS3CredentialOK, error)
+	DeleteS3Credential(params *DeleteS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteS3CredentialOK, error)
 
-	GetS3Credential(params *GetS3CredentialParams) (*GetS3CredentialOK, error)
+	GetS3Credential(params *GetS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*GetS3CredentialOK, error)
 
-	ListS3Credentials(params *ListS3CredentialsParams) (*ListS3CredentialsOK, error)
+	ListS3Credentials(params *ListS3CredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*ListS3CredentialsOK, error)
 
-	NewS3Credential(params *NewS3CredentialParams) (*NewS3CredentialOK, error)
+	NewS3Credential(params *NewS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*NewS3CredentialOK, error)
 
-	UpdateS3Credential(params *UpdateS3CredentialParams) (*UpdateS3CredentialOK, error)
+	UpdateS3Credential(params *UpdateS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3CredentialOK, error)
 
-	UpdateS3Credential2(params *UpdateS3Credential2Params) (*UpdateS3Credential2OK, error)
+	UpdateS3Credential2(params *UpdateS3Credential2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3Credential2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -45,7 +45,7 @@ type ClientService interface {
 /*
   DeleteS3Credential delete s3 credential API
 */
-func (a *Client) DeleteS3Credential(params *DeleteS3CredentialParams) (*DeleteS3CredentialOK, error) {
+func (a *Client) DeleteS3Credential(params *DeleteS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteS3CredentialParams()
@@ -60,6 +60,7 @@ func (a *Client) DeleteS3Credential(params *DeleteS3CredentialParams) (*DeleteS3
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteS3CredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -79,7 +80,7 @@ func (a *Client) DeleteS3Credential(params *DeleteS3CredentialParams) (*DeleteS3
 /*
   GetS3Credential get s3 credential API
 */
-func (a *Client) GetS3Credential(params *GetS3CredentialParams) (*GetS3CredentialOK, error) {
+func (a *Client) GetS3Credential(params *GetS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*GetS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetS3CredentialParams()
@@ -94,6 +95,7 @@ func (a *Client) GetS3Credential(params *GetS3CredentialParams) (*GetS3Credentia
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetS3CredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -113,7 +115,7 @@ func (a *Client) GetS3Credential(params *GetS3CredentialParams) (*GetS3Credentia
 /*
   ListS3Credentials list s3 credentials API
 */
-func (a *Client) ListS3Credentials(params *ListS3CredentialsParams) (*ListS3CredentialsOK, error) {
+func (a *Client) ListS3Credentials(params *ListS3CredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*ListS3CredentialsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListS3CredentialsParams()
@@ -128,6 +130,7 @@ func (a *Client) ListS3Credentials(params *ListS3CredentialsParams) (*ListS3Cred
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListS3CredentialsReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -147,7 +150,7 @@ func (a *Client) ListS3Credentials(params *ListS3CredentialsParams) (*ListS3Cred
 /*
   NewS3Credential new s3 credential API
 */
-func (a *Client) NewS3Credential(params *NewS3CredentialParams) (*NewS3CredentialOK, error) {
+func (a *Client) NewS3Credential(params *NewS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*NewS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNewS3CredentialParams()
@@ -162,6 +165,7 @@ func (a *Client) NewS3Credential(params *NewS3CredentialParams) (*NewS3Credentia
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &NewS3CredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -181,7 +185,7 @@ func (a *Client) NewS3Credential(params *NewS3CredentialParams) (*NewS3Credentia
 /*
   UpdateS3Credential update s3 credential API
 */
-func (a *Client) UpdateS3Credential(params *UpdateS3CredentialParams) (*UpdateS3CredentialOK, error) {
+func (a *Client) UpdateS3Credential(params *UpdateS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateS3CredentialParams()
@@ -196,6 +200,7 @@ func (a *Client) UpdateS3Credential(params *UpdateS3CredentialParams) (*UpdateS3
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateS3CredentialReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -215,7 +220,7 @@ func (a *Client) UpdateS3Credential(params *UpdateS3CredentialParams) (*UpdateS3
 /*
   UpdateS3Credential2 update s3 credential2 API
 */
-func (a *Client) UpdateS3Credential2(params *UpdateS3Credential2Params) (*UpdateS3Credential2OK, error) {
+func (a *Client) UpdateS3Credential2(params *UpdateS3Credential2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3Credential2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateS3Credential2Params()
@@ -230,6 +235,7 @@ func (a *Client) UpdateS3Credential2(params *UpdateS3Credential2Params) (*Update
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateS3Credential2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

@@ -27,7 +27,7 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetAccountActivities(params *GetAccountActivitiesParams) (*GetAccountActivitiesOK, error)
+	GetAccountActivities(params *GetAccountActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*GetAccountActivitiesOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -35,7 +35,7 @@ type ClientService interface {
 /*
   GetAccountActivities get account activities API
 */
-func (a *Client) GetAccountActivities(params *GetAccountActivitiesParams) (*GetAccountActivitiesOK, error) {
+func (a *Client) GetAccountActivities(params *GetAccountActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*GetAccountActivitiesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetAccountActivitiesParams()
@@ -50,6 +50,7 @@ func (a *Client) GetAccountActivities(params *GetAccountActivitiesParams) (*GetA
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetAccountActivitiesReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

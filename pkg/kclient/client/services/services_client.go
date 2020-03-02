@@ -27,17 +27,17 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteService(params *DeleteServiceParams) (*DeleteServiceOK, error)
+	DeleteService(params *DeleteServiceParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteServiceOK, error)
 
-	GetService(params *GetServiceParams) (*GetServiceOK, error)
+	GetService(params *GetServiceParams, authInfo runtime.ClientAuthInfoWriter) (*GetServiceOK, error)
 
-	ListServices(params *ListServicesParams) (*ListServicesOK, error)
+	ListServices(params *ListServicesParams, authInfo runtime.ClientAuthInfoWriter) (*ListServicesOK, error)
 
-	NewService(params *NewServiceParams) (*NewServiceOK, error)
+	NewService(params *NewServiceParams, authInfo runtime.ClientAuthInfoWriter) (*NewServiceOK, error)
 
-	UpdateService(params *UpdateServiceParams) (*UpdateServiceOK, error)
+	UpdateService(params *UpdateServiceParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateServiceOK, error)
 
-	UpdateService2(params *UpdateService2Params) (*UpdateService2OK, error)
+	UpdateService2(params *UpdateService2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateService2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -45,7 +45,7 @@ type ClientService interface {
 /*
   DeleteService delete service API
 */
-func (a *Client) DeleteService(params *DeleteServiceParams) (*DeleteServiceOK, error) {
+func (a *Client) DeleteService(params *DeleteServiceParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteServiceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteServiceParams()
@@ -60,6 +60,7 @@ func (a *Client) DeleteService(params *DeleteServiceParams) (*DeleteServiceOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteServiceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -79,7 +80,7 @@ func (a *Client) DeleteService(params *DeleteServiceParams) (*DeleteServiceOK, e
 /*
   GetService get service API
 */
-func (a *Client) GetService(params *GetServiceParams) (*GetServiceOK, error) {
+func (a *Client) GetService(params *GetServiceParams, authInfo runtime.ClientAuthInfoWriter) (*GetServiceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetServiceParams()
@@ -94,6 +95,7 @@ func (a *Client) GetService(params *GetServiceParams) (*GetServiceOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetServiceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -113,7 +115,7 @@ func (a *Client) GetService(params *GetServiceParams) (*GetServiceOK, error) {
 /*
   ListServices list services API
 */
-func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, error) {
+func (a *Client) ListServices(params *ListServicesParams, authInfo runtime.ClientAuthInfoWriter) (*ListServicesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListServicesParams()
@@ -128,6 +130,7 @@ func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, erro
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListServicesReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -147,7 +150,7 @@ func (a *Client) ListServices(params *ListServicesParams) (*ListServicesOK, erro
 /*
   NewService new service API
 */
-func (a *Client) NewService(params *NewServiceParams) (*NewServiceOK, error) {
+func (a *Client) NewService(params *NewServiceParams, authInfo runtime.ClientAuthInfoWriter) (*NewServiceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNewServiceParams()
@@ -162,6 +165,7 @@ func (a *Client) NewService(params *NewServiceParams) (*NewServiceOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &NewServiceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -181,7 +185,7 @@ func (a *Client) NewService(params *NewServiceParams) (*NewServiceOK, error) {
 /*
   UpdateService update service API
 */
-func (a *Client) UpdateService(params *UpdateServiceParams) (*UpdateServiceOK, error) {
+func (a *Client) UpdateService(params *UpdateServiceParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateServiceOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateServiceParams()
@@ -196,6 +200,7 @@ func (a *Client) UpdateService(params *UpdateServiceParams) (*UpdateServiceOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateServiceReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -215,7 +220,7 @@ func (a *Client) UpdateService(params *UpdateServiceParams) (*UpdateServiceOK, e
 /*
   UpdateService2 update service2 API
 */
-func (a *Client) UpdateService2(params *UpdateService2Params) (*UpdateService2OK, error) {
+func (a *Client) UpdateService2(params *UpdateService2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateService2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateService2Params()
@@ -230,6 +235,7 @@ func (a *Client) UpdateService2(params *UpdateService2Params) (*UpdateService2OK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateService2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

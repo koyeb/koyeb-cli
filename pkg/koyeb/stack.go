@@ -118,7 +118,7 @@ func getStacks(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			p := stacks.NewGetStackParams()
 			p.ID = arg
-			resp, err := client.Stacks.GetStack(p)
+			resp, err := client.Stacks.GetStack(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
@@ -139,7 +139,7 @@ func getStacks(cmd *cobra.Command, args []string) error {
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.Stacks.ListStacks(p)
+			resp, err := client.Stacks.ListStacks(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
@@ -177,7 +177,7 @@ func createStacks(cmd *cobra.Command, args []string) error {
 	for _, stack := range all.Stacks {
 		p := stacks.NewNewStackParams()
 		p.SetBody(stack.GetNewBody())
-		resp, err := client.Stacks.NewStack(p)
+		resp, err := client.Stacks.NewStack(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -194,7 +194,7 @@ func deleteStacks(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			p := stacks.NewDeleteStackParams()
 			p.ID = arg
-			resp, err := client.Stacks.DeleteStack(p)
+			resp, err := client.Stacks.DeleteStack(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue

@@ -27,13 +27,13 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	CreateBillingInfo(params *CreateBillingInfoParams) (*CreateBillingInfoOK, error)
+	CreateBillingInfo(params *CreateBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*CreateBillingInfoOK, error)
 
-	GetBillingInfo(params *GetBillingInfoParams) (*GetBillingInfoOK, error)
+	GetBillingInfo(params *GetBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetBillingInfoOK, error)
 
-	UpdateBilling(params *UpdateBillingParams) (*UpdateBillingOK, error)
+	UpdateBilling(params *UpdateBillingParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateBillingOK, error)
 
-	UpdateBilling2(params *UpdateBilling2Params) (*UpdateBilling2OK, error)
+	UpdateBilling2(params *UpdateBilling2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateBilling2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -41,7 +41,7 @@ type ClientService interface {
 /*
   CreateBillingInfo create billing info API
 */
-func (a *Client) CreateBillingInfo(params *CreateBillingInfoParams) (*CreateBillingInfoOK, error) {
+func (a *Client) CreateBillingInfo(params *CreateBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*CreateBillingInfoOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCreateBillingInfoParams()
@@ -56,6 +56,7 @@ func (a *Client) CreateBillingInfo(params *CreateBillingInfoParams) (*CreateBill
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &CreateBillingInfoReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -75,7 +76,7 @@ func (a *Client) CreateBillingInfo(params *CreateBillingInfoParams) (*CreateBill
 /*
   GetBillingInfo get billing info API
 */
-func (a *Client) GetBillingInfo(params *GetBillingInfoParams) (*GetBillingInfoOK, error) {
+func (a *Client) GetBillingInfo(params *GetBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetBillingInfoOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetBillingInfoParams()
@@ -90,6 +91,7 @@ func (a *Client) GetBillingInfo(params *GetBillingInfoParams) (*GetBillingInfoOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetBillingInfoReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -109,7 +111,7 @@ func (a *Client) GetBillingInfo(params *GetBillingInfoParams) (*GetBillingInfoOK
 /*
   UpdateBilling update billing API
 */
-func (a *Client) UpdateBilling(params *UpdateBillingParams) (*UpdateBillingOK, error) {
+func (a *Client) UpdateBilling(params *UpdateBillingParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateBillingOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateBillingParams()
@@ -124,6 +126,7 @@ func (a *Client) UpdateBilling(params *UpdateBillingParams) (*UpdateBillingOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateBillingReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -143,7 +146,7 @@ func (a *Client) UpdateBilling(params *UpdateBillingParams) (*UpdateBillingOK, e
 /*
   UpdateBilling2 update billing2 API
 */
-func (a *Client) UpdateBilling2(params *UpdateBilling2Params) (*UpdateBilling2OK, error) {
+func (a *Client) UpdateBilling2(params *UpdateBilling2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateBilling2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateBilling2Params()
@@ -158,6 +161,7 @@ func (a *Client) UpdateBilling2(params *UpdateBilling2Params) (*UpdateBilling2OK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateBilling2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

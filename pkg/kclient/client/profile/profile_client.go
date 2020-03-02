@@ -27,15 +27,15 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteAccount(params *DeleteAccountParams) (*DeleteAccountOK, error)
+	DeleteAccount(params *DeleteAccountParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAccountOK, error)
 
-	GetCurrentUser(params *GetCurrentUserParams) (*GetCurrentUserOK, error)
+	GetCurrentUser(params *GetCurrentUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetCurrentUserOK, error)
 
-	ResendEmailValidation(params *ResendEmailValidationParams) (*ResendEmailValidationOK, error)
+	ResendEmailValidation(params *ResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ResendEmailValidationOK, error)
 
-	UpdateUser(params *UpdateUserParams) (*UpdateUserOK, error)
+	UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUserOK, error)
 
-	UpdateUser2(params *UpdateUser2Params) (*UpdateUser2OK, error)
+	UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateUser2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -43,7 +43,7 @@ type ClientService interface {
 /*
   DeleteAccount delete account API
 */
-func (a *Client) DeleteAccount(params *DeleteAccountParams) (*DeleteAccountOK, error) {
+func (a *Client) DeleteAccount(params *DeleteAccountParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAccountOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteAccountParams()
@@ -58,6 +58,7 @@ func (a *Client) DeleteAccount(params *DeleteAccountParams) (*DeleteAccountOK, e
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteAccountReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -77,7 +78,7 @@ func (a *Client) DeleteAccount(params *DeleteAccountParams) (*DeleteAccountOK, e
 /*
   GetCurrentUser get current user API
 */
-func (a *Client) GetCurrentUser(params *GetCurrentUserParams) (*GetCurrentUserOK, error) {
+func (a *Client) GetCurrentUser(params *GetCurrentUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetCurrentUserOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetCurrentUserParams()
@@ -92,6 +93,7 @@ func (a *Client) GetCurrentUser(params *GetCurrentUserParams) (*GetCurrentUserOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetCurrentUserReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -111,7 +113,7 @@ func (a *Client) GetCurrentUser(params *GetCurrentUserParams) (*GetCurrentUserOK
 /*
   ResendEmailValidation resend email validation API
 */
-func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams) (*ResendEmailValidationOK, error) {
+func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ResendEmailValidationOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewResendEmailValidationParams()
@@ -126,6 +128,7 @@ func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams) (*Re
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ResendEmailValidationReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -145,7 +148,7 @@ func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams) (*Re
 /*
   UpdateUser update user API
 */
-func (a *Client) UpdateUser(params *UpdateUserParams) (*UpdateUserOK, error) {
+func (a *Client) UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUserOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateUserParams()
@@ -160,6 +163,7 @@ func (a *Client) UpdateUser(params *UpdateUserParams) (*UpdateUserOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateUserReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -179,7 +183,7 @@ func (a *Client) UpdateUser(params *UpdateUserParams) (*UpdateUserOK, error) {
 /*
   UpdateUser2 update user2 API
 */
-func (a *Client) UpdateUser2(params *UpdateUser2Params) (*UpdateUser2OK, error) {
+func (a *Client) UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateUser2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateUser2Params()
@@ -194,6 +198,7 @@ func (a *Client) UpdateUser2(params *UpdateUser2Params) (*UpdateUser2OK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateUser2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

@@ -118,7 +118,7 @@ func getManagedStores(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			p := managedstores.NewGetManagedStoreParams()
 			p.ID = arg
-			resp, err := client.ManagedStores.GetManagedStore(p)
+			resp, err := client.ManagedStores.GetManagedStore(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
@@ -139,7 +139,7 @@ func getManagedStores(cmd *cobra.Command, args []string) error {
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.ManagedStores.ListManagedStores(p)
+			resp, err := client.ManagedStores.ListManagedStores(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
@@ -177,7 +177,7 @@ func createManagedStores(cmd *cobra.Command, args []string) error {
 	for _, managedstore := range all.ManagedStores {
 		p := managedstores.NewNewManagedStoreParams()
 		p.SetBody(managedstore.GetNewBody())
-		resp, err := client.ManagedStores.NewManagedStore(p)
+		resp, err := client.ManagedStores.NewManagedStore(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -194,7 +194,7 @@ func deleteManagedStores(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			p := managedstores.NewDeleteManagedStoreParams()
 			p.ID = arg
-			resp, err := client.ManagedStores.DeleteManagedStore(p)
+			resp, err := client.ManagedStores.DeleteManagedStore(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue

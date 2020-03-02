@@ -27,17 +27,17 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteManagedStore(params *DeleteManagedStoreParams) (*DeleteManagedStoreOK, error)
+	DeleteManagedStore(params *DeleteManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteManagedStoreOK, error)
 
-	GetManagedStore(params *GetManagedStoreParams) (*GetManagedStoreOK, error)
+	GetManagedStore(params *GetManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*GetManagedStoreOK, error)
 
-	ListManagedStores(params *ListManagedStoresParams) (*ListManagedStoresOK, error)
+	ListManagedStores(params *ListManagedStoresParams, authInfo runtime.ClientAuthInfoWriter) (*ListManagedStoresOK, error)
 
-	NewManagedStore(params *NewManagedStoreParams) (*NewManagedStoreOK, error)
+	NewManagedStore(params *NewManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*NewManagedStoreOK, error)
 
-	UpdateManagedStore(params *UpdateManagedStoreParams) (*UpdateManagedStoreOK, error)
+	UpdateManagedStore(params *UpdateManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateManagedStoreOK, error)
 
-	UpdateManagedStore2(params *UpdateManagedStore2Params) (*UpdateManagedStore2OK, error)
+	UpdateManagedStore2(params *UpdateManagedStore2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateManagedStore2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -45,7 +45,7 @@ type ClientService interface {
 /*
   DeleteManagedStore delete managed store API
 */
-func (a *Client) DeleteManagedStore(params *DeleteManagedStoreParams) (*DeleteManagedStoreOK, error) {
+func (a *Client) DeleteManagedStore(params *DeleteManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteManagedStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteManagedStoreParams()
@@ -60,6 +60,7 @@ func (a *Client) DeleteManagedStore(params *DeleteManagedStoreParams) (*DeleteMa
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteManagedStoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -79,7 +80,7 @@ func (a *Client) DeleteManagedStore(params *DeleteManagedStoreParams) (*DeleteMa
 /*
   GetManagedStore get managed store API
 */
-func (a *Client) GetManagedStore(params *GetManagedStoreParams) (*GetManagedStoreOK, error) {
+func (a *Client) GetManagedStore(params *GetManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*GetManagedStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetManagedStoreParams()
@@ -94,6 +95,7 @@ func (a *Client) GetManagedStore(params *GetManagedStoreParams) (*GetManagedStor
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetManagedStoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -113,7 +115,7 @@ func (a *Client) GetManagedStore(params *GetManagedStoreParams) (*GetManagedStor
 /*
   ListManagedStores list managed stores API
 */
-func (a *Client) ListManagedStores(params *ListManagedStoresParams) (*ListManagedStoresOK, error) {
+func (a *Client) ListManagedStores(params *ListManagedStoresParams, authInfo runtime.ClientAuthInfoWriter) (*ListManagedStoresOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListManagedStoresParams()
@@ -128,6 +130,7 @@ func (a *Client) ListManagedStores(params *ListManagedStoresParams) (*ListManage
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListManagedStoresReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -147,7 +150,7 @@ func (a *Client) ListManagedStores(params *ListManagedStoresParams) (*ListManage
 /*
   NewManagedStore new managed store API
 */
-func (a *Client) NewManagedStore(params *NewManagedStoreParams) (*NewManagedStoreOK, error) {
+func (a *Client) NewManagedStore(params *NewManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*NewManagedStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNewManagedStoreParams()
@@ -162,6 +165,7 @@ func (a *Client) NewManagedStore(params *NewManagedStoreParams) (*NewManagedStor
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &NewManagedStoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -181,7 +185,7 @@ func (a *Client) NewManagedStore(params *NewManagedStoreParams) (*NewManagedStor
 /*
   UpdateManagedStore update managed store API
 */
-func (a *Client) UpdateManagedStore(params *UpdateManagedStoreParams) (*UpdateManagedStoreOK, error) {
+func (a *Client) UpdateManagedStore(params *UpdateManagedStoreParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateManagedStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateManagedStoreParams()
@@ -196,6 +200,7 @@ func (a *Client) UpdateManagedStore(params *UpdateManagedStoreParams) (*UpdateMa
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateManagedStoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -215,7 +220,7 @@ func (a *Client) UpdateManagedStore(params *UpdateManagedStoreParams) (*UpdateMa
 /*
   UpdateManagedStore2 update managed store2 API
 */
-func (a *Client) UpdateManagedStore2(params *UpdateManagedStore2Params) (*UpdateManagedStore2OK, error) {
+func (a *Client) UpdateManagedStore2(params *UpdateManagedStore2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateManagedStore2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateManagedStore2Params()
@@ -230,6 +235,7 @@ func (a *Client) UpdateManagedStore2(params *UpdateManagedStore2Params) (*Update
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateManagedStore2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

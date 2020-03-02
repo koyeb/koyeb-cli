@@ -27,17 +27,17 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteDelivery(params *DeleteDeliveryParams) (*DeleteDeliveryOK, error)
+	DeleteDelivery(params *DeleteDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteDeliveryOK, error)
 
-	GetDelivery(params *GetDeliveryParams) (*GetDeliveryOK, error)
+	GetDelivery(params *GetDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*GetDeliveryOK, error)
 
-	ListDeliveries(params *ListDeliveriesParams) (*ListDeliveriesOK, error)
+	ListDeliveries(params *ListDeliveriesParams, authInfo runtime.ClientAuthInfoWriter) (*ListDeliveriesOK, error)
 
-	NewDelivery(params *NewDeliveryParams) (*NewDeliveryOK, error)
+	NewDelivery(params *NewDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*NewDeliveryOK, error)
 
-	UpdateDelivery(params *UpdateDeliveryParams) (*UpdateDeliveryOK, error)
+	UpdateDelivery(params *UpdateDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateDeliveryOK, error)
 
-	UpdateDelivery2(params *UpdateDelivery2Params) (*UpdateDelivery2OK, error)
+	UpdateDelivery2(params *UpdateDelivery2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateDelivery2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -45,7 +45,7 @@ type ClientService interface {
 /*
   DeleteDelivery delete delivery API
 */
-func (a *Client) DeleteDelivery(params *DeleteDeliveryParams) (*DeleteDeliveryOK, error) {
+func (a *Client) DeleteDelivery(params *DeleteDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteDeliveryOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteDeliveryParams()
@@ -60,6 +60,7 @@ func (a *Client) DeleteDelivery(params *DeleteDeliveryParams) (*DeleteDeliveryOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteDeliveryReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -79,7 +80,7 @@ func (a *Client) DeleteDelivery(params *DeleteDeliveryParams) (*DeleteDeliveryOK
 /*
   GetDelivery get delivery API
 */
-func (a *Client) GetDelivery(params *GetDeliveryParams) (*GetDeliveryOK, error) {
+func (a *Client) GetDelivery(params *GetDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*GetDeliveryOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetDeliveryParams()
@@ -94,6 +95,7 @@ func (a *Client) GetDelivery(params *GetDeliveryParams) (*GetDeliveryOK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetDeliveryReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -113,7 +115,7 @@ func (a *Client) GetDelivery(params *GetDeliveryParams) (*GetDeliveryOK, error) 
 /*
   ListDeliveries list deliveries API
 */
-func (a *Client) ListDeliveries(params *ListDeliveriesParams) (*ListDeliveriesOK, error) {
+func (a *Client) ListDeliveries(params *ListDeliveriesParams, authInfo runtime.ClientAuthInfoWriter) (*ListDeliveriesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListDeliveriesParams()
@@ -128,6 +130,7 @@ func (a *Client) ListDeliveries(params *ListDeliveriesParams) (*ListDeliveriesOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ListDeliveriesReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -147,7 +150,7 @@ func (a *Client) ListDeliveries(params *ListDeliveriesParams) (*ListDeliveriesOK
 /*
   NewDelivery new delivery API
 */
-func (a *Client) NewDelivery(params *NewDeliveryParams) (*NewDeliveryOK, error) {
+func (a *Client) NewDelivery(params *NewDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*NewDeliveryOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNewDeliveryParams()
@@ -162,6 +165,7 @@ func (a *Client) NewDelivery(params *NewDeliveryParams) (*NewDeliveryOK, error) 
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &NewDeliveryReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -181,7 +185,7 @@ func (a *Client) NewDelivery(params *NewDeliveryParams) (*NewDeliveryOK, error) 
 /*
   UpdateDelivery update delivery API
 */
-func (a *Client) UpdateDelivery(params *UpdateDeliveryParams) (*UpdateDeliveryOK, error) {
+func (a *Client) UpdateDelivery(params *UpdateDeliveryParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateDeliveryOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateDeliveryParams()
@@ -196,6 +200,7 @@ func (a *Client) UpdateDelivery(params *UpdateDeliveryParams) (*UpdateDeliveryOK
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateDeliveryReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -215,7 +220,7 @@ func (a *Client) UpdateDelivery(params *UpdateDeliveryParams) (*UpdateDeliveryOK
 /*
   UpdateDelivery2 update delivery2 API
 */
-func (a *Client) UpdateDelivery2(params *UpdateDelivery2Params) (*UpdateDelivery2OK, error) {
+func (a *Client) UpdateDelivery2(params *UpdateDelivery2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateDelivery2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateDelivery2Params()
@@ -230,6 +235,7 @@ func (a *Client) UpdateDelivery2(params *UpdateDelivery2Params) (*UpdateDelivery
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &UpdateDelivery2Reader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
