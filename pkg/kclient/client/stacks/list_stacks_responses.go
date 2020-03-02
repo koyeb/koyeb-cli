@@ -30,6 +30,24 @@ func (o *ListStacksReader) ReadResponse(response runtime.ClientResponse, consume
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListStacksBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListStacksForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListStacksNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListStacksOK) GetPayload() *models.StorageListStacksReply {
 func (o *ListStacksOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageListStacksReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStacksBadRequest creates a ListStacksBadRequest with default headers values
+func NewListStacksBadRequest() *ListStacksBadRequest {
+	return &ListStacksBadRequest{}
+}
+
+/*ListStacksBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListStacksBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListStacksBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks][%d] listStacksBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListStacksBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListStacksBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStacksForbidden creates a ListStacksForbidden with default headers values
+func NewListStacksForbidden() *ListStacksForbidden {
+	return &ListStacksForbidden{}
+}
+
+/*ListStacksForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListStacksForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListStacksForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks][%d] listStacksForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListStacksForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListStacksForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStacksNotFound creates a ListStacksNotFound with default headers values
+func NewListStacksNotFound() *ListStacksNotFound {
+	return &ListStacksNotFound{}
+}
+
+/*ListStacksNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListStacksNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListStacksNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks][%d] listStacksNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListStacksNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListStacksNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

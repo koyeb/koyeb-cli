@@ -30,6 +30,24 @@ func (o *GetBillingInfoReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetBillingInfoBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetBillingInfoForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetBillingInfoNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetBillingInfoOK) GetPayload() *models.AccountBillingInfoReply {
 func (o *GetBillingInfoOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountBillingInfoReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetBillingInfoBadRequest creates a GetBillingInfoBadRequest with default headers values
+func NewGetBillingInfoBadRequest() *GetBillingInfoBadRequest {
+	return &GetBillingInfoBadRequest{}
+}
+
+/*GetBillingInfoBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetBillingInfoBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetBillingInfoBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/account/billing][%d] getBillingInfoBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetBillingInfoBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetBillingInfoBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetBillingInfoForbidden creates a GetBillingInfoForbidden with default headers values
+func NewGetBillingInfoForbidden() *GetBillingInfoForbidden {
+	return &GetBillingInfoForbidden{}
+}
+
+/*GetBillingInfoForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetBillingInfoForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetBillingInfoForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/account/billing][%d] getBillingInfoForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetBillingInfoForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetBillingInfoForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetBillingInfoNotFound creates a GetBillingInfoNotFound with default headers values
+func NewGetBillingInfoNotFound() *GetBillingInfoNotFound {
+	return &GetBillingInfoNotFound{}
+}
+
+/*GetBillingInfoNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetBillingInfoNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetBillingInfoNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/account/billing][%d] getBillingInfoNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetBillingInfoNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetBillingInfoNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

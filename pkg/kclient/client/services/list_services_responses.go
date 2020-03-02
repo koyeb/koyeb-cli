@@ -30,6 +30,24 @@ func (o *ListServicesReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListServicesBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListServicesForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListServicesNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListServicesOK) GetPayload() *models.StorageListServicesReply {
 func (o *ListServicesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageListServicesReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListServicesBadRequest creates a ListServicesBadRequest with default headers values
+func NewListServicesBadRequest() *ListServicesBadRequest {
+	return &ListServicesBadRequest{}
+}
+
+/*ListServicesBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListServicesBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListServicesBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/services][%d] listServicesBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListServicesBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListServicesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListServicesForbidden creates a ListServicesForbidden with default headers values
+func NewListServicesForbidden() *ListServicesForbidden {
+	return &ListServicesForbidden{}
+}
+
+/*ListServicesForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListServicesForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListServicesForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/services][%d] listServicesForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListServicesForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListServicesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListServicesNotFound creates a ListServicesNotFound with default headers values
+func NewListServicesNotFound() *ListServicesNotFound {
+	return &ListServicesNotFound{}
+}
+
+/*ListServicesNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListServicesNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListServicesNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/services][%d] listServicesNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListServicesNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListServicesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -30,6 +30,24 @@ func (o *UpdateS3Credential2Reader) ReadResponse(response runtime.ClientResponse
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateS3Credential2BadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateS3Credential2Forbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateS3Credential2NotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateS3Credential2OK) GetPayload() *models.AccountS3CredentialReply {
 func (o *UpdateS3Credential2OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountS3CredentialReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateS3Credential2BadRequest creates a UpdateS3Credential2BadRequest with default headers values
+func NewUpdateS3Credential2BadRequest() *UpdateS3Credential2BadRequest {
+	return &UpdateS3Credential2BadRequest{}
+}
+
+/*UpdateS3Credential2BadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateS3Credential2BadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateS3Credential2BadRequest) Error() string {
+	return fmt.Sprintf("[PATCH /v1/s3_credentials/{id}][%d] updateS3Credential2BadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateS3Credential2BadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateS3Credential2BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateS3Credential2Forbidden creates a UpdateS3Credential2Forbidden with default headers values
+func NewUpdateS3Credential2Forbidden() *UpdateS3Credential2Forbidden {
+	return &UpdateS3Credential2Forbidden{}
+}
+
+/*UpdateS3Credential2Forbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateS3Credential2Forbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateS3Credential2Forbidden) Error() string {
+	return fmt.Sprintf("[PATCH /v1/s3_credentials/{id}][%d] updateS3Credential2Forbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateS3Credential2Forbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateS3Credential2Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateS3Credential2NotFound creates a UpdateS3Credential2NotFound with default headers values
+func NewUpdateS3Credential2NotFound() *UpdateS3Credential2NotFound {
+	return &UpdateS3Credential2NotFound{}
+}
+
+/*UpdateS3Credential2NotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateS3Credential2NotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateS3Credential2NotFound) Error() string {
+	return fmt.Sprintf("[PATCH /v1/s3_credentials/{id}][%d] updateS3Credential2NotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateS3Credential2NotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateS3Credential2NotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

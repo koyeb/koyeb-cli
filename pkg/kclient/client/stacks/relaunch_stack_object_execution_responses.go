@@ -30,6 +30,24 @@ func (o *RelaunchStackObjectExecutionReader) ReadResponse(response runtime.Clien
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewRelaunchStackObjectExecutionBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewRelaunchStackObjectExecutionForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewRelaunchStackObjectExecutionNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *RelaunchStackObjectExecutionOK) GetPayload() *models.StorageStackObject
 func (o *RelaunchStackObjectExecutionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackObjectExecutionReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRelaunchStackObjectExecutionBadRequest creates a RelaunchStackObjectExecutionBadRequest with default headers values
+func NewRelaunchStackObjectExecutionBadRequest() *RelaunchStackObjectExecutionBadRequest {
+	return &RelaunchStackObjectExecutionBadRequest{}
+}
+
+/*RelaunchStackObjectExecutionBadRequest handles this case with default header values.
+
+Validation error
+*/
+type RelaunchStackObjectExecutionBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *RelaunchStackObjectExecutionBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/executions/{id}/relaunch][%d] relaunchStackObjectExecutionBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *RelaunchStackObjectExecutionBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *RelaunchStackObjectExecutionBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRelaunchStackObjectExecutionForbidden creates a RelaunchStackObjectExecutionForbidden with default headers values
+func NewRelaunchStackObjectExecutionForbidden() *RelaunchStackObjectExecutionForbidden {
+	return &RelaunchStackObjectExecutionForbidden{}
+}
+
+/*RelaunchStackObjectExecutionForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type RelaunchStackObjectExecutionForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *RelaunchStackObjectExecutionForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/executions/{id}/relaunch][%d] relaunchStackObjectExecutionForbidden  %+v", 403, o.Payload)
+}
+
+func (o *RelaunchStackObjectExecutionForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *RelaunchStackObjectExecutionForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRelaunchStackObjectExecutionNotFound creates a RelaunchStackObjectExecutionNotFound with default headers values
+func NewRelaunchStackObjectExecutionNotFound() *RelaunchStackObjectExecutionNotFound {
+	return &RelaunchStackObjectExecutionNotFound{}
+}
+
+/*RelaunchStackObjectExecutionNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type RelaunchStackObjectExecutionNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *RelaunchStackObjectExecutionNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/executions/{id}/relaunch][%d] relaunchStackObjectExecutionNotFound  %+v", 404, o.Payload)
+}
+
+func (o *RelaunchStackObjectExecutionNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *RelaunchStackObjectExecutionNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

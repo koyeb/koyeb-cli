@@ -30,6 +30,24 @@ func (o *NewManagedStoreReader) ReadResponse(response runtime.ClientResponse, co
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewNewManagedStoreBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewNewManagedStoreForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewNewManagedStoreNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *NewManagedStoreOK) GetPayload() *models.StorageManagedStoreReply {
 func (o *NewManagedStoreOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageManagedStoreReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewNewManagedStoreBadRequest creates a NewManagedStoreBadRequest with default headers values
+func NewNewManagedStoreBadRequest() *NewManagedStoreBadRequest {
+	return &NewManagedStoreBadRequest{}
+}
+
+/*NewManagedStoreBadRequest handles this case with default header values.
+
+Validation error
+*/
+type NewManagedStoreBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *NewManagedStoreBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/managed_stores][%d] newManagedStoreBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *NewManagedStoreBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *NewManagedStoreBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewNewManagedStoreForbidden creates a NewManagedStoreForbidden with default headers values
+func NewNewManagedStoreForbidden() *NewManagedStoreForbidden {
+	return &NewManagedStoreForbidden{}
+}
+
+/*NewManagedStoreForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type NewManagedStoreForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *NewManagedStoreForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/managed_stores][%d] newManagedStoreForbidden  %+v", 403, o.Payload)
+}
+
+func (o *NewManagedStoreForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *NewManagedStoreForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewNewManagedStoreNotFound creates a NewManagedStoreNotFound with default headers values
+func NewNewManagedStoreNotFound() *NewManagedStoreNotFound {
+	return &NewManagedStoreNotFound{}
+}
+
+/*NewManagedStoreNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type NewManagedStoreNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *NewManagedStoreNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/managed_stores][%d] newManagedStoreNotFound  %+v", 404, o.Payload)
+}
+
+func (o *NewManagedStoreNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *NewManagedStoreNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

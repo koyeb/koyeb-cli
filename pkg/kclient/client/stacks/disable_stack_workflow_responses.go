@@ -30,6 +30,24 @@ func (o *DisableStackWorkflowReader) ReadResponse(response runtime.ClientRespons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDisableStackWorkflowBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDisableStackWorkflowForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDisableStackWorkflowNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *DisableStackWorkflowOK) GetPayload() *models.StorageStackWorkflowReply 
 func (o *DisableStackWorkflowOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackWorkflowReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDisableStackWorkflowBadRequest creates a DisableStackWorkflowBadRequest with default headers values
+func NewDisableStackWorkflowBadRequest() *DisableStackWorkflowBadRequest {
+	return &DisableStackWorkflowBadRequest{}
+}
+
+/*DisableStackWorkflowBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DisableStackWorkflowBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DisableStackWorkflowBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/workflows/{id}/disable][%d] disableStackWorkflowBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DisableStackWorkflowBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DisableStackWorkflowBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDisableStackWorkflowForbidden creates a DisableStackWorkflowForbidden with default headers values
+func NewDisableStackWorkflowForbidden() *DisableStackWorkflowForbidden {
+	return &DisableStackWorkflowForbidden{}
+}
+
+/*DisableStackWorkflowForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DisableStackWorkflowForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DisableStackWorkflowForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/workflows/{id}/disable][%d] disableStackWorkflowForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DisableStackWorkflowForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DisableStackWorkflowForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDisableStackWorkflowNotFound creates a DisableStackWorkflowNotFound with default headers values
+func NewDisableStackWorkflowNotFound() *DisableStackWorkflowNotFound {
+	return &DisableStackWorkflowNotFound{}
+}
+
+/*DisableStackWorkflowNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DisableStackWorkflowNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DisableStackWorkflowNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/workflows/{id}/disable][%d] disableStackWorkflowNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DisableStackWorkflowNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DisableStackWorkflowNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

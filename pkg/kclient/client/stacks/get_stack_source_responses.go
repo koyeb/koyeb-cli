@@ -30,6 +30,24 @@ func (o *GetStackSourceReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetStackSourceBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetStackSourceForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetStackSourceNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetStackSourceOK) GetPayload() *models.StorageStackSourceReply {
 func (o *GetStackSourceOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackSourceReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStackSourceBadRequest creates a GetStackSourceBadRequest with default headers values
+func NewGetStackSourceBadRequest() *GetStackSourceBadRequest {
+	return &GetStackSourceBadRequest{}
+}
+
+/*GetStackSourceBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetStackSourceBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetStackSourceBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{stack_id}/sources/{id}][%d] getStackSourceBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetStackSourceBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetStackSourceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStackSourceForbidden creates a GetStackSourceForbidden with default headers values
+func NewGetStackSourceForbidden() *GetStackSourceForbidden {
+	return &GetStackSourceForbidden{}
+}
+
+/*GetStackSourceForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetStackSourceForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetStackSourceForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{stack_id}/sources/{id}][%d] getStackSourceForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetStackSourceForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetStackSourceForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStackSourceNotFound creates a GetStackSourceNotFound with default headers values
+func NewGetStackSourceNotFound() *GetStackSourceNotFound {
+	return &GetStackSourceNotFound{}
+}
+
+/*GetStackSourceNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetStackSourceNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetStackSourceNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{stack_id}/sources/{id}][%d] getStackSourceNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetStackSourceNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetStackSourceNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

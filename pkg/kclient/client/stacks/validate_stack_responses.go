@@ -30,6 +30,24 @@ func (o *ValidateStackReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewValidateStackBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewValidateStackForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewValidateStackNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *ValidateStackOK) readResponse(response runtime.ClientResponse, consumer
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewValidateStackBadRequest creates a ValidateStackBadRequest with default headers values
+func NewValidateStackBadRequest() *ValidateStackBadRequest {
+	return &ValidateStackBadRequest{}
+}
+
+/*ValidateStackBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ValidateStackBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ValidateStackBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/validate/stacks][%d] validateStackBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ValidateStackBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ValidateStackBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewValidateStackForbidden creates a ValidateStackForbidden with default headers values
+func NewValidateStackForbidden() *ValidateStackForbidden {
+	return &ValidateStackForbidden{}
+}
+
+/*ValidateStackForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ValidateStackForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ValidateStackForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/validate/stacks][%d] validateStackForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ValidateStackForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ValidateStackForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewValidateStackNotFound creates a ValidateStackNotFound with default headers values
+func NewValidateStackNotFound() *ValidateStackNotFound {
+	return &ValidateStackNotFound{}
+}
+
+/*ValidateStackNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ValidateStackNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ValidateStackNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/validate/stacks][%d] validateStackNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ValidateStackNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ValidateStackNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

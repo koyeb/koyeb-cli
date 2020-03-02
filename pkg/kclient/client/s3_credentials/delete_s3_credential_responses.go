@@ -30,6 +30,24 @@ func (o *DeleteS3CredentialReader) ReadResponse(response runtime.ClientResponse,
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteS3CredentialBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteS3CredentialForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteS3CredentialNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteS3CredentialOK) readResponse(response runtime.ClientResponse, con
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteS3CredentialBadRequest creates a DeleteS3CredentialBadRequest with default headers values
+func NewDeleteS3CredentialBadRequest() *DeleteS3CredentialBadRequest {
+	return &DeleteS3CredentialBadRequest{}
+}
+
+/*DeleteS3CredentialBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteS3CredentialBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteS3CredentialBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/s3_credentials/{id}][%d] deleteS3CredentialBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteS3CredentialBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteS3CredentialBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteS3CredentialForbidden creates a DeleteS3CredentialForbidden with default headers values
+func NewDeleteS3CredentialForbidden() *DeleteS3CredentialForbidden {
+	return &DeleteS3CredentialForbidden{}
+}
+
+/*DeleteS3CredentialForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteS3CredentialForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteS3CredentialForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/s3_credentials/{id}][%d] deleteS3CredentialForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteS3CredentialForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteS3CredentialForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteS3CredentialNotFound creates a DeleteS3CredentialNotFound with default headers values
+func NewDeleteS3CredentialNotFound() *DeleteS3CredentialNotFound {
+	return &DeleteS3CredentialNotFound{}
+}
+
+/*DeleteS3CredentialNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteS3CredentialNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteS3CredentialNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/s3_credentials/{id}][%d] deleteS3CredentialNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteS3CredentialNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteS3CredentialNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

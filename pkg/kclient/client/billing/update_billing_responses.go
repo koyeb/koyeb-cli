@@ -30,6 +30,24 @@ func (o *UpdateBillingReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateBillingBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateBillingForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateBillingNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateBillingOK) GetPayload() *models.AccountBillingInfoReply {
 func (o *UpdateBillingOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountBillingInfoReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateBillingBadRequest creates a UpdateBillingBadRequest with default headers values
+func NewUpdateBillingBadRequest() *UpdateBillingBadRequest {
+	return &UpdateBillingBadRequest{}
+}
+
+/*UpdateBillingBadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateBillingBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateBillingBadRequest) Error() string {
+	return fmt.Sprintf("[PUT /v1/account/billing][%d] updateBillingBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateBillingBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateBillingBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateBillingForbidden creates a UpdateBillingForbidden with default headers values
+func NewUpdateBillingForbidden() *UpdateBillingForbidden {
+	return &UpdateBillingForbidden{}
+}
+
+/*UpdateBillingForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateBillingForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateBillingForbidden) Error() string {
+	return fmt.Sprintf("[PUT /v1/account/billing][%d] updateBillingForbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateBillingForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateBillingForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateBillingNotFound creates a UpdateBillingNotFound with default headers values
+func NewUpdateBillingNotFound() *UpdateBillingNotFound {
+	return &UpdateBillingNotFound{}
+}
+
+/*UpdateBillingNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateBillingNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateBillingNotFound) Error() string {
+	return fmt.Sprintf("[PUT /v1/account/billing][%d] updateBillingNotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateBillingNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateBillingNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

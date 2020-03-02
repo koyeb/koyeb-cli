@@ -30,6 +30,24 @@ func (o *ListCatalogServicesMixin0Reader) ReadResponse(response runtime.ClientRe
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListCatalogServicesMixin0BadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListCatalogServicesMixin0Forbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListCatalogServicesMixin0NotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListCatalogServicesMixin0OK) GetPayload() *models.StorageListCatalogSer
 func (o *ListCatalogServicesMixin0OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageListCatalogServicesReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogServicesMixin0BadRequest creates a ListCatalogServicesMixin0BadRequest with default headers values
+func NewListCatalogServicesMixin0BadRequest() *ListCatalogServicesMixin0BadRequest {
+	return &ListCatalogServicesMixin0BadRequest{}
+}
+
+/*ListCatalogServicesMixin0BadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListCatalogServicesMixin0BadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListCatalogServicesMixin0BadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/public/catalog/services][%d] listCatalogServicesMixin0BadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListCatalogServicesMixin0BadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListCatalogServicesMixin0BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogServicesMixin0Forbidden creates a ListCatalogServicesMixin0Forbidden with default headers values
+func NewListCatalogServicesMixin0Forbidden() *ListCatalogServicesMixin0Forbidden {
+	return &ListCatalogServicesMixin0Forbidden{}
+}
+
+/*ListCatalogServicesMixin0Forbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListCatalogServicesMixin0Forbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCatalogServicesMixin0Forbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/public/catalog/services][%d] listCatalogServicesMixin0Forbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListCatalogServicesMixin0Forbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCatalogServicesMixin0Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogServicesMixin0NotFound creates a ListCatalogServicesMixin0NotFound with default headers values
+func NewListCatalogServicesMixin0NotFound() *ListCatalogServicesMixin0NotFound {
+	return &ListCatalogServicesMixin0NotFound{}
+}
+
+/*ListCatalogServicesMixin0NotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListCatalogServicesMixin0NotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCatalogServicesMixin0NotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/public/catalog/services][%d] listCatalogServicesMixin0NotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListCatalogServicesMixin0NotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCatalogServicesMixin0NotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

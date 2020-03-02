@@ -30,6 +30,24 @@ func (o *GetStackReader) ReadResponse(response runtime.ClientResponse, consumer 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetStackBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetStackForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetStackNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetStackOK) GetPayload() *models.StorageStackReply {
 func (o *GetStackOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStackBadRequest creates a GetStackBadRequest with default headers values
+func NewGetStackBadRequest() *GetStackBadRequest {
+	return &GetStackBadRequest{}
+}
+
+/*GetStackBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetStackBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetStackBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{id}][%d] getStackBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetStackBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetStackBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStackForbidden creates a GetStackForbidden with default headers values
+func NewGetStackForbidden() *GetStackForbidden {
+	return &GetStackForbidden{}
+}
+
+/*GetStackForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetStackForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetStackForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{id}][%d] getStackForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetStackForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetStackForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStackNotFound creates a GetStackNotFound with default headers values
+func NewGetStackNotFound() *GetStackNotFound {
+	return &GetStackNotFound{}
+}
+
+/*GetStackNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetStackNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetStackNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{id}][%d] getStackNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetStackNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetStackNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

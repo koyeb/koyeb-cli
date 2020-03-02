@@ -30,6 +30,24 @@ func (o *ListCatalogIntegrationsReader) ReadResponse(response runtime.ClientResp
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListCatalogIntegrationsBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListCatalogIntegrationsForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListCatalogIntegrationsNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListCatalogIntegrationsOK) GetPayload() *models.StorageListCatalogInteg
 func (o *ListCatalogIntegrationsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageListCatalogIntegrationsReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogIntegrationsBadRequest creates a ListCatalogIntegrationsBadRequest with default headers values
+func NewListCatalogIntegrationsBadRequest() *ListCatalogIntegrationsBadRequest {
+	return &ListCatalogIntegrationsBadRequest{}
+}
+
+/*ListCatalogIntegrationsBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListCatalogIntegrationsBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListCatalogIntegrationsBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/public/catalog/integrations][%d] listCatalogIntegrationsBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListCatalogIntegrationsBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListCatalogIntegrationsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogIntegrationsForbidden creates a ListCatalogIntegrationsForbidden with default headers values
+func NewListCatalogIntegrationsForbidden() *ListCatalogIntegrationsForbidden {
+	return &ListCatalogIntegrationsForbidden{}
+}
+
+/*ListCatalogIntegrationsForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListCatalogIntegrationsForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCatalogIntegrationsForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/public/catalog/integrations][%d] listCatalogIntegrationsForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListCatalogIntegrationsForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCatalogIntegrationsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogIntegrationsNotFound creates a ListCatalogIntegrationsNotFound with default headers values
+func NewListCatalogIntegrationsNotFound() *ListCatalogIntegrationsNotFound {
+	return &ListCatalogIntegrationsNotFound{}
+}
+
+/*ListCatalogIntegrationsNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListCatalogIntegrationsNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCatalogIntegrationsNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/public/catalog/integrations][%d] listCatalogIntegrationsNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListCatalogIntegrationsNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCatalogIntegrationsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

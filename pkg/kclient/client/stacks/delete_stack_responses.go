@@ -30,6 +30,24 @@ func (o *DeleteStackReader) ReadResponse(response runtime.ClientResponse, consum
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteStackBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteStackForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteStackNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteStackOK) readResponse(response runtime.ClientResponse, consumer r
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteStackBadRequest creates a DeleteStackBadRequest with default headers values
+func NewDeleteStackBadRequest() *DeleteStackBadRequest {
+	return &DeleteStackBadRequest{}
+}
+
+/*DeleteStackBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteStackBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteStackBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/stacks/{id}][%d] deleteStackBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteStackBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteStackBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteStackForbidden creates a DeleteStackForbidden with default headers values
+func NewDeleteStackForbidden() *DeleteStackForbidden {
+	return &DeleteStackForbidden{}
+}
+
+/*DeleteStackForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteStackForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteStackForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/stacks/{id}][%d] deleteStackForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteStackForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteStackForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteStackNotFound creates a DeleteStackNotFound with default headers values
+func NewDeleteStackNotFound() *DeleteStackNotFound {
+	return &DeleteStackNotFound{}
+}
+
+/*DeleteStackNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteStackNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteStackNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/stacks/{id}][%d] deleteStackNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteStackNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteStackNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

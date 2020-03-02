@@ -30,6 +30,24 @@ func (o *UpdateDelivery2Reader) ReadResponse(response runtime.ClientResponse, co
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateDelivery2BadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateDelivery2Forbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateDelivery2NotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateDelivery2OK) GetPayload() *models.StorageDeliveryReply {
 func (o *UpdateDelivery2OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageDeliveryReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateDelivery2BadRequest creates a UpdateDelivery2BadRequest with default headers values
+func NewUpdateDelivery2BadRequest() *UpdateDelivery2BadRequest {
+	return &UpdateDelivery2BadRequest{}
+}
+
+/*UpdateDelivery2BadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateDelivery2BadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateDelivery2BadRequest) Error() string {
+	return fmt.Sprintf("[PATCH /v1/deliveries/{id}][%d] updateDelivery2BadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateDelivery2BadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateDelivery2BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateDelivery2Forbidden creates a UpdateDelivery2Forbidden with default headers values
+func NewUpdateDelivery2Forbidden() *UpdateDelivery2Forbidden {
+	return &UpdateDelivery2Forbidden{}
+}
+
+/*UpdateDelivery2Forbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateDelivery2Forbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateDelivery2Forbidden) Error() string {
+	return fmt.Sprintf("[PATCH /v1/deliveries/{id}][%d] updateDelivery2Forbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateDelivery2Forbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateDelivery2Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateDelivery2NotFound creates a UpdateDelivery2NotFound with default headers values
+func NewUpdateDelivery2NotFound() *UpdateDelivery2NotFound {
+	return &UpdateDelivery2NotFound{}
+}
+
+/*UpdateDelivery2NotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateDelivery2NotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateDelivery2NotFound) Error() string {
+	return fmt.Sprintf("[PATCH /v1/deliveries/{id}][%d] updateDelivery2NotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateDelivery2NotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateDelivery2NotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

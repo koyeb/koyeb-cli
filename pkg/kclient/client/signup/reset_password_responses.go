@@ -30,6 +30,24 @@ func (o *ResetPasswordReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewResetPasswordBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewResetPasswordForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewResetPasswordNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *ResetPasswordOK) readResponse(response runtime.ClientResponse, consumer
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewResetPasswordBadRequest creates a ResetPasswordBadRequest with default headers values
+func NewResetPasswordBadRequest() *ResetPasswordBadRequest {
+	return &ResetPasswordBadRequest{}
+}
+
+/*ResetPasswordBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ResetPasswordBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ResetPasswordBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/reset_password][%d] resetPasswordBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ResetPasswordBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ResetPasswordBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewResetPasswordForbidden creates a ResetPasswordForbidden with default headers values
+func NewResetPasswordForbidden() *ResetPasswordForbidden {
+	return &ResetPasswordForbidden{}
+}
+
+/*ResetPasswordForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ResetPasswordForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ResetPasswordForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/reset_password][%d] resetPasswordForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ResetPasswordForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ResetPasswordForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewResetPasswordNotFound creates a ResetPasswordNotFound with default headers values
+func NewResetPasswordNotFound() *ResetPasswordNotFound {
+	return &ResetPasswordNotFound{}
+}
+
+/*ResetPasswordNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ResetPasswordNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ResetPasswordNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/reset_password][%d] resetPasswordNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ResetPasswordNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ResetPasswordNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

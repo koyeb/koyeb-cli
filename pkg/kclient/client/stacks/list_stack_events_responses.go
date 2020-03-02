@@ -30,6 +30,24 @@ func (o *ListStackEventsReader) ReadResponse(response runtime.ClientResponse, co
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListStackEventsBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListStackEventsForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListStackEventsNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListStackEventsOK) GetPayload() *models.ActivityActivityFeedReply {
 func (o *ListStackEventsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ActivityActivityFeedReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStackEventsBadRequest creates a ListStackEventsBadRequest with default headers values
+func NewListStackEventsBadRequest() *ListStackEventsBadRequest {
+	return &ListStackEventsBadRequest{}
+}
+
+/*ListStackEventsBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListStackEventsBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListStackEventsBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{id}/events][%d] listStackEventsBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListStackEventsBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListStackEventsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStackEventsForbidden creates a ListStackEventsForbidden with default headers values
+func NewListStackEventsForbidden() *ListStackEventsForbidden {
+	return &ListStackEventsForbidden{}
+}
+
+/*ListStackEventsForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListStackEventsForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListStackEventsForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{id}/events][%d] listStackEventsForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListStackEventsForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListStackEventsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStackEventsNotFound creates a ListStackEventsNotFound with default headers values
+func NewListStackEventsNotFound() *ListStackEventsNotFound {
+	return &ListStackEventsNotFound{}
+}
+
+/*ListStackEventsNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListStackEventsNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListStackEventsNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{id}/events][%d] listStackEventsNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListStackEventsNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListStackEventsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

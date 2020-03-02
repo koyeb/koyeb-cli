@@ -30,6 +30,24 @@ func (o *UpdateStack2Reader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateStack2BadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateStack2Forbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateStack2NotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateStack2OK) GetPayload() *models.StorageStackReply {
 func (o *UpdateStack2OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateStack2BadRequest creates a UpdateStack2BadRequest with default headers values
+func NewUpdateStack2BadRequest() *UpdateStack2BadRequest {
+	return &UpdateStack2BadRequest{}
+}
+
+/*UpdateStack2BadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateStack2BadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateStack2BadRequest) Error() string {
+	return fmt.Sprintf("[PATCH /v1/stacks/{id}][%d] updateStack2BadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateStack2BadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateStack2BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateStack2Forbidden creates a UpdateStack2Forbidden with default headers values
+func NewUpdateStack2Forbidden() *UpdateStack2Forbidden {
+	return &UpdateStack2Forbidden{}
+}
+
+/*UpdateStack2Forbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateStack2Forbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateStack2Forbidden) Error() string {
+	return fmt.Sprintf("[PATCH /v1/stacks/{id}][%d] updateStack2Forbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateStack2Forbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateStack2Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateStack2NotFound creates a UpdateStack2NotFound with default headers values
+func NewUpdateStack2NotFound() *UpdateStack2NotFound {
+	return &UpdateStack2NotFound{}
+}
+
+/*UpdateStack2NotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateStack2NotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateStack2NotFound) Error() string {
+	return fmt.Sprintf("[PATCH /v1/stacks/{id}][%d] updateStack2NotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateStack2NotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateStack2NotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

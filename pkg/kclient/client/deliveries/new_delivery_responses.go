@@ -30,6 +30,24 @@ func (o *NewDeliveryReader) ReadResponse(response runtime.ClientResponse, consum
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewNewDeliveryBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewNewDeliveryForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewNewDeliveryNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *NewDeliveryOK) GetPayload() *models.StorageDeliveryReply {
 func (o *NewDeliveryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageDeliveryReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewNewDeliveryBadRequest creates a NewDeliveryBadRequest with default headers values
+func NewNewDeliveryBadRequest() *NewDeliveryBadRequest {
+	return &NewDeliveryBadRequest{}
+}
+
+/*NewDeliveryBadRequest handles this case with default header values.
+
+Validation error
+*/
+type NewDeliveryBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *NewDeliveryBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/deliveries][%d] newDeliveryBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *NewDeliveryBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *NewDeliveryBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewNewDeliveryForbidden creates a NewDeliveryForbidden with default headers values
+func NewNewDeliveryForbidden() *NewDeliveryForbidden {
+	return &NewDeliveryForbidden{}
+}
+
+/*NewDeliveryForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type NewDeliveryForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *NewDeliveryForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/deliveries][%d] newDeliveryForbidden  %+v", 403, o.Payload)
+}
+
+func (o *NewDeliveryForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *NewDeliveryForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewNewDeliveryNotFound creates a NewDeliveryNotFound with default headers values
+func NewNewDeliveryNotFound() *NewDeliveryNotFound {
+	return &NewDeliveryNotFound{}
+}
+
+/*NewDeliveryNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type NewDeliveryNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *NewDeliveryNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/deliveries][%d] newDeliveryNotFound  %+v", 404, o.Payload)
+}
+
+func (o *NewDeliveryNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *NewDeliveryNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

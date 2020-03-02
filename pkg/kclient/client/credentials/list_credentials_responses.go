@@ -30,6 +30,24 @@ func (o *ListCredentialsReader) ReadResponse(response runtime.ClientResponse, co
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListCredentialsBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListCredentialsForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListCredentialsNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListCredentialsOK) GetPayload() *models.AccountListCredentialsReply {
 func (o *ListCredentialsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountListCredentialsReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCredentialsBadRequest creates a ListCredentialsBadRequest with default headers values
+func NewListCredentialsBadRequest() *ListCredentialsBadRequest {
+	return &ListCredentialsBadRequest{}
+}
+
+/*ListCredentialsBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListCredentialsBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListCredentialsBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/credentials][%d] listCredentialsBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListCredentialsBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListCredentialsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCredentialsForbidden creates a ListCredentialsForbidden with default headers values
+func NewListCredentialsForbidden() *ListCredentialsForbidden {
+	return &ListCredentialsForbidden{}
+}
+
+/*ListCredentialsForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListCredentialsForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCredentialsForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/credentials][%d] listCredentialsForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListCredentialsForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCredentialsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCredentialsNotFound creates a ListCredentialsNotFound with default headers values
+func NewListCredentialsNotFound() *ListCredentialsNotFound {
+	return &ListCredentialsNotFound{}
+}
+
+/*ListCredentialsNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListCredentialsNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCredentialsNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/credentials][%d] listCredentialsNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListCredentialsNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCredentialsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -30,6 +30,24 @@ func (o *DeleteServiceReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteServiceBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteServiceForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteServiceNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteServiceOK) readResponse(response runtime.ClientResponse, consumer
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteServiceBadRequest creates a DeleteServiceBadRequest with default headers values
+func NewDeleteServiceBadRequest() *DeleteServiceBadRequest {
+	return &DeleteServiceBadRequest{}
+}
+
+/*DeleteServiceBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteServiceBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteServiceBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/services/{id}][%d] deleteServiceBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteServiceBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteServiceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteServiceForbidden creates a DeleteServiceForbidden with default headers values
+func NewDeleteServiceForbidden() *DeleteServiceForbidden {
+	return &DeleteServiceForbidden{}
+}
+
+/*DeleteServiceForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteServiceForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteServiceForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/services/{id}][%d] deleteServiceForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteServiceForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteServiceForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteServiceNotFound creates a DeleteServiceNotFound with default headers values
+func NewDeleteServiceNotFound() *DeleteServiceNotFound {
+	return &DeleteServiceNotFound{}
+}
+
+/*DeleteServiceNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteServiceNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteServiceNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/services/{id}][%d] deleteServiceNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteServiceNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteServiceNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

@@ -30,6 +30,24 @@ func (o *LogoutReader) ReadResponse(response runtime.ClientResponse, consumer ru
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewLogoutBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewLogoutForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewLogoutNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *LogoutOK) readResponse(response runtime.ClientResponse, consumer runtim
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLogoutBadRequest creates a LogoutBadRequest with default headers values
+func NewLogoutBadRequest() *LogoutBadRequest {
+	return &LogoutBadRequest{}
+}
+
+/*LogoutBadRequest handles this case with default header values.
+
+Validation error
+*/
+type LogoutBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *LogoutBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/account/logout][%d] logoutBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *LogoutBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *LogoutBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLogoutForbidden creates a LogoutForbidden with default headers values
+func NewLogoutForbidden() *LogoutForbidden {
+	return &LogoutForbidden{}
+}
+
+/*LogoutForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type LogoutForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *LogoutForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/account/logout][%d] logoutForbidden  %+v", 403, o.Payload)
+}
+
+func (o *LogoutForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *LogoutForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLogoutNotFound creates a LogoutNotFound with default headers values
+func NewLogoutNotFound() *LogoutNotFound {
+	return &LogoutNotFound{}
+}
+
+/*LogoutNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type LogoutNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *LogoutNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/account/logout][%d] logoutNotFound  %+v", 404, o.Payload)
+}
+
+func (o *LogoutNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *LogoutNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

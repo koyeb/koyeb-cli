@@ -30,6 +30,24 @@ func (o *ListDeliveriesReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListDeliveriesBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListDeliveriesForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListDeliveriesNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListDeliveriesOK) GetPayload() *models.StorageListDeliveriesReply {
 func (o *ListDeliveriesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageListDeliveriesReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListDeliveriesBadRequest creates a ListDeliveriesBadRequest with default headers values
+func NewListDeliveriesBadRequest() *ListDeliveriesBadRequest {
+	return &ListDeliveriesBadRequest{}
+}
+
+/*ListDeliveriesBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListDeliveriesBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListDeliveriesBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/deliveries][%d] listDeliveriesBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListDeliveriesBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListDeliveriesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListDeliveriesForbidden creates a ListDeliveriesForbidden with default headers values
+func NewListDeliveriesForbidden() *ListDeliveriesForbidden {
+	return &ListDeliveriesForbidden{}
+}
+
+/*ListDeliveriesForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListDeliveriesForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListDeliveriesForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/deliveries][%d] listDeliveriesForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListDeliveriesForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListDeliveriesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListDeliveriesNotFound creates a ListDeliveriesNotFound with default headers values
+func NewListDeliveriesNotFound() *ListDeliveriesNotFound {
+	return &ListDeliveriesNotFound{}
+}
+
+/*ListDeliveriesNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListDeliveriesNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListDeliveriesNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/deliveries][%d] listDeliveriesNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListDeliveriesNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListDeliveriesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

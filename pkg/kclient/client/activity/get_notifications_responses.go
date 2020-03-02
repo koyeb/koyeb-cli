@@ -30,6 +30,24 @@ func (o *GetNotificationsReader) ReadResponse(response runtime.ClientResponse, c
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetNotificationsBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetNotificationsForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetNotificationsNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetNotificationsOK) GetPayload() *models.ActivityNotificationsReply {
 func (o *GetNotificationsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ActivityNotificationsReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetNotificationsBadRequest creates a GetNotificationsBadRequest with default headers values
+func NewGetNotificationsBadRequest() *GetNotificationsBadRequest {
+	return &GetNotificationsBadRequest{}
+}
+
+/*GetNotificationsBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetNotificationsBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetNotificationsBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/notifications][%d] getNotificationsBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetNotificationsBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetNotificationsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetNotificationsForbidden creates a GetNotificationsForbidden with default headers values
+func NewGetNotificationsForbidden() *GetNotificationsForbidden {
+	return &GetNotificationsForbidden{}
+}
+
+/*GetNotificationsForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetNotificationsForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetNotificationsForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/notifications][%d] getNotificationsForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetNotificationsForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetNotificationsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetNotificationsNotFound creates a GetNotificationsNotFound with default headers values
+func NewGetNotificationsNotFound() *GetNotificationsNotFound {
+	return &GetNotificationsNotFound{}
+}
+
+/*GetNotificationsNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetNotificationsNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetNotificationsNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/notifications][%d] getNotificationsNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetNotificationsNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetNotificationsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

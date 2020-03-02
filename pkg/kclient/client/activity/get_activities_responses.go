@@ -30,6 +30,24 @@ func (o *GetActivitiesReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetActivitiesBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetActivitiesForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetActivitiesNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetActivitiesOK) GetPayload() *models.ActivityActivityFeedReply {
 func (o *GetActivitiesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ActivityActivityFeedReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetActivitiesBadRequest creates a GetActivitiesBadRequest with default headers values
+func NewGetActivitiesBadRequest() *GetActivitiesBadRequest {
+	return &GetActivitiesBadRequest{}
+}
+
+/*GetActivitiesBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetActivitiesBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetActivitiesBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/activities][%d] getActivitiesBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetActivitiesBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetActivitiesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetActivitiesForbidden creates a GetActivitiesForbidden with default headers values
+func NewGetActivitiesForbidden() *GetActivitiesForbidden {
+	return &GetActivitiesForbidden{}
+}
+
+/*GetActivitiesForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetActivitiesForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetActivitiesForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/activities][%d] getActivitiesForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetActivitiesForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetActivitiesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetActivitiesNotFound creates a GetActivitiesNotFound with default headers values
+func NewGetActivitiesNotFound() *GetActivitiesNotFound {
+	return &GetActivitiesNotFound{}
+}
+
+/*GetActivitiesNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetActivitiesNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetActivitiesNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/activities][%d] getActivitiesNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetActivitiesNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetActivitiesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

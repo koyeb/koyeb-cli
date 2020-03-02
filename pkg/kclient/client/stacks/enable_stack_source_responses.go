@@ -30,6 +30,24 @@ func (o *EnableStackSourceReader) ReadResponse(response runtime.ClientResponse, 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewEnableStackSourceBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewEnableStackSourceForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewEnableStackSourceNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *EnableStackSourceOK) GetPayload() *models.StorageStackSourceReply {
 func (o *EnableStackSourceOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackSourceReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewEnableStackSourceBadRequest creates a EnableStackSourceBadRequest with default headers values
+func NewEnableStackSourceBadRequest() *EnableStackSourceBadRequest {
+	return &EnableStackSourceBadRequest{}
+}
+
+/*EnableStackSourceBadRequest handles this case with default header values.
+
+Validation error
+*/
+type EnableStackSourceBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *EnableStackSourceBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/sources/{id}/enable][%d] enableStackSourceBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *EnableStackSourceBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *EnableStackSourceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewEnableStackSourceForbidden creates a EnableStackSourceForbidden with default headers values
+func NewEnableStackSourceForbidden() *EnableStackSourceForbidden {
+	return &EnableStackSourceForbidden{}
+}
+
+/*EnableStackSourceForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type EnableStackSourceForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *EnableStackSourceForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/sources/{id}/enable][%d] enableStackSourceForbidden  %+v", 403, o.Payload)
+}
+
+func (o *EnableStackSourceForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *EnableStackSourceForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewEnableStackSourceNotFound creates a EnableStackSourceNotFound with default headers values
+func NewEnableStackSourceNotFound() *EnableStackSourceNotFound {
+	return &EnableStackSourceNotFound{}
+}
+
+/*EnableStackSourceNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type EnableStackSourceNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *EnableStackSourceNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/sources/{id}/enable][%d] enableStackSourceNotFound  %+v", 404, o.Payload)
+}
+
+func (o *EnableStackSourceNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *EnableStackSourceNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

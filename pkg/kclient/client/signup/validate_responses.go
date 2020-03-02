@@ -30,6 +30,24 @@ func (o *ValidateReader) ReadResponse(response runtime.ClientResponse, consumer 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewValidateBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewValidateForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewValidateNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ValidateOK) GetPayload() *models.AccountLoginReply {
 func (o *ValidateOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountLoginReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewValidateBadRequest creates a ValidateBadRequest with default headers values
+func NewValidateBadRequest() *ValidateBadRequest {
+	return &ValidateBadRequest{}
+}
+
+/*ValidateBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ValidateBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ValidateBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/validate/{id}][%d] validateBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ValidateBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ValidateBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewValidateForbidden creates a ValidateForbidden with default headers values
+func NewValidateForbidden() *ValidateForbidden {
+	return &ValidateForbidden{}
+}
+
+/*ValidateForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ValidateForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ValidateForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/validate/{id}][%d] validateForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ValidateForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ValidateForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewValidateNotFound creates a ValidateNotFound with default headers values
+func NewValidateNotFound() *ValidateNotFound {
+	return &ValidateNotFound{}
+}
+
+/*ValidateNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ValidateNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ValidateNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/validate/{id}][%d] validateNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ValidateNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ValidateNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

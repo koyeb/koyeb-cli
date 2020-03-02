@@ -30,6 +30,24 @@ func (o *UpdateUser2Reader) ReadResponse(response runtime.ClientResponse, consum
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateUser2BadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateUser2Forbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateUser2NotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateUser2OK) GetPayload() *models.AccountUserReply {
 func (o *UpdateUser2OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountUserReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateUser2BadRequest creates a UpdateUser2BadRequest with default headers values
+func NewUpdateUser2BadRequest() *UpdateUser2BadRequest {
+	return &UpdateUser2BadRequest{}
+}
+
+/*UpdateUser2BadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateUser2BadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateUser2BadRequest) Error() string {
+	return fmt.Sprintf("[PATCH /v1/account/profile][%d] updateUser2BadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateUser2BadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateUser2BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateUser2Forbidden creates a UpdateUser2Forbidden with default headers values
+func NewUpdateUser2Forbidden() *UpdateUser2Forbidden {
+	return &UpdateUser2Forbidden{}
+}
+
+/*UpdateUser2Forbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateUser2Forbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateUser2Forbidden) Error() string {
+	return fmt.Sprintf("[PATCH /v1/account/profile][%d] updateUser2Forbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateUser2Forbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateUser2Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateUser2NotFound creates a UpdateUser2NotFound with default headers values
+func NewUpdateUser2NotFound() *UpdateUser2NotFound {
+	return &UpdateUser2NotFound{}
+}
+
+/*UpdateUser2NotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateUser2NotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateUser2NotFound) Error() string {
+	return fmt.Sprintf("[PATCH /v1/account/profile][%d] updateUser2NotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateUser2NotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateUser2NotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

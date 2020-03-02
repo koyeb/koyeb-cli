@@ -30,6 +30,24 @@ func (o *DeleteManagedStoreReader) ReadResponse(response runtime.ClientResponse,
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteManagedStoreBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteManagedStoreForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteManagedStoreNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteManagedStoreOK) readResponse(response runtime.ClientResponse, con
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteManagedStoreBadRequest creates a DeleteManagedStoreBadRequest with default headers values
+func NewDeleteManagedStoreBadRequest() *DeleteManagedStoreBadRequest {
+	return &DeleteManagedStoreBadRequest{}
+}
+
+/*DeleteManagedStoreBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteManagedStoreBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteManagedStoreBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/managed_stores/{id}][%d] deleteManagedStoreBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteManagedStoreBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteManagedStoreBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteManagedStoreForbidden creates a DeleteManagedStoreForbidden with default headers values
+func NewDeleteManagedStoreForbidden() *DeleteManagedStoreForbidden {
+	return &DeleteManagedStoreForbidden{}
+}
+
+/*DeleteManagedStoreForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteManagedStoreForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteManagedStoreForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/managed_stores/{id}][%d] deleteManagedStoreForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteManagedStoreForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteManagedStoreForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteManagedStoreNotFound creates a DeleteManagedStoreNotFound with default headers values
+func NewDeleteManagedStoreNotFound() *DeleteManagedStoreNotFound {
+	return &DeleteManagedStoreNotFound{}
+}
+
+/*DeleteManagedStoreNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteManagedStoreNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteManagedStoreNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/managed_stores/{id}][%d] deleteManagedStoreNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteManagedStoreNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteManagedStoreNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

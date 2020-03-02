@@ -30,6 +30,24 @@ func (o *GetCredentialReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetCredentialBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetCredentialForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetCredentialNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetCredentialOK) GetPayload() *models.AccountCredentialReply {
 func (o *GetCredentialOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountCredentialReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCredentialBadRequest creates a GetCredentialBadRequest with default headers values
+func NewGetCredentialBadRequest() *GetCredentialBadRequest {
+	return &GetCredentialBadRequest{}
+}
+
+/*GetCredentialBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetCredentialBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetCredentialBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/credentials/{id}][%d] getCredentialBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetCredentialBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetCredentialBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCredentialForbidden creates a GetCredentialForbidden with default headers values
+func NewGetCredentialForbidden() *GetCredentialForbidden {
+	return &GetCredentialForbidden{}
+}
+
+/*GetCredentialForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetCredentialForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetCredentialForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/credentials/{id}][%d] getCredentialForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetCredentialForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetCredentialForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCredentialNotFound creates a GetCredentialNotFound with default headers values
+func NewGetCredentialNotFound() *GetCredentialNotFound {
+	return &GetCredentialNotFound{}
+}
+
+/*GetCredentialNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetCredentialNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetCredentialNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/credentials/{id}][%d] getCredentialNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetCredentialNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetCredentialNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

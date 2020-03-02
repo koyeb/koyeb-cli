@@ -30,6 +30,24 @@ func (o *SignupReader) ReadResponse(response runtime.ClientResponse, consumer ru
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewSignupBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewSignupForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewSignupNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *SignupOK) GetPayload() *models.AccountLoginReply {
 func (o *SignupOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountLoginReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewSignupBadRequest creates a SignupBadRequest with default headers values
+func NewSignupBadRequest() *SignupBadRequest {
+	return &SignupBadRequest{}
+}
+
+/*SignupBadRequest handles this case with default header values.
+
+Validation error
+*/
+type SignupBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *SignupBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/signup][%d] signupBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *SignupBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *SignupBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewSignupForbidden creates a SignupForbidden with default headers values
+func NewSignupForbidden() *SignupForbidden {
+	return &SignupForbidden{}
+}
+
+/*SignupForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type SignupForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *SignupForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/signup][%d] signupForbidden  %+v", 403, o.Payload)
+}
+
+func (o *SignupForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *SignupForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewSignupNotFound creates a SignupNotFound with default headers values
+func NewSignupNotFound() *SignupNotFound {
+	return &SignupNotFound{}
+}
+
+/*SignupNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type SignupNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *SignupNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/signup][%d] signupNotFound  %+v", 404, o.Payload)
+}
+
+func (o *SignupNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *SignupNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

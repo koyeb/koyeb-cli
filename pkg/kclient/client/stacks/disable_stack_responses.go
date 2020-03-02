@@ -30,6 +30,24 @@ func (o *DisableStackReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDisableStackBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDisableStackForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDisableStackNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *DisableStackOK) GetPayload() *models.StorageStackReply {
 func (o *DisableStackOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDisableStackBadRequest creates a DisableStackBadRequest with default headers values
+func NewDisableStackBadRequest() *DisableStackBadRequest {
+	return &DisableStackBadRequest{}
+}
+
+/*DisableStackBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DisableStackBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DisableStackBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{id}/disable][%d] disableStackBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DisableStackBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DisableStackBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDisableStackForbidden creates a DisableStackForbidden with default headers values
+func NewDisableStackForbidden() *DisableStackForbidden {
+	return &DisableStackForbidden{}
+}
+
+/*DisableStackForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DisableStackForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DisableStackForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{id}/disable][%d] disableStackForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DisableStackForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DisableStackForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDisableStackNotFound creates a DisableStackNotFound with default headers values
+func NewDisableStackNotFound() *DisableStackNotFound {
+	return &DisableStackNotFound{}
+}
+
+/*DisableStackNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DisableStackNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DisableStackNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{id}/disable][%d] disableStackNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DisableStackNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DisableStackNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

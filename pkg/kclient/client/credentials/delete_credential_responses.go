@@ -30,6 +30,24 @@ func (o *DeleteCredentialReader) ReadResponse(response runtime.ClientResponse, c
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteCredentialBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteCredentialForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteCredentialNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteCredentialOK) readResponse(response runtime.ClientResponse, consu
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteCredentialBadRequest creates a DeleteCredentialBadRequest with default headers values
+func NewDeleteCredentialBadRequest() *DeleteCredentialBadRequest {
+	return &DeleteCredentialBadRequest{}
+}
+
+/*DeleteCredentialBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteCredentialBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteCredentialBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/credentials/{id}][%d] deleteCredentialBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteCredentialBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteCredentialBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteCredentialForbidden creates a DeleteCredentialForbidden with default headers values
+func NewDeleteCredentialForbidden() *DeleteCredentialForbidden {
+	return &DeleteCredentialForbidden{}
+}
+
+/*DeleteCredentialForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteCredentialForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteCredentialForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/credentials/{id}][%d] deleteCredentialForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteCredentialForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteCredentialForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteCredentialNotFound creates a DeleteCredentialNotFound with default headers values
+func NewDeleteCredentialNotFound() *DeleteCredentialNotFound {
+	return &DeleteCredentialNotFound{}
+}
+
+/*DeleteCredentialNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteCredentialNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteCredentialNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/credentials/{id}][%d] deleteCredentialNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteCredentialNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteCredentialNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

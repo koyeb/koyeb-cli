@@ -30,6 +30,24 @@ func (o *UpdatePasswordReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdatePasswordBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdatePasswordForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdatePasswordNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdatePasswordOK) GetPayload() *models.AccountLoginReply {
 func (o *UpdatePasswordOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountLoginReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdatePasswordBadRequest creates a UpdatePasswordBadRequest with default headers values
+func NewUpdatePasswordBadRequest() *UpdatePasswordBadRequest {
+	return &UpdatePasswordBadRequest{}
+}
+
+/*UpdatePasswordBadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdatePasswordBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdatePasswordBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/update_password][%d] updatePasswordBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdatePasswordBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdatePasswordBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdatePasswordForbidden creates a UpdatePasswordForbidden with default headers values
+func NewUpdatePasswordForbidden() *UpdatePasswordForbidden {
+	return &UpdatePasswordForbidden{}
+}
+
+/*UpdatePasswordForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdatePasswordForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdatePasswordForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/update_password][%d] updatePasswordForbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdatePasswordForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdatePasswordForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdatePasswordNotFound creates a UpdatePasswordNotFound with default headers values
+func NewUpdatePasswordNotFound() *UpdatePasswordNotFound {
+	return &UpdatePasswordNotFound{}
+}
+
+/*UpdatePasswordNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdatePasswordNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdatePasswordNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/update_password][%d] updatePasswordNotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdatePasswordNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdatePasswordNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

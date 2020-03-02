@@ -30,6 +30,24 @@ func (o *DeleteAccountReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteAccountBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteAccountForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteAccountNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteAccountOK) readResponse(response runtime.ClientResponse, consumer
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteAccountBadRequest creates a DeleteAccountBadRequest with default headers values
+func NewDeleteAccountBadRequest() *DeleteAccountBadRequest {
+	return &DeleteAccountBadRequest{}
+}
+
+/*DeleteAccountBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteAccountBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteAccountBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/account/profile][%d] deleteAccountBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteAccountBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteAccountBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteAccountForbidden creates a DeleteAccountForbidden with default headers values
+func NewDeleteAccountForbidden() *DeleteAccountForbidden {
+	return &DeleteAccountForbidden{}
+}
+
+/*DeleteAccountForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteAccountForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteAccountForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/account/profile][%d] deleteAccountForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteAccountForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteAccountForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteAccountNotFound creates a DeleteAccountNotFound with default headers values
+func NewDeleteAccountNotFound() *DeleteAccountNotFound {
+	return &DeleteAccountNotFound{}
+}
+
+/*DeleteAccountNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteAccountNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteAccountNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/account/profile][%d] deleteAccountNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteAccountNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteAccountNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

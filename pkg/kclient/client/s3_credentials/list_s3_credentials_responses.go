@@ -30,6 +30,24 @@ func (o *ListS3CredentialsReader) ReadResponse(response runtime.ClientResponse, 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListS3CredentialsBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListS3CredentialsForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListS3CredentialsNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListS3CredentialsOK) GetPayload() *models.AccountListS3CredentialsReply
 func (o *ListS3CredentialsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountListS3CredentialsReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListS3CredentialsBadRequest creates a ListS3CredentialsBadRequest with default headers values
+func NewListS3CredentialsBadRequest() *ListS3CredentialsBadRequest {
+	return &ListS3CredentialsBadRequest{}
+}
+
+/*ListS3CredentialsBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListS3CredentialsBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListS3CredentialsBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/s3_credentials][%d] listS3CredentialsBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListS3CredentialsBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListS3CredentialsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListS3CredentialsForbidden creates a ListS3CredentialsForbidden with default headers values
+func NewListS3CredentialsForbidden() *ListS3CredentialsForbidden {
+	return &ListS3CredentialsForbidden{}
+}
+
+/*ListS3CredentialsForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListS3CredentialsForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListS3CredentialsForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/s3_credentials][%d] listS3CredentialsForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListS3CredentialsForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListS3CredentialsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListS3CredentialsNotFound creates a ListS3CredentialsNotFound with default headers values
+func NewListS3CredentialsNotFound() *ListS3CredentialsNotFound {
+	return &ListS3CredentialsNotFound{}
+}
+
+/*ListS3CredentialsNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListS3CredentialsNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListS3CredentialsNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/s3_credentials][%d] listS3CredentialsNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListS3CredentialsNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListS3CredentialsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

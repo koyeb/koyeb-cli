@@ -30,6 +30,24 @@ func (o *ResendEmailValidationReader) ReadResponse(response runtime.ClientRespon
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewResendEmailValidationBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewResendEmailValidationForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewResendEmailValidationNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *ResendEmailValidationOK) readResponse(response runtime.ClientResponse, 
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewResendEmailValidationBadRequest creates a ResendEmailValidationBadRequest with default headers values
+func NewResendEmailValidationBadRequest() *ResendEmailValidationBadRequest {
+	return &ResendEmailValidationBadRequest{}
+}
+
+/*ResendEmailValidationBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ResendEmailValidationBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ResendEmailValidationBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/resend_validation][%d] resendEmailValidationBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ResendEmailValidationBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ResendEmailValidationBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewResendEmailValidationForbidden creates a ResendEmailValidationForbidden with default headers values
+func NewResendEmailValidationForbidden() *ResendEmailValidationForbidden {
+	return &ResendEmailValidationForbidden{}
+}
+
+/*ResendEmailValidationForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ResendEmailValidationForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ResendEmailValidationForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/resend_validation][%d] resendEmailValidationForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ResendEmailValidationForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ResendEmailValidationForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewResendEmailValidationNotFound creates a ResendEmailValidationNotFound with default headers values
+func NewResendEmailValidationNotFound() *ResendEmailValidationNotFound {
+	return &ResendEmailValidationNotFound{}
+}
+
+/*ResendEmailValidationNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ResendEmailValidationNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ResendEmailValidationNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/resend_validation][%d] resendEmailValidationNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ResendEmailValidationNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ResendEmailValidationNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

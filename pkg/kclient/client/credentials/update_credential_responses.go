@@ -30,6 +30,24 @@ func (o *UpdateCredentialReader) ReadResponse(response runtime.ClientResponse, c
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateCredentialBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateCredentialForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateCredentialNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateCredentialOK) GetPayload() *models.AccountCredentialReply {
 func (o *UpdateCredentialOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountCredentialReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateCredentialBadRequest creates a UpdateCredentialBadRequest with default headers values
+func NewUpdateCredentialBadRequest() *UpdateCredentialBadRequest {
+	return &UpdateCredentialBadRequest{}
+}
+
+/*UpdateCredentialBadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateCredentialBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateCredentialBadRequest) Error() string {
+	return fmt.Sprintf("[PUT /v1/credentials/{id}][%d] updateCredentialBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateCredentialBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateCredentialBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateCredentialForbidden creates a UpdateCredentialForbidden with default headers values
+func NewUpdateCredentialForbidden() *UpdateCredentialForbidden {
+	return &UpdateCredentialForbidden{}
+}
+
+/*UpdateCredentialForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateCredentialForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateCredentialForbidden) Error() string {
+	return fmt.Sprintf("[PUT /v1/credentials/{id}][%d] updateCredentialForbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateCredentialForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateCredentialForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateCredentialNotFound creates a UpdateCredentialNotFound with default headers values
+func NewUpdateCredentialNotFound() *UpdateCredentialNotFound {
+	return &UpdateCredentialNotFound{}
+}
+
+/*UpdateCredentialNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateCredentialNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateCredentialNotFound) Error() string {
+	return fmt.Sprintf("[PUT /v1/credentials/{id}][%d] updateCredentialNotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateCredentialNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateCredentialNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

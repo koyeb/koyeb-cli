@@ -30,6 +30,24 @@ func (o *PasswordlessLoginReader) ReadResponse(response runtime.ClientResponse, 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewPasswordlessLoginBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewPasswordlessLoginForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewPasswordlessLoginNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *PasswordlessLoginOK) readResponse(response runtime.ClientResponse, cons
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPasswordlessLoginBadRequest creates a PasswordlessLoginBadRequest with default headers values
+func NewPasswordlessLoginBadRequest() *PasswordlessLoginBadRequest {
+	return &PasswordlessLoginBadRequest{}
+}
+
+/*PasswordlessLoginBadRequest handles this case with default header values.
+
+Validation error
+*/
+type PasswordlessLoginBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *PasswordlessLoginBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/passwordless_login][%d] passwordlessLoginBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *PasswordlessLoginBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *PasswordlessLoginBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPasswordlessLoginForbidden creates a PasswordlessLoginForbidden with default headers values
+func NewPasswordlessLoginForbidden() *PasswordlessLoginForbidden {
+	return &PasswordlessLoginForbidden{}
+}
+
+/*PasswordlessLoginForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type PasswordlessLoginForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *PasswordlessLoginForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/passwordless_login][%d] passwordlessLoginForbidden  %+v", 403, o.Payload)
+}
+
+func (o *PasswordlessLoginForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *PasswordlessLoginForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPasswordlessLoginNotFound creates a PasswordlessLoginNotFound with default headers values
+func NewPasswordlessLoginNotFound() *PasswordlessLoginNotFound {
+	return &PasswordlessLoginNotFound{}
+}
+
+/*PasswordlessLoginNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type PasswordlessLoginNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *PasswordlessLoginNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/passwordless_login][%d] passwordlessLoginNotFound  %+v", 404, o.Payload)
+}
+
+func (o *PasswordlessLoginNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *PasswordlessLoginNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

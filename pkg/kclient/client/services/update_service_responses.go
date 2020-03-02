@@ -30,6 +30,24 @@ func (o *UpdateServiceReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateServiceBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateServiceForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateServiceNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateServiceOK) GetPayload() *models.StorageGetServiceReply {
 func (o *UpdateServiceOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageGetServiceReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateServiceBadRequest creates a UpdateServiceBadRequest with default headers values
+func NewUpdateServiceBadRequest() *UpdateServiceBadRequest {
+	return &UpdateServiceBadRequest{}
+}
+
+/*UpdateServiceBadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateServiceBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateServiceBadRequest) Error() string {
+	return fmt.Sprintf("[PUT /v1/services/{id}][%d] updateServiceBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateServiceBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateServiceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateServiceForbidden creates a UpdateServiceForbidden with default headers values
+func NewUpdateServiceForbidden() *UpdateServiceForbidden {
+	return &UpdateServiceForbidden{}
+}
+
+/*UpdateServiceForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateServiceForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateServiceForbidden) Error() string {
+	return fmt.Sprintf("[PUT /v1/services/{id}][%d] updateServiceForbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateServiceForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateServiceForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateServiceNotFound creates a UpdateServiceNotFound with default headers values
+func NewUpdateServiceNotFound() *UpdateServiceNotFound {
+	return &UpdateServiceNotFound{}
+}
+
+/*UpdateServiceNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateServiceNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateServiceNotFound) Error() string {
+	return fmt.Sprintf("[PUT /v1/services/{id}][%d] updateServiceNotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateServiceNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateServiceNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

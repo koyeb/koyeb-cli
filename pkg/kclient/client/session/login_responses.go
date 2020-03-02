@@ -30,6 +30,24 @@ func (o *LoginReader) ReadResponse(response runtime.ClientResponse, consumer run
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewLoginBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewLoginForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewLoginNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *LoginOK) GetPayload() *models.AccountLoginReply {
 func (o *LoginOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountLoginReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLoginBadRequest creates a LoginBadRequest with default headers values
+func NewLoginBadRequest() *LoginBadRequest {
+	return &LoginBadRequest{}
+}
+
+/*LoginBadRequest handles this case with default header values.
+
+Validation error
+*/
+type LoginBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *LoginBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/login][%d] loginBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *LoginBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *LoginBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLoginForbidden creates a LoginForbidden with default headers values
+func NewLoginForbidden() *LoginForbidden {
+	return &LoginForbidden{}
+}
+
+/*LoginForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type LoginForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *LoginForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/login][%d] loginForbidden  %+v", 403, o.Payload)
+}
+
+func (o *LoginForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *LoginForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLoginNotFound creates a LoginNotFound with default headers values
+func NewLoginNotFound() *LoginNotFound {
+	return &LoginNotFound{}
+}
+
+/*LoginNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type LoginNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *LoginNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/login][%d] loginNotFound  %+v", 404, o.Payload)
+}
+
+func (o *LoginNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *LoginNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

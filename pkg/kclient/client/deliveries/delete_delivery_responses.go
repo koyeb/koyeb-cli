@@ -30,6 +30,24 @@ func (o *DeleteDeliveryReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewDeleteDeliveryBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewDeleteDeliveryForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewDeleteDeliveryNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -61,6 +79,105 @@ func (o *DeleteDeliveryOK) readResponse(response runtime.ClientResponse, consume
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteDeliveryBadRequest creates a DeleteDeliveryBadRequest with default headers values
+func NewDeleteDeliveryBadRequest() *DeleteDeliveryBadRequest {
+	return &DeleteDeliveryBadRequest{}
+}
+
+/*DeleteDeliveryBadRequest handles this case with default header values.
+
+Validation error
+*/
+type DeleteDeliveryBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *DeleteDeliveryBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /v1/deliveries/{id}][%d] deleteDeliveryBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *DeleteDeliveryBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *DeleteDeliveryBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteDeliveryForbidden creates a DeleteDeliveryForbidden with default headers values
+func NewDeleteDeliveryForbidden() *DeleteDeliveryForbidden {
+	return &DeleteDeliveryForbidden{}
+}
+
+/*DeleteDeliveryForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type DeleteDeliveryForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteDeliveryForbidden) Error() string {
+	return fmt.Sprintf("[DELETE /v1/deliveries/{id}][%d] deleteDeliveryForbidden  %+v", 403, o.Payload)
+}
+
+func (o *DeleteDeliveryForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteDeliveryForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteDeliveryNotFound creates a DeleteDeliveryNotFound with default headers values
+func NewDeleteDeliveryNotFound() *DeleteDeliveryNotFound {
+	return &DeleteDeliveryNotFound{}
+}
+
+/*DeleteDeliveryNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type DeleteDeliveryNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *DeleteDeliveryNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /v1/deliveries/{id}][%d] deleteDeliveryNotFound  %+v", 404, o.Payload)
+}
+
+func (o *DeleteDeliveryNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *DeleteDeliveryNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

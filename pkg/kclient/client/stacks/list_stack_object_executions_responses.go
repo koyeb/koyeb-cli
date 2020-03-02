@@ -30,6 +30,24 @@ func (o *ListStackObjectExecutionsReader) ReadResponse(response runtime.ClientRe
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListStackObjectExecutionsBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListStackObjectExecutionsForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListStackObjectExecutionsNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListStackObjectExecutionsOK) GetPayload() *models.StorageStackObjectExe
 func (o *ListStackObjectExecutionsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackObjectExecutionsReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStackObjectExecutionsBadRequest creates a ListStackObjectExecutionsBadRequest with default headers values
+func NewListStackObjectExecutionsBadRequest() *ListStackObjectExecutionsBadRequest {
+	return &ListStackObjectExecutionsBadRequest{}
+}
+
+/*ListStackObjectExecutionsBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListStackObjectExecutionsBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListStackObjectExecutionsBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{stack_id}/executions][%d] listStackObjectExecutionsBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListStackObjectExecutionsBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListStackObjectExecutionsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStackObjectExecutionsForbidden creates a ListStackObjectExecutionsForbidden with default headers values
+func NewListStackObjectExecutionsForbidden() *ListStackObjectExecutionsForbidden {
+	return &ListStackObjectExecutionsForbidden{}
+}
+
+/*ListStackObjectExecutionsForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListStackObjectExecutionsForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListStackObjectExecutionsForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{stack_id}/executions][%d] listStackObjectExecutionsForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListStackObjectExecutionsForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListStackObjectExecutionsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListStackObjectExecutionsNotFound creates a ListStackObjectExecutionsNotFound with default headers values
+func NewListStackObjectExecutionsNotFound() *ListStackObjectExecutionsNotFound {
+	return &ListStackObjectExecutionsNotFound{}
+}
+
+/*ListStackObjectExecutionsNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListStackObjectExecutionsNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListStackObjectExecutionsNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/stacks/{stack_id}/executions][%d] listStackObjectExecutionsNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListStackObjectExecutionsNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListStackObjectExecutionsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

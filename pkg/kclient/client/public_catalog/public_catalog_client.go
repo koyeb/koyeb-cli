@@ -27,50 +27,50 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetCatalogIntegration(params *GetCatalogIntegrationParams) (*GetCatalogIntegrationOK, error)
+	GetCatalogIntegrationMixin0(params *GetCatalogIntegrationMixin0Params) (*GetCatalogIntegrationMixin0OK, error)
 
 	GetCatalogService(params *GetCatalogServiceParams) (*GetCatalogServiceOK, error)
 
 	ListCatalogIntegrations(params *ListCatalogIntegrationsParams) (*ListCatalogIntegrationsOK, error)
 
-	ListCatalogServiceIntegrations(params *ListCatalogServiceIntegrationsParams) (*ListCatalogServiceIntegrationsOK, error)
+	ListCatalogServiceIntegrationsMixin0(params *ListCatalogServiceIntegrationsMixin0Params) (*ListCatalogServiceIntegrationsMixin0OK, error)
 
-	ListCatalogServicesMixin0(params *ListCatalogServicesMixin0Params) (*ListCatalogServicesMixin0OK, error)
+	ListCatalogServices(params *ListCatalogServicesParams) (*ListCatalogServicesOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  GetCatalogIntegration get catalog integration API
+  GetCatalogIntegrationMixin0 get catalog integration mixin0 API
 */
-func (a *Client) GetCatalogIntegration(params *GetCatalogIntegrationParams) (*GetCatalogIntegrationOK, error) {
+func (a *Client) GetCatalogIntegrationMixin0(params *GetCatalogIntegrationMixin0Params) (*GetCatalogIntegrationMixin0OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetCatalogIntegrationParams()
+		params = NewGetCatalogIntegrationMixin0Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetCatalogIntegration",
+		ID:                 "GetCatalogIntegrationMixin0",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/integrations/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetCatalogIntegrationReader{formats: a.formats},
+		Reader:             &GetCatalogIntegrationMixin0Reader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetCatalogIntegrationOK)
+	success, ok := result.(*GetCatalogIntegrationMixin0OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetCatalogIntegration: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetCatalogIntegrationMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -143,70 +143,70 @@ func (a *Client) ListCatalogIntegrations(params *ListCatalogIntegrationsParams) 
 }
 
 /*
-  ListCatalogServiceIntegrations list catalog service integrations API
+  ListCatalogServiceIntegrationsMixin0 list catalog service integrations mixin0 API
 */
-func (a *Client) ListCatalogServiceIntegrations(params *ListCatalogServiceIntegrationsParams) (*ListCatalogServiceIntegrationsOK, error) {
+func (a *Client) ListCatalogServiceIntegrationsMixin0(params *ListCatalogServiceIntegrationsMixin0Params) (*ListCatalogServiceIntegrationsMixin0OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListCatalogServiceIntegrationsParams()
+		params = NewListCatalogServiceIntegrationsMixin0Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListCatalogServiceIntegrations",
+		ID:                 "ListCatalogServiceIntegrationsMixin0",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/services/{id}/integrations",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListCatalogServiceIntegrationsReader{formats: a.formats},
+		Reader:             &ListCatalogServiceIntegrationsMixin0Reader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListCatalogServiceIntegrationsOK)
+	success, ok := result.(*ListCatalogServiceIntegrationsMixin0OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListCatalogServiceIntegrations: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListCatalogServiceIntegrationsMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-  ListCatalogServicesMixin0 list catalog services mixin0 API
+  ListCatalogServices list catalog services API
 */
-func (a *Client) ListCatalogServicesMixin0(params *ListCatalogServicesMixin0Params) (*ListCatalogServicesMixin0OK, error) {
+func (a *Client) ListCatalogServices(params *ListCatalogServicesParams) (*ListCatalogServicesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListCatalogServicesMixin0Params()
+		params = NewListCatalogServicesParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListCatalogServicesMixin0",
+		ID:                 "ListCatalogServices",
 		Method:             "GET",
 		PathPattern:        "/v1/public/catalog/services",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListCatalogServicesMixin0Reader{formats: a.formats},
+		Reader:             &ListCatalogServicesReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListCatalogServicesMixin0OK)
+	success, ok := result.(*ListCatalogServicesOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListCatalogServicesMixin0: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListCatalogServices: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

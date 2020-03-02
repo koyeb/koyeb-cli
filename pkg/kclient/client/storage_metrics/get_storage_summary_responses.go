@@ -30,6 +30,24 @@ func (o *GetStorageSummaryReader) ReadResponse(response runtime.ClientResponse, 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetStorageSummaryBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetStorageSummaryForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetStorageSummaryNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetStorageSummaryOK) GetPayload() *models.StorageStorageSummaryReply {
 func (o *GetStorageSummaryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStorageSummaryReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStorageSummaryBadRequest creates a GetStorageSummaryBadRequest with default headers values
+func NewGetStorageSummaryBadRequest() *GetStorageSummaryBadRequest {
+	return &GetStorageSummaryBadRequest{}
+}
+
+/*GetStorageSummaryBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetStorageSummaryBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetStorageSummaryBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/summary][%d] getStorageSummaryBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetStorageSummaryBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetStorageSummaryBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStorageSummaryForbidden creates a GetStorageSummaryForbidden with default headers values
+func NewGetStorageSummaryForbidden() *GetStorageSummaryForbidden {
+	return &GetStorageSummaryForbidden{}
+}
+
+/*GetStorageSummaryForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetStorageSummaryForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetStorageSummaryForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/summary][%d] getStorageSummaryForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetStorageSummaryForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetStorageSummaryForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetStorageSummaryNotFound creates a GetStorageSummaryNotFound with default headers values
+func NewGetStorageSummaryNotFound() *GetStorageSummaryNotFound {
+	return &GetStorageSummaryNotFound{}
+}
+
+/*GetStorageSummaryNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetStorageSummaryNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetStorageSummaryNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/summary][%d] getStorageSummaryNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetStorageSummaryNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetStorageSummaryNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

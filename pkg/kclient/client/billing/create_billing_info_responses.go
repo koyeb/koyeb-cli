@@ -30,6 +30,24 @@ func (o *CreateBillingInfoReader) ReadResponse(response runtime.ClientResponse, 
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewCreateBillingInfoBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewCreateBillingInfoForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewCreateBillingInfoNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *CreateBillingInfoOK) GetPayload() *models.AccountBillingInfoReply {
 func (o *CreateBillingInfoOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountBillingInfoReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCreateBillingInfoBadRequest creates a CreateBillingInfoBadRequest with default headers values
+func NewCreateBillingInfoBadRequest() *CreateBillingInfoBadRequest {
+	return &CreateBillingInfoBadRequest{}
+}
+
+/*CreateBillingInfoBadRequest handles this case with default header values.
+
+Validation error
+*/
+type CreateBillingInfoBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *CreateBillingInfoBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/account/billing][%d] createBillingInfoBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *CreateBillingInfoBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *CreateBillingInfoBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCreateBillingInfoForbidden creates a CreateBillingInfoForbidden with default headers values
+func NewCreateBillingInfoForbidden() *CreateBillingInfoForbidden {
+	return &CreateBillingInfoForbidden{}
+}
+
+/*CreateBillingInfoForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type CreateBillingInfoForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *CreateBillingInfoForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/account/billing][%d] createBillingInfoForbidden  %+v", 403, o.Payload)
+}
+
+func (o *CreateBillingInfoForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *CreateBillingInfoForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCreateBillingInfoNotFound creates a CreateBillingInfoNotFound with default headers values
+func NewCreateBillingInfoNotFound() *CreateBillingInfoNotFound {
+	return &CreateBillingInfoNotFound{}
+}
+
+/*CreateBillingInfoNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type CreateBillingInfoNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *CreateBillingInfoNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/account/billing][%d] createBillingInfoNotFound  %+v", 404, o.Payload)
+}
+
+func (o *CreateBillingInfoNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *CreateBillingInfoNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

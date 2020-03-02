@@ -30,6 +30,24 @@ func (o *GetCurrentUserReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetCurrentUserBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetCurrentUserForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetCurrentUserNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetCurrentUserOK) GetPayload() *models.AccountUserReply {
 func (o *GetCurrentUserOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AccountUserReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCurrentUserBadRequest creates a GetCurrentUserBadRequest with default headers values
+func NewGetCurrentUserBadRequest() *GetCurrentUserBadRequest {
+	return &GetCurrentUserBadRequest{}
+}
+
+/*GetCurrentUserBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetCurrentUserBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetCurrentUserBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/account/profile][%d] getCurrentUserBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetCurrentUserBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetCurrentUserBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCurrentUserForbidden creates a GetCurrentUserForbidden with default headers values
+func NewGetCurrentUserForbidden() *GetCurrentUserForbidden {
+	return &GetCurrentUserForbidden{}
+}
+
+/*GetCurrentUserForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetCurrentUserForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetCurrentUserForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/account/profile][%d] getCurrentUserForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetCurrentUserForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetCurrentUserForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCurrentUserNotFound creates a GetCurrentUserNotFound with default headers values
+func NewGetCurrentUserNotFound() *GetCurrentUserNotFound {
+	return &GetCurrentUserNotFound{}
+}
+
+/*GetCurrentUserNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetCurrentUserNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetCurrentUserNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/account/profile][%d] getCurrentUserNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetCurrentUserNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetCurrentUserNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

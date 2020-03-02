@@ -30,6 +30,24 @@ func (o *UpdateManagedStore2Reader) ReadResponse(response runtime.ClientResponse
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewUpdateManagedStore2BadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewUpdateManagedStore2Forbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewUpdateManagedStore2NotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *UpdateManagedStore2OK) GetPayload() *models.StorageManagedStoreReply {
 func (o *UpdateManagedStore2OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageManagedStoreReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateManagedStore2BadRequest creates a UpdateManagedStore2BadRequest with default headers values
+func NewUpdateManagedStore2BadRequest() *UpdateManagedStore2BadRequest {
+	return &UpdateManagedStore2BadRequest{}
+}
+
+/*UpdateManagedStore2BadRequest handles this case with default header values.
+
+Validation error
+*/
+type UpdateManagedStore2BadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *UpdateManagedStore2BadRequest) Error() string {
+	return fmt.Sprintf("[PATCH /v1/managed_stores/{id}][%d] updateManagedStore2BadRequest  %+v", 400, o.Payload)
+}
+
+func (o *UpdateManagedStore2BadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *UpdateManagedStore2BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateManagedStore2Forbidden creates a UpdateManagedStore2Forbidden with default headers values
+func NewUpdateManagedStore2Forbidden() *UpdateManagedStore2Forbidden {
+	return &UpdateManagedStore2Forbidden{}
+}
+
+/*UpdateManagedStore2Forbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type UpdateManagedStore2Forbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateManagedStore2Forbidden) Error() string {
+	return fmt.Sprintf("[PATCH /v1/managed_stores/{id}][%d] updateManagedStore2Forbidden  %+v", 403, o.Payload)
+}
+
+func (o *UpdateManagedStore2Forbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateManagedStore2Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateManagedStore2NotFound creates a UpdateManagedStore2NotFound with default headers values
+func NewUpdateManagedStore2NotFound() *UpdateManagedStore2NotFound {
+	return &UpdateManagedStore2NotFound{}
+}
+
+/*UpdateManagedStore2NotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type UpdateManagedStore2NotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *UpdateManagedStore2NotFound) Error() string {
+	return fmt.Sprintf("[PATCH /v1/managed_stores/{id}][%d] updateManagedStore2NotFound  %+v", 404, o.Payload)
+}
+
+func (o *UpdateManagedStore2NotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *UpdateManagedStore2NotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

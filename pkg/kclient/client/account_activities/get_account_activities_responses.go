@@ -30,6 +30,24 @@ func (o *GetAccountActivitiesReader) ReadResponse(response runtime.ClientRespons
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetAccountActivitiesBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetAccountActivitiesForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetAccountActivitiesNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetAccountActivitiesOK) GetPayload() *models.ActivityActivityFeedReply 
 func (o *GetAccountActivitiesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ActivityActivityFeedReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetAccountActivitiesBadRequest creates a GetAccountActivitiesBadRequest with default headers values
+func NewGetAccountActivitiesBadRequest() *GetAccountActivitiesBadRequest {
+	return &GetAccountActivitiesBadRequest{}
+}
+
+/*GetAccountActivitiesBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetAccountActivitiesBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetAccountActivitiesBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/account/activities][%d] getAccountActivitiesBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetAccountActivitiesBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetAccountActivitiesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetAccountActivitiesForbidden creates a GetAccountActivitiesForbidden with default headers values
+func NewGetAccountActivitiesForbidden() *GetAccountActivitiesForbidden {
+	return &GetAccountActivitiesForbidden{}
+}
+
+/*GetAccountActivitiesForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetAccountActivitiesForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetAccountActivitiesForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/account/activities][%d] getAccountActivitiesForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetAccountActivitiesForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetAccountActivitiesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetAccountActivitiesNotFound creates a GetAccountActivitiesNotFound with default headers values
+func NewGetAccountActivitiesNotFound() *GetAccountActivitiesNotFound {
+	return &GetAccountActivitiesNotFound{}
+}
+
+/*GetAccountActivitiesNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetAccountActivitiesNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetAccountActivitiesNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/account/activities][%d] getAccountActivitiesNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetAccountActivitiesNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetAccountActivitiesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

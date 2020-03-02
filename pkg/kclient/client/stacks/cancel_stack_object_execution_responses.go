@@ -30,6 +30,24 @@ func (o *CancelStackObjectExecutionReader) ReadResponse(response runtime.ClientR
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewCancelStackObjectExecutionBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewCancelStackObjectExecutionForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewCancelStackObjectExecutionNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *CancelStackObjectExecutionOK) GetPayload() *models.StorageStackObjectEx
 func (o *CancelStackObjectExecutionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageStackObjectExecutionReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCancelStackObjectExecutionBadRequest creates a CancelStackObjectExecutionBadRequest with default headers values
+func NewCancelStackObjectExecutionBadRequest() *CancelStackObjectExecutionBadRequest {
+	return &CancelStackObjectExecutionBadRequest{}
+}
+
+/*CancelStackObjectExecutionBadRequest handles this case with default header values.
+
+Validation error
+*/
+type CancelStackObjectExecutionBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *CancelStackObjectExecutionBadRequest) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/executions/{id}/cancel][%d] cancelStackObjectExecutionBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *CancelStackObjectExecutionBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *CancelStackObjectExecutionBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCancelStackObjectExecutionForbidden creates a CancelStackObjectExecutionForbidden with default headers values
+func NewCancelStackObjectExecutionForbidden() *CancelStackObjectExecutionForbidden {
+	return &CancelStackObjectExecutionForbidden{}
+}
+
+/*CancelStackObjectExecutionForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type CancelStackObjectExecutionForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *CancelStackObjectExecutionForbidden) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/executions/{id}/cancel][%d] cancelStackObjectExecutionForbidden  %+v", 403, o.Payload)
+}
+
+func (o *CancelStackObjectExecutionForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *CancelStackObjectExecutionForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCancelStackObjectExecutionNotFound creates a CancelStackObjectExecutionNotFound with default headers values
+func NewCancelStackObjectExecutionNotFound() *CancelStackObjectExecutionNotFound {
+	return &CancelStackObjectExecutionNotFound{}
+}
+
+/*CancelStackObjectExecutionNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type CancelStackObjectExecutionNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *CancelStackObjectExecutionNotFound) Error() string {
+	return fmt.Sprintf("[POST /v1/stacks/{stack_id}/executions/{id}/cancel][%d] cancelStackObjectExecutionNotFound  %+v", 404, o.Payload)
+}
+
+func (o *CancelStackObjectExecutionNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *CancelStackObjectExecutionNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

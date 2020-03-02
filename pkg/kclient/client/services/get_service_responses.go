@@ -30,6 +30,24 @@ func (o *GetServiceReader) ReadResponse(response runtime.ClientResponse, consume
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewGetServiceBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewGetServiceForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewGetServiceNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *GetServiceOK) GetPayload() *models.StorageGetServiceReply {
 func (o *GetServiceOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageGetServiceReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetServiceBadRequest creates a GetServiceBadRequest with default headers values
+func NewGetServiceBadRequest() *GetServiceBadRequest {
+	return &GetServiceBadRequest{}
+}
+
+/*GetServiceBadRequest handles this case with default header values.
+
+Validation error
+*/
+type GetServiceBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *GetServiceBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/services/{id}][%d] getServiceBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *GetServiceBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *GetServiceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetServiceForbidden creates a GetServiceForbidden with default headers values
+func NewGetServiceForbidden() *GetServiceForbidden {
+	return &GetServiceForbidden{}
+}
+
+/*GetServiceForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type GetServiceForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *GetServiceForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/services/{id}][%d] getServiceForbidden  %+v", 403, o.Payload)
+}
+
+func (o *GetServiceForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetServiceForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetServiceNotFound creates a GetServiceNotFound with default headers values
+func NewGetServiceNotFound() *GetServiceNotFound {
+	return &GetServiceNotFound{}
+}
+
+/*GetServiceNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type GetServiceNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *GetServiceNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/services/{id}][%d] getServiceNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetServiceNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *GetServiceNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

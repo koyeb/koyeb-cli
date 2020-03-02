@@ -30,6 +30,24 @@ func (o *ListCatalogServicesReader) ReadResponse(response runtime.ClientResponse
 			return nil, err
 		}
 		return result, nil
+	case 400:
+		result := NewListCatalogServicesBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 403:
+		result := NewListCatalogServicesForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+	case 404:
+		result := NewListCatalogServicesNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
@@ -60,6 +78,105 @@ func (o *ListCatalogServicesOK) GetPayload() *models.StorageListCatalogServicesR
 func (o *ListCatalogServicesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.StorageListCatalogServicesReply)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogServicesBadRequest creates a ListCatalogServicesBadRequest with default headers values
+func NewListCatalogServicesBadRequest() *ListCatalogServicesBadRequest {
+	return &ListCatalogServicesBadRequest{}
+}
+
+/*ListCatalogServicesBadRequest handles this case with default header values.
+
+Validation error
+*/
+type ListCatalogServicesBadRequest struct {
+	Payload *models.CommonErrorWithFields
+}
+
+func (o *ListCatalogServicesBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v1/catalog/services][%d] listCatalogServicesBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *ListCatalogServicesBadRequest) GetPayload() *models.CommonErrorWithFields {
+	return o.Payload
+}
+
+func (o *ListCatalogServicesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonErrorWithFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogServicesForbidden creates a ListCatalogServicesForbidden with default headers values
+func NewListCatalogServicesForbidden() *ListCatalogServicesForbidden {
+	return &ListCatalogServicesForbidden{}
+}
+
+/*ListCatalogServicesForbidden handles this case with default header values.
+
+Returned when the user does not have permission to access the resource.
+*/
+type ListCatalogServicesForbidden struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCatalogServicesForbidden) Error() string {
+	return fmt.Sprintf("[GET /v1/catalog/services][%d] listCatalogServicesForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ListCatalogServicesForbidden) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCatalogServicesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewListCatalogServicesNotFound creates a ListCatalogServicesNotFound with default headers values
+func NewListCatalogServicesNotFound() *ListCatalogServicesNotFound {
+	return &ListCatalogServicesNotFound{}
+}
+
+/*ListCatalogServicesNotFound handles this case with default header values.
+
+Returned when the resource does not exist.
+*/
+type ListCatalogServicesNotFound struct {
+	Payload *models.CommonError
+}
+
+func (o *ListCatalogServicesNotFound) Error() string {
+	return fmt.Sprintf("[GET /v1/catalog/services][%d] listCatalogServicesNotFound  %+v", 404, o.Payload)
+}
+
+func (o *ListCatalogServicesNotFound) GetPayload() *models.CommonError {
+	return o.Payload
+}
+
+func (o *ListCatalogServicesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CommonError)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
