@@ -88,7 +88,7 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.koyeb.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
 	rootCmd.PersistentFlags().String("url", "app.koyeb.com", "url of the api")
