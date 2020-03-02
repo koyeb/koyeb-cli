@@ -25,8 +25,8 @@ func getApiClient() *apiclient.AccountAccountProto {
 		er(err)
 	}
 
-	log.Debugf("Using host: %s", u.Host)
-	transport := httptransport.New(u.Host, "", nil)
+	log.Debugf("Using host: %s using %s", u.Host, u.Scheme)
+	transport := httptransport.New(u.Host, "", []string{u.Scheme})
 	transport.SetDebug(debug)
 
 	return apiclient.New(transport, strfmt.Default)
