@@ -64,7 +64,7 @@ for the new credential operation typically these are written to a http.Request
 type NewCredentialParams struct {
 
 	/*Body*/
-	Body *models.AccountNewCredentialBody
+	Body *models.AccountNewCredential
 
 	timeout    time.Duration
 	Context    context.Context
@@ -105,13 +105,13 @@ func (o *NewCredentialParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the new credential params
-func (o *NewCredentialParams) WithBody(body *models.AccountNewCredentialBody) *NewCredentialParams {
+func (o *NewCredentialParams) WithBody(body *models.AccountNewCredential) *NewCredentialParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the new credential params
-func (o *NewCredentialParams) SetBody(body *models.AccountNewCredentialBody) {
+func (o *NewCredentialParams) SetBody(body *models.AccountNewCredential) {
 	o.Body = body
 }
 

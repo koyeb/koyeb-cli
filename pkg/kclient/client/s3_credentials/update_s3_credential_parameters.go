@@ -64,7 +64,7 @@ for the update s3 credential operation typically these are written to a http.Req
 type UpdateS3CredentialParams struct {
 
 	/*Body*/
-	Body *models.AccountS3CredentialBody
+	Body *models.AccountS3Credential
 	/*ID*/
 	ID string
 
@@ -107,13 +107,13 @@ func (o *UpdateS3CredentialParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the update s3 credential params
-func (o *UpdateS3CredentialParams) WithBody(body *models.AccountS3CredentialBody) *UpdateS3CredentialParams {
+func (o *UpdateS3CredentialParams) WithBody(body *models.AccountS3Credential) *UpdateS3CredentialParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the update s3 credential params
-func (o *UpdateS3CredentialParams) SetBody(body *models.AccountS3CredentialBody) {
+func (o *UpdateS3CredentialParams) SetBody(body *models.AccountS3Credential) {
 	o.Body = body
 }
 

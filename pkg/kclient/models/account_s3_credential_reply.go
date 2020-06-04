@@ -15,15 +15,15 @@ import (
 // swagger:model accountS3CredentialReply
 type AccountS3CredentialReply struct {
 
-	// credential
-	Credential *AccountS3CredentialBody `json:"credential,omitempty"`
+	// s3 credential
+	S3Credential *AccountS3Credential `json:"s3_credential,omitempty"`
 }
 
 // Validate validates this account s3 credential reply
 func (m *AccountS3CredentialReply) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCredential(formats); err != nil {
+	if err := m.validateS3Credential(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -33,16 +33,16 @@ func (m *AccountS3CredentialReply) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountS3CredentialReply) validateCredential(formats strfmt.Registry) error {
+func (m *AccountS3CredentialReply) validateS3Credential(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Credential) { // not required
+	if swag.IsZero(m.S3Credential) { // not required
 		return nil
 	}
 
-	if m.Credential != nil {
-		if err := m.Credential.Validate(formats); err != nil {
+	if m.S3Credential != nil {
+		if err := m.S3Credential.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("credential")
+				return ve.ValidateName("s3_credential")
 			}
 			return err
 		}

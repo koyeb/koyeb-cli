@@ -33,9 +33,17 @@ type ClientService interface {
 
 	ResendEmailValidation(params *ResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ResendEmailValidationOK, error)
 
+	ResetPassword(params *ResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ResetPasswordOK, error)
+
+	Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWriter) (*SignupOK, error)
+
+	UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordOK, error)
+
 	UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUserOK, error)
 
 	UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateUser2OK, error)
+
+	Validate(params *ValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -146,6 +154,111 @@ func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams, auth
 }
 
 /*
+  ResetPassword reset password API
+*/
+func (a *Client) ResetPassword(params *ResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ResetPasswordOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResetPasswordParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "ResetPassword",
+		Method:             "POST",
+		PathPattern:        "/v1/account/reset_password",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ResetPasswordReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResetPasswordOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ResetPassword: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  Signup signup API
+*/
+func (a *Client) Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWriter) (*SignupOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSignupParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "Signup",
+		Method:             "POST",
+		PathPattern:        "/v1/account/signup",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &SignupReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SignupOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for Signup: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  UpdatePassword update password API
+*/
+func (a *Client) UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdatePasswordParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "UpdatePassword",
+		Method:             "POST",
+		PathPattern:        "/v1/account/update_password",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &UpdatePasswordReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UpdatePasswordOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for UpdatePassword: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
   UpdateUser update user API
 */
 func (a *Client) UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUserOK, error) {
@@ -212,6 +325,41 @@ func (a *Client) UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientA
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for UpdateUser2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  Validate validate API
+*/
+func (a *Client) Validate(params *ValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewValidateParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "Validate",
+		Method:             "POST",
+		PathPattern:        "/v1/account/validate/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ValidateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ValidateOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for Validate: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

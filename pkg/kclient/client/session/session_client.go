@@ -31,6 +31,8 @@ type ClientService interface {
 
 	Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutOK, error)
 
+	PasswordlessLogin(params *PasswordlessLoginParams, authInfo runtime.ClientAuthInfoWriter) (*PasswordlessLoginOK, error)
+
 	RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
@@ -103,6 +105,41 @@ func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWri
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for Logout: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  PasswordlessLogin passwordless login API
+*/
+func (a *Client) PasswordlessLogin(params *PasswordlessLoginParams, authInfo runtime.ClientAuthInfoWriter) (*PasswordlessLoginOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPasswordlessLoginParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "PasswordlessLogin",
+		Method:             "POST",
+		PathPattern:        "/v1/account/passwordless_login",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PasswordlessLoginReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PasswordlessLoginOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PasswordlessLogin: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

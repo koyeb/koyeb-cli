@@ -101,40 +101,33 @@ func init() {
 
 	// Create
 	rootCmd.AddCommand(createCmd)
-	createCmd.AddCommand(createStackCommand)
-	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createStackCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createManagedStoreCommand)
-	createManagedStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createManagedStoreCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createDeliveryCommand)
-	createDeliveryCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createDeliveryCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createStoreCommand)
+	createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createStoreCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createSecretCommand)
+	createSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createSecretCommand.MarkFlagRequired("file")
 
 	// Get
 	rootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getAllCommand)
-	getCmd.AddCommand(getStackCommand)
-	getCmd.AddCommand(getManagedStoreCommand)
-	getCmd.AddCommand(getDeliveryCommand)
+	getCmd.AddCommand(getStoreCommand)
+	getCmd.AddCommand(getSecretCommand)
 
 	// Describe
 	rootCmd.AddCommand(describeCmd)
-	describeCmd.AddCommand(describeStackCommand)
-	describeCmd.AddCommand(describeManagedStoreCommand)
-	describeCmd.AddCommand(describeDeliveryCommand)
+	describeCmd.AddCommand(describeStoreCommand)
+	describeCmd.AddCommand(describeSecretCommand)
 
 	// Update
 	rootCmd.AddCommand(updateCmd)
-	updateCmd.AddCommand(updateStackCommand)
-	updateCmd.AddCommand(updateManagedStoreCommand)
-	updateCmd.AddCommand(updateDeliveryCommand)
+	updateCmd.AddCommand(updateStoreCommand)
+	updateCmd.AddCommand(updateSecretCommand)
 
 	// Delete
 	rootCmd.AddCommand(deleteCmd)
-	deleteCmd.AddCommand(deleteStackCommand)
-	deleteCmd.AddCommand(deleteManagedStoreCommand)
-	deleteCmd.AddCommand(deleteDeliveryCommand)
+	deleteCmd.AddCommand(deleteStoreCommand)
+	deleteCmd.AddCommand(deleteSecretCommand)
 
 }
 

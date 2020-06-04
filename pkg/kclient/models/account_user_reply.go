@@ -16,7 +16,7 @@ import (
 type AccountUserReply struct {
 
 	// user
-	User *AccountUserBody `json:"user,omitempty"`
+	User *AccountUser `json:"user,omitempty"`
 }
 
 // Validate validates this account user reply

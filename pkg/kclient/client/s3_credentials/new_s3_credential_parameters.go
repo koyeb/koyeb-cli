@@ -64,7 +64,7 @@ for the new s3 credential operation typically these are written to a http.Reques
 type NewS3CredentialParams struct {
 
 	/*Body*/
-	Body *models.AccountNewS3CredentialBody
+	Body *models.AccountNewS3Credential
 
 	timeout    time.Duration
 	Context    context.Context
@@ -105,13 +105,13 @@ func (o *NewS3CredentialParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the new s3 credential params
-func (o *NewS3CredentialParams) WithBody(body *models.AccountNewS3CredentialBody) *NewS3CredentialParams {
+func (o *NewS3CredentialParams) WithBody(body *models.AccountNewS3Credential) *NewS3CredentialParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the new s3 credential params
-func (o *NewS3CredentialParams) SetBody(body *models.AccountNewS3CredentialBody) {
+func (o *NewS3CredentialParams) SetBody(body *models.AccountNewS3Credential) {
 	o.Body = body
 }
 

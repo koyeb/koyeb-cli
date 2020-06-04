@@ -64,7 +64,7 @@ for the update credential2 operation typically these are written to a http.Reque
 type UpdateCredential2Params struct {
 
 	/*Body*/
-	Body *models.AccountCredentialBody
+	Body *models.AccountCredential
 	/*ID*/
 	ID string
 
@@ -107,13 +107,13 @@ func (o *UpdateCredential2Params) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the update credential2 params
-func (o *UpdateCredential2Params) WithBody(body *models.AccountCredentialBody) *UpdateCredential2Params {
+func (o *UpdateCredential2Params) WithBody(body *models.AccountCredential) *UpdateCredential2Params {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the update credential2 params
-func (o *UpdateCredential2Params) SetBody(body *models.AccountCredentialBody) {
+func (o *UpdateCredential2Params) SetBody(body *models.AccountCredential) {
 	o.Body = body
 }
 

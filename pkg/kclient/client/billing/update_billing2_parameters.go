@@ -64,7 +64,7 @@ for the update billing2 operation typically these are written to a http.Request
 type UpdateBilling2Params struct {
 
 	/*Body*/
-	Body *models.AccountBillingInfoBody
+	Body *models.AccountBillingInfo
 
 	timeout    time.Duration
 	Context    context.Context
@@ -105,13 +105,13 @@ func (o *UpdateBilling2Params) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the update billing2 params
-func (o *UpdateBilling2Params) WithBody(body *models.AccountBillingInfoBody) *UpdateBilling2Params {
+func (o *UpdateBilling2Params) WithBody(body *models.AccountBillingInfo) *UpdateBilling2Params {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the update billing2 params
-func (o *UpdateBilling2Params) SetBody(body *models.AccountBillingInfoBody) {
+func (o *UpdateBilling2Params) SetBody(body *models.AccountBillingInfo) {
 	o.Body = body
 }
 

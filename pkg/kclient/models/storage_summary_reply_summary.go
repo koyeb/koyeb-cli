@@ -14,17 +14,8 @@ import (
 // swagger:model StorageSummaryReplySummary
 type StorageSummaryReplySummary struct {
 
-	// delivery count
-	DeliveryCount float64 `json:"delivery_count,omitempty"`
-
-	// managed store count
-	ManagedStoreCount float64 `json:"managed_store_count,omitempty"`
-
-	// service count
-	ServiceCount float64 `json:"service_count,omitempty"`
-
-	// stack count
-	StackCount float64 `json:"stack_count,omitempty"`
+	// store count
+	StoreCount float64 `json:"store_count,omitempty"`
 }
 
 // Validate validates this storage summary reply summary
