@@ -33,13 +33,13 @@ type StorageStore struct {
 	Region string `json:"region,omitempty"`
 
 	// status
-	Status StorageStatus `json:"status,omitempty"`
+	Status StorageStoreStatus `json:"status,omitempty"`
 
 	// status message
 	StatusMessage string `json:"status_message,omitempty"`
 
 	// type
-	Type StoreStoreType `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 
 	// updated at
 	// Format: date-time
@@ -61,10 +61,6 @@ func (m *StorageStore) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStatus(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,22 +96,6 @@ func (m *StorageStore) validateStatus(formats strfmt.Registry) error {
 	if err := m.Status.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("status")
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *StorageStore) validateType(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Type) { // not required
-		return nil
-	}
-
-	if err := m.Type.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("type")
 		}
 		return err
 	}

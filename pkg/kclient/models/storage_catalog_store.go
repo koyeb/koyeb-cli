@@ -41,9 +41,6 @@ type StorageCatalogStore struct {
 	// tags
 	Tags []string `json:"tags"`
 
-	// type
-	Type StoreStoreType `json:"type,omitempty"`
-
 	// vendor
 	Vendor string `json:"vendor,omitempty"`
 
@@ -60,10 +57,6 @@ func (m *StorageCatalogStore) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStatus(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -107,22 +100,6 @@ func (m *StorageCatalogStore) validateStatus(formats strfmt.Registry) error {
 	if err := m.Status.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("status")
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *StorageCatalogStore) validateType(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Type) { // not required
-		return nil
-	}
-
-	if err := m.Type.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("type")
 		}
 		return err
 	}

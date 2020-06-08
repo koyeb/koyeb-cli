@@ -27,29 +27,31 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	ListCatalogStore(params *ListCatalogStoreParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogStoreOK, error)
+	GetCatalogStore(params *GetCatalogStoreParams, authInfo runtime.ClientAuthInfoWriter) (*GetCatalogStoreOK, error)
+
+	ListCatalogStores(params *ListCatalogStoresParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogStoresOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  ListCatalogStore list catalog store API
+  GetCatalogStore get catalog store API
 */
-func (a *Client) ListCatalogStore(params *ListCatalogStoreParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogStoreOK, error) {
+func (a *Client) GetCatalogStore(params *GetCatalogStoreParams, authInfo runtime.ClientAuthInfoWriter) (*GetCatalogStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListCatalogStoreParams()
+		params = NewGetCatalogStoreParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListCatalogStore",
+		ID:                 "GetCatalogStore",
 		Method:             "GET",
-		PathPattern:        "/v1/catalog/stores",
+		PathPattern:        "/v1/catalog/stores/{name}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListCatalogStoreReader{formats: a.formats},
+		Reader:             &GetCatalogStoreReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -57,13 +59,48 @@ func (a *Client) ListCatalogStore(params *ListCatalogStoreParams, authInfo runti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListCatalogStoreOK)
+	success, ok := result.(*GetCatalogStoreOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListCatalogStore: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetCatalogStore: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  ListCatalogStores list catalog stores API
+*/
+func (a *Client) ListCatalogStores(params *ListCatalogStoresParams, authInfo runtime.ClientAuthInfoWriter) (*ListCatalogStoresOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewListCatalogStoresParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "ListCatalogStores",
+		Method:             "GET",
+		PathPattern:        "/v1/catalog/stores",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ListCatalogStoresReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ListCatalogStoresOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ListCatalogStores: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

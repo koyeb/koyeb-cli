@@ -67,8 +67,6 @@ type ListSecretsParams struct {
 	Name *string
 	/*Offset*/
 	Offset *string
-	/*Status*/
-	Status *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,17 +139,6 @@ func (o *ListSecretsParams) SetOffset(offset *string) {
 	o.Offset = offset
 }
 
-// WithStatus adds the status to the list secrets params
-func (o *ListSecretsParams) WithStatus(status *string) *ListSecretsParams {
-	o.SetStatus(status)
-	return o
-}
-
-// SetStatus adds the status to the list secrets params
-func (o *ListSecretsParams) SetStatus(status *string) {
-	o.Status = status
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *ListSecretsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -202,22 +189,6 @@ func (o *ListSecretsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		qOffset := qrOffset
 		if qOffset != "" {
 			if err := r.SetQueryParam("offset", qOffset); err != nil {
-				return err
-			}
-		}
-
-	}
-
-	if o.Status != nil {
-
-		// query param status
-		var qrStatus string
-		if o.Status != nil {
-			qrStatus = *o.Status
-		}
-		qStatus := qrStatus
-		if qStatus != "" {
-			if err := r.SetQueryParam("status", qStatus); err != nil {
 				return err
 			}
 		}

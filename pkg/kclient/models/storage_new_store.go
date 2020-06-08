@@ -6,7 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -22,7 +21,7 @@ type StorageNewStore struct {
 	Region string `json:"region,omitempty"`
 
 	// type
-	Type StoreStoreType `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 
 	// with
 	With map[string]interface{} `json:"with,omitempty"`
@@ -30,31 +29,6 @@ type StorageNewStore struct {
 
 // Validate validates this storage new store
 func (m *StorageNewStore) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *StorageNewStore) validateType(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Type) { // not required
-		return nil
-	}
-
-	if err := m.Type.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("type")
-		}
-		return err
-	}
-
 	return nil
 }
 
