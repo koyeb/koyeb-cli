@@ -121,7 +121,9 @@ func init() {
 
 	// Update
 	rootCmd.AddCommand(updateCmd)
+	updateStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	updateCmd.AddCommand(updateStoreCommand)
+	updateSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	updateCmd.AddCommand(updateSecretCommand)
 
 	// Delete

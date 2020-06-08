@@ -35,7 +35,7 @@ var (
 		Use:     "stores [resource]",
 		Aliases: []string{"ms", "store"},
 		Short:   "Update stores",
-		RunE:    notImplemented,
+		RunE:    updateStores,
 	}
 	deleteStoreCommand = &cobra.Command{
 		Use:     "stores [resource]",
@@ -58,7 +58,7 @@ func (a *StorageStoresBody) MarshalBinary() ([]byte, error) {
 }
 
 func (a *StorageStoresBody) GetHeaders() []string {
-	return []string{"id", "name", "region", "status", "updated_at"}
+	return []string{"id", "name", "type", "region", "status", "updated_at"}
 }
 
 func (a *StorageStoresBody) GetTableFields() [][]string {
@@ -91,6 +91,13 @@ func (a StorageStore) GetNewBody() *apimodel.StorageNewStore {
 	copier.Copy(&newBody, &a.StorageStore)
 	return &newBody
 }
+
+func (a StorageStore) GetUpdateBody() *apimodel.StorageStore {
+	updateBody := apimodel.StorageStore{}
+	copier.Copy(&updateBody, &a.StorageStore)
+	return &updateBody
+}
+
 func (a StorageStore) GetField(field string) string {
 
 	type StorageStore struct {
@@ -178,6 +185,36 @@ func createStores(cmd *cobra.Command, args []string) error {
 		p := stores.NewNewStoreParams()
 		p.SetBody(store.GetNewBody())
 		resp, err := client.Stores.NewStore(p, getAuth())
+		if err != nil {
+			apiError(err)
+			continue
+		}
+		log.Debugf("got response: %v", resp)
+	}
+	return nil
+}
+
+func updateStores(cmd *cobra.Command, args []string) error {
+	var all StorageStoresBody
+
+	log.Debugf("Loading file %s", file)
+	err := loadMultiple(file, &all, "managed_stores")
+	if err != nil {
+		er(err)
+	}
+	log.Debugf("Content loaded %v", all.Stores)
+
+	client := getApiClient()
+	for _, store := range all.Stores {
+		p := stores.NewUpdateStoreParams()
+		updateBody := store.GetUpdateBody()
+		if updateBody.ID != "" {
+			p.SetID(updateBody.ID)
+		} else {
+			p.SetID(updateBody.Name)
+		}
+		p.SetBody(store.GetUpdateBody())
+		resp, err := client.Stores.UpdateStore(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
