@@ -21,7 +21,7 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/secrets"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/session"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/storage_metrics"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stores"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/store"
 )
 
 // Default account account proto HTTP client.
@@ -76,7 +76,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AccountAcc
 	cli.Secrets = secrets.New(transport, formats)
 	cli.Session = session.New(transport, formats)
 	cli.StorageMetrics = storage_metrics.New(transport, formats)
-	cli.Stores = stores.New(transport, formats)
+	cli.Store = store.New(transport, formats)
 	return cli
 }
 
@@ -141,7 +141,7 @@ type AccountAccountProto struct {
 
 	StorageMetrics storage_metrics.ClientService
 
-	Stores stores.ClientService
+	Store store.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -159,5 +159,5 @@ func (c *AccountAccountProto) SetTransport(transport runtime.ClientTransport) {
 	c.Secrets.SetTransport(transport)
 	c.Session.SetTransport(transport)
 	c.StorageMetrics.SetTransport(transport)
-	c.Stores.SetTransport(transport)
+	c.Store.SetTransport(transport)
 }

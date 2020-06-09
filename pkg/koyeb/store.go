@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	stores "github.com/koyeb/koyeb-cli/pkg/kclient/client/stores"
+	store "github.com/koyeb/koyeb-cli/pkg/kclient/client/store"
 	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
 )
 
@@ -123,9 +123,9 @@ func getStores(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := stores.NewGetStoreParams()
+			p := store.NewGetStoreParams()
 			p.ID = arg
-			resp, err := client.Stores.GetStore(p, getAuth())
+			resp, err := client.Store.GetStore(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
@@ -140,13 +140,13 @@ func getStores(cmd *cobra.Command, args []string) error {
 		offset := 0
 
 		for {
-			p := stores.NewListStoresParams()
+			p := store.NewListStoresParams()
 			strLimit := fmt.Sprintf("%d", limit)
 			p.SetLimit(&strLimit)
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.Stores.ListStores(p, getAuth())
+			resp, err := client.Store.ListStores(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
@@ -181,10 +181,10 @@ func createStores(cmd *cobra.Command, args []string) error {
 	log.Debugf("Content loaded %v", all.Stores)
 
 	client := getApiClient()
-	for _, store := range all.Stores {
-		p := stores.NewNewStoreParams()
-		p.SetBody(store.GetNewBody())
-		resp, err := client.Stores.NewStore(p, getAuth())
+	for _, st := range all.Stores {
+		p := store.NewNewStoreParams()
+		p.SetBody(st.GetNewBody())
+		resp, err := client.Store.NewStore(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -205,16 +205,16 @@ func updateStores(cmd *cobra.Command, args []string) error {
 	log.Debugf("Content loaded %v", all.Stores)
 
 	client := getApiClient()
-	for _, store := range all.Stores {
-		p := stores.NewUpdateStoreParams()
-		updateBody := store.GetUpdateBody()
+	for _, st := range all.Stores {
+		p := store.NewUpdateStoreParams()
+		updateBody := st.GetUpdateBody()
 		if updateBody.ID != "" {
 			p.SetID(updateBody.ID)
 		} else {
 			p.SetID(updateBody.Name)
 		}
-		p.SetBody(store.GetUpdateBody())
-		resp, err := client.Stores.UpdateStore(p, getAuth())
+		p.SetBody(st.GetUpdateBody())
+		resp, err := client.Store.UpdateStore(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -229,9 +229,9 @@ func deleteStores(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := stores.NewDeleteStoreParams()
+			p := store.NewDeleteStoreParams()
 			p.ID = arg
-			resp, err := client.Stores.DeleteStore(p, getAuth())
+			resp, err := client.Store.DeleteStore(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
