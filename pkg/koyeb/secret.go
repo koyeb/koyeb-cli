@@ -15,31 +15,31 @@ import (
 var (
 	createSecretCommand = &cobra.Command{
 		Use:     "secrets [resource]",
-		Aliases: []string{"ms", "secret"},
+		Aliases: []string{"secret"},
 		Short:   "Create secrets",
 		RunE:    createSecrets,
 	}
 	getSecretCommand = &cobra.Command{
 		Use:     "secrets [resource]",
-		Aliases: []string{"ms", "secret"},
+		Aliases: []string{"secret"},
 		Short:   "Get secrets",
 		RunE:    getSecrets,
 	}
 	describeSecretCommand = &cobra.Command{
 		Use:     "secrets [resource]",
-		Aliases: []string{"ms", "secret"},
+		Aliases: []string{"secret"},
 		Short:   "Describe secrets",
 		RunE:    getSecrets,
 	}
 	updateSecretCommand = &cobra.Command{
 		Use:     "secrets [resource]",
-		Aliases: []string{"ms", "secret"},
+		Aliases: []string{"secret"},
 		Short:   "Update secrets",
 		RunE:    notImplemented,
 	}
 	deleteSecretCommand = &cobra.Command{
 		Use:     "secrets [resource]",
-		Aliases: []string{"ms", "secret"},
+		Aliases: []string{"secret"},
 		Short:   "Delete secrets",
 		RunE:    deleteSecrets,
 	}
