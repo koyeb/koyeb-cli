@@ -15,31 +15,31 @@ import (
 var (
 	createStoreCommand = &cobra.Command{
 		Use:     "stores [resource]",
-		Aliases: []string{"ms", "store"},
+		Aliases: []string{"store"},
 		Short:   "Create stores",
 		RunE:    createStores,
 	}
 	getStoreCommand = &cobra.Command{
 		Use:     "stores [resource]",
-		Aliases: []string{"ms", "store"},
+		Aliases: []string{"store"},
 		Short:   "Get stores",
 		RunE:    getStores,
 	}
 	describeStoreCommand = &cobra.Command{
 		Use:     "stores [resource]",
-		Aliases: []string{"ms", "store"},
+		Aliases: []string{"store"},
 		Short:   "Describe stores",
 		RunE:    getStores,
 	}
 	updateStoreCommand = &cobra.Command{
 		Use:     "stores [resource]",
-		Aliases: []string{"ms", "store"},
+		Aliases: []string{"store"},
 		Short:   "Update stores",
 		RunE:    updateStores,
 	}
 	deleteStoreCommand = &cobra.Command{
 		Use:     "stores [resource]",
-		Aliases: []string{"ms", "store"},
+		Aliases: []string{"store"},
 		Short:   "Delete stores",
 		RunE:    deleteStores,
 	}
