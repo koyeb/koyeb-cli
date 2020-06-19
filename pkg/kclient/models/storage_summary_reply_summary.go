@@ -14,6 +14,9 @@ import (
 // swagger:model StorageSummaryReplySummary
 type StorageSummaryReplySummary struct {
 
+	// stack count
+	StackCount float64 `json:"stack_count,omitempty"`
+
 	// store count
 	StoreCount float64 `json:"store_count,omitempty"`
 }

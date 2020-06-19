@@ -6,8 +6,6 @@ package store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,39 +25,39 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteStore(params *DeleteStoreParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteStoreOK, error)
+	StoreDeleteStore(params *StoreDeleteStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreDeleteStoreOK, error)
 
-	GetStore(params *GetStoreParams, authInfo runtime.ClientAuthInfoWriter) (*GetStoreOK, error)
+	StoreGetStore(params *StoreGetStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreGetStoreOK, error)
 
-	ListStores(params *ListStoresParams, authInfo runtime.ClientAuthInfoWriter) (*ListStoresOK, error)
+	StoreListStores(params *StoreListStoresParams, authInfo runtime.ClientAuthInfoWriter) (*StoreListStoresOK, error)
 
-	NewStore(params *NewStoreParams, authInfo runtime.ClientAuthInfoWriter) (*NewStoreOK, error)
+	StoreNewStore(params *StoreNewStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreNewStoreOK, error)
 
-	UpdateStore(params *UpdateStoreParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateStoreOK, error)
+	StoreUpdateStore(params *StoreUpdateStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreUpdateStoreOK, error)
 
-	UpdateStore2(params *UpdateStore2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateStore2OK, error)
+	StoreUpdateStore2(params *StoreUpdateStore2Params, authInfo runtime.ClientAuthInfoWriter) (*StoreUpdateStore2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  DeleteStore delete store API
+  StoreDeleteStore store delete store API
 */
-func (a *Client) DeleteStore(params *DeleteStoreParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteStoreOK, error) {
+func (a *Client) StoreDeleteStore(params *StoreDeleteStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreDeleteStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeleteStoreParams()
+		params = NewStoreDeleteStoreParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DeleteStore",
+		ID:                 "store_DeleteStore",
 		Method:             "DELETE",
 		PathPattern:        "/v1/stores/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DeleteStoreReader{formats: a.formats},
+		Reader:             &StoreDeleteStoreReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -67,34 +65,33 @@ func (a *Client) DeleteStore(params *DeleteStoreParams, authInfo runtime.ClientA
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DeleteStoreOK)
+	success, ok := result.(*StoreDeleteStoreOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeleteStore: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*StoreDeleteStoreDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  GetStore get store API
+  StoreGetStore store get store API
 */
-func (a *Client) GetStore(params *GetStoreParams, authInfo runtime.ClientAuthInfoWriter) (*GetStoreOK, error) {
+func (a *Client) StoreGetStore(params *StoreGetStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreGetStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetStoreParams()
+		params = NewStoreGetStoreParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetStore",
+		ID:                 "store_GetStore",
 		Method:             "GET",
 		PathPattern:        "/v1/stores/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetStoreReader{formats: a.formats},
+		Reader:             &StoreGetStoreReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -102,34 +99,33 @@ func (a *Client) GetStore(params *GetStoreParams, authInfo runtime.ClientAuthInf
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetStoreOK)
+	success, ok := result.(*StoreGetStoreOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetStore: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*StoreGetStoreDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  ListStores list stores API
+  StoreListStores store list stores API
 */
-func (a *Client) ListStores(params *ListStoresParams, authInfo runtime.ClientAuthInfoWriter) (*ListStoresOK, error) {
+func (a *Client) StoreListStores(params *StoreListStoresParams, authInfo runtime.ClientAuthInfoWriter) (*StoreListStoresOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListStoresParams()
+		params = NewStoreListStoresParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListStores",
+		ID:                 "store_ListStores",
 		Method:             "GET",
 		PathPattern:        "/v1/stores",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListStoresReader{formats: a.formats},
+		Reader:             &StoreListStoresReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -137,34 +133,33 @@ func (a *Client) ListStores(params *ListStoresParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListStoresOK)
+	success, ok := result.(*StoreListStoresOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListStores: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*StoreListStoresDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  NewStore new store API
+  StoreNewStore store new store API
 */
-func (a *Client) NewStore(params *NewStoreParams, authInfo runtime.ClientAuthInfoWriter) (*NewStoreOK, error) {
+func (a *Client) StoreNewStore(params *StoreNewStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreNewStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewNewStoreParams()
+		params = NewStoreNewStoreParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "NewStore",
+		ID:                 "store_NewStore",
 		Method:             "POST",
 		PathPattern:        "/v1/stores",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &NewStoreReader{formats: a.formats},
+		Reader:             &StoreNewStoreReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -172,34 +167,33 @@ func (a *Client) NewStore(params *NewStoreParams, authInfo runtime.ClientAuthInf
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*NewStoreOK)
+	success, ok := result.(*StoreNewStoreOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for NewStore: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*StoreNewStoreDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateStore update store API
+  StoreUpdateStore store update store API
 */
-func (a *Client) UpdateStore(params *UpdateStoreParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateStoreOK, error) {
+func (a *Client) StoreUpdateStore(params *StoreUpdateStoreParams, authInfo runtime.ClientAuthInfoWriter) (*StoreUpdateStoreOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateStoreParams()
+		params = NewStoreUpdateStoreParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateStore",
+		ID:                 "store_UpdateStore",
 		Method:             "PUT",
 		PathPattern:        "/v1/stores/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateStoreReader{formats: a.formats},
+		Reader:             &StoreUpdateStoreReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -207,34 +201,33 @@ func (a *Client) UpdateStore(params *UpdateStoreParams, authInfo runtime.ClientA
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateStoreOK)
+	success, ok := result.(*StoreUpdateStoreOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateStore: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*StoreUpdateStoreDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateStore2 update store2 API
+  StoreUpdateStore2 store update store2 API
 */
-func (a *Client) UpdateStore2(params *UpdateStore2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateStore2OK, error) {
+func (a *Client) StoreUpdateStore2(params *StoreUpdateStore2Params, authInfo runtime.ClientAuthInfoWriter) (*StoreUpdateStore2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateStore2Params()
+		params = NewStoreUpdateStore2Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateStore2",
+		ID:                 "store_UpdateStore2",
 		Method:             "PATCH",
 		PathPattern:        "/v1/stores/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateStore2Reader{formats: a.formats},
+		Reader:             &StoreUpdateStore2Reader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -242,14 +235,13 @@ func (a *Client) UpdateStore2(params *UpdateStore2Params, authInfo runtime.Clien
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateStore2OK)
+	success, ok := result.(*StoreUpdateStore2OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateStore2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*StoreUpdateStore2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

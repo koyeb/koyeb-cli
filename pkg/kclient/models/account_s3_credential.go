@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -26,6 +28,10 @@ type AccountS3Credential struct {
 	// description
 	Description string `json:"description,omitempty"`
 
+	// expires at
+	// Format: date-time
+	ExpiresAt strfmt.DateTime `json:"expires_at,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
 
@@ -34,6 +40,9 @@ type AccountS3Credential struct {
 
 	// organization id
 	OrganizationID string `json:"organization_id,omitempty"`
+
+	// permissions
+	Permissions []*AccountPermission `json:"permissions"`
 
 	// secret key
 	SecretKey string `json:"secret_key,omitempty"`
@@ -48,6 +57,14 @@ func (m *AccountS3Credential) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCreatedAt(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExpiresAt(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePermissions(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -69,6 +86,44 @@ func (m *AccountS3Credential) validateCreatedAt(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("created_at", "body", "date-time", m.CreatedAt.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *AccountS3Credential) validateExpiresAt(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ExpiresAt) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("expires_at", "body", "date-time", m.ExpiresAt.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AccountS3Credential) validatePermissions(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Permissions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Permissions); i++ {
+		if swag.IsZero(m.Permissions[i]) { // not required
+			continue
+		}
+
+		if m.Permissions[i] != nil {
+			if err := m.Permissions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

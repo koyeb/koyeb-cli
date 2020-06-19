@@ -15,11 +15,13 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/billing"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/catalog"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/credentials"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/hooks"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/invite"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/profile"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/s3_credentials"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/secrets"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/session"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stack"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/storage_metrics"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/store"
 )
@@ -70,11 +72,13 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AccountAcc
 	cli.Billing = billing.New(transport, formats)
 	cli.Catalog = catalog.New(transport, formats)
 	cli.Credentials = credentials.New(transport, formats)
+	cli.Hooks = hooks.New(transport, formats)
 	cli.Invite = invite.New(transport, formats)
 	cli.Profile = profile.New(transport, formats)
 	cli.S3Credentials = s3_credentials.New(transport, formats)
 	cli.Secrets = secrets.New(transport, formats)
 	cli.Session = session.New(transport, formats)
+	cli.Stack = stack.New(transport, formats)
 	cli.StorageMetrics = storage_metrics.New(transport, formats)
 	cli.Store = store.New(transport, formats)
 	return cli
@@ -129,6 +133,8 @@ type AccountAccountProto struct {
 
 	Credentials credentials.ClientService
 
+	Hooks hooks.ClientService
+
 	Invite invite.ClientService
 
 	Profile profile.ClientService
@@ -138,6 +144,8 @@ type AccountAccountProto struct {
 	Secrets secrets.ClientService
 
 	Session session.ClientService
+
+	Stack stack.ClientService
 
 	StorageMetrics storage_metrics.ClientService
 
@@ -153,11 +161,13 @@ func (c *AccountAccountProto) SetTransport(transport runtime.ClientTransport) {
 	c.Billing.SetTransport(transport)
 	c.Catalog.SetTransport(transport)
 	c.Credentials.SetTransport(transport)
+	c.Hooks.SetTransport(transport)
 	c.Invite.SetTransport(transport)
 	c.Profile.SetTransport(transport)
 	c.S3Credentials.SetTransport(transport)
 	c.Secrets.SetTransport(transport)
 	c.Session.SetTransport(transport)
+	c.Stack.SetTransport(transport)
 	c.StorageMetrics.SetTransport(transport)
 	c.Store.SetTransport(transport)
 }

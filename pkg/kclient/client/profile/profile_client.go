@@ -6,8 +6,6 @@ package profile
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,45 +25,49 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteAccount(params *DeleteAccountParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAccountOK, error)
+	ProfileDeleteAccount(params *ProfileDeleteAccountParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileDeleteAccountOK, error)
 
-	GetCurrentUser(params *GetCurrentUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetCurrentUserOK, error)
+	ProfileGetCurrentUser(params *ProfileGetCurrentUserParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileGetCurrentUserOK, error)
 
-	ResendEmailValidation(params *ResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ResendEmailValidationOK, error)
+	ProfileGetOAuthOptions(params *ProfileGetOAuthOptionsParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileGetOAuthOptionsOK, error)
 
-	ResetPassword(params *ResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ResetPasswordOK, error)
+	ProfileOAuthCallback(params *ProfileOAuthCallbackParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileOAuthCallbackOK, error)
 
-	Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWriter) (*SignupOK, error)
+	ProfileResendEmailValidation(params *ProfileResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileResendEmailValidationOK, error)
 
-	UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordOK, error)
+	ProfileResetPassword(params *ProfileResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileResetPasswordOK, error)
 
-	UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUserOK, error)
+	ProfileSignup(params *ProfileSignupParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileSignupOK, error)
 
-	UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateUser2OK, error)
+	ProfileUpdatePassword(params *ProfileUpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileUpdatePasswordOK, error)
 
-	Validate(params *ValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateOK, error)
+	ProfileUpdateUser(params *ProfileUpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileUpdateUserOK, error)
+
+	ProfileUpdateUser2(params *ProfileUpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*ProfileUpdateUser2OK, error)
+
+	ProfileValidate(params *ProfileValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileValidateOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  DeleteAccount delete account API
+  ProfileDeleteAccount profile delete account API
 */
-func (a *Client) DeleteAccount(params *DeleteAccountParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAccountOK, error) {
+func (a *Client) ProfileDeleteAccount(params *ProfileDeleteAccountParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileDeleteAccountOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeleteAccountParams()
+		params = NewProfileDeleteAccountParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DeleteAccount",
+		ID:                 "profile_DeleteAccount",
 		Method:             "DELETE",
 		PathPattern:        "/v1/account/profile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DeleteAccountReader{formats: a.formats},
+		Reader:             &ProfileDeleteAccountReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -73,34 +75,33 @@ func (a *Client) DeleteAccount(params *DeleteAccountParams, authInfo runtime.Cli
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DeleteAccountOK)
+	success, ok := result.(*ProfileDeleteAccountOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeleteAccount: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileDeleteAccountDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  GetCurrentUser get current user API
+  ProfileGetCurrentUser profile get current user API
 */
-func (a *Client) GetCurrentUser(params *GetCurrentUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetCurrentUserOK, error) {
+func (a *Client) ProfileGetCurrentUser(params *ProfileGetCurrentUserParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileGetCurrentUserOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetCurrentUserParams()
+		params = NewProfileGetCurrentUserParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetCurrentUser",
+		ID:                 "profile_GetCurrentUser",
 		Method:             "GET",
 		PathPattern:        "/v1/account/profile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetCurrentUserReader{formats: a.formats},
+		Reader:             &ProfileGetCurrentUserReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -108,34 +109,101 @@ func (a *Client) GetCurrentUser(params *GetCurrentUserParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetCurrentUserOK)
+	success, ok := result.(*ProfileGetCurrentUserOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetCurrentUser: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileGetCurrentUserDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  ResendEmailValidation resend email validation API
+  ProfileGetOAuthOptions gets o auth providers
 */
-func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ResendEmailValidationOK, error) {
+func (a *Client) ProfileGetOAuthOptions(params *ProfileGetOAuthOptionsParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileGetOAuthOptionsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewResendEmailValidationParams()
+		params = NewProfileGetOAuthOptionsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ResendEmailValidation",
+		ID:                 "profile_GetOAuthOptions",
+		Method:             "GET",
+		PathPattern:        "/v1/account/oauth",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ProfileGetOAuthOptionsReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ProfileGetOAuthOptionsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ProfileGetOAuthOptionsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ProfileOAuthCallback authenticates using o auth
+*/
+func (a *Client) ProfileOAuthCallback(params *ProfileOAuthCallbackParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileOAuthCallbackOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewProfileOAuthCallbackParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "profile_OAuthCallback",
+		Method:             "POST",
+		PathPattern:        "/v1/account/oauth",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ProfileOAuthCallbackReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ProfileOAuthCallbackOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ProfileOAuthCallbackDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ProfileResendEmailValidation profile resend email validation API
+*/
+func (a *Client) ProfileResendEmailValidation(params *ProfileResendEmailValidationParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileResendEmailValidationOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewProfileResendEmailValidationParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "profile_ResendEmailValidation",
 		Method:             "POST",
 		PathPattern:        "/v1/account/resend_validation",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ResendEmailValidationReader{formats: a.formats},
+		Reader:             &ProfileResendEmailValidationReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -143,34 +211,33 @@ func (a *Client) ResendEmailValidation(params *ResendEmailValidationParams, auth
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ResendEmailValidationOK)
+	success, ok := result.(*ProfileResendEmailValidationOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ResendEmailValidation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileResendEmailValidationDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  ResetPassword reset password API
+  ProfileResetPassword profile reset password API
 */
-func (a *Client) ResetPassword(params *ResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ResetPasswordOK, error) {
+func (a *Client) ProfileResetPassword(params *ProfileResetPasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileResetPasswordOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewResetPasswordParams()
+		params = NewProfileResetPasswordParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ResetPassword",
+		ID:                 "profile_ResetPassword",
 		Method:             "POST",
 		PathPattern:        "/v1/account/reset_password",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ResetPasswordReader{formats: a.formats},
+		Reader:             &ProfileResetPasswordReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -178,34 +245,33 @@ func (a *Client) ResetPassword(params *ResetPasswordParams, authInfo runtime.Cli
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ResetPasswordOK)
+	success, ok := result.(*ProfileResetPasswordOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ResetPassword: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileResetPasswordDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  Signup signup API
+  ProfileSignup profile signup API
 */
-func (a *Client) Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWriter) (*SignupOK, error) {
+func (a *Client) ProfileSignup(params *ProfileSignupParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileSignupOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewSignupParams()
+		params = NewProfileSignupParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "Signup",
+		ID:                 "profile_Signup",
 		Method:             "POST",
 		PathPattern:        "/v1/account/signup",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &SignupReader{formats: a.formats},
+		Reader:             &ProfileSignupReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -213,34 +279,33 @@ func (a *Client) Signup(params *SignupParams, authInfo runtime.ClientAuthInfoWri
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*SignupOK)
+	success, ok := result.(*ProfileSignupOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for Signup: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileSignupDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdatePassword update password API
+  ProfileUpdatePassword profile update password API
 */
-func (a *Client) UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordOK, error) {
+func (a *Client) ProfileUpdatePassword(params *ProfileUpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileUpdatePasswordOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdatePasswordParams()
+		params = NewProfileUpdatePasswordParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdatePassword",
+		ID:                 "profile_UpdatePassword",
 		Method:             "POST",
 		PathPattern:        "/v1/account/update_password",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdatePasswordReader{formats: a.formats},
+		Reader:             &ProfileUpdatePasswordReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -248,34 +313,33 @@ func (a *Client) UpdatePassword(params *UpdatePasswordParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdatePasswordOK)
+	success, ok := result.(*ProfileUpdatePasswordOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdatePassword: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileUpdatePasswordDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateUser update user API
+  ProfileUpdateUser profile update user API
 */
-func (a *Client) UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUserOK, error) {
+func (a *Client) ProfileUpdateUser(params *ProfileUpdateUserParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileUpdateUserOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateUserParams()
+		params = NewProfileUpdateUserParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateUser",
+		ID:                 "profile_UpdateUser",
 		Method:             "PUT",
 		PathPattern:        "/v1/account/profile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateUserReader{formats: a.formats},
+		Reader:             &ProfileUpdateUserReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -283,34 +347,33 @@ func (a *Client) UpdateUser(params *UpdateUserParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateUserOK)
+	success, ok := result.(*ProfileUpdateUserOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateUser: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileUpdateUserDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateUser2 update user2 API
+  ProfileUpdateUser2 profile update user2 API
 */
-func (a *Client) UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateUser2OK, error) {
+func (a *Client) ProfileUpdateUser2(params *ProfileUpdateUser2Params, authInfo runtime.ClientAuthInfoWriter) (*ProfileUpdateUser2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateUser2Params()
+		params = NewProfileUpdateUser2Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateUser2",
+		ID:                 "profile_UpdateUser2",
 		Method:             "PATCH",
 		PathPattern:        "/v1/account/profile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateUser2Reader{formats: a.formats},
+		Reader:             &ProfileUpdateUser2Reader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -318,34 +381,33 @@ func (a *Client) UpdateUser2(params *UpdateUser2Params, authInfo runtime.ClientA
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateUser2OK)
+	success, ok := result.(*ProfileUpdateUser2OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateUser2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileUpdateUser2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  Validate validate API
+  ProfileValidate profile validate API
 */
-func (a *Client) Validate(params *ValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ValidateOK, error) {
+func (a *Client) ProfileValidate(params *ProfileValidateParams, authInfo runtime.ClientAuthInfoWriter) (*ProfileValidateOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewValidateParams()
+		params = NewProfileValidateParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "Validate",
+		ID:                 "profile_Validate",
 		Method:             "POST",
 		PathPattern:        "/v1/account/validate/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ValidateReader{formats: a.formats},
+		Reader:             &ProfileValidateReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -353,14 +415,13 @@ func (a *Client) Validate(params *ValidateParams, authInfo runtime.ClientAuthInf
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ValidateOK)
+	success, ok := result.(*ProfileValidateOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for Validate: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ProfileValidateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

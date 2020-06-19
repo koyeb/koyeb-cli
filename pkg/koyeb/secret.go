@@ -116,9 +116,9 @@ func getSecrets(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := secrets.NewGetSecretParams()
+			p := secrets.NewSecretsGetSecretParams()
 			p.ID = arg
-			resp, err := client.Secrets.GetSecret(p, getAuth())
+			resp, err := client.Secrets.SecretsGetSecret(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
@@ -133,13 +133,13 @@ func getSecrets(cmd *cobra.Command, args []string) error {
 		offset := 0
 
 		for {
-			p := secrets.NewListSecretsParams()
+			p := secrets.NewSecretsListSecretsParams()
 			strLimit := fmt.Sprintf("%d", limit)
 			p.SetLimit(&strLimit)
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.Secrets.ListSecrets(p, getAuth())
+			resp, err := client.Secrets.SecretsListSecrets(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
@@ -175,9 +175,9 @@ func createSecrets(cmd *cobra.Command, args []string) error {
 
 	client := getApiClient()
 	for _, secret := range all.Secrets {
-		p := secrets.NewNewSecretParams()
+		p := secrets.NewSecretsNewSecretParams()
 		p.SetBody(secret.GetNewBody())
-		resp, err := client.Secrets.NewSecret(p, getAuth())
+		resp, err := client.Secrets.SecretsNewSecret(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -192,9 +192,9 @@ func deleteSecrets(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := secrets.NewDeleteSecretParams()
+			p := secrets.NewSecretsDeleteSecretParams()
 			p.ID = arg
-			resp, err := client.Secrets.DeleteSecret(p, getAuth())
+			resp, err := client.Secrets.SecretsDeleteSecret(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue

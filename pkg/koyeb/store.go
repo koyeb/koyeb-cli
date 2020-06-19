@@ -123,9 +123,9 @@ func getStores(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := store.NewGetStoreParams()
+			p := store.NewStoreGetStoreParams()
 			p.ID = arg
-			resp, err := client.Store.GetStore(p, getAuth())
+			resp, err := client.Store.StoreGetStore(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
@@ -140,13 +140,13 @@ func getStores(cmd *cobra.Command, args []string) error {
 		offset := 0
 
 		for {
-			p := store.NewListStoresParams()
+			p := store.NewStoreListStoresParams()
 			strLimit := fmt.Sprintf("%d", limit)
 			p.SetLimit(&strLimit)
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.Store.ListStores(p, getAuth())
+			resp, err := client.Store.StoreListStores(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
@@ -182,9 +182,9 @@ func createStores(cmd *cobra.Command, args []string) error {
 
 	client := getApiClient()
 	for _, st := range all.Stores {
-		p := store.NewNewStoreParams()
+		p := store.NewStoreNewStoreParams()
 		p.SetBody(st.GetNewBody())
-		resp, err := client.Store.NewStore(p, getAuth())
+		resp, err := client.Store.StoreNewStore(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -206,7 +206,7 @@ func updateStores(cmd *cobra.Command, args []string) error {
 
 	client := getApiClient()
 	for _, st := range all.Stores {
-		p := store.NewUpdateStoreParams()
+		p := store.NewStoreUpdateStoreParams()
 		updateBody := st.GetUpdateBody()
 		if updateBody.ID != "" {
 			p.SetID(updateBody.ID)
@@ -214,7 +214,7 @@ func updateStores(cmd *cobra.Command, args []string) error {
 			p.SetID(updateBody.Name)
 		}
 		p.SetBody(st.GetUpdateBody())
-		resp, err := client.Store.UpdateStore(p, getAuth())
+		resp, err := client.Store.StoreUpdateStore(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -229,9 +229,9 @@ func deleteStores(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := store.NewDeleteStoreParams()
+			p := store.NewStoreDeleteStoreParams()
 			p.ID = arg
-			resp, err := client.Store.DeleteStore(p, getAuth())
+			resp, err := client.Store.StoreDeleteStore(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue

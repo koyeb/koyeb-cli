@@ -40,6 +40,12 @@ type AccountUser struct {
 	// fullname
 	Fullname string `json:"fullname,omitempty"`
 
+	// github id
+	GithubID string `json:"github_id,omitempty"`
+
+	// github user
+	GithubUser string `json:"github_user,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
 

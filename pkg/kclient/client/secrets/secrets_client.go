@@ -6,8 +6,6 @@ package secrets
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,39 +25,39 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteSecret(params *DeleteSecretParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteSecretOK, error)
+	SecretsDeleteSecret(params *SecretsDeleteSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsDeleteSecretOK, error)
 
-	GetSecret(params *GetSecretParams, authInfo runtime.ClientAuthInfoWriter) (*GetSecretOK, error)
+	SecretsGetSecret(params *SecretsGetSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsGetSecretOK, error)
 
-	ListSecrets(params *ListSecretsParams, authInfo runtime.ClientAuthInfoWriter) (*ListSecretsOK, error)
+	SecretsListSecrets(params *SecretsListSecretsParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsListSecretsOK, error)
 
-	NewSecret(params *NewSecretParams, authInfo runtime.ClientAuthInfoWriter) (*NewSecretOK, error)
+	SecretsNewSecret(params *SecretsNewSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsNewSecretOK, error)
 
-	UpdateSecret(params *UpdateSecretParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateSecretOK, error)
+	SecretsUpdateSecret(params *SecretsUpdateSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsUpdateSecretOK, error)
 
-	UpdateSecret2(params *UpdateSecret2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateSecret2OK, error)
+	SecretsUpdateSecret2(params *SecretsUpdateSecret2Params, authInfo runtime.ClientAuthInfoWriter) (*SecretsUpdateSecret2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  DeleteSecret delete secret API
+  SecretsDeleteSecret secrets delete secret API
 */
-func (a *Client) DeleteSecret(params *DeleteSecretParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteSecretOK, error) {
+func (a *Client) SecretsDeleteSecret(params *SecretsDeleteSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsDeleteSecretOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeleteSecretParams()
+		params = NewSecretsDeleteSecretParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DeleteSecret",
+		ID:                 "Secrets_DeleteSecret",
 		Method:             "DELETE",
 		PathPattern:        "/v1/secrets/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DeleteSecretReader{formats: a.formats},
+		Reader:             &SecretsDeleteSecretReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -67,34 +65,33 @@ func (a *Client) DeleteSecret(params *DeleteSecretParams, authInfo runtime.Clien
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DeleteSecretOK)
+	success, ok := result.(*SecretsDeleteSecretOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeleteSecret: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SecretsDeleteSecretDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  GetSecret get secret API
+  SecretsGetSecret secrets get secret API
 */
-func (a *Client) GetSecret(params *GetSecretParams, authInfo runtime.ClientAuthInfoWriter) (*GetSecretOK, error) {
+func (a *Client) SecretsGetSecret(params *SecretsGetSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsGetSecretOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetSecretParams()
+		params = NewSecretsGetSecretParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetSecret",
+		ID:                 "Secrets_GetSecret",
 		Method:             "GET",
 		PathPattern:        "/v1/secrets/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetSecretReader{formats: a.formats},
+		Reader:             &SecretsGetSecretReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -102,34 +99,33 @@ func (a *Client) GetSecret(params *GetSecretParams, authInfo runtime.ClientAuthI
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetSecretOK)
+	success, ok := result.(*SecretsGetSecretOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSecret: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SecretsGetSecretDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  ListSecrets list secrets API
+  SecretsListSecrets secrets list secrets API
 */
-func (a *Client) ListSecrets(params *ListSecretsParams, authInfo runtime.ClientAuthInfoWriter) (*ListSecretsOK, error) {
+func (a *Client) SecretsListSecrets(params *SecretsListSecretsParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsListSecretsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListSecretsParams()
+		params = NewSecretsListSecretsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListSecrets",
+		ID:                 "Secrets_ListSecrets",
 		Method:             "GET",
 		PathPattern:        "/v1/secrets",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListSecretsReader{formats: a.formats},
+		Reader:             &SecretsListSecretsReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -137,34 +133,33 @@ func (a *Client) ListSecrets(params *ListSecretsParams, authInfo runtime.ClientA
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListSecretsOK)
+	success, ok := result.(*SecretsListSecretsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListSecrets: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SecretsListSecretsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  NewSecret new secret API
+  SecretsNewSecret secrets new secret API
 */
-func (a *Client) NewSecret(params *NewSecretParams, authInfo runtime.ClientAuthInfoWriter) (*NewSecretOK, error) {
+func (a *Client) SecretsNewSecret(params *SecretsNewSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsNewSecretOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewNewSecretParams()
+		params = NewSecretsNewSecretParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "NewSecret",
+		ID:                 "Secrets_NewSecret",
 		Method:             "POST",
 		PathPattern:        "/v1/secrets",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &NewSecretReader{formats: a.formats},
+		Reader:             &SecretsNewSecretReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -172,34 +167,33 @@ func (a *Client) NewSecret(params *NewSecretParams, authInfo runtime.ClientAuthI
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*NewSecretOK)
+	success, ok := result.(*SecretsNewSecretOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for NewSecret: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SecretsNewSecretDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateSecret update secret API
+  SecretsUpdateSecret secrets update secret API
 */
-func (a *Client) UpdateSecret(params *UpdateSecretParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateSecretOK, error) {
+func (a *Client) SecretsUpdateSecret(params *SecretsUpdateSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsUpdateSecretOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateSecretParams()
+		params = NewSecretsUpdateSecretParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateSecret",
+		ID:                 "Secrets_UpdateSecret",
 		Method:             "PUT",
 		PathPattern:        "/v1/secrets/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateSecretReader{formats: a.formats},
+		Reader:             &SecretsUpdateSecretReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -207,34 +201,33 @@ func (a *Client) UpdateSecret(params *UpdateSecretParams, authInfo runtime.Clien
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateSecretOK)
+	success, ok := result.(*SecretsUpdateSecretOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateSecret: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SecretsUpdateSecretDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateSecret2 update secret2 API
+  SecretsUpdateSecret2 secrets update secret2 API
 */
-func (a *Client) UpdateSecret2(params *UpdateSecret2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateSecret2OK, error) {
+func (a *Client) SecretsUpdateSecret2(params *SecretsUpdateSecret2Params, authInfo runtime.ClientAuthInfoWriter) (*SecretsUpdateSecret2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateSecret2Params()
+		params = NewSecretsUpdateSecret2Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateSecret2",
+		ID:                 "Secrets_UpdateSecret2",
 		Method:             "PATCH",
 		PathPattern:        "/v1/secrets/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateSecret2Reader{formats: a.formats},
+		Reader:             &SecretsUpdateSecret2Reader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -242,14 +235,13 @@ func (a *Client) UpdateSecret2(params *UpdateSecret2Params, authInfo runtime.Cli
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateSecret2OK)
+	success, ok := result.(*SecretsUpdateSecret2OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateSecret2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SecretsUpdateSecret2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client
