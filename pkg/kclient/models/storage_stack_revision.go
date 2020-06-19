@@ -36,8 +36,7 @@ type StorageStackRevision struct {
 	Version string `json:"version,omitempty"`
 
 	// The raw yaml
-	// Format: byte
-	Yaml strfmt.Base64 `json:"yaml,omitempty"`
+	Yaml string `json:"yaml,omitempty"`
 }
 
 // Validate validates this storage stack revision

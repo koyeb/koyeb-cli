@@ -22,8 +22,7 @@ type StorageStackUpsert struct {
 	Repository *StorageSCMRepository `json:"repository,omitempty"`
 
 	// yaml
-	// Format: byte
-	Yaml strfmt.Base64 `json:"yaml,omitempty"`
+	Yaml interface{} `json:"yaml,omitempty"`
 }
 
 // Validate validates this storage stack upsert
