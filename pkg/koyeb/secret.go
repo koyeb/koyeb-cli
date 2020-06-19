@@ -167,7 +167,7 @@ func createSecrets(cmd *cobra.Command, args []string) error {
 	var all StorageSecretsBody
 
 	log.Debugf("Loading file %s", file)
-	err := loadMultiple(file, &all, "managed_secrets")
+	err := loadMultiple(file, &all, "secrets")
 	if err != nil {
 		er(err)
 	}

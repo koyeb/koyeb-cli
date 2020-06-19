@@ -174,7 +174,7 @@ func createStores(cmd *cobra.Command, args []string) error {
 	var all StorageStoresBody
 
 	log.Debugf("Loading file %s", file)
-	err := loadMultiple(file, &all, "managed_stores")
+	err := loadMultiple(file, &all, "stores")
 	if err != nil {
 		er(err)
 	}
@@ -198,7 +198,7 @@ func updateStores(cmd *cobra.Command, args []string) error {
 	var all StorageStoresBody
 
 	log.Debugf("Loading file %s", file)
-	err := loadMultiple(file, &all, "managed_stores")
+	err := loadMultiple(file, &all, "stores")
 	if err != nil {
 		er(err)
 	}
