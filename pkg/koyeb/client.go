@@ -36,10 +36,14 @@ func getAuth() runtime.ClientAuthInfoWriter {
 	return httptransport.BearerToken(token)
 }
 
+type UpdateApiResources interface {
+	New() interface{}
+	Append(interface{})
+}
+
 type ApiResources interface {
 	GetHeaders() []string
 	New() interface{}
-	Append(interface{})
 	GetTableFields() [][]string
 	MarshalBinary() ([]byte, error)
 }

@@ -25,7 +25,7 @@ func isJson(file string) bool {
 	return false
 }
 
-func loadMultiple(file string, item ApiResources, root string) error {
+func loadMultiple(file string, item UpdateApiResources, root string) error {
 	raw, err := ioutil.ReadFile(file)
 	if err != nil {
 		return err
