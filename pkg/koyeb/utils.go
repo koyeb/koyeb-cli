@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"regexp"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -31,7 +32,7 @@ func loadMultiple(file string, item UpdateApiResources, root string) error {
 		return err
 	}
 
-	buffers := strings.Split(string(raw), "---")
+	buffers := regexp.MustCompile("(?m)^\\-\\-\\-$").Split(string(raw), -1)
 
 	for _, buf := range buffers {
 		data := []byte(buf)
