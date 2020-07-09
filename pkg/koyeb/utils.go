@@ -93,3 +93,15 @@ func parseFile(file string, item interface{}) error {
 	}
 	return errors.New("Unknown format")
 }
+
+func loadYaml(file string) (string, error) {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+
+	if isYaml(file) {
+		return string(data), nil
+	}
+	return "", errors.New("Unknown format")
+}
