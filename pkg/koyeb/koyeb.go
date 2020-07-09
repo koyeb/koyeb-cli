@@ -12,13 +12,14 @@ import (
 
 var (
 	// Used for flags.
-	file         string
-	cfgFile      string
-	apiurl       string
-	token        string
-	outputFormat string
-	debug        bool
-	newStackName string
+	file                 string
+	cfgFile              string
+	apiurl               string
+	token                string
+	outputFormat         string
+	debug                bool
+	newStackName         string
+	stackRevisionMessage string
 
 	rootCmd = &cobra.Command{
 		Use:   "koyeb",
@@ -105,6 +106,10 @@ func init() {
 	createCmd.AddCommand(createStackCommand)
 	createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
 	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createCmd.AddCommand(createStackRevisionCommand)
+	createStackRevisionCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createStackRevisionCommand.Flags().StringVarP(&stackRevisionMessage, "message", "m", "", "Message")
+	createStackRevisionCommand.MarkFlagRequired("file")
 	createCmd.AddCommand(createStoreCommand)
 	createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	createStoreCommand.MarkFlagRequired("file")
@@ -116,12 +121,14 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getAllCommand)
 	getCmd.AddCommand(getStackCommand)
+	getCmd.AddCommand(getStackRevisionCommand)
 	getCmd.AddCommand(getStoreCommand)
 	getCmd.AddCommand(getSecretCommand)
 
 	// Describe
 	rootCmd.AddCommand(describeCmd)
 	describeCmd.AddCommand(describeStackCommand)
+	describeCmd.AddCommand(describeStackRevisionCommand)
 	describeCmd.AddCommand(describeStoreCommand)
 	describeCmd.AddCommand(describeSecretCommand)
 
