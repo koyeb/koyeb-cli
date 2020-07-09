@@ -18,6 +18,7 @@ var (
 	token        string
 	outputFormat string
 	debug        bool
+	newStackName string
 
 	rootCmd = &cobra.Command{
 		Use:   "koyeb",
@@ -102,8 +103,8 @@ func init() {
 	// Create
 	rootCmd.AddCommand(createCmd)
 	createCmd.AddCommand(createStackCommand)
+	createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
 	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createStackCommand.MarkFlagRequired("file")
 	createCmd.AddCommand(createStoreCommand)
 	createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	createStoreCommand.MarkFlagRequired("file")

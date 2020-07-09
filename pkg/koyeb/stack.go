@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-openapi/swag"
@@ -239,24 +240,42 @@ func getStacks(cmd *cobra.Command, args []string) error {
 func createStacks(cmd *cobra.Command, args []string) error {
 	var all StorageStacksUpsertBody
 
-	log.Debugf("Loading file %s", file)
-	err := loadMultiple(file, &all, "stacks")
-	if err != nil {
-		er(err)
-	}
-	log.Debugf("Content loaded %v", all.Stacks)
+	if file != "" {
+		log.Debugf("Loading file %s", file)
+		err := loadMultiple(file, &all, "stacks")
+		if err != nil {
+			er(err)
+		}
+		log.Debugf("Content loaded %v", all.Stacks)
 
-	client := getApiClient()
-	for _, st := range all.Stacks {
+		client := getApiClient()
+		for _, st := range all.Stacks {
+			p := stack.NewStackNewStackParams()
+			p.SetBody(st.GetNewBody())
+			resp, err := client.Stack.StackNewStack(p, getAuth())
+			if err != nil {
+				apiError(err)
+				continue
+			}
+			log.Debugf("got response: %v", resp)
+		}
+	} else if newStackName != "" {
+		client := getApiClient()
 		p := stack.NewStackNewStackParams()
-		p.SetBody(st.GetNewBody())
+		var stack StorageStackUpsert
+		st := stack.GetNewBody()
+		st.Name = newStackName
+		p.SetBody(st)
 		resp, err := client.Stack.StackNewStack(p, getAuth())
 		if err != nil {
 			apiError(err)
-			continue
+			return nil
 		}
 		log.Debugf("got response: %v", resp)
+	} else {
+		return errors.New("Missing file or name")
 	}
+
 	return nil
 }
 
