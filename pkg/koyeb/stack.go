@@ -95,6 +95,26 @@ func (a *StorageStacksBody) Append(item interface{}) {
 	a.Stacks = append(a.Stacks, StorageStack{*stack})
 }
 
+type StorageStacksDetailBody struct {
+	StorageStacksBody
+}
+
+func (a *StorageStacksDetailBody) GetHeaders() []string {
+	return []string{"id", "name", "status", "latest_revision_sha", "deployed_revision_sha", "updated_at"}
+}
+
+func (a *StorageStacksDetailBody) GetTableFields() [][]string {
+	var data [][]string
+	for _, item := range a.Stacks {
+		var fields []string
+		for _, field := range a.GetHeaders() {
+			fields = append(fields, item.GetField(field))
+		}
+		data = append(data, fields)
+	}
+	return data
+}
+
 type StorageStack struct {
 	apimodel.StorageStack
 }
@@ -126,6 +146,15 @@ func (a StorageStackUpsert) GetUpdateBody() *apimodel.StorageStackUpsert {
 
 func displayStacks(items []*apimodel.StorageStack, format string) {
 	var stacks StorageStacksBody
+
+	for _, item := range items {
+		stacks.Stacks = append(stacks.Stacks, StorageStack{*item})
+	}
+	render(&stacks, format)
+}
+
+func displayStacksDetail(items []*apimodel.StorageStack, format string) {
+	var stacks StorageStacksDetailBody
 
 	for _, item := range items {
 		stacks.Stacks = append(stacks.Stacks, StorageStack{*item})
@@ -198,7 +227,11 @@ func getStacks(cmd *cobra.Command, args []string) error {
 	if cmd.Parent().Name() == "describe" {
 		format = "yaml"
 	}
-	displayStacks(all, format)
+	if len(args) > 0 {
+		displayStacksDetail(all, format)
+	} else {
+		displayStacks(all, format)
+	}
 
 	return nil
 }
