@@ -19,8 +19,23 @@ type StorageStackRevisionStatus string
 
 const (
 
-	// StorageStackRevisionStatusVALID captures enum value "VALID"
-	StorageStackRevisionStatusVALID StorageStackRevisionStatus = "VALID"
+	// StorageStackRevisionStatusPROVISIONNING captures enum value "PROVISIONNING"
+	StorageStackRevisionStatusPROVISIONNING StorageStackRevisionStatus = "PROVISIONNING"
+
+	// StorageStackRevisionStatusBUILDING captures enum value "BUILDING"
+	StorageStackRevisionStatusBUILDING StorageStackRevisionStatus = "BUILDING"
+
+	// StorageStackRevisionStatusDEPLOYING captures enum value "DEPLOYING"
+	StorageStackRevisionStatusDEPLOYING StorageStackRevisionStatus = "DEPLOYING"
+
+	// StorageStackRevisionStatusDEPLOYED captures enum value "DEPLOYED"
+	StorageStackRevisionStatusDEPLOYED StorageStackRevisionStatus = "DEPLOYED"
+
+	// StorageStackRevisionStatusSTOPPING captures enum value "STOPPING"
+	StorageStackRevisionStatusSTOPPING StorageStackRevisionStatus = "STOPPING"
+
+	// StorageStackRevisionStatusSTOPPED captures enum value "STOPPED"
+	StorageStackRevisionStatusSTOPPED StorageStackRevisionStatus = "STOPPED"
 
 	// StorageStackRevisionStatusERROR captures enum value "ERROR"
 	StorageStackRevisionStatusERROR StorageStackRevisionStatus = "ERROR"
@@ -31,7 +46,7 @@ var storageStackRevisionStatusEnum []interface{}
 
 func init() {
 	var res []StorageStackRevisionStatus
-	if err := json.Unmarshal([]byte(`["VALID","ERROR"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["PROVISIONNING","BUILDING","DEPLOYING","DEPLOYED","STOPPING","STOPPED","ERROR"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

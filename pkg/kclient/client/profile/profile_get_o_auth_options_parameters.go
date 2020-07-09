@@ -78,6 +78,11 @@ type ProfileGetOAuthOptionsParams struct {
 
 	*/
 	Action *string
+	/*Metadata
+	  A small (limited to 400 characters) string of arbitrary metadata which will be encoded in the state.
+
+	*/
+	Metadata *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,6 +133,17 @@ func (o *ProfileGetOAuthOptionsParams) SetAction(action *string) {
 	o.Action = action
 }
 
+// WithMetadata adds the metadata to the profile get o auth options params
+func (o *ProfileGetOAuthOptionsParams) WithMetadata(metadata *string) *ProfileGetOAuthOptionsParams {
+	o.SetMetadata(metadata)
+	return o
+}
+
+// SetMetadata adds the metadata to the profile get o auth options params
+func (o *ProfileGetOAuthOptionsParams) SetMetadata(metadata *string) {
+	o.Metadata = metadata
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *ProfileGetOAuthOptionsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -146,6 +162,22 @@ func (o *ProfileGetOAuthOptionsParams) WriteToRequest(r runtime.ClientRequest, r
 		qAction := qrAction
 		if qAction != "" {
 			if err := r.SetQueryParam("action", qAction); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	if o.Metadata != nil {
+
+		// query param metadata
+		var qrMetadata string
+		if o.Metadata != nil {
+			qrMetadata = *o.Metadata
+		}
+		qMetadata := qrMetadata
+		if qMetadata != "" {
+			if err := r.SetQueryParam("metadata", qMetadata); err != nil {
 				return err
 			}
 		}

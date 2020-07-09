@@ -16,6 +16,9 @@ import (
 // swagger:model storageStackRevision
 type StorageStackRevision struct {
 
+	// Information about the commit that generated this revision (potentially absent)
+	CommitInfo *StorageCommitInfo `json:"commit_info,omitempty"`
+
 	// created at
 	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"created_at,omitempty"`
@@ -43,6 +46,10 @@ type StorageStackRevision struct {
 func (m *StorageStackRevision) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCommitInfo(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCreatedAt(formats); err != nil {
 		res = append(res, err)
 	}
@@ -54,6 +61,24 @@ func (m *StorageStackRevision) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *StorageStackRevision) validateCommitInfo(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.CommitInfo) { // not required
+		return nil
+	}
+
+	if m.CommitInfo != nil {
+		if err := m.CommitInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("commit_info")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

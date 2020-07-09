@@ -84,11 +84,6 @@ type StackListStacksParams struct {
 
 	*/
 	RepositoryBranch *string
-	/*RepositoryInstallationURL
-	  The url to find the repo without a scheme (.e.g: github.com).
-
-	*/
-	RepositoryInstallationURL *string
 	/*RepositoryName
 	  The url to find the repo (.e.g: koyeb/gateway).
 
@@ -182,17 +177,6 @@ func (o *StackListStacksParams) SetRepositoryBranch(repositoryBranch *string) {
 	o.RepositoryBranch = repositoryBranch
 }
 
-// WithRepositoryInstallationURL adds the repositoryInstallationURL to the stack list stacks params
-func (o *StackListStacksParams) WithRepositoryInstallationURL(repositoryInstallationURL *string) *StackListStacksParams {
-	o.SetRepositoryInstallationURL(repositoryInstallationURL)
-	return o
-}
-
-// SetRepositoryInstallationURL adds the repositoryInstallationUrl to the stack list stacks params
-func (o *StackListStacksParams) SetRepositoryInstallationURL(repositoryInstallationURL *string) {
-	o.RepositoryInstallationURL = repositoryInstallationURL
-}
-
 // WithRepositoryName adds the repositoryName to the stack list stacks params
 func (o *StackListStacksParams) WithRepositoryName(repositoryName *string) *StackListStacksParams {
 	o.SetRepositoryName(repositoryName)
@@ -281,22 +265,6 @@ func (o *StackListStacksParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		qRepositoryBranch := qrRepositoryBranch
 		if qRepositoryBranch != "" {
 			if err := r.SetQueryParam("repository.branch", qRepositoryBranch); err != nil {
-				return err
-			}
-		}
-
-	}
-
-	if o.RepositoryInstallationURL != nil {
-
-		// query param repository.installation_url
-		var qrRepositoryInstallationURL string
-		if o.RepositoryInstallationURL != nil {
-			qrRepositoryInstallationURL = *o.RepositoryInstallationURL
-		}
-		qRepositoryInstallationURL := qrRepositoryInstallationURL
-		if qRepositoryInstallationURL != "" {
-			if err := r.SetQueryParam("repository.installation_url", qRepositoryInstallationURL); err != nil {
 				return err
 			}
 		}

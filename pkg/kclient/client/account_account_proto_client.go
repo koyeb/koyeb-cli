@@ -12,11 +12,12 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/activity"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/billing"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/catalog"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/credentials"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/hooks"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/invite"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/logs"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/organization"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/profile"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/s3_credentials"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/secrets"
@@ -69,11 +70,12 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AccountAcc
 	cli := new(AccountAccountProto)
 	cli.Transport = transport
 	cli.Activity = activity.New(transport, formats)
-	cli.Billing = billing.New(transport, formats)
 	cli.Catalog = catalog.New(transport, formats)
 	cli.Credentials = credentials.New(transport, formats)
 	cli.Hooks = hooks.New(transport, formats)
 	cli.Invite = invite.New(transport, formats)
+	cli.Logs = logs.New(transport, formats)
+	cli.Organization = organization.New(transport, formats)
 	cli.Profile = profile.New(transport, formats)
 	cli.S3Credentials = s3_credentials.New(transport, formats)
 	cli.Secrets = secrets.New(transport, formats)
@@ -127,8 +129,6 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 type AccountAccountProto struct {
 	Activity activity.ClientService
 
-	Billing billing.ClientService
-
 	Catalog catalog.ClientService
 
 	Credentials credentials.ClientService
@@ -136,6 +136,10 @@ type AccountAccountProto struct {
 	Hooks hooks.ClientService
 
 	Invite invite.ClientService
+
+	Logs logs.ClientService
+
+	Organization organization.ClientService
 
 	Profile profile.ClientService
 
@@ -158,11 +162,12 @@ type AccountAccountProto struct {
 func (c *AccountAccountProto) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 	c.Activity.SetTransport(transport)
-	c.Billing.SetTransport(transport)
 	c.Catalog.SetTransport(transport)
 	c.Credentials.SetTransport(transport)
 	c.Hooks.SetTransport(transport)
 	c.Invite.SetTransport(transport)
+	c.Logs.SetTransport(transport)
+	c.Organization.SetTransport(transport)
 	c.Profile.SetTransport(transport)
 	c.S3Credentials.SetTransport(transport)
 	c.Secrets.SetTransport(transport)

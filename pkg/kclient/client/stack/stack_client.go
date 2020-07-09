@@ -29,7 +29,11 @@ type ClientService interface {
 
 	StackGetStack(params *StackGetStackParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackOK, error)
 
+	StackGetStackActivities(params *StackGetStackActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackActivitiesOK, error)
+
 	StackGetStackRevision(params *StackGetStackRevisionParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackRevisionOK, error)
+
+	StackGetStackRevisionActivities(params *StackGetStackRevisionActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackRevisionActivitiesOK, error)
 
 	StackListStackRevisions(params *StackListStackRevisionsParams, authInfo runtime.ClientAuthInfoWriter) (*StackListStackRevisionsOK, error)
 
@@ -37,9 +41,15 @@ type ClientService interface {
 
 	StackNewStack(params *StackNewStackParams, authInfo runtime.ClientAuthInfoWriter) (*StackNewStackOK, error)
 
+	StackNewStackEvent(params *StackNewStackEventParams, authInfo runtime.ClientAuthInfoWriter) (*StackNewStackEventOK, error)
+
+	StackNewStackRevision(params *StackNewStackRevisionParams, authInfo runtime.ClientAuthInfoWriter) (*StackNewStackRevisionOK, error)
+
 	StackUpdateStack(params *StackUpdateStackParams, authInfo runtime.ClientAuthInfoWriter) (*StackUpdateStackOK, error)
 
 	StackUpdateStack2(params *StackUpdateStack2Params, authInfo runtime.ClientAuthInfoWriter) (*StackUpdateStack2OK, error)
+
+	StackValidateNewStackRevision(params *StackValidateNewStackRevisionParams, authInfo runtime.ClientAuthInfoWriter) (*StackValidateNewStackRevisionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -113,6 +123,40 @@ func (a *Client) StackGetStack(params *StackGetStackParams, authInfo runtime.Cli
 }
 
 /*
+  StackGetStackActivities views stack activities
+*/
+func (a *Client) StackGetStackActivities(params *StackGetStackActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackActivitiesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStackGetStackActivitiesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "stack_GetStackActivities",
+		Method:             "GET",
+		PathPattern:        "/v1/stacks/{id}/activities",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StackGetStackActivitiesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StackGetStackActivitiesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StackGetStackActivitiesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   StackGetStackRevision fetches a stack revision
 */
 func (a *Client) StackGetStackRevision(params *StackGetStackRevisionParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackRevisionOK, error) {
@@ -143,6 +187,40 @@ func (a *Client) StackGetStackRevision(params *StackGetStackRevisionParams, auth
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*StackGetStackRevisionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StackGetStackRevisionActivities gets a stack revision activities
+*/
+func (a *Client) StackGetStackRevisionActivities(params *StackGetStackRevisionActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*StackGetStackRevisionActivitiesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStackGetStackRevisionActivitiesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "stack_GetStackRevisionActivities",
+		Method:             "GET",
+		PathPattern:        "/v1/stacks/{stack_id}/revisions/{sha}/activities",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StackGetStackRevisionActivitiesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StackGetStackRevisionActivitiesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StackGetStackRevisionActivitiesDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -249,6 +327,74 @@ func (a *Client) StackNewStack(params *StackNewStackParams, authInfo runtime.Cli
 }
 
 /*
+  StackNewStackEvent sends event to stack
+*/
+func (a *Client) StackNewStackEvent(params *StackNewStackEventParams, authInfo runtime.ClientAuthInfoWriter) (*StackNewStackEventOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStackNewStackEventParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "stack_NewStackEvent",
+		Method:             "POST",
+		PathPattern:        "/v1/stacks/{stack_id}/events",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StackNewStackEventReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StackNewStackEventOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StackNewStackEventDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StackNewStackRevision news stack revisions
+*/
+func (a *Client) StackNewStackRevision(params *StackNewStackRevisionParams, authInfo runtime.ClientAuthInfoWriter) (*StackNewStackRevisionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStackNewStackRevisionParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "stack_NewStackRevision",
+		Method:             "POST",
+		PathPattern:        "/v1/stacks/{stack_id}/revisions",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StackNewStackRevisionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StackNewStackRevisionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StackNewStackRevisionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   StackUpdateStack updates an existing stack
 */
 func (a *Client) StackUpdateStack(params *StackUpdateStackParams, authInfo runtime.ClientAuthInfoWriter) (*StackUpdateStackOK, error) {
@@ -313,6 +459,40 @@ func (a *Client) StackUpdateStack2(params *StackUpdateStack2Params, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*StackUpdateStack2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StackValidateNewStackRevision stack validate new stack revision API
+*/
+func (a *Client) StackValidateNewStackRevision(params *StackValidateNewStackRevisionParams, authInfo runtime.ClientAuthInfoWriter) (*StackValidateNewStackRevisionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStackValidateNewStackRevisionParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "stack_ValidateNewStackRevision",
+		Method:             "POST",
+		PathPattern:        "/v1/validate_stack_revision",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StackValidateNewStackRevisionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StackValidateNewStackRevisionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StackValidateNewStackRevisionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

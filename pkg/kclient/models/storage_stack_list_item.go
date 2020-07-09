@@ -32,6 +32,9 @@ type StorageStackListItem struct {
 	// name
 	Name string `json:"name,omitempty"`
 
+	// organization id
+	OrganizationID string `json:"organization_id,omitempty"`
+
 	// repository
 	Repository *StorageSCMRepository `json:"repository,omitempty"`
 

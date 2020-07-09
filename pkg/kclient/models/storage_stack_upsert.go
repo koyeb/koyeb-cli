@@ -15,14 +15,11 @@ import (
 // swagger:model storageStackUpsert
 type StorageStackUpsert struct {
 
-	// name
+	// Stack name
 	Name string `json:"name,omitempty"`
 
 	// Where is this stack managed in the VCS
 	Repository *StorageSCMRepository `json:"repository,omitempty"`
-
-	// yaml
-	Yaml interface{} `json:"yaml,omitempty"`
 }
 
 // Validate validates this storage stack upsert

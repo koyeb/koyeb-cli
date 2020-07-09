@@ -18,9 +18,6 @@ type StorageSCMRepository struct {
 	// The branch to track changes on.
 	Branch string `json:"branch,omitempty"`
 
-	// The url to find the repo without a scheme (.e.g: github.com)
-	InstallationURL string `json:"installation_url,omitempty"`
-
 	// The url to find the repo (.e.g: koyeb/gateway)
 	Name string `json:"name,omitempty"`
 

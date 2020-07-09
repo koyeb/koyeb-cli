@@ -25,9 +25,6 @@ const (
 	// StorageStackStatusACTIVE captures enum value "ACTIVE"
 	StorageStackStatusACTIVE StorageStackStatus = "ACTIVE"
 
-	// StorageStackStatusNOCONFIGFOUND captures enum value "NO_CONFIG_FOUND"
-	StorageStackStatusNOCONFIGFOUND StorageStackStatus = "NO_CONFIG_FOUND"
-
 	// StorageStackStatusERROR captures enum value "ERROR"
 	StorageStackStatusERROR StorageStackStatus = "ERROR"
 )
@@ -37,7 +34,7 @@ var storageStackStatusEnum []interface{}
 
 func init() {
 	var res []StorageStackStatus
-	if err := json.Unmarshal([]byte(`["PROVISIONNING","ACTIVE","NO_CONFIG_FOUND","ERROR"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["PROVISIONNING","ACTIVE","ERROR"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
