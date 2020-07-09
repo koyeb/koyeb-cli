@@ -109,6 +109,13 @@ func getField(item interface{}, field string) string {
 			// TODO we should format depending of the type
 			return fmt.Sprintf("%s", reflect.Indirect(val).FieldByName(t.Field(i).Name))
 		}
+
+		spl := strings.Split(field, ".")
+		if spl[0] == fieldName && len(spl) > 1 {
+			return getField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
+			// []
+		}
+
 	}
 	return "<empty>"
 }
