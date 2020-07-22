@@ -58,7 +58,7 @@ func (a *StorageSecretsBody) MarshalBinary() ([]byte, error) {
 }
 
 func (a *StorageSecretsBody) GetHeaders() []string {
-	return []string{"id", "name", "region", "status", "updated_at"}
+	return []string{"id", "name", "value", "updated_at"}
 }
 
 func (a *StorageSecretsBody) GetTableFields() [][]string {
