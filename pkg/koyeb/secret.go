@@ -35,7 +35,7 @@ var (
 		Use:     "secrets [resource]",
 		Aliases: []string{"secret"},
 		Short:   "Update secrets",
-		RunE:    notImplemented,
+		RunE:    updateSecrets,
 	}
 	deleteSecretCommand = &cobra.Command{
 		Use:     "secrets [resource]",
@@ -91,6 +91,13 @@ func (a StorageSecret) GetNewBody() *apimodel.StorageNewSecret {
 	copier.Copy(&newBody, &a.StorageSecret)
 	return &newBody
 }
+
+func (a StorageSecret) GetUpdateBody() *apimodel.StorageSecret {
+	updateBody := apimodel.StorageSecret{}
+	copier.Copy(&updateBody, &a.StorageSecret)
+	return &updateBody
+}
+
 func (a StorageSecret) GetField(field string) string {
 
 	type StorageSecret struct {
@@ -178,6 +185,36 @@ func createSecrets(cmd *cobra.Command, args []string) error {
 		p := secrets.NewSecretsNewSecretParams()
 		p.SetBody(secret.GetNewBody())
 		resp, err := client.Secrets.SecretsNewSecret(p, getAuth())
+		if err != nil {
+			apiError(err)
+			continue
+		}
+		log.Debugf("got response: %v", resp)
+	}
+	return nil
+}
+
+func updateSecrets(cmd *cobra.Command, args []string) error {
+	var all StorageSecretsBody
+
+	log.Debugf("Loading file %s", file)
+	err := loadMultiple(file, &all, "secrets")
+	if err != nil {
+		er(err)
+	}
+	log.Debugf("Content loaded %v", all.Secrets)
+
+	client := getApiClient()
+	for _, st := range all.Secrets {
+		p := secrets.NewSecretsUpdateSecretParams()
+		updateBody := st.GetUpdateBody()
+		if updateBody.ID != "" {
+			p.SetID(updateBody.ID)
+		} else {
+			p.SetID(updateBody.Name)
+		}
+		p.SetBody(st.GetUpdateBody())
+		resp, err := client.Secrets.SecretsUpdateSecret(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
