@@ -163,6 +163,10 @@ func init() {
 	rootCmd.AddCommand(logCmd)
 	logCmd.AddCommand(logsStackFunctionCommand)
 
+	// Run
+	rootCmd.AddCommand(runCmd)
+	runCmd.AddCommand(runStackFunctionCommand)
+	runStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
 }
 
 func initConfig() {

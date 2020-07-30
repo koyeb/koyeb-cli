@@ -42,7 +42,7 @@ var (
 		Aliases: []string{"function"},
 		Short:   "Run stack functions",
 		Args:    cobra.MinimumNArgs(1),
-		// RunE:    getStackFunctions,
+		RunE:    runStackFunctions,
 	}
 )
 
@@ -238,6 +238,42 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
+}
+
+func runStackFunctions(cmd *cobra.Command, args []string) error {
+	client := getApiClient()
+
+	if len(args) < 2 {
+		// Nothing to do
+		return nil
+	} else {
+		p := functions.NewFunctionsInvokeFunctionParams()
+		p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1])
+		if file != "" {
+			log.Debugf("Loading file %s", file)
+			ev := make(map[string]interface{})
+			err := parseFile(file, &ev)
+			if err != nil {
+				er(err)
+			}
+			p.SetBody(ev)
+		} else {
+			log.Debugf("Using default values for event")
+			p.SetBody(map[string]string{
+				"type":   "debug",
+				"source": "debug",
+			})
+		}
+		log.Debugf("Launching debug event %v", p.Body)
+		resp, err := client.Functions.FunctionsInvokeFunction(p, getAuth())
+		if err != nil {
+			apiError(err)
+			return err
+		}
+		log.Debugf("got response: %v", resp)
+		log.Infof("Event sent: %v", resp.Payload.ID)
+	}
+	return nil
 }
 
 func getStackFunctions(cmd *cobra.Command, args []string) error {
