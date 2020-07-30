@@ -238,24 +238,8 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
-
-	// LogsTailStackRevisionLogsForFunction
-
-	// logStackFunctions
-	// client := getApiClient()
-
-	// var all []*apimodel.StorageFunction
-
-	// if len(args) == 0 {
-	//   // Nothing to do
-	//   return nil
-	// } else if len(args) > 1 {
-	//   p := functions.NewFunctionsGetFunctionParams()
-	//   p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1])
-	//   resp, err := client.Functions.FunctionsGetFunction(p, getAuth())
-	// }
-	return nil
 }
+
 func getStackFunctions(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 
