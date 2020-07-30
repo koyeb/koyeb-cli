@@ -56,6 +56,11 @@ var (
 		Aliases: []string{"del", "rm"},
 		Short:   "Delete resources by name and id",
 	}
+	runCmd = &cobra.Command{
+		Use:     "run [resource]",
+		Aliases: []string{"r"},
+		Short:   "Launch a new run for a resource",
+	}
 )
 
 func notImplemented(cmd *cobra.Command, args []string) error {
@@ -122,6 +127,7 @@ func init() {
 	getCmd.AddCommand(getAllCommand)
 	getCmd.AddCommand(getStackCommand)
 	getCmd.AddCommand(getStackRevisionCommand)
+	getCmd.AddCommand(getStackFunctionCommand)
 	getCmd.AddCommand(getStoreCommand)
 	getCmd.AddCommand(getSecretCommand)
 
@@ -129,6 +135,7 @@ func init() {
 	rootCmd.AddCommand(describeCmd)
 	describeCmd.AddCommand(describeStackCommand)
 	describeCmd.AddCommand(describeStackRevisionCommand)
+	describeCmd.AddCommand(describeStackFunctionCommand)
 	describeCmd.AddCommand(describeStoreCommand)
 	describeCmd.AddCommand(describeSecretCommand)
 
