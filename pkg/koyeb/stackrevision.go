@@ -14,23 +14,23 @@ import (
 
 var (
 	createStackRevisionCommand = &cobra.Command{
-		Use:     "stackrevisions [stack]",
-		Aliases: []string{"stack"},
-		Short:   "Create stackrevisions",
+		Use:     "revisions [stack]",
+		Aliases: []string{"revision"},
+		Short:   "Create revisions",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    createStackRevisions,
 	}
 	getStackRevisionCommand = &cobra.Command{
-		Use:     "stackrevisions [stack] [sha]",
-		Aliases: []string{"stack"},
-		Short:   "Get stackrevisions",
+		Use:     "revisions [stack] [sha]",
+		Aliases: []string{"revision"},
+		Short:   "Get revisions",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    getStackRevisions,
 	}
 	describeStackRevisionCommand = &cobra.Command{
-		Use:     "stackrevisions [stack] [sha]",
-		Aliases: []string{"stack"},
-		Short:   "Describe stackrevisions",
+		Use:     "revisions [stack] [sha]",
+		Aliases: []string{"revision"},
+		Short:   "Describe revisions",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    getStackRevisions,
 	}
