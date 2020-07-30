@@ -22,10 +22,8 @@ func getAll(cmd *cobra.Command, args []string) error {
 	fmt.Printf("\nStacks:\n")
 	getStacks(cmd, args)
 
-	//fmt.Printf("\nSecret:\n")
-
-	// TODO
-	//getSecrets(cmd, args)
+	fmt.Printf("\nSecret:\n")
+	getSecrets(cmd, args)
 
 	return nil
 }
