@@ -26,6 +26,9 @@ type StorageStackRevision struct {
 	// The sha of the previous revision of this stack (empty if it's the first revision)
 	ParentSha string `json:"parent_sha,omitempty"`
 
+	// The release this stack revision was included in (possibly null if not release was done yet)
+	ReleaseID string `json:"releaseId,omitempty"`
+
 	// The sha of the revision
 	Sha string `json:"sha,omitempty"`
 

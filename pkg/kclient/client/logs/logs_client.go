@@ -29,6 +29,8 @@ type ClientService interface {
 
 	LogsTailStackRevisionLogs(params *LogsTailStackRevisionLogsParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailStackRevisionLogsOK, error)
 
+	LogsTailStackRevisionLogsForFunction(params *LogsTailStackRevisionLogsForFunctionParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailStackRevisionLogsForFunctionOK, error)
+
 	SetTransport(transport runtime.ClientTransport)
 }
 
@@ -97,6 +99,40 @@ func (a *Client) LogsTailStackRevisionLogs(params *LogsTailStackRevisionLogsPara
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LogsTailStackRevisionLogsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LogsTailStackRevisionLogsForFunction logs tail stack revision logs for function API
+*/
+func (a *Client) LogsTailStackRevisionLogsForFunction(params *LogsTailStackRevisionLogsForFunctionParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailStackRevisionLogsForFunctionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLogsTailStackRevisionLogsForFunctionParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "logs_TailStackRevisionLogsForFunction",
+		Method:             "GET",
+		PathPattern:        "/v1/stacks/{stack_id}/revisions/{sha}/functions/{fn_name}/logs/tail",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &LogsTailStackRevisionLogsForFunctionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LogsTailStackRevisionLogsForFunctionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LogsTailStackRevisionLogsForFunctionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

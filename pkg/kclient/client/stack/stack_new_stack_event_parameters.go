@@ -15,8 +15,6 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/koyeb/koyeb-cli/pkg/kclient/models"
 )
 
 // NewStackNewStackEventParams creates a new StackNewStackEventParams object
@@ -64,7 +62,7 @@ for the stack new stack event operation typically these are written to a http.Re
 type StackNewStackEventParams struct {
 
 	/*Body*/
-	Body *models.StorageNewStackEventRequest
+	Body interface{}
 	/*StackID*/
 	StackID string
 
@@ -107,13 +105,13 @@ func (o *StackNewStackEventParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the stack new stack event params
-func (o *StackNewStackEventParams) WithBody(body *models.StorageNewStackEventRequest) *StackNewStackEventParams {
+func (o *StackNewStackEventParams) WithBody(body interface{}) *StackNewStackEventParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the stack new stack event params
-func (o *StackNewStackEventParams) SetBody(body *models.StorageNewStackEventRequest) {
+func (o *StackNewStackEventParams) SetBody(body interface{}) {
 	o.Body = body
 }
 

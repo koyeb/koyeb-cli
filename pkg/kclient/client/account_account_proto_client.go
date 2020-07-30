@@ -14,6 +14,7 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/activity"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/catalog"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/credentials"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/functions"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/hooks"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/invite"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/logs"
@@ -72,6 +73,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AccountAcc
 	cli.Activity = activity.New(transport, formats)
 	cli.Catalog = catalog.New(transport, formats)
 	cli.Credentials = credentials.New(transport, formats)
+	cli.Functions = functions.New(transport, formats)
 	cli.Hooks = hooks.New(transport, formats)
 	cli.Invite = invite.New(transport, formats)
 	cli.Logs = logs.New(transport, formats)
@@ -133,6 +135,8 @@ type AccountAccountProto struct {
 
 	Credentials credentials.ClientService
 
+	Functions functions.ClientService
+
 	Hooks hooks.ClientService
 
 	Invite invite.ClientService
@@ -164,6 +168,7 @@ func (c *AccountAccountProto) SetTransport(transport runtime.ClientTransport) {
 	c.Activity.SetTransport(transport)
 	c.Catalog.SetTransport(transport)
 	c.Credentials.SetTransport(transport)
+	c.Functions.SetTransport(transport)
 	c.Hooks.SetTransport(transport)
 	c.Invite.SetTransport(transport)
 	c.Logs.SetTransport(transport)

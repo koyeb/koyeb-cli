@@ -13,32 +13,33 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// StorageStackRevisionStatus storage stack revision status
+// StorageStackRevisionStatus - ERROR: An error happened when deploying the new revision
+//  - VALIDATION_ERROR: Indicate that the revision was not valid
 // swagger:model storageStackRevisionStatus
 type StorageStackRevisionStatus string
 
 const (
 
-	// StorageStackRevisionStatusPROVISIONNING captures enum value "PROVISIONNING"
-	StorageStackRevisionStatusPROVISIONNING StorageStackRevisionStatus = "PROVISIONNING"
+	// StorageStackRevisionStatusUNKNOWN captures enum value "UNKNOWN"
+	StorageStackRevisionStatusUNKNOWN StorageStackRevisionStatus = "UNKNOWN"
 
-	// StorageStackRevisionStatusBUILDING captures enum value "BUILDING"
-	StorageStackRevisionStatusBUILDING StorageStackRevisionStatus = "BUILDING"
+	// StorageStackRevisionStatusUNAVAILABLE captures enum value "UNAVAILABLE"
+	StorageStackRevisionStatusUNAVAILABLE StorageStackRevisionStatus = "UNAVAILABLE"
 
-	// StorageStackRevisionStatusDEPLOYING captures enum value "DEPLOYING"
-	StorageStackRevisionStatusDEPLOYING StorageStackRevisionStatus = "DEPLOYING"
-
-	// StorageStackRevisionStatusDEPLOYED captures enum value "DEPLOYED"
-	StorageStackRevisionStatusDEPLOYED StorageStackRevisionStatus = "DEPLOYED"
+	// StorageStackRevisionStatusPROVISIONING captures enum value "PROVISIONING"
+	StorageStackRevisionStatusPROVISIONING StorageStackRevisionStatus = "PROVISIONING"
 
 	// StorageStackRevisionStatusSTOPPING captures enum value "STOPPING"
 	StorageStackRevisionStatusSTOPPING StorageStackRevisionStatus = "STOPPING"
 
-	// StorageStackRevisionStatusSTOPPED captures enum value "STOPPED"
-	StorageStackRevisionStatusSTOPPED StorageStackRevisionStatus = "STOPPED"
-
 	// StorageStackRevisionStatusERROR captures enum value "ERROR"
 	StorageStackRevisionStatusERROR StorageStackRevisionStatus = "ERROR"
+
+	// StorageStackRevisionStatusACTIVE captures enum value "ACTIVE"
+	StorageStackRevisionStatusACTIVE StorageStackRevisionStatus = "ACTIVE"
+
+	// StorageStackRevisionStatusVALIDATIONERROR captures enum value "VALIDATION_ERROR"
+	StorageStackRevisionStatusVALIDATIONERROR StorageStackRevisionStatus = "VALIDATION_ERROR"
 )
 
 // for schema
@@ -46,7 +47,7 @@ var storageStackRevisionStatusEnum []interface{}
 
 func init() {
 	var res []StorageStackRevisionStatus
-	if err := json.Unmarshal([]byte(`["PROVISIONNING","BUILDING","DEPLOYING","DEPLOYED","STOPPING","STOPPED","ERROR"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["UNKNOWN","UNAVAILABLE","PROVISIONING","STOPPING","ERROR","ACTIVE","VALIDATION_ERROR"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

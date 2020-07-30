@@ -29,6 +29,8 @@ type ClientService interface {
 
 	SecretsGetSecret(params *SecretsGetSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsGetSecretOK, error)
 
+	SecretsGetSecretActivities(params *SecretsGetSecretActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsGetSecretActivitiesOK, error)
+
 	SecretsListSecrets(params *SecretsListSecretsParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsListSecretsOK, error)
 
 	SecretsNewSecret(params *SecretsNewSecretParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsNewSecretOK, error)
@@ -105,6 +107,40 @@ func (a *Client) SecretsGetSecret(params *SecretsGetSecretParams, authInfo runti
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecretsGetSecretDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SecretsGetSecretActivities views stack activities
+*/
+func (a *Client) SecretsGetSecretActivities(params *SecretsGetSecretActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*SecretsGetSecretActivitiesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecretsGetSecretActivitiesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "Secrets_GetSecretActivities",
+		Method:             "GET",
+		PathPattern:        "/v1/secrets/{id}/activities",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &SecretsGetSecretActivitiesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecretsGetSecretActivitiesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecretsGetSecretActivitiesDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

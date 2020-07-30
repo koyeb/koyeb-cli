@@ -13,20 +13,34 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// StorageStackStatus storage stack status
+// StorageStackStatus - UNKNOWN: This shouldn't happen but for API completion
+//  - DRAINING: The stack is getting deleted
+//  - PROVISIONING: A stack is starting up but doesn't have a deployed revision yet
+//  - ACTIVE: Everything is ok
+//  - ERROR: There's no active release and recent releases have failed
+//  - WARNING: There's an active release, however the most recent release is unhealthy
 // swagger:model storageStackStatus
 type StorageStackStatus string
 
 const (
 
-	// StorageStackStatusPROVISIONNING captures enum value "PROVISIONNING"
-	StorageStackStatusPROVISIONNING StorageStackStatus = "PROVISIONNING"
+	// StorageStackStatusUNKNOWN captures enum value "UNKNOWN"
+	StorageStackStatusUNKNOWN StorageStackStatus = "UNKNOWN"
+
+	// StorageStackStatusDRAINING captures enum value "DRAINING"
+	StorageStackStatusDRAINING StorageStackStatus = "DRAINING"
+
+	// StorageStackStatusPROVISIONING captures enum value "PROVISIONING"
+	StorageStackStatusPROVISIONING StorageStackStatus = "PROVISIONING"
 
 	// StorageStackStatusACTIVE captures enum value "ACTIVE"
 	StorageStackStatusACTIVE StorageStackStatus = "ACTIVE"
 
 	// StorageStackStatusERROR captures enum value "ERROR"
 	StorageStackStatusERROR StorageStackStatus = "ERROR"
+
+	// StorageStackStatusWARNING captures enum value "WARNING"
+	StorageStackStatusWARNING StorageStackStatus = "WARNING"
 )
 
 // for schema
@@ -34,7 +48,7 @@ var storageStackStatusEnum []interface{}
 
 func init() {
 	var res []StorageStackStatus
-	if err := json.Unmarshal([]byte(`["PROVISIONNING","ACTIVE","ERROR"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["UNKNOWN","DRAINING","PROVISIONING","ACTIVE","ERROR","WARNING"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

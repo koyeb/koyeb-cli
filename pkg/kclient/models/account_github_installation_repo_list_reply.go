@@ -17,6 +17,9 @@ import (
 // swagger:model accountGithubInstallationRepoListReply
 type AccountGithubInstallationRepoListReply struct {
 
+	// installation Id
+	InstallationID string `json:"installationId,omitempty"`
+
 	// repositories
 	Repositories []*AccountGithubRepo `json:"repositories"`
 }

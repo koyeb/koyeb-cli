@@ -25,6 +25,9 @@ type StorageLogEntry struct {
 
 	// message
 	Message string `json:"message,omitempty"`
+
+	// The stream (stdout/stderr) this log was emitted to
+	Stream string `json:"stream,omitempty"`
 }
 
 // Validate validates this storage log entry

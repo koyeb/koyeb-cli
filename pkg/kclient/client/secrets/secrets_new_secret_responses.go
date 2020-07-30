@@ -70,20 +70,20 @@ func NewSecretsNewSecretOK() *SecretsNewSecretOK {
 A successful response.
 */
 type SecretsNewSecretOK struct {
-	Payload *models.StorageSecretReply
+	Payload *models.StorageNewSecretReply
 }
 
 func (o *SecretsNewSecretOK) Error() string {
 	return fmt.Sprintf("[POST /v1/secrets][%d] secretsNewSecretOK  %+v", 200, o.Payload)
 }
 
-func (o *SecretsNewSecretOK) GetPayload() *models.StorageSecretReply {
+func (o *SecretsNewSecretOK) GetPayload() *models.StorageNewSecretReply {
 	return o.Payload
 }
 
 func (o *SecretsNewSecretOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.StorageSecretReply)
+	o.Payload = new(models.StorageNewSecretReply)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

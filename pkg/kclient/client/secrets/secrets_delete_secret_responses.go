@@ -70,14 +70,14 @@ func NewSecretsDeleteSecretOK() *SecretsDeleteSecretOK {
 A successful response.
 */
 type SecretsDeleteSecretOK struct {
-	Payload models.CommonEmpty
+	Payload models.StorageDeleteSecretReply
 }
 
 func (o *SecretsDeleteSecretOK) Error() string {
 	return fmt.Sprintf("[DELETE /v1/secrets/{id}][%d] secretsDeleteSecretOK  %+v", 200, o.Payload)
 }
 
-func (o *SecretsDeleteSecretOK) GetPayload() models.CommonEmpty {
+func (o *SecretsDeleteSecretOK) GetPayload() models.StorageDeleteSecretReply {
 	return o.Payload
 }
 
