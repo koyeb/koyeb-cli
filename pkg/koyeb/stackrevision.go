@@ -16,21 +16,21 @@ var (
 	createStackRevisionCommand = &cobra.Command{
 		Use:     "revisions [stack]",
 		Aliases: []string{"revision"},
-		Short:   "Create revisions",
+		Short:   "Create stack revisions",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    createStackRevisions,
 	}
 	getStackRevisionCommand = &cobra.Command{
 		Use:     "revisions [stack] [sha]",
 		Aliases: []string{"revision"},
-		Short:   "Get revisions",
+		Short:   "Get stack revisions",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    getStackRevisions,
 	}
 	describeStackRevisionCommand = &cobra.Command{
 		Use:     "revisions [stack] [sha]",
 		Aliases: []string{"revision"},
-		Short:   "Describe revisions",
+		Short:   "Describe stack revisions",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    getStackRevisions,
 	}
