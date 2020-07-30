@@ -2,9 +2,12 @@ package koyeb
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/go-openapi/swag"
-	// "github.com/jinzhu/copier"
+	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -32,7 +35,7 @@ var (
 		Aliases: []string{"function"},
 		Short:   "Logs stack functions",
 		Args:    cobra.MinimumNArgs(1),
-		// RunE:    getStackFunctions,
+		RunE:    logStackFunctions,
 	}
 	runStackFunctionCommand = &cobra.Command{
 		Use:     "functions [stack] [name]",
@@ -166,6 +169,93 @@ func displayStackFunctionsHistory(items []*apimodel.StorageFunctionRunInfoListIt
 	render(&stackfunctionsHistory, format)
 }
 
+type LogMessageResult struct {
+	Message string
+}
+
+type LogMessage struct {
+	Result LogMessageResult
+}
+
+func (l LogMessage) String() string {
+	return l.Result.Message
+}
+
+func logStackFunctions(cmd *cobra.Command, args []string) error {
+	if len(args) != 2 {
+		// Nothing to do
+		return nil
+	}
+
+	path := fmt.Sprintf("/v1/stacks/%s/revisions/%s/functions/%s/logs/tail", args[0], ":latest", args[1])
+
+	u, err := url.Parse(apiurl)
+	if err != nil {
+		er(err)
+	}
+
+	u.Path = path
+	if u.Scheme == "https" {
+		u.Scheme = "wss"
+	} else {
+		u.Scheme = "ws"
+	}
+
+	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer c.Close()
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		for {
+			msg := LogMessage{}
+			err := c.ReadJSON(&msg)
+			if err != nil {
+				log.Println("error:", err)
+				return
+			}
+			log.Printf("%s", msg)
+		}
+	}()
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-done:
+			return nil
+		case t := <-ticker.C:
+			err := c.WriteMessage(websocket.PingMessage, []byte(t.String()))
+			if err != nil {
+				log.Println("write:", err)
+				return err
+			}
+		}
+	}
+
+	// LogsTailStackRevisionLogsForFunction
+
+	// logStackFunctions
+	// client := getApiClient()
+
+	// var all []*apimodel.StorageFunction
+
+	// if len(args) == 0 {
+	//   // Nothing to do
+	//   return nil
+	// } else if len(args) > 1 {
+	//   p := functions.NewFunctionsGetFunctionParams()
+	//   p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1])
+	//   resp, err := client.Functions.FunctionsGetFunction(p, getAuth())
+	// }
+	return nil
+}
 func getStackFunctions(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 

@@ -56,6 +56,11 @@ var (
 		Aliases: []string{"del", "rm"},
 		Short:   "Delete resources by name and id",
 	}
+	logCmd = &cobra.Command{
+		Use:     "logs [resource]",
+		Aliases: []string{"l", "log"},
+		Short:   "Get the log of one resources",
+	}
 	runCmd = &cobra.Command{
 		Use:     "run [resource]",
 		Aliases: []string{"r"},
@@ -153,6 +158,10 @@ func init() {
 	deleteCmd.AddCommand(deleteStackCommand)
 	deleteCmd.AddCommand(deleteStoreCommand)
 	deleteCmd.AddCommand(deleteSecretCommand)
+
+	// Logs
+	rootCmd.AddCommand(logCmd)
+	logCmd.AddCommand(logsStackFunctionCommand)
 
 }
 
