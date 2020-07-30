@@ -226,10 +226,15 @@ func getStacks(cmd *cobra.Command, args []string) error {
 	}
 	format := "table"
 	if cmd.Parent().Name() == "describe" {
+		fmt.Printf("Stack:\n")
 		format = "yaml"
 	}
 	if len(args) > 0 {
 		displayStacksDetail(all, format)
+		if cmd.Parent().Name() == "describe" {
+			fmt.Printf("Functions:\n")
+			getStackFunctions(cmd.Parent(), args)
+		}
 	} else {
 		displayStacks(all, format)
 	}
