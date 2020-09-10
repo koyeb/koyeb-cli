@@ -21,7 +21,7 @@ type AccountListCredentialsReply struct {
 	Count int64 `json:"count,omitempty"`
 
 	// credentials
-	Credentials []*AccountCredentialBody `json:"credentials"`
+	Credentials []*AccountCredential `json:"credentials"`
 
 	// limit
 	Limit int64 `json:"limit,omitempty"`

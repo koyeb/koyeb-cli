@@ -16,7 +16,7 @@ import (
 type AccountCredentialReply struct {
 
 	// credential
-	Credential *AccountCredentialBody `json:"credential,omitempty"`
+	Credential *AccountCredential `json:"credential,omitempty"`
 }
 
 // Validate validates this account credential reply

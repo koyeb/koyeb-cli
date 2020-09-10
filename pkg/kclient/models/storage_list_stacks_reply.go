@@ -27,7 +27,7 @@ type StorageListStacksReply struct {
 	Offset int64 `json:"offset,omitempty"`
 
 	// stacks
-	Stacks []*StorageStackBody `json:"stacks"`
+	Stacks []*StorageStackListItem `json:"stacks"`
 }
 
 // Validate validates this storage list stacks reply

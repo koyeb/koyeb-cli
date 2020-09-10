@@ -6,8 +6,6 @@ package activity
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,31 +25,67 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetActivities(params *GetActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*GetActivitiesOK, error)
+	AccountActivitiesGetAccountActivities(params *AccountActivitiesGetAccountActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*AccountActivitiesGetAccountActivitiesOK, error)
 
-	GetNotifications(params *GetNotificationsParams, authInfo runtime.ClientAuthInfoWriter) (*GetNotificationsOK, error)
+	ActivityListActivities(params *ActivityListActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*ActivityListActivitiesOK, error)
+
+	ActivityListNotifications(params *ActivityListNotificationsParams, authInfo runtime.ClientAuthInfoWriter) (*ActivityListNotificationsOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  GetActivities get activities API
+  AccountActivitiesGetAccountActivities account activities get account activities API
 */
-func (a *Client) GetActivities(params *GetActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*GetActivitiesOK, error) {
+func (a *Client) AccountActivitiesGetAccountActivities(params *AccountActivitiesGetAccountActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*AccountActivitiesGetAccountActivitiesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetActivitiesParams()
+		params = NewAccountActivitiesGetAccountActivitiesParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetActivities",
+		ID:                 "accountActivities_GetAccountActivities",
+		Method:             "GET",
+		PathPattern:        "/v1/account/activities",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &AccountActivitiesGetAccountActivitiesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountActivitiesGetAccountActivitiesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountActivitiesGetAccountActivitiesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ActivityListActivities activity list activities API
+*/
+func (a *Client) ActivityListActivities(params *ActivityListActivitiesParams, authInfo runtime.ClientAuthInfoWriter) (*ActivityListActivitiesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActivityListActivitiesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "activity_ListActivities",
 		Method:             "GET",
 		PathPattern:        "/v1/activities",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetActivitiesReader{formats: a.formats},
+		Reader:             &ActivityListActivitiesReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -59,34 +93,33 @@ func (a *Client) GetActivities(params *GetActivitiesParams, authInfo runtime.Cli
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetActivitiesOK)
+	success, ok := result.(*ActivityListActivitiesOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetActivities: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ActivityListActivitiesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  GetNotifications get notifications API
+  ActivityListNotifications activity list notifications API
 */
-func (a *Client) GetNotifications(params *GetNotificationsParams, authInfo runtime.ClientAuthInfoWriter) (*GetNotificationsOK, error) {
+func (a *Client) ActivityListNotifications(params *ActivityListNotificationsParams, authInfo runtime.ClientAuthInfoWriter) (*ActivityListNotificationsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetNotificationsParams()
+		params = NewActivityListNotificationsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetNotifications",
+		ID:                 "activity_ListNotifications",
 		Method:             "GET",
 		PathPattern:        "/v1/notifications",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetNotificationsReader{formats: a.formats},
+		Reader:             &ActivityListNotificationsReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -94,14 +127,13 @@ func (a *Client) GetNotifications(params *GetNotificationsParams, authInfo runti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetNotificationsOK)
+	success, ok := result.(*ActivityListNotificationsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetNotifications: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*ActivityListNotificationsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

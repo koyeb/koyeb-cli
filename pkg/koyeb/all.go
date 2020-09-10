@@ -16,14 +16,14 @@ var (
 )
 
 func getAll(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Stacks:\n")
+	fmt.Printf("Store:\n")
+	getStores(cmd, args)
+
+	fmt.Printf("\nStacks:\n")
 	getStacks(cmd, args)
 
-	fmt.Printf("\nManaged stores:\n")
-	getManagedStores(cmd, args)
-
-	fmt.Printf("\nDeliveries:\n")
-	getDeliveries(cmd, args)
+	fmt.Printf("\nSecret:\n")
+	getSecrets(cmd, args)
 
 	return nil
 }

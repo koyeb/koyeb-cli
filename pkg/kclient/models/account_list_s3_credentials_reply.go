@@ -20,21 +20,21 @@ type AccountListS3CredentialsReply struct {
 	// count
 	Count int64 `json:"count,omitempty"`
 
-	// credentials
-	Credentials []*AccountS3CredentialBody `json:"credentials"`
-
 	// limit
 	Limit int64 `json:"limit,omitempty"`
 
 	// offset
 	Offset int64 `json:"offset,omitempty"`
+
+	// s3 credentials
+	S3Credentials []*AccountS3Credential `json:"s3_credentials"`
 }
 
 // Validate validates this account list s3 credentials reply
 func (m *AccountListS3CredentialsReply) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCredentials(formats); err != nil {
+	if err := m.validateS3Credentials(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -44,21 +44,21 @@ func (m *AccountListS3CredentialsReply) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *AccountListS3CredentialsReply) validateCredentials(formats strfmt.Registry) error {
+func (m *AccountListS3CredentialsReply) validateS3Credentials(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Credentials) { // not required
+	if swag.IsZero(m.S3Credentials) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Credentials); i++ {
-		if swag.IsZero(m.Credentials[i]) { // not required
+	for i := 0; i < len(m.S3Credentials); i++ {
+		if swag.IsZero(m.S3Credentials[i]) { // not required
 			continue
 		}
 
-		if m.Credentials[i] != nil {
-			if err := m.Credentials[i].Validate(formats); err != nil {
+		if m.S3Credentials[i] != nil {
+			if err := m.S3Credentials[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("credentials" + "." + strconv.Itoa(i))
+					return ve.ValidateName("s3_credentials" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

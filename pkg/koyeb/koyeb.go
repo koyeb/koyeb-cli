@@ -12,12 +12,14 @@ import (
 
 var (
 	// Used for flags.
-	file         string
-	cfgFile      string
-	apiurl       string
-	token        string
-	outputFormat string
-	debug        bool
+	file                 string
+	cfgFile              string
+	apiurl               string
+	token                string
+	outputFormat         string
+	debug                bool
+	newStackName         string
+	stackRevisionMessage string
 
 	rootCmd = &cobra.Command{
 		Use:   "koyeb",
@@ -53,6 +55,16 @@ var (
 		Use:     "delete [resource]",
 		Aliases: []string{"del", "rm"},
 		Short:   "Delete resources by name and id",
+	}
+	logCmd = &cobra.Command{
+		Use:     "logs [resource]",
+		Aliases: []string{"l", "log"},
+		Short:   "Get the log of one resources",
+	}
+	runCmd = &cobra.Command{
+		Use:     "run [resource]",
+		Aliases: []string{"r"},
+		Short:   "Launch a new run for a resource",
 	}
 )
 
@@ -102,40 +114,59 @@ func init() {
 	// Create
 	rootCmd.AddCommand(createCmd)
 	createCmd.AddCommand(createStackCommand)
+	createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
 	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createStackCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createManagedStoreCommand)
-	createManagedStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createManagedStoreCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createDeliveryCommand)
-	createDeliveryCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createDeliveryCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createStackRevisionCommand)
+	createStackRevisionCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createStackRevisionCommand.Flags().StringVarP(&stackRevisionMessage, "message", "m", "", "Message")
+	createStackRevisionCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createStoreCommand)
+	createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createStoreCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createSecretCommand)
+	createSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createSecretCommand.MarkFlagRequired("file")
 
 	// Get
 	rootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getAllCommand)
 	getCmd.AddCommand(getStackCommand)
-	getCmd.AddCommand(getManagedStoreCommand)
-	getCmd.AddCommand(getDeliveryCommand)
+	getCmd.AddCommand(getStackRevisionCommand)
+	getCmd.AddCommand(getStackFunctionCommand)
+	getCmd.AddCommand(getStoreCommand)
+	getCmd.AddCommand(getSecretCommand)
 
 	// Describe
 	rootCmd.AddCommand(describeCmd)
 	describeCmd.AddCommand(describeStackCommand)
-	describeCmd.AddCommand(describeManagedStoreCommand)
-	describeCmd.AddCommand(describeDeliveryCommand)
+	describeCmd.AddCommand(describeStackRevisionCommand)
+	describeCmd.AddCommand(describeStackFunctionCommand)
+	describeCmd.AddCommand(describeStoreCommand)
+	describeCmd.AddCommand(describeSecretCommand)
 
 	// Update
 	rootCmd.AddCommand(updateCmd)
+	updateStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	updateCmd.AddCommand(updateStackCommand)
-	updateCmd.AddCommand(updateManagedStoreCommand)
-	updateCmd.AddCommand(updateDeliveryCommand)
+	updateStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	updateCmd.AddCommand(updateStoreCommand)
+	updateSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	updateCmd.AddCommand(updateSecretCommand)
 
 	// Delete
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteStackCommand)
-	deleteCmd.AddCommand(deleteManagedStoreCommand)
-	deleteCmd.AddCommand(deleteDeliveryCommand)
+	deleteCmd.AddCommand(deleteStoreCommand)
+	deleteCmd.AddCommand(deleteSecretCommand)
 
+	// Logs
+	rootCmd.AddCommand(logCmd)
+	logCmd.AddCommand(logsStackFunctionCommand)
+
+	// Run
+	rootCmd.AddCommand(runCmd)
+	runCmd.AddCommand(runStackFunctionCommand)
+	runStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
 }
 
 func initConfig() {

@@ -3,7 +3,7 @@ Koyeb command line tool
 
 ## Install cli
 
-`go install github.com/koyeb/koyeb-cli/cmd`
+`go install github.com/koyeb/koyeb-cli/cmd/koyeb`
 
 ## Login
 

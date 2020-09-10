@@ -16,9 +16,9 @@ import (
 // swagger:model accountToken
 type AccountToken struct {
 
-	// expires
+	// expires at
 	// Format: date-time
-	Expires strfmt.DateTime `json:"expires,omitempty"`
+	ExpiresAt strfmt.DateTime `json:"expires_at,omitempty"`
 
 	// id
 	ID string `json:"id,omitempty"`
@@ -34,7 +34,7 @@ type AccountToken struct {
 func (m *AccountToken) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateExpires(formats); err != nil {
+	if err := m.validateExpiresAt(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -44,13 +44,13 @@ func (m *AccountToken) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountToken) validateExpires(formats strfmt.Registry) error {
+func (m *AccountToken) validateExpiresAt(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Expires) { // not required
+	if swag.IsZero(m.ExpiresAt) { // not required
 		return nil
 	}
 
-	if err := validate.FormatOf("expires", "body", "date-time", m.Expires.String(), formats); err != nil {
+	if err := validate.FormatOf("expires_at", "body", "date-time", m.ExpiresAt.String(), formats); err != nil {
 		return err
 	}
 

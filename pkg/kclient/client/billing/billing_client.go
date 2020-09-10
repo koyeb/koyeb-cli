@@ -6,8 +6,6 @@ package billing
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,35 +25,35 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	CreateBillingInfo(params *CreateBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*CreateBillingInfoOK, error)
+	BillingCreateBillingInfo(params *BillingCreateBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*BillingCreateBillingInfoOK, error)
 
-	GetBillingInfo(params *GetBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetBillingInfoOK, error)
+	BillingGetBillingInfo(params *BillingGetBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*BillingGetBillingInfoOK, error)
 
-	UpdateBilling(params *UpdateBillingParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateBillingOK, error)
+	BillingUpdateBilling(params *BillingUpdateBillingParams, authInfo runtime.ClientAuthInfoWriter) (*BillingUpdateBillingOK, error)
 
-	UpdateBilling2(params *UpdateBilling2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateBilling2OK, error)
+	BillingUpdateBilling2(params *BillingUpdateBilling2Params, authInfo runtime.ClientAuthInfoWriter) (*BillingUpdateBilling2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  CreateBillingInfo create billing info API
+  BillingCreateBillingInfo finishes registration
 */
-func (a *Client) CreateBillingInfo(params *CreateBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*CreateBillingInfoOK, error) {
+func (a *Client) BillingCreateBillingInfo(params *BillingCreateBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*BillingCreateBillingInfoOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewCreateBillingInfoParams()
+		params = NewBillingCreateBillingInfoParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "CreateBillingInfo",
+		ID:                 "billing_CreateBillingInfo",
 		Method:             "POST",
 		PathPattern:        "/v1/account/billing",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &CreateBillingInfoReader{formats: a.formats},
+		Reader:             &BillingCreateBillingInfoReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -63,34 +61,33 @@ func (a *Client) CreateBillingInfo(params *CreateBillingInfoParams, authInfo run
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*CreateBillingInfoOK)
+	success, ok := result.(*BillingCreateBillingInfoOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for CreateBillingInfo: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*BillingCreateBillingInfoDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  GetBillingInfo get billing info API
+  BillingGetBillingInfo billings
 */
-func (a *Client) GetBillingInfo(params *GetBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetBillingInfoOK, error) {
+func (a *Client) BillingGetBillingInfo(params *BillingGetBillingInfoParams, authInfo runtime.ClientAuthInfoWriter) (*BillingGetBillingInfoOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetBillingInfoParams()
+		params = NewBillingGetBillingInfoParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetBillingInfo",
+		ID:                 "billing_GetBillingInfo",
 		Method:             "GET",
 		PathPattern:        "/v1/account/billing",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetBillingInfoReader{formats: a.formats},
+		Reader:             &BillingGetBillingInfoReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -98,34 +95,33 @@ func (a *Client) GetBillingInfo(params *GetBillingInfoParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetBillingInfoOK)
+	success, ok := result.(*BillingGetBillingInfoOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetBillingInfo: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*BillingGetBillingInfoDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateBilling update billing API
+  BillingUpdateBilling updates billing info
 */
-func (a *Client) UpdateBilling(params *UpdateBillingParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateBillingOK, error) {
+func (a *Client) BillingUpdateBilling(params *BillingUpdateBillingParams, authInfo runtime.ClientAuthInfoWriter) (*BillingUpdateBillingOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateBillingParams()
+		params = NewBillingUpdateBillingParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateBilling",
+		ID:                 "billing_UpdateBilling",
 		Method:             "PUT",
 		PathPattern:        "/v1/account/billing",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateBillingReader{formats: a.formats},
+		Reader:             &BillingUpdateBillingReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -133,34 +129,33 @@ func (a *Client) UpdateBilling(params *UpdateBillingParams, authInfo runtime.Cli
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateBillingOK)
+	success, ok := result.(*BillingUpdateBillingOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateBilling: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*BillingUpdateBillingDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateBilling2 update billing2 API
+  BillingUpdateBilling2 updates billing info
 */
-func (a *Client) UpdateBilling2(params *UpdateBilling2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateBilling2OK, error) {
+func (a *Client) BillingUpdateBilling2(params *BillingUpdateBilling2Params, authInfo runtime.ClientAuthInfoWriter) (*BillingUpdateBilling2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateBilling2Params()
+		params = NewBillingUpdateBilling2Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateBilling2",
+		ID:                 "billing_UpdateBilling2",
 		Method:             "PATCH",
 		PathPattern:        "/v1/account/billing",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateBilling2Reader{formats: a.formats},
+		Reader:             &BillingUpdateBilling2Reader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -168,14 +163,13 @@ func (a *Client) UpdateBilling2(params *UpdateBilling2Params, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateBilling2OK)
+	success, ok := result.(*BillingUpdateBilling2OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateBilling2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*BillingUpdateBilling2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

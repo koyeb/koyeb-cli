@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-openapi/swag"
@@ -8,45 +9,58 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stacks"
+	stack "github.com/koyeb/koyeb-cli/pkg/kclient/client/stack"
 	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
 )
 
 var (
 	createStackCommand = &cobra.Command{
 		Use:     "stacks [resource]",
-		Aliases: []string{"s", "stack"},
+		Aliases: []string{"stack"},
 		Short:   "Create stacks",
 		RunE:    createStacks,
 	}
 	getStackCommand = &cobra.Command{
 		Use:     "stacks [resource]",
-		Aliases: []string{"s", "stack"},
+		Aliases: []string{"stack"},
 		Short:   "Get stacks",
 		RunE:    getStacks,
 	}
 	describeStackCommand = &cobra.Command{
 		Use:     "stacks [resource]",
-		Aliases: []string{"s", "stack"},
+		Aliases: []string{"stack"},
 		Short:   "Describe stacks",
 		RunE:    getStacks,
 	}
 	updateStackCommand = &cobra.Command{
 		Use:     "stacks [resource]",
-		Aliases: []string{"s", "stack"},
+		Aliases: []string{"stack"},
 		Short:   "Update stacks",
-		RunE:    notImplemented,
+		RunE:    updateStacks,
 	}
 	deleteStackCommand = &cobra.Command{
 		Use:     "stacks [resource]",
-		Aliases: []string{"s", "stack"},
+		Aliases: []string{"stack"},
 		Short:   "Delete stacks",
 		RunE:    deleteStacks,
 	}
 )
 
+type StorageStacksUpsertBody struct {
+	Stacks []StorageStackUpsert `json:"stacks"`
+}
+
+func (a *StorageStacksUpsertBody) Append(item interface{}) {
+	stack := item.(*apimodel.StorageStackUpsert)
+	a.Stacks = append(a.Stacks, StorageStackUpsert{*stack})
+}
+
+func (a *StorageStacksUpsertBody) New() interface{} {
+	return &apimodel.StorageStackUpsert{}
+}
+
 type StorageStacksBody struct {
-	Stacks []StorageStackBody `json:"stacks"`
+	Stacks []StorageStack `json:"stacks"`
 }
 
 func (a *StorageStacksBody) MarshalBinary() ([]byte, error) {
@@ -58,7 +72,7 @@ func (a *StorageStacksBody) MarshalBinary() ([]byte, error) {
 }
 
 func (a *StorageStacksBody) GetHeaders() []string {
-	return []string{"id", "name", "region", "status", "updated_at"}
+	return []string{"id", "name", "status", "updated_at"}
 }
 
 func (a *StorageStacksBody) GetTableFields() [][]string {
@@ -74,37 +88,77 @@ func (a *StorageStacksBody) GetTableFields() [][]string {
 }
 
 func (a *StorageStacksBody) New() interface{} {
-	return &apimodel.StorageStackBody{}
+	return &apimodel.StorageStack{}
 }
 
 func (a *StorageStacksBody) Append(item interface{}) {
-	stack := item.(*apimodel.StorageStackBody)
-	a.Stacks = append(a.Stacks, StorageStackBody{*stack})
+	stack := item.(*apimodel.StorageStack)
+	a.Stacks = append(a.Stacks, StorageStack{*stack})
 }
 
-type StorageStackBody struct {
-	apimodel.StorageStackBody
+type StorageStacksDetailBody struct {
+	StorageStacksBody
 }
 
-func (a StorageStackBody) GetNewBody() *apimodel.StorageNewStackBody {
-	newBody := apimodel.StorageNewStackBody{}
-	copier.Copy(&newBody, &a.StorageStackBody)
-	return &newBody
+func (a *StorageStacksDetailBody) GetHeaders() []string {
+	return []string{"id", "name", "status", "latest_revision_sha", "deployed_revision_sha", "updated_at"}
 }
-func (a StorageStackBody) GetField(field string) string {
 
-	type StorageStackBody struct {
-		apimodel.StorageStackBody
+func (a *StorageStacksDetailBody) GetTableFields() [][]string {
+	var data [][]string
+	for _, item := range a.Stacks {
+		var fields []string
+		for _, field := range a.GetHeaders() {
+			fields = append(fields, item.GetField(field))
+		}
+		data = append(data, fields)
+	}
+	return data
+}
+
+type StorageStack struct {
+	apimodel.StorageStack
+}
+
+func (a StorageStack) GetField(field string) string {
+
+	type StorageStack struct {
+		apimodel.StorageStack
 	}
 
-	return getField(a.StorageStackBody, field)
+	return getField(a.StorageStack, field)
 }
 
-func displayStacks(items []*apimodel.StorageStackBody, format string) {
+type StorageStackUpsert struct {
+	apimodel.StorageStackUpsert
+}
+
+func (a StorageStackUpsert) GetNewBody() *apimodel.StorageStackUpsert {
+	newBody := apimodel.StorageStackUpsert{}
+	copier.Copy(&newBody, &a.StorageStackUpsert)
+	return &newBody
+}
+
+func (a StorageStackUpsert) GetUpdateBody() *apimodel.StorageStackUpsert {
+	updateBody := apimodel.StorageStackUpsert{}
+	copier.Copy(&updateBody, &a.StorageStackUpsert)
+	return &updateBody
+}
+
+func displayStacks(items []*apimodel.StorageStack, format string) {
 	var stacks StorageStacksBody
 
 	for _, item := range items {
-		stacks.Stacks = append(stacks.Stacks, StorageStackBody{*item})
+		stacks.Stacks = append(stacks.Stacks, StorageStack{*item})
+	}
+	render(&stacks, format)
+}
+
+func displayStacksDetail(items []*apimodel.StorageStack, format string) {
+	var stacks StorageStacksDetailBody
+
+	for _, item := range items {
+		stacks.Stacks = append(stacks.Stacks, StorageStack{*item})
 	}
 	render(&stacks, format)
 }
@@ -112,19 +166,20 @@ func displayStacks(items []*apimodel.StorageStackBody, format string) {
 func getStacks(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 
-	var all []*apimodel.StorageStackBody
+	var all []*apimodel.StorageStack
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := stacks.NewGetStackParams()
+			p := stack.NewStackGetStackParams()
 			p.ID = arg
-			resp, err := client.Stacks.GetStack(p, getAuth())
+			resp, err := client.Stack.StackGetStack(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)
-			all = append([]*apimodel.StorageStackBody{resp.GetPayload().Stack}, all...)
+			st := resp.GetPayload().Stack
+			all = append([]*apimodel.StorageStack{st}, all...)
 		}
 
 	} else {
@@ -133,19 +188,34 @@ func getStacks(cmd *cobra.Command, args []string) error {
 		offset := 0
 
 		for {
-			p := stacks.NewListStacksParams()
+			p := stack.NewStackListStacksParams()
 			strLimit := fmt.Sprintf("%d", limit)
 			p.SetLimit(&strLimit)
 			strOffset := fmt.Sprintf("%d", offset)
 			p.SetOffset(&strOffset)
 
-			resp, err := client.Stacks.ListStacks(p, getAuth())
+			resp, err := client.Stack.StackListStacks(p, getAuth())
 			if err != nil {
 				apiError(err)
 				er(err)
 			}
 			log.Debugf("got response: %v", resp)
-			all = append(resp.GetPayload().Stacks, all...)
+			var stacks []*apimodel.StorageStack
+
+			for _, st := range resp.GetPayload().Stacks {
+				stack := &apimodel.StorageStack{
+					ID:                  st.ID,
+					Name:                st.Name,
+					LatestRevisionSha:   st.LatestRevisionSha,
+					DeployedRevisionSha: st.DeployedRevisionSha,
+					Status:              st.Status,
+					Repository:          st.Repository,
+					UpdatedAt:           st.UpdatedAt,
+					CreatedAt:           st.CreatedAt,
+				}
+				stacks = append(stacks, stack)
+			}
+			all = append(stacks, all...)
 			page += 1
 			offset = page * limit
 			if int64(offset) >= resp.GetPayload().Count {
@@ -156,15 +226,66 @@ func getStacks(cmd *cobra.Command, args []string) error {
 	}
 	format := "table"
 	if cmd.Parent().Name() == "describe" {
+		fmt.Printf("Stack:\n")
 		format = "yaml"
 	}
-	displayStacks(all, format)
+	if len(args) > 0 {
+		displayStacksDetail(all, format)
+		if cmd.Parent().Name() == "describe" {
+			fmt.Printf("Functions:\n")
+			getStackFunctions(cmd.Parent(), args)
+		}
+	} else {
+		displayStacks(all, format)
+	}
 
 	return nil
 }
 
 func createStacks(cmd *cobra.Command, args []string) error {
-	var all StorageStacksBody
+	var all StorageStacksUpsertBody
+
+	if file != "" {
+		log.Debugf("Loading file %s", file)
+		err := loadMultiple(file, &all, "stacks")
+		if err != nil {
+			er(err)
+		}
+		log.Debugf("Content loaded %v", all.Stacks)
+
+		client := getApiClient()
+		for _, st := range all.Stacks {
+			p := stack.NewStackNewStackParams()
+			p.SetBody(st.GetNewBody())
+			resp, err := client.Stack.StackNewStack(p, getAuth())
+			if err != nil {
+				apiError(err)
+				continue
+			}
+			log.Debugf("got response: %v", resp)
+		}
+	} else if newStackName != "" {
+		client := getApiClient()
+		p := stack.NewStackNewStackParams()
+		var stack StorageStackUpsert
+		st := stack.GetNewBody()
+		st.Name = newStackName
+		p.SetBody(st)
+		resp, err := client.Stack.StackNewStack(p, getAuth())
+		if err != nil {
+			apiError(err)
+			return nil
+		}
+		log.Debugf("got response: %v", resp)
+	} else {
+		return errors.New("Missing file or name")
+	}
+
+	return nil
+}
+
+func updateStacks(cmd *cobra.Command, args []string) error {
+	var all StorageStacksUpsertBody
 
 	log.Debugf("Loading file %s", file)
 	err := loadMultiple(file, &all, "stacks")
@@ -174,10 +295,12 @@ func createStacks(cmd *cobra.Command, args []string) error {
 	log.Debugf("Content loaded %v", all.Stacks)
 
 	client := getApiClient()
-	for _, stack := range all.Stacks {
-		p := stacks.NewNewStackParams()
-		p.SetBody(stack.GetNewBody())
-		resp, err := client.Stacks.NewStack(p, getAuth())
+	for _, st := range all.Stacks {
+		p := stack.NewStackUpdateStackParams()
+		updateBody := st.GetUpdateBody()
+		p.SetID(updateBody.Name)
+		p.SetBody(st.GetUpdateBody())
+		resp, err := client.Stack.StackUpdateStack(p, getAuth())
 		if err != nil {
 			apiError(err)
 			continue
@@ -192,9 +315,9 @@ func deleteStacks(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		for _, arg := range args {
-			p := stacks.NewDeleteStackParams()
+			p := stack.NewStackDeleteStackParams()
 			p.ID = arg
-			resp, err := client.Stacks.DeleteStack(p, getAuth())
+			resp, err := client.Stack.StackDeleteStack(p, getAuth())
 			if err != nil {
 				apiError(err)
 				continue

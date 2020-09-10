@@ -11,21 +11,21 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/account_activities"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/activity"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/billing"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/catalog"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/credentials"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/deliveries"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/managed_stores"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/functions"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/hooks"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/invite"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/logs"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/organization"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/profile"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/public_catalog"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/s3_credentials"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/services"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/secrets"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/session"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/signup"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stacks"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stack"
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/storage_metrics"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/store"
 )
 
 // Default account account proto HTTP client.
@@ -70,21 +70,21 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AccountAcc
 
 	cli := new(AccountAccountProto)
 	cli.Transport = transport
-	cli.AccountActivities = account_activities.New(transport, formats)
 	cli.Activity = activity.New(transport, formats)
-	cli.Billing = billing.New(transport, formats)
 	cli.Catalog = catalog.New(transport, formats)
 	cli.Credentials = credentials.New(transport, formats)
-	cli.Deliveries = deliveries.New(transport, formats)
-	cli.ManagedStores = managed_stores.New(transport, formats)
+	cli.Functions = functions.New(transport, formats)
+	cli.Hooks = hooks.New(transport, formats)
+	cli.Invite = invite.New(transport, formats)
+	cli.Logs = logs.New(transport, formats)
+	cli.Organization = organization.New(transport, formats)
 	cli.Profile = profile.New(transport, formats)
-	cli.PublicCatalog = public_catalog.New(transport, formats)
 	cli.S3Credentials = s3_credentials.New(transport, formats)
-	cli.Services = services.New(transport, formats)
+	cli.Secrets = secrets.New(transport, formats)
 	cli.Session = session.New(transport, formats)
-	cli.Signup = signup.New(transport, formats)
-	cli.Stacks = stacks.New(transport, formats)
+	cli.Stack = stack.New(transport, formats)
 	cli.StorageMetrics = storage_metrics.New(transport, formats)
+	cli.Store = store.New(transport, formats)
 	return cli
 }
 
@@ -129,35 +129,35 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // AccountAccountProto is a client for account account proto
 type AccountAccountProto struct {
-	AccountActivities account_activities.ClientService
-
 	Activity activity.ClientService
-
-	Billing billing.ClientService
 
 	Catalog catalog.ClientService
 
 	Credentials credentials.ClientService
 
-	Deliveries deliveries.ClientService
+	Functions functions.ClientService
 
-	ManagedStores managed_stores.ClientService
+	Hooks hooks.ClientService
+
+	Invite invite.ClientService
+
+	Logs logs.ClientService
+
+	Organization organization.ClientService
 
 	Profile profile.ClientService
 
-	PublicCatalog public_catalog.ClientService
-
 	S3Credentials s3_credentials.ClientService
 
-	Services services.ClientService
+	Secrets secrets.ClientService
 
 	Session session.ClientService
 
-	Signup signup.ClientService
-
-	Stacks stacks.ClientService
+	Stack stack.ClientService
 
 	StorageMetrics storage_metrics.ClientService
+
+	Store store.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -165,19 +165,19 @@ type AccountAccountProto struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *AccountAccountProto) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-	c.AccountActivities.SetTransport(transport)
 	c.Activity.SetTransport(transport)
-	c.Billing.SetTransport(transport)
 	c.Catalog.SetTransport(transport)
 	c.Credentials.SetTransport(transport)
-	c.Deliveries.SetTransport(transport)
-	c.ManagedStores.SetTransport(transport)
+	c.Functions.SetTransport(transport)
+	c.Hooks.SetTransport(transport)
+	c.Invite.SetTransport(transport)
+	c.Logs.SetTransport(transport)
+	c.Organization.SetTransport(transport)
 	c.Profile.SetTransport(transport)
-	c.PublicCatalog.SetTransport(transport)
 	c.S3Credentials.SetTransport(transport)
-	c.Services.SetTransport(transport)
+	c.Secrets.SetTransport(transport)
 	c.Session.SetTransport(transport)
-	c.Signup.SetTransport(transport)
-	c.Stacks.SetTransport(transport)
+	c.Stack.SetTransport(transport)
 	c.StorageMetrics.SetTransport(transport)
+	c.Store.SetTransport(transport)
 }

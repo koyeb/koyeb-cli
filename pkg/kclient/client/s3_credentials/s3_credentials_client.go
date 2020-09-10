@@ -6,8 +6,6 @@ package s3_credentials
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,39 +25,39 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteS3Credential(params *DeleteS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteS3CredentialOK, error)
+	S3CredentialsDeleteS3Credential(params *S3CredentialsDeleteS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsDeleteS3CredentialOK, error)
 
-	GetS3Credential(params *GetS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*GetS3CredentialOK, error)
+	S3CredentialsGetS3Credential(params *S3CredentialsGetS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsGetS3CredentialOK, error)
 
-	ListS3Credentials(params *ListS3CredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*ListS3CredentialsOK, error)
+	S3CredentialsListS3Credentials(params *S3CredentialsListS3CredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsListS3CredentialsOK, error)
 
-	NewS3Credential(params *NewS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*NewS3CredentialOK, error)
+	S3CredentialsNewS3Credential(params *S3CredentialsNewS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsNewS3CredentialOK, error)
 
-	UpdateS3Credential(params *UpdateS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3CredentialOK, error)
+	S3CredentialsUpdateS3Credential(params *S3CredentialsUpdateS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsUpdateS3CredentialOK, error)
 
-	UpdateS3Credential2(params *UpdateS3Credential2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3Credential2OK, error)
+	S3CredentialsUpdateS3Credential2(params *S3CredentialsUpdateS3Credential2Params, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsUpdateS3Credential2OK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  DeleteS3Credential delete s3 credential API
+  S3CredentialsDeleteS3Credential s3 credentials delete s3 credential API
 */
-func (a *Client) DeleteS3Credential(params *DeleteS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteS3CredentialOK, error) {
+func (a *Client) S3CredentialsDeleteS3Credential(params *S3CredentialsDeleteS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsDeleteS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeleteS3CredentialParams()
+		params = NewS3CredentialsDeleteS3CredentialParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DeleteS3Credential",
+		ID:                 "s3Credentials_DeleteS3Credential",
 		Method:             "DELETE",
 		PathPattern:        "/v1/s3_credentials/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DeleteS3CredentialReader{formats: a.formats},
+		Reader:             &S3CredentialsDeleteS3CredentialReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -67,34 +65,33 @@ func (a *Client) DeleteS3Credential(params *DeleteS3CredentialParams, authInfo r
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DeleteS3CredentialOK)
+	success, ok := result.(*S3CredentialsDeleteS3CredentialOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeleteS3Credential: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*S3CredentialsDeleteS3CredentialDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  GetS3Credential get s3 credential API
+  S3CredentialsGetS3Credential s3 credentials get s3 credential API
 */
-func (a *Client) GetS3Credential(params *GetS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*GetS3CredentialOK, error) {
+func (a *Client) S3CredentialsGetS3Credential(params *S3CredentialsGetS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsGetS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetS3CredentialParams()
+		params = NewS3CredentialsGetS3CredentialParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetS3Credential",
+		ID:                 "s3Credentials_GetS3Credential",
 		Method:             "GET",
 		PathPattern:        "/v1/s3_credentials/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetS3CredentialReader{formats: a.formats},
+		Reader:             &S3CredentialsGetS3CredentialReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -102,34 +99,33 @@ func (a *Client) GetS3Credential(params *GetS3CredentialParams, authInfo runtime
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetS3CredentialOK)
+	success, ok := result.(*S3CredentialsGetS3CredentialOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetS3Credential: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*S3CredentialsGetS3CredentialDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  ListS3Credentials list s3 credentials API
+  S3CredentialsListS3Credentials s3 credentials list s3 credentials API
 */
-func (a *Client) ListS3Credentials(params *ListS3CredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*ListS3CredentialsOK, error) {
+func (a *Client) S3CredentialsListS3Credentials(params *S3CredentialsListS3CredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsListS3CredentialsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListS3CredentialsParams()
+		params = NewS3CredentialsListS3CredentialsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListS3Credentials",
+		ID:                 "s3Credentials_ListS3Credentials",
 		Method:             "GET",
 		PathPattern:        "/v1/s3_credentials",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &ListS3CredentialsReader{formats: a.formats},
+		Reader:             &S3CredentialsListS3CredentialsReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -137,34 +133,33 @@ func (a *Client) ListS3Credentials(params *ListS3CredentialsParams, authInfo run
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListS3CredentialsOK)
+	success, ok := result.(*S3CredentialsListS3CredentialsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ListS3Credentials: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*S3CredentialsListS3CredentialsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  NewS3Credential new s3 credential API
+  S3CredentialsNewS3Credential s3 credentials new s3 credential API
 */
-func (a *Client) NewS3Credential(params *NewS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*NewS3CredentialOK, error) {
+func (a *Client) S3CredentialsNewS3Credential(params *S3CredentialsNewS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsNewS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewNewS3CredentialParams()
+		params = NewS3CredentialsNewS3CredentialParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "NewS3Credential",
+		ID:                 "s3Credentials_NewS3Credential",
 		Method:             "POST",
 		PathPattern:        "/v1/s3_credentials",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &NewS3CredentialReader{formats: a.formats},
+		Reader:             &S3CredentialsNewS3CredentialReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -172,34 +167,33 @@ func (a *Client) NewS3Credential(params *NewS3CredentialParams, authInfo runtime
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*NewS3CredentialOK)
+	success, ok := result.(*S3CredentialsNewS3CredentialOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for NewS3Credential: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*S3CredentialsNewS3CredentialDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateS3Credential update s3 credential API
+  S3CredentialsUpdateS3Credential s3 credentials update s3 credential API
 */
-func (a *Client) UpdateS3Credential(params *UpdateS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3CredentialOK, error) {
+func (a *Client) S3CredentialsUpdateS3Credential(params *S3CredentialsUpdateS3CredentialParams, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsUpdateS3CredentialOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateS3CredentialParams()
+		params = NewS3CredentialsUpdateS3CredentialParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateS3Credential",
+		ID:                 "s3Credentials_UpdateS3Credential",
 		Method:             "PUT",
 		PathPattern:        "/v1/s3_credentials/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateS3CredentialReader{formats: a.formats},
+		Reader:             &S3CredentialsUpdateS3CredentialReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -207,34 +201,33 @@ func (a *Client) UpdateS3Credential(params *UpdateS3CredentialParams, authInfo r
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateS3CredentialOK)
+	success, ok := result.(*S3CredentialsUpdateS3CredentialOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateS3Credential: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*S3CredentialsUpdateS3CredentialDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  UpdateS3Credential2 update s3 credential2 API
+  S3CredentialsUpdateS3Credential2 s3 credentials update s3 credential2 API
 */
-func (a *Client) UpdateS3Credential2(params *UpdateS3Credential2Params, authInfo runtime.ClientAuthInfoWriter) (*UpdateS3Credential2OK, error) {
+func (a *Client) S3CredentialsUpdateS3Credential2(params *S3CredentialsUpdateS3Credential2Params, authInfo runtime.ClientAuthInfoWriter) (*S3CredentialsUpdateS3Credential2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewUpdateS3Credential2Params()
+		params = NewS3CredentialsUpdateS3Credential2Params()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "UpdateS3Credential2",
+		ID:                 "s3Credentials_UpdateS3Credential2",
 		Method:             "PATCH",
 		PathPattern:        "/v1/s3_credentials/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &UpdateS3Credential2Reader{formats: a.formats},
+		Reader:             &S3CredentialsUpdateS3Credential2Reader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -242,14 +235,13 @@ func (a *Client) UpdateS3Credential2(params *UpdateS3Credential2Params, authInfo
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UpdateS3Credential2OK)
+	success, ok := result.(*S3CredentialsUpdateS3Credential2OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UpdateS3Credential2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*S3CredentialsUpdateS3Credential2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

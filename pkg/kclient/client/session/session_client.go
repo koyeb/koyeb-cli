@@ -6,8 +6,6 @@ package session
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -27,33 +25,35 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	Login(params *LoginParams, authInfo runtime.ClientAuthInfoWriter) (*LoginOK, error)
+	SessionLogin(params *SessionLoginParams, authInfo runtime.ClientAuthInfoWriter) (*SessionLoginOK, error)
 
-	Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutOK, error)
+	SessionLogout(params *SessionLogoutParams, authInfo runtime.ClientAuthInfoWriter) (*SessionLogoutOK, error)
 
-	RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error)
+	SessionPasswordlessLogin(params *SessionPasswordlessLoginParams, authInfo runtime.ClientAuthInfoWriter) (*SessionPasswordlessLoginOK, error)
+
+	SessionRefreshToken(params *SessionRefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*SessionRefreshTokenOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  Login login API
+  SessionLogin logins user
 */
-func (a *Client) Login(params *LoginParams, authInfo runtime.ClientAuthInfoWriter) (*LoginOK, error) {
+func (a *Client) SessionLogin(params *SessionLoginParams, authInfo runtime.ClientAuthInfoWriter) (*SessionLoginOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewLoginParams()
+		params = NewSessionLoginParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "Login",
+		ID:                 "session_Login",
 		Method:             "POST",
 		PathPattern:        "/v1/account/login",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &LoginReader{formats: a.formats},
+		Reader:             &SessionLoginReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -61,34 +61,33 @@ func (a *Client) Login(params *LoginParams, authInfo runtime.ClientAuthInfoWrite
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*LoginOK)
+	success, ok := result.(*SessionLoginOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for Login: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SessionLoginDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  Logout logout API
+  SessionLogout logouts user
 */
-func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutOK, error) {
+func (a *Client) SessionLogout(params *SessionLogoutParams, authInfo runtime.ClientAuthInfoWriter) (*SessionLogoutOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewLogoutParams()
+		params = NewSessionLogoutParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "Logout",
+		ID:                 "session_Logout",
 		Method:             "DELETE",
 		PathPattern:        "/v1/account/logout",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &LogoutReader{formats: a.formats},
+		Reader:             &SessionLogoutReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -96,34 +95,67 @@ func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWri
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*LogoutOK)
+	success, ok := result.(*SessionLogoutOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for Logout: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SessionLogoutDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-  RefreshToken refresh token API
+  SessionPasswordlessLogin session passwordless login API
 */
-func (a *Client) RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error) {
+func (a *Client) SessionPasswordlessLogin(params *SessionPasswordlessLoginParams, authInfo runtime.ClientAuthInfoWriter) (*SessionPasswordlessLoginOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewRefreshTokenParams()
+		params = NewSessionPasswordlessLoginParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "RefreshToken",
+		ID:                 "session_PasswordlessLogin",
+		Method:             "POST",
+		PathPattern:        "/v1/account/passwordless_login",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &SessionPasswordlessLoginReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SessionPasswordlessLoginOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SessionPasswordlessLoginDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SessionRefreshToken refreshes token
+*/
+func (a *Client) SessionRefreshToken(params *SessionRefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*SessionRefreshTokenOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSessionRefreshTokenParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "session_RefreshToken",
 		Method:             "PUT",
 		PathPattern:        "/v1/account/refresh",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &RefreshTokenReader{formats: a.formats},
+		Reader:             &SessionRefreshTokenReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -131,14 +163,13 @@ func (a *Client) RefreshToken(params *RefreshTokenParams, authInfo runtime.Clien
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*RefreshTokenOK)
+	success, ok := result.(*SessionRefreshTokenOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for RefreshToken: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SessionRefreshTokenDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

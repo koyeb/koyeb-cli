@@ -16,7 +16,7 @@ import (
 type AccountBillingInfoReply struct {
 
 	// billing info
-	BillingInfo *AccountBillingInfoBody `json:"billing_info,omitempty"`
+	BillingInfo *AccountBillingInfo `json:"billing_info,omitempty"`
 }
 
 // Validate validates this account billing info reply

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"regexp"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -25,13 +26,13 @@ func isJson(file string) bool {
 	return false
 }
 
-func loadMultiple(file string, item ApiResources, root string) error {
+func loadMultiple(file string, item UpdateApiResources, root string) error {
 	raw, err := ioutil.ReadFile(file)
 	if err != nil {
 		return err
 	}
 
-	buffers := strings.Split(string(raw), "---")
+	buffers := regexp.MustCompile("(?m)^\\-\\-\\-$").Split(string(raw), -1)
 
 	for _, buf := range buffers {
 		data := []byte(buf)
@@ -91,4 +92,16 @@ func parseFile(file string, item interface{}) error {
 		return json.Unmarshal(data, item)
 	}
 	return errors.New("Unknown format")
+}
+
+func loadYaml(file string) (string, error) {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+
+	if isYaml(file) {
+		return string(data), nil
+	}
+	return "", errors.New("Unknown format")
 }
