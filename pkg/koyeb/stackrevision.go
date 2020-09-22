@@ -24,14 +24,14 @@ var (
 		Use:     "revisions [stack] [sha]",
 		Aliases: []string{"revision"},
 		Short:   "Get stack revisions",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		RunE:    getStackRevisions,
 	}
 	describeStackRevisionCommand = &cobra.Command{
 		Use:     "revisions [stack] [sha]",
 		Aliases: []string{"revision"},
 		Short:   "Describe stack revisions",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		RunE:    getStackRevisions,
 	}
 )

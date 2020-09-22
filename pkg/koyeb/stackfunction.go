@@ -20,28 +20,28 @@ var (
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
 		Short:   "Get stack functions",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		RunE:    getStackFunctions,
 	}
 	describeStackFunctionCommand = &cobra.Command{
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
 		Short:   "Describe stack functions",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		RunE:    getStackFunctions,
 	}
 	logsStackFunctionCommand = &cobra.Command{
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
 		Short:   "Logs stack functions",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		RunE:    logStackFunctions,
 	}
 	invokeStackFunctionCommand = &cobra.Command{
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
 		Short:   "Invoke stack functions",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		RunE:    invokeStackFunctions,
 	}
 )
