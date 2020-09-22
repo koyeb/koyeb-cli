@@ -61,10 +61,10 @@ var (
 		Aliases: []string{"l", "log"},
 		Short:   "Get the log of one resources",
 	}
-	runCmd = &cobra.Command{
-		Use:     "run [resource]",
-		Aliases: []string{"r"},
-		Short:   "Launch a new run for a resource",
+	invokeCmd = &cobra.Command{
+		Use:     "invoke [resource]",
+		Aliases: []string{"i"},
+		Short:   "Invoke a function",
 	}
 )
 
@@ -164,9 +164,9 @@ func init() {
 	logCmd.AddCommand(logsStackFunctionCommand)
 
 	// Run
-	rootCmd.AddCommand(runCmd)
-	runCmd.AddCommand(runStackFunctionCommand)
-	runStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
+	rootCmd.AddCommand(invokeCmd)
+	invokeCmd.AddCommand(invokeStackFunctionCommand)
+	invokeStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
 }
 
 func initConfig() {

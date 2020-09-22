@@ -37,12 +37,12 @@ var (
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    logStackFunctions,
 	}
-	runStackFunctionCommand = &cobra.Command{
+	invokeStackFunctionCommand = &cobra.Command{
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
-		Short:   "Run stack functions",
+		Short:   "Invoke stack functions",
 		Args:    cobra.MinimumNArgs(1),
-		RunE:    runStackFunctions,
+		RunE:    invokeStackFunctions,
 	}
 )
 
@@ -240,7 +240,7 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 	}
 }
 
-func runStackFunctions(cmd *cobra.Command, args []string) error {
+func invokeStackFunctions(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 
 	if len(args) < 2 {
