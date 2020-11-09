@@ -131,15 +131,15 @@ func apiError(err error) {
 
 	switch er := err.(type) {
 	case CommonErrorInterface:
-		log.Error(er)
+		log.Debug(er)
 		payload := er.GetPayload()
-		log.Errorf("Status code %d - Error: %s - Message: %s", payload.Status, payload.Code, payload.Message)
+		log.Errorf("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 	case CommonErrorWithFieldInterface:
-		log.Error(er)
+		log.Debug(er)
 		payload := er.GetPayload()
-		log.Errorf("Status code %d - Error: %s - Message: %s", payload.Status, payload.Code, payload.Message)
+		log.Errorf("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 		for _, f := range payload.Fields {
-			log.Errorf("%s: %s", f.Field, f.Description)
+			log.Errorf("Error on field %s: %s", f.Field, f.Description)
 		}
 	case *runtime.APIError:
 		e := er.Response.(runtime.ClientResponse)
