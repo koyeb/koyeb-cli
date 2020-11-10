@@ -1,6 +1,6 @@
 module github.com/koyeb/koyeb-cli
 
-go 1.13
+go 1.14
 
 require (
 	github.com/ghodss/yaml v1.0.0
@@ -17,5 +17,5 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.2
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

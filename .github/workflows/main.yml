@@ -9,13 +9,24 @@ jobs:
   build:
     name: Upload Release Asset
     runs-on: ubuntu-latest
+    env:
+      GO111MODULE: "on"
+      GOPATH: ${{ github.workspace }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          path: ./src/github.com/${{ github.repository }}
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.14"
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Build project
         run: |
-          zip --junk-paths my-artifact README.md
-          # ./scripts/build.sh
+          cd ./src/github.com/${{ github.repository }}
+          ./scripts/build.sh ${{steps.get_version.outputs.VERSION}}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -26,13 +37,48 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset 
+      - name: Upload linux-x86_64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact.zip
-          asset_content_type: application/zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-linux-x86_64
+          asset_name: koyeb-cli-linux-x86_64
+          asset_content_type: application/octet-stream
+      - name: Upload linux-386
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-linux-386
+          asset_name: koyeb-cli-linux-386
+          asset_content_type: application/octet-stream
+      - name: Upload darwin-x86_64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-darwin-x86_64
+          asset_name: koyeb-cli-darwin-x86_64
+          asset_content_type: application/octet-stream
+      - name: Upload windows-x86_64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-windows-x86_64.exe
+          asset_name: koyeb-cli-windows-x86_64.exe
+          asset_content_type: application/octet-stream
+      - name: Upload windows-386
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-windows-386.exe
+          asset_name: koyeb-cli-windows-386.exe
+          asset_content_type: application/octet-stream

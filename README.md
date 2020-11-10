@@ -5,6 +5,32 @@ The Koyeb CLI (Command Line Interface) is a powerful tool to manage your Koyeb S
 
 The Koyeb CLI is under heavy development and pre-built binaries are not yet available. You will need a working Go environment to use the CLI.
 
+## Install from release
+
+### Mac OS
+
+```
+# Install latest version from github
+curl -sL $(curl -s https://api.github.com/repos/koyeb/koyeb-cli/releases/latest | grep 'http.*koyeb-cli-darwin-x86_64' | awk '{print $2}' | sed 's|[\"\,]*||g') -o /usr/local/bin/koyeb
+
+chmod +x /usr/local/bin/koyeb
+
+koyeb init
+
+```
+
+### Linux
+
+```
+# Install latest version from github
+curl -sL $(curl -s https://api.github.com/repos/koyeb/koyeb-cli/releases/latest | grep 'http.*koyeb-cli-linux-x86_64' | awk '{print $2}' | sed 's|[\"\,]*||g') -o /usr/local/bin/koyeb
+
+chmod +x /usr/local/bin/koyeb
+
+koyeb init
+
+```
+
 ## Living at the Edge
 
 To install the `koyeb` binary, simply run:

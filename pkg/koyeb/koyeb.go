@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -11,6 +12,8 @@ import (
 )
 
 var (
+	Version = "develop"
+
 	// Used for flags.
 	file                 string
 	cfgFile              string
@@ -29,6 +32,11 @@ var (
 		Use:   "init",
 		Short: "Init configuration",
 		Run:   Init,
+	}
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Get version",
+		Run:   PrintVersion,
 	}
 
 	getCmd = &cobra.Command{
@@ -95,6 +103,10 @@ func er(msg interface{}) {
 	os.Exit(1)
 }
 
+func PrintVersion(cmd *cobra.Command, args []string) {
+	fmt.Printf("%s\n", Version)
+}
+
 func init() {
 	log.SetFormatter(&log.TextFormatter{})
 
@@ -110,6 +122,7 @@ func init() {
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(versionCmd)
 
 	// Create
 	rootCmd.AddCommand(createCmd)
