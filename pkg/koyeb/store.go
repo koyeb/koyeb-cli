@@ -127,7 +127,7 @@ func getStores(cmd *cobra.Command, args []string) error {
 			p.ID = arg
 			resp, err := client.Store.StoreGetStore(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)
@@ -148,8 +148,7 @@ func getStores(cmd *cobra.Command, args []string) error {
 
 			resp, err := client.Store.StoreListStores(p, getAuth())
 			if err != nil {
-				apiError(err)
-				er(err)
+				fatalApiError(err)
 			}
 			log.Debugf("got response: %v", resp)
 			all = append(resp.GetPayload().Stores, all...)
@@ -186,7 +185,7 @@ func createStores(cmd *cobra.Command, args []string) error {
 		p.SetBody(st.GetNewBody())
 		resp, err := client.Store.StoreNewStore(p, getAuth())
 		if err != nil {
-			apiError(err)
+			logApiError(err)
 			continue
 		}
 		log.Debugf("got response: %v", resp)
@@ -216,7 +215,7 @@ func updateStores(cmd *cobra.Command, args []string) error {
 		p.SetBody(st.GetUpdateBody())
 		resp, err := client.Store.StoreUpdateStore(p, getAuth())
 		if err != nil {
-			apiError(err)
+			logApiError(err)
 			continue
 		}
 		log.Debugf("got response: %v", resp)
@@ -233,7 +232,7 @@ func deleteStores(cmd *cobra.Command, args []string) error {
 			p.ID = arg
 			resp, err := client.Store.StoreDeleteStore(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)

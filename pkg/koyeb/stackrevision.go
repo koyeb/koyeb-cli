@@ -164,8 +164,7 @@ func getStackRevisions(cmd *cobra.Command, args []string) error {
 		p.Sha = args[1]
 		resp, err := client.Stack.StackGetStackRevision(p, getAuth())
 		if err != nil {
-			apiError(err)
-			return err
+			fatalApiError(err)
 		}
 		log.Debugf("got response: %v", resp)
 		st := resp.GetPayload().Revision
@@ -185,8 +184,7 @@ func getStackRevisions(cmd *cobra.Command, args []string) error {
 
 			resp, err := client.Stack.StackListStackRevisions(p, getAuth())
 			if err != nil {
-				apiError(err)
-				er(err)
+				fatalApiError(err)
 			}
 			log.Debugf("got response: %v", resp)
 			var stackrevisions []*apimodel.StorageStackRevision
@@ -244,8 +242,7 @@ func createStackRevisions(cmd *cobra.Command, args []string) error {
 	p.SetBody(rev)
 	resp, err := client.Stack.StackNewStackRevision(p, getAuth())
 	if err != nil {
-		apiError(err)
-		return err
+		fatalApiError(err)
 	}
 	log.Debugf("got response: %v", resp)
 

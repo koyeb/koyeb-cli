@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -127,39 +128,47 @@ type CommonErrorWithFieldInterface interface {
 	GetPayload() *apimodel.CommonErrorWithFields
 }
 
-func apiError(err error) {
+func logApiError(err error) {
+	renderApiError(err, log.Errorf)
+}
+
+func fatalApiError(err error) {
+	renderApiError(err, log.Fatalf)
+}
+
+func renderApiError(err error, errorFn func(string, ...interface{})) {
 
 	switch er := err.(type) {
 	case CommonErrorInterface:
 		log.Debug(er)
 		payload := er.GetPayload()
-		log.Errorf("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
+		errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 	case CommonErrorWithFieldInterface:
 		log.Debug(er)
 		payload := er.GetPayload()
-		log.Errorf("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 		for _, f := range payload.Fields {
 			log.Errorf("Error on field %s: %s", f.Field, f.Description)
 		}
+		errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 	case *runtime.APIError:
 		e := er.Response.(runtime.ClientResponse)
 		if debug {
 			respBody := e.Body()
 			body, _ := ioutil.ReadAll(respBody)
-			log.Errorf("%s", body)
+			log.Debugf("%s", body)
 		}
+		errorFn("%s", e.Message())
+	case *json.UnmarshalTypeError:
+		log.Debug(err)
+		errorFn("Unable to process server response")
 	default:
-		log.Error(err)
-	}
-
-	er, ok := err.(*runtime.APIError)
-	if ok {
-		e := er.Response.(runtime.ClientResponse)
-		if debug {
-			respBody := e.Body()
-			body, _ := ioutil.ReadAll(respBody)
-			log.Errorf("%s", body)
+		// Workarround for https://github.com/go-swagger/go-swagger/issues/1929
+		if strings.Contains(err.Error(), "is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface") {
+			log.Debug(err)
+			errorFn("Unable to process server response")
+		} else {
+			log.Debugf("Unhandled %T error: %v", err, err)
+			errorFn("%v", err)
 		}
-		log.Errorf("%s", e.Message())
 	}
 }

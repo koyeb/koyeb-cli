@@ -174,7 +174,7 @@ func getStacks(cmd *cobra.Command, args []string) error {
 			p.ID = arg
 			resp, err := client.Stack.StackGetStack(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)
@@ -196,8 +196,7 @@ func getStacks(cmd *cobra.Command, args []string) error {
 
 			resp, err := client.Stack.StackListStacks(p, getAuth())
 			if err != nil {
-				apiError(err)
-				er(err)
+				fatalApiError(err)
 			}
 			log.Debugf("got response: %v", resp)
 			var stacks []*apimodel.StorageStack
@@ -259,7 +258,7 @@ func createStacks(cmd *cobra.Command, args []string) error {
 			p.SetBody(st.GetNewBody())
 			resp, err := client.Stack.StackNewStack(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)
@@ -273,7 +272,7 @@ func createStacks(cmd *cobra.Command, args []string) error {
 		p.SetBody(st)
 		resp, err := client.Stack.StackNewStack(p, getAuth())
 		if err != nil {
-			apiError(err)
+			logApiError(err)
 			return nil
 		}
 		log.Debugf("got response: %v", resp)
@@ -302,7 +301,7 @@ func updateStacks(cmd *cobra.Command, args []string) error {
 		p.SetBody(st.GetUpdateBody())
 		resp, err := client.Stack.StackUpdateStack(p, getAuth())
 		if err != nil {
-			apiError(err)
+			logApiError(err)
 			continue
 		}
 		log.Debugf("got response: %v", resp)
@@ -319,7 +318,7 @@ func deleteStacks(cmd *cobra.Command, args []string) error {
 			p.ID = arg
 			resp, err := client.Stack.StackDeleteStack(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)

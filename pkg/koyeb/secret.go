@@ -127,7 +127,7 @@ func getSecrets(cmd *cobra.Command, args []string) error {
 			p.ID = arg
 			resp, err := client.Secrets.SecretsGetSecret(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)
@@ -148,8 +148,7 @@ func getSecrets(cmd *cobra.Command, args []string) error {
 
 			resp, err := client.Secrets.SecretsListSecrets(p, getAuth())
 			if err != nil {
-				apiError(err)
-				er(err)
+				fatalApiError(err)
 			}
 			log.Debugf("got response: %v", resp)
 			all = append(resp.GetPayload().Secrets, all...)
@@ -186,7 +185,7 @@ func createSecrets(cmd *cobra.Command, args []string) error {
 		p.SetBody(secret.GetNewBody())
 		resp, err := client.Secrets.SecretsNewSecret(p, getAuth())
 		if err != nil {
-			apiError(err)
+			logApiError(err)
 			continue
 		}
 		log.Debugf("got response: %v", resp)
@@ -216,7 +215,7 @@ func updateSecrets(cmd *cobra.Command, args []string) error {
 		p.SetBody(st.GetUpdateBody())
 		resp, err := client.Secrets.SecretsUpdateSecret(p, getAuth())
 		if err != nil {
-			apiError(err)
+			logApiError(err)
 			continue
 		}
 		log.Debugf("got response: %v", resp)
@@ -233,7 +232,7 @@ func deleteSecrets(cmd *cobra.Command, args []string) error {
 			p.ID = arg
 			resp, err := client.Secrets.SecretsDeleteSecret(p, getAuth())
 			if err != nil {
-				apiError(err)
+				logApiError(err)
 				continue
 			}
 			log.Debugf("got response: %v", resp)

@@ -267,8 +267,7 @@ func invokeStackFunctions(cmd *cobra.Command, args []string) error {
 		log.Debugf("Launching debug event %v", p.Body)
 		resp, err := client.Functions.FunctionsInvokeFunction(p, getAuth())
 		if err != nil {
-			apiError(err)
-			return err
+			fatalApiError(err)
 		}
 		log.Debugf("got response: %v", resp)
 		log.Infof("Event sent: %v", resp.Payload.ID)
@@ -289,8 +288,7 @@ func getStackFunctions(cmd *cobra.Command, args []string) error {
 		p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1])
 		resp, err := client.Functions.FunctionsGetFunction(p, getAuth())
 		if err != nil {
-			apiError(err)
-			return err
+			fatalApiError(err)
 		}
 		log.Debugf("got response: %v", resp)
 		st := resp.GetPayload().Function
@@ -300,8 +298,7 @@ func getStackFunctions(cmd *cobra.Command, args []string) error {
 		p = p.WithStackID(args[0]).WithSha(":latest")
 		resp, err := client.Functions.FunctionsListFunctions(p, getAuth())
 		if err != nil {
-			apiError(err)
-			return err
+			fatalApiError(err)
 		}
 		log.Debugf("got response: %v", resp)
 		var stackfunctions []*apimodel.StorageFunction
@@ -349,8 +346,7 @@ func getStackFunctionHistory(cmd *cobra.Command, args []string) error {
 		p = p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1])
 		resp, err := client.Functions.FunctionsFetchFunctionHistory(p, getAuth())
 		if err != nil {
-			apiError(err)
-			return err
+			fatalApiError(err)
 		}
 		log.Debugf("got response: %v", resp)
 		var stackfunctionsHistory []*apimodel.StorageFunctionRunInfoListItem
