@@ -3,8 +3,6 @@ The Koyeb CLI (Command Line Interface) is a powerful tool to manage your Koyeb S
 
 # Installation
 
-The Koyeb CLI is under heavy development and pre-built binaries are not yet available. You will need a working Go environment to use the CLI.
-
 ## Install from release
 
 ### Mac OS
