@@ -61,20 +61,18 @@ func (a *StorageStackRevisionsBody) MarshalBinary() ([]byte, error) {
 	}
 }
 
-func (a *StorageStackRevisionsBody) GetHeaders() []string {
-	return []string{"sha", "commit_info.message", "status", "created_at"}
-}
-
-func (a *StorageStackRevisionsBody) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageStackRevisionsBody) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"sha", "commit_info.message", "status", "created_at"},
+	}
 	for _, item := range a.StackRevisions {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			fields = append(fields, item.GetField(field))
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (a *StorageStackRevisionsBody) New() interface{} {
@@ -90,20 +88,18 @@ type StorageStackRevisionsDetailBody struct {
 	StorageStackRevisionsBody
 }
 
-func (a *StorageStackRevisionsDetailBody) GetHeaders() []string {
-	return []string{"sha", "commit_info.message", "status", "created_at"}
-}
-
-func (a *StorageStackRevisionsDetailBody) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageStackRevisionsDetailBody) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"sha", "commit_info.message", "status", "created_at"},
+	}
 	for _, item := range a.StackRevisions {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			fields = append(fields, item.GetField(field))
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 type StorageStackRevision struct {

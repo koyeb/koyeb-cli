@@ -59,24 +59,22 @@ func (a *StorageFunctionRunInfoHistory) MarshalBinary() ([]byte, error) {
 	}
 }
 
-func (a *StorageFunctionRunInfoHistory) GetHeaders() []string {
-	return []string{"run_id", "event_id", "fn_name", "state", "start", "end"}
-}
-
-func (a *StorageFunctionRunInfoHistory) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageFunctionRunInfoHistory) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"run_id", "event_id", "fn_name", "state", "start", "end"},
+	}
 	for _, item := range a.Runs {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			if field == "start" || field == "end" {
 				fields = append(fields, getField(*item.Executions[0], field))
 			} else {
 				fields = append(fields, item.GetField(field))
 			}
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (a *StorageFunctionRunInfoHistory) New() interface{} {
@@ -100,20 +98,18 @@ func (a *StorageStackFunctionsBody) MarshalBinary() ([]byte, error) {
 	}
 }
 
-func (a *StorageStackFunctionsBody) GetHeaders() []string {
-	return []string{"name", "type"}
-}
-
-func (a *StorageStackFunctionsBody) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageStackFunctionsBody) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"name", "type"},
+	}
 	for _, item := range a.StackFunctions {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			fields = append(fields, item.GetField(field))
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (a *StorageStackFunctionsBody) New() interface{} {

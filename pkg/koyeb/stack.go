@@ -71,20 +71,18 @@ func (a *StorageStacksBody) MarshalBinary() ([]byte, error) {
 	}
 }
 
-func (a *StorageStacksBody) GetHeaders() []string {
-	return []string{"id", "name", "status", "updated_at"}
-}
-
-func (a *StorageStacksBody) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageStacksBody) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"id", "name", "status", "updated_at"},
+	}
 	for _, item := range a.Stacks {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			fields = append(fields, item.GetField(field))
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (a *StorageStacksBody) New() interface{} {
@@ -100,20 +98,18 @@ type StorageStacksDetailBody struct {
 	StorageStacksBody
 }
 
-func (a *StorageStacksDetailBody) GetHeaders() []string {
-	return []string{"id", "name", "status", "latest_revision_sha", "deployed_revision_sha", "updated_at"}
-}
-
-func (a *StorageStacksDetailBody) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageStacksDetailBody) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"id", "name", "status", "latest_revision_sha", "deployed_revision_sha", "updated_at"},
+	}
 	for _, item := range a.Stacks {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			fields = append(fields, item.GetField(field))
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 type StorageStack struct {
