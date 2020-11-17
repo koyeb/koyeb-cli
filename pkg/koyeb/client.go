@@ -42,10 +42,13 @@ type UpdateApiResources interface {
 	Append(interface{})
 }
 
+type TableInfo struct {
+	headers []string
+	fields  [][]string
+}
+
 type ApiResources interface {
-	GetHeaders() []string
-	New() interface{}
-	GetTableFields() [][]string
+	GetTable() TableInfo
 	MarshalBinary() ([]byte, error)
 }
 
@@ -74,8 +77,9 @@ func render(item ApiResources, defaultFormat string) {
 		}
 		fmt.Println(string(buf))
 	case "table":
+		tableInfo := item.GetTable()
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(item.GetHeaders())
+		table.SetHeader(tableInfo.headers)
 		table.SetAutoWrapText(false)
 		table.SetAutoFormatHeaders(true)
 		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
@@ -87,7 +91,7 @@ func render(item ApiResources, defaultFormat string) {
 		table.SetBorder(false)
 		table.SetTablePadding("\t")
 		table.SetNoWhiteSpace(true)
-		table.AppendBulk(item.GetTableFields())
+		table.AppendBulk(tableInfo.fields)
 		table.Render()
 	default:
 		er("Invalid format")

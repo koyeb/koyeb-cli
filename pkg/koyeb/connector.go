@@ -107,7 +107,7 @@ func getConnectors(cmd *cobra.Command, args []string) error {
 			log.Debugf("got response: %v", resp)
 			all[i] = *resp.GetPayload().Connector
 		}
-		render(ConnectorListDetails(all), format)
+		render(ConnectorListDetails{Elts: all}, format)
 	} else {
 		var all []models.StorageConnectorListItem
 		page := 0
@@ -138,7 +138,7 @@ func getConnectors(cmd *cobra.Command, args []string) error {
 				break
 			}
 		}
-		render(ConnectorList(all), format)
+		render(ConnectorList{Elts: all}, format)
 	}
 	return nil
 }
@@ -184,21 +184,17 @@ func (a *StorageConnectorUpsertBody) New() interface{} {
 	return &models.StorageConnectorUpsert{}
 }
 
-type ConnectorListDetails []models.StorageConnector
-
-func (c ConnectorListDetails) GetHeaders() []string {
-	return []string{"id", "name", "type", "url", "created_at", "updated_at", "filter", "mapper"}
+type ConnectorListDetails struct {
+	Elts []models.StorageConnector `json:"connectors"`
 }
 
-func (c ConnectorListDetails) New() interface{} {
-	return &models.StorageConnector{}
-}
-
-func (c ConnectorListDetails) GetTableFields() [][]string {
-	var data [][]string
-	for _, item := range c {
+func (c ConnectorListDetails) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"id", "name", "type", "url", "created_at", "updated_at", "filter", "mapper"},
+	}
+	for _, item := range c.Elts {
 		var fields []string
-		for _, field := range c.GetHeaders() {
+		for _, field := range res.headers {
 			var res string
 			if field == "url" {
 				res = genFullUrl(string(item.Type), item.URL)
@@ -213,27 +209,21 @@ func (c ConnectorListDetails) GetTableFields() [][]string {
 			}
 			fields = append(fields, res)
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (c ConnectorListDetails) MarshalBinary() ([]byte, error) {
-	if len(c) == 1 {
-		return swag.WriteJSON(c[0])
+	if len(c.Elts) == 1 {
+		return swag.WriteJSON(c.Elts[0])
 	} else {
 		return swag.WriteJSON(c)
 	}
 }
 
-type ConnectorList []models.StorageConnectorListItem
-
-func (c ConnectorList) GetHeaders() []string {
-	return []string{"id", "name", "type", "url", "created_at", "updated_at"}
-}
-
-func (c ConnectorList) New() interface{} {
-	return &models.StorageConnectorListItem{}
+type ConnectorList struct {
+	Elts []models.StorageConnectorListItem `json:"connectors"`
 }
 
 func genFullUrl(kind, path string) string {
@@ -248,11 +238,13 @@ func genFullUrl(kind, path string) string {
 	return fmt.Sprintf("https://%s/%s/%s", host, kind, path)
 }
 
-func (c ConnectorList) GetTableFields() [][]string {
-	var data [][]string
-	for _, item := range c {
+func (c ConnectorList) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"id", "name", "type", "url", "created_at", "updated_at"},
+	}
+	for _, item := range c.Elts {
 		var fields []string
-		for _, field := range c.GetHeaders() {
+		for _, field := range res.headers {
 			var res string
 			if field == "url" {
 				res = genFullUrl(string(item.Type), item.URL)
@@ -261,14 +253,14 @@ func (c ConnectorList) GetTableFields() [][]string {
 			}
 			fields = append(fields, res)
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (c ConnectorList) MarshalBinary() ([]byte, error) {
-	if len(c) == 1 {
-		return swag.WriteJSON(c[0])
+	if len(c.Elts) == 1 {
+		return swag.WriteJSON(c.Elts[0])
 	} else {
 		return swag.WriteJSON(c)
 	}

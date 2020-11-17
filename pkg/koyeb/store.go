@@ -57,20 +57,18 @@ func (a *StorageStoresBody) MarshalBinary() ([]byte, error) {
 	}
 }
 
-func (a *StorageStoresBody) GetHeaders() []string {
-	return []string{"id", "name", "type", "region", "status", "updated_at"}
-}
-
-func (a *StorageStoresBody) GetTableFields() [][]string {
-	var data [][]string
+func (a *StorageStoresBody) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"id", "name", "type", "region", "status", "updated_at"},
+	}
 	for _, item := range a.Stores {
 		var fields []string
-		for _, field := range a.GetHeaders() {
+		for _, field := range res.headers {
 			fields = append(fields, item.GetField(field))
 		}
-		data = append(data, fields)
+		res.fields = append(res.fields, fields)
 	}
-	return data
+	return res
 }
 
 func (a *StorageStoresBody) New() interface{} {
