@@ -130,7 +130,7 @@ func getConnectors(cmd *cobra.Command, args []string) error {
 			}
 			log.Debugf("got response: %v", resp)
 			for i, v := range resp.GetPayload().Connectors {
-				all[i + offset] = *v
+				all[i+offset] = *v
 			}
 			page += 1
 			offset = page * limit
