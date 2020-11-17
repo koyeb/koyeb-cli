@@ -126,19 +126,22 @@ func init() {
 
 	// Create
 	rootCmd.AddCommand(createCmd)
-	createCmd.AddCommand(createStackCommand)
 	createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
 	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createCmd.AddCommand(createStackRevisionCommand)
+	createCmd.AddCommand(createStackCommand)
 	createStackRevisionCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	createStackRevisionCommand.Flags().StringVarP(&stackRevisionMessage, "message", "m", "", "Message")
 	createStackRevisionCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createStoreCommand)
+	createCmd.AddCommand(createStackRevisionCommand)
 	createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	createStoreCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createSecretCommand)
+	createCmd.AddCommand(createStoreCommand)
 	createSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	createSecretCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createSecretCommand)
+	createConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	createConnectorCommand.MarkFlagRequired("file")
+	createCmd.AddCommand(createConnectorCommand)
 
 	// Get
 	rootCmd.AddCommand(getCmd)
@@ -148,6 +151,7 @@ func init() {
 	getCmd.AddCommand(getStackFunctionCommand)
 	getCmd.AddCommand(getStoreCommand)
 	getCmd.AddCommand(getSecretCommand)
+	getCmd.AddCommand(getConnectorCommand)
 
 	// Describe
 	rootCmd.AddCommand(describeCmd)
@@ -156,6 +160,7 @@ func init() {
 	describeCmd.AddCommand(describeStackFunctionCommand)
 	describeCmd.AddCommand(describeStoreCommand)
 	describeCmd.AddCommand(describeSecretCommand)
+	describeCmd.AddCommand(describeConnectorCommand)
 
 	// Update
 	rootCmd.AddCommand(updateCmd)
@@ -168,12 +173,16 @@ func init() {
 	updateSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
 	updateSecretCommand.MarkFlagRequired("file")
 	updateCmd.AddCommand(updateSecretCommand)
+	updateConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	updateConnectorCommand.MarkFlagRequired("file")
+	updateCmd.AddCommand(updateConnectorCommand)
 
 	// Delete
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteStackCommand)
 	deleteCmd.AddCommand(deleteStoreCommand)
 	deleteCmd.AddCommand(deleteSecretCommand)
+	deleteCmd.AddCommand(deleteConnectorCommand)
 
 	// Logs
 	rootCmd.AddCommand(logCmd)
