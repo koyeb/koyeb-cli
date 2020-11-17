@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/koyeb/koyeb-cli/pkg/kclient/client/functions"
+	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stack"
 	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
 )
 
@@ -20,7 +21,7 @@ var (
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
 		Short:   "Get stack functions",
-		Args:    cobra.MinimumNArgs(2),
+		Args:    cobra.MinimumNArgs(1),
 		RunE:    getStackFunctions,
 	}
 	describeStackFunctionCommand = &cobra.Command{
@@ -294,6 +295,16 @@ func getStackFunctions(cmd *cobra.Command, args []string) error {
 		st := resp.GetPayload().Function
 		all = append([]*apimodel.StorageFunction{st}, all...)
 	} else {
+		r := stack.NewStackGetStackParams()
+		r.ID = args[0]
+		stack, err := client.Stack.StackGetStack(r, getAuth())
+		if err != nil {
+			fatalApiError(err)
+		}
+		if stack.Payload.Stack.LatestRevisionSha == "" {
+			log.Debugf("No revision")
+			return nil
+		}
 		p := functions.NewFunctionsListFunctionsParams()
 		p = p.WithStackID(args[0]).WithSha(":latest")
 		resp, err := client.Functions.FunctionsListFunctions(p, getAuth())
