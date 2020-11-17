@@ -84,3 +84,11 @@ Flags:
 Use "koyeb [command] --help" for more information about a command.
 ```
 
+## Contribute
+
+If you want to contribute this might be useful
+
+### Regenerate the configuration with the latest API spec
+
+Use: `./scripts/update_api.sh`. This will update the yaml by pulling those in the [api doc](https://developer.koyeb.com/) and regenerate a client from scratch.
+We check in the generated files, please make a separate commit with these.

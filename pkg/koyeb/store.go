@@ -8,8 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	store "github.com/koyeb/koyeb-cli/pkg/kclient/client/store"
-	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
+	"github.com/koyeb/koyeb-cli/pkg/gen/kclient/client/store"
+	apimodel "github.com/koyeb/koyeb-cli/pkg/gen/kclient/models"
 )
 
 var (

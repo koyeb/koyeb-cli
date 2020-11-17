@@ -11,9 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/functions"
-	"github.com/koyeb/koyeb-cli/pkg/kclient/client/stack"
-	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
+	"github.com/koyeb/koyeb-cli/pkg/gen/kclient/client/functions"
+	"github.com/koyeb/koyeb-cli/pkg/gen/kclient/client/stack"
+	apimodel "github.com/koyeb/koyeb-cli/pkg/gen/kclient/models"
 )
 
 var (
@@ -68,7 +68,11 @@ func (a *StorageFunctionRunInfoHistory) GetTableFields() [][]string {
 	for _, item := range a.Runs {
 		var fields []string
 		for _, field := range a.GetHeaders() {
-			fields = append(fields, item.GetField(field))
+			if field == "start" || field == "end" {
+				fields = append(fields, getField(*item.Executions[0], field))
+			} else {
+				fields = append(fields, item.GetField(field))
+			}
 		}
 		data = append(data, fields)
 	}
@@ -335,7 +339,10 @@ func getStackFunctions(cmd *cobra.Command, args []string) error {
 		if cmd.Parent().Name() == "describe" {
 			fmt.Printf("History:\n")
 			// display history
-			getStackFunctionHistory(cmd, args)
+			err := getStackFunctionHistory(cmd, args)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		displayStackFunctions(all, format)
@@ -353,16 +360,16 @@ func getStackFunctionHistory(cmd *cobra.Command, args []string) error {
 		// Nothing to do
 		return nil
 	} else {
-		p := functions.NewFunctionsFetchFunctionHistoryParams()
+		p := functions.NewFunctionsFetchFunctionExecutionsParams()
 		p = p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1])
-		resp, err := client.Functions.FunctionsFetchFunctionHistory(p, getAuth())
+		resp, err := client.Functions.FunctionsFetchFunctionExecutions(p, getAuth())
 		if err != nil {
 			fatalApiError(err)
 		}
 		log.Debugf("got response: %v", resp)
 		var stackfunctionsHistory []*apimodel.StorageFunctionRunInfoListItem
 
-		for _, st := range resp.GetPayload().Runs {
+		for _, st := range resp.GetPayload().Executions {
 			stackfunctionsHistory = append(stackfunctionsHistory, st)
 		}
 		all = append(stackfunctionsHistory, all...)

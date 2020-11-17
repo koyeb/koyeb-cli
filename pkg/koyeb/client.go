@@ -16,11 +16,11 @@ import (
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 
-	apiclient "github.com/koyeb/koyeb-cli/pkg/kclient/client"
-	apimodel "github.com/koyeb/koyeb-cli/pkg/kclient/models"
+	apiclient "github.com/koyeb/koyeb-cli/pkg/gen/kclient/client"
+	apimodel "github.com/koyeb/koyeb-cli/pkg/gen/kclient/models"
 )
 
-func getApiClient() *apiclient.AccountAccountProto {
+func getApiClient() *apiclient.KoyebRest {
 	u, err := url.Parse(apiurl)
 	if err != nil {
 		er(err)
