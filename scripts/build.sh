@@ -13,15 +13,15 @@ WINDOWS_386="$OUT_DIR/$PROJECT-$VERSION-windows-386.exe"
 LDFLAGS="-X github.com/koyeb/koyeb-cli/pkg/koyeb.Version=$VERSION"
 
 echo Building $LINUX
-GOOS=linux GOARCH=amd64 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$LINUX" cmd/koyeb/main.go
+GOOS=linux GOARCH=amd64 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$LINUX" cmd/koyeb/koyeb.go
 echo Building $LINUX_386
-GOOS=linux GOARCH=386 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$LINUX_386" cmd/koyeb/main.go
+GOOS=linux GOARCH=386 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$LINUX_386" cmd/koyeb/koyeb.go
 echo Building $DARWIN
-GOOS=darwin GOARCH=amd64 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$DARWIN" cmd/koyeb/main.go
+GOOS=darwin GOARCH=amd64 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$DARWIN" cmd/koyeb/koyeb.go
 echo Building $WINDOWS
-GOOS=windows GOARCH=amd64 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$WINDOWS" cmd/koyeb/main.go
+GOOS=windows GOARCH=amd64 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$WINDOWS" cmd/koyeb/koyeb.go
 echo Building $WINDOWS_386
-GOOS=windows GOARCH=386 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$WINDOWS_386" cmd/koyeb/main.go
+GOOS=windows GOARCH=386 go build -a -ldflags="$LDFLAGS" -installsuffix nocgo -o "$WINDOWS_386" cmd/koyeb/koyeb.go
 
 
 
