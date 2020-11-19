@@ -13,6 +13,8 @@ import (
 )
 
 var (
+	stackRevisionMessage string
+
 	createStackRevisionCommand = &cobra.Command{
 		Use:     "revisions [stack]",
 		Aliases: []string{"revision"},

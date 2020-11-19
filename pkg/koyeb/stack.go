@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	newStackName       string
 	createStackCommand = &cobra.Command{
 		Use:     "stacks [resource]",
 		Aliases: []string{"stack"},

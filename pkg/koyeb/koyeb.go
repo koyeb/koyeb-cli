@@ -15,14 +15,12 @@ var (
 	Version = "develop"
 
 	// Used for flags.
-	file                 string
-	cfgFile              string
-	apiurl               string
-	token                string
-	outputFormat         string
-	debug                bool
-	newStackName         string
-	stackRevisionMessage string
+	file         string
+	cfgFile      string
+	apiurl       string
+	token        string
+	outputFormat string
+	debug        bool
 
 	rootCmd = &cobra.Command{
 		Use:   "koyeb",
