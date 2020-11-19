@@ -203,6 +203,8 @@ func watchLogStackFunctions(cmd *cobra.Command, args []string, done chan struct{
 		u.RawQuery = filter
 	}
 
+	log.Debugf("Gettings logs from %v", u.String())
+
 	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
 	if err != nil {
