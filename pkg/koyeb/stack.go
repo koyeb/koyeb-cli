@@ -3,8 +3,12 @@ package koyeb
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/go-openapi/swag"
+	"github.com/gorilla/websocket"
 	"github.com/jinzhu/copier"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -43,6 +47,13 @@ var (
 		Aliases: []string{"stack"},
 		Short:   "Delete stacks",
 		RunE:    deleteStacks,
+	}
+	logsStackEventsCommand = &cobra.Command{
+		Use:     "stack-events [stack]",
+		Aliases: []string{"stack-event"},
+		Short:   "Logs stack events",
+		Args:    cobra.MinimumNArgs(1),
+		RunE:    logStackEvents,
 	}
 )
 
@@ -322,4 +333,80 @@ func deleteStacks(cmd *cobra.Command, args []string) error {
 		}
 	}
 	return nil
+}
+
+type EventMessageResult struct {
+	Message   string
+	Id        string
+	CreatedAt string
+	Data      string
+	Event     interface{}
+}
+
+type EventMessage struct {
+	Result EventMessageResult
+}
+
+func (l EventMessage) String() string {
+	return fmt.Sprintf("%s data:%v event:%v", l.Result.Message, l.Result.Data, l.Result.Event)
+}
+
+func logStackEvents(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		// Nothing to do
+		return nil
+	}
+
+	path := fmt.Sprintf("/v1/stacks/%s/events/tail", args[0])
+
+	u, err := url.Parse(apiurl)
+	if err != nil {
+		er(err)
+	}
+
+	u.Path = path
+	if u.Scheme == "https" {
+		u.Scheme = "wss"
+	} else {
+		u.Scheme = "ws"
+	}
+
+	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer c.Close()
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		for {
+			msg := EventMessage{}
+			err := c.ReadJSON(&msg)
+			if err != nil {
+				log.Println("error:", err)
+				return
+			}
+			log.Debugf("%v", msg.Result)
+			log.Printf("%s", msg)
+		}
+	}()
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-done:
+			return nil
+		case t := <-ticker.C:
+			err := c.WriteMessage(websocket.PingMessage, []byte(t.String()))
+			if err != nil {
+				log.Println("write:", err)
+				return err
+			}
+		}
+	}
 }

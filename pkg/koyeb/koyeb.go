@@ -188,6 +188,7 @@ func init() {
 	// Logs
 	rootCmd.AddCommand(logCmd)
 	logCmd.AddCommand(logsStackFunctionCommand)
+	logCmd.AddCommand(logsStackEventsCommand)
 
 	// Run
 	rootCmd.AddCommand(invokeCmd)

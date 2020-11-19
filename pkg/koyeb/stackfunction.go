@@ -220,6 +220,7 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 				log.Println("error:", err)
 				return
 			}
+			log.Debugf("%v", msg.Result)
 			log.Printf("%s", msg)
 		}
 	}()
