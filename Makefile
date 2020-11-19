@@ -6,6 +6,9 @@ help: ## help
 tidy: ## apply go mod tidy
 	test ${CI} || go mod tidy
 
+install: ## install
+	go install cmd/koyeb/koyeb.go
+
 fmt: ## apply go format
 	gofmt -s -w ./
 
