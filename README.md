@@ -53,6 +53,32 @@ Enter your api credential: *****************************************************
 INFO[0006] Creating new configuration in /Users/kbot/.koyeb.yaml
 ```
 
+### Setup completion
+
+```shell
+Bash:
+
+$ source <(koyeb completion bash)
+
+# To load completions for each session, execute once:
+Linux:
+  $ koyeb completion bash > /etc/bash_completion.d/koyeb
+MacOS:
+  $ koyeb completion bash > /usr/local/etc/bash_completion.d/koyeb
+
+Zsh:
+
+# If shell completion is not already enabled in your environment you will need
+# to enable it.  You can execute the following once:
+
+$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+# To load completions for each session, execute once:
+$ koyeb completion zsh > "${fpath[1]}/_koyeb"
+
+# You will need to start a new shell for this setup to take effect.
+```
+
 ### General usage
 
 ```shell

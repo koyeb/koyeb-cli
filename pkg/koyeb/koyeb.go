@@ -123,6 +123,7 @@ func init() {
 
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(completionCmd)
 
 	// Create
 	rootCmd.AddCommand(createCmd)
