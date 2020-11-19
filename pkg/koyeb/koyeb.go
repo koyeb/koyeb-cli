@@ -192,6 +192,7 @@ func init() {
 	rootCmd.AddCommand(invokeCmd)
 	invokeCmd.AddCommand(invokeStackFunctionCommand)
 	invokeStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
+	invokeStackFunctionCommand.PersistentFlags().BoolVarP(&tailFunctionLog, "tail", "t", false, "tail log")
 }
 
 func initConfig() {

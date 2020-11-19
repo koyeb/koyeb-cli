@@ -17,6 +17,8 @@ import (
 )
 
 var (
+	tailFunctionLog bool
+
 	getStackFunctionCommand = &cobra.Command{
 		Use:     "functions [stack] [name]",
 		Aliases: []string{"function"},
@@ -182,12 +184,7 @@ func (l LogMessage) String() string {
 	return l.Result.Message
 }
 
-func logStackFunctions(cmd *cobra.Command, args []string) error {
-	if len(args) != 2 {
-		// Nothing to do
-		return nil
-	}
-
+func watchLogStackFunctions(cmd *cobra.Command, args []string, done chan struct{}, filter string) error {
 	path := fmt.Sprintf("/v1/stacks/%s/revisions/%s/functions/%s/logs/tail", args[0], ":latest", args[1])
 
 	u, err := url.Parse(apiurl)
@@ -202,6 +199,10 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 		u.Scheme = "ws"
 	}
 
+	if filter != "" {
+		u.RawQuery = filter
+	}
+
 	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
 	if err != nil {
@@ -209,7 +210,7 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 	}
 	defer c.Close()
 
-	done := make(chan struct{})
+	readDone := make(chan struct{})
 
 	go func() {
 		defer close(done)
@@ -220,7 +221,6 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 				log.Println("error:", err)
 				return
 			}
-			log.Debugf("%v", msg.Result)
 			log.Printf("%s", msg)
 		}
 	}()
@@ -232,12 +232,73 @@ func logStackFunctions(cmd *cobra.Command, args []string) error {
 		select {
 		case <-done:
 			return nil
+		case <-readDone:
+			return nil
 		case t := <-ticker.C:
 			err := c.WriteMessage(websocket.PingMessage, []byte(t.String()))
 			if err != nil {
 				log.Println("write:", err)
 				return err
 			}
+		}
+	}
+}
+
+func logStackFunctions(cmd *cobra.Command, args []string) error {
+	if len(args) != 2 {
+		// Nothing to do
+		return nil
+	}
+
+	done := make(chan struct{})
+	return watchLogStackFunctions(cmd, args, done, "")
+}
+
+func tailFunctionResult(cmd *cobra.Command, args []string, eventId string) error {
+	client := getApiClient()
+	log.Debugf("Watching log for: %v", eventId)
+
+	done := make(chan struct{})
+	tailDone := make(chan struct{})
+
+	go func() {
+		err := watchLogStackFunctions(cmd, args, done, fmt.Sprintf("event_id=%s", eventId))
+		if err != nil {
+			fatalApiError(err)
+		}
+		close(tailDone)
+	}()
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-tailDone:
+			return nil
+		case <-ticker.C:
+			p := functions.NewFunctionsFetchFunctionExecutionsParams()
+			limit := "100"
+			p.WithStackID(args[0]).WithSha(":latest").WithFunction(args[1]).WithLimit(&limit)
+			resp, err := client.Functions.FunctionsFetchFunctionExecutions(p, getAuth())
+			if err != nil {
+				fatalApiError(err)
+			}
+
+			for _, exec := range resp.Payload.Executions {
+				if exec.EventID == eventId {
+					if exec.State != apimodel.FunctionRunInfoStateRUNNING {
+						log.Debugf("Function not in runnnig state %v", exec)
+						time.Sleep(10 * time.Second)
+						log.Infof("Function exited with state %v", exec.State)
+						close(done)
+						return nil
+					} else {
+						log.Debugf("Function is running %v", exec)
+					}
+				}
+			}
+
 		}
 	}
 }
@@ -273,6 +334,13 @@ func invokeStackFunctions(cmd *cobra.Command, args []string) error {
 		}
 		log.Debugf("got response: %v", resp)
 		log.Infof("Event sent: %v", resp.Payload.ID)
+
+		if tailFunctionLog {
+			err := tailFunctionResult(cmd, args, resp.Payload.ID)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
