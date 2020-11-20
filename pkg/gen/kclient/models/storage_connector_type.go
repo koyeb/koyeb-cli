@@ -23,11 +23,11 @@ const (
 	// StorageConnectorTypeUNKNOWN captures enum value "UNKNOWN"
 	StorageConnectorTypeUNKNOWN StorageConnectorType = "UNKNOWN"
 
-	// StorageConnectorTypeWEBHOOKCLOUDEVENT captures enum value "WEBHOOK_CLOUDEVENT"
-	StorageConnectorTypeWEBHOOKCLOUDEVENT StorageConnectorType = "WEBHOOK_CLOUDEVENT"
+	// StorageConnectorTypeCLOUDEVENT captures enum value "CLOUDEVENT"
+	StorageConnectorTypeCLOUDEVENT StorageConnectorType = "CLOUDEVENT"
 
-	// StorageConnectorTypeWEBHOOKRAWHTTP captures enum value "WEBHOOK_RAWHTTP"
-	StorageConnectorTypeWEBHOOKRAWHTTP StorageConnectorType = "WEBHOOK_RAWHTTP"
+	// StorageConnectorTypeWEBHOOK captures enum value "WEBHOOK"
+	StorageConnectorTypeWEBHOOK StorageConnectorType = "WEBHOOK"
 )
 
 // for schema
@@ -35,7 +35,7 @@ var storageConnectorTypeEnum []interface{}
 
 func init() {
 	var res []StorageConnectorType
-	if err := json.Unmarshal([]byte(`["UNKNOWN","WEBHOOK_CLOUDEVENT","WEBHOOK_RAWHTTP"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["UNKNOWN","CLOUDEVENT","WEBHOOK"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

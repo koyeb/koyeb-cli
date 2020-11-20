@@ -199,10 +199,10 @@ func (c ConnectorListDetails) GetTable() TableInfo {
 			if field == "url" {
 				res = genFullUrl(string(item.Type), item.URL)
 			} else if field == "filter" || field == "mapper" {
-				if item.WebhookRawhttp != nil {
-					res = getField(*item.WebhookRawhttp, field)
-				} else if item.WebhookCloudevent != nil {
-					res = getField(*item.WebhookCloudevent, field)
+				if e := item.With[field]; e != nil {
+					res = item.With[field].(string)
+				} else {
+					res = ""
 				}
 			} else {
 				res = getField(item, field)

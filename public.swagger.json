@@ -242,6 +242,1783 @@
         ]
       }
     },
+    "/v1/account/activities": {
+      "get": {
+        "operationId": "accountActivities_GetAccountActivities",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/activityActivityList"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "activity"
+        ]
+      }
+    },
+    "/v1/account/invite": {
+      "post": {
+        "operationId": "invite_NewInvite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/commonEmpty"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountInviteUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "invite"
+        ]
+      }
+    },
+    "/v1/account/login": {
+      "post": {
+        "summary": "Login user",
+        "operationId": "session_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountLoginReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "session"
+        ]
+      }
+    },
+    "/v1/account/logout": {
+      "delete": {
+        "summary": "Logout user",
+        "operationId": "session_Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountLogoutReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "tags": [
+          "session"
+        ]
+      }
+    },
+    "/v1/account/oauth": {
+      "get": {
+        "summary": "Get OAuth Providers",
+        "operationId": "profile_GetOAuthOptions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountGetOAuthOptionsReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "action",
+            "description": "Which authentication flow is being initiated.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "signin",
+              "signup",
+              "register"
+            ],
+            "default": "signin"
+          },
+          {
+            "name": "metadata",
+            "description": "A small (limited to 400 characters) string of arbitrary metadata which will be encoded in the state.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
+      "post": {
+        "summary": "Authenticate using OAuth",
+        "operationId": "profile_OAuthCallback",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountOAuthCallbackReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountOAuthCallbackRequest"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/account/passwordless_login": {
+      "post": {
+        "operationId": "session_PasswordlessLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountPasswordlessLoginReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountPasswordlessLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "session"
+        ]
+      }
+    },
+    "/v1/account/profile": {
+      "get": {
+        "operationId": "profile_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountUserReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "tags": [
+          "profile"
+        ]
+      },
+      "delete": {
+        "operationId": "profile_DeleteAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountDeleteAccountReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "tags": [
+          "profile"
+        ]
+      },
+      "put": {
+        "operationId": "profile_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountUserReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUserRequestUserUpdateBody"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
+      "patch": {
+        "operationId": "profile_UpdateUser2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountUserReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUserRequestUserUpdateBody"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/account/refresh": {
+      "put": {
+        "summary": "Refresh token",
+        "operationId": "session_RefreshToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountLoginReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "tags": [
+          "session"
+        ]
+      }
+    },
+    "/v1/account/resend_validation": {
+      "post": {
+        "operationId": "profile_ResendEmailValidation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountResendEmailValidationReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountResendEmailValidationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/account/reset_password": {
+      "post": {
+        "operationId": "profile_ResetPassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountResetPasswordReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountResetPasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/account/signup": {
+      "post": {
+        "operationId": "profile_Signup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountLoginReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountNewAccountRequest"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/account/update_password": {
+      "post": {
+        "operationId": "profile_UpdatePassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountLoginReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountUpdatePasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/account/validate/{id}": {
+      "post": {
+        "operationId": "profile_Validate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountLoginReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/credentials": {
+      "get": {
+        "operationId": "credentials_ListCredentials",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountListCredentialsReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "credentials"
+        ]
+      },
+      "post": {
+        "operationId": "credentials_NewCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountCredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountNewCredential"
+            }
+          }
+        ],
+        "tags": [
+          "credentials"
+        ]
+      }
+    },
+    "/v1/credentials/{id}": {
+      "get": {
+        "operationId": "credentials_GetCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountCredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "credentials"
+        ]
+      },
+      "delete": {
+        "operationId": "credentials_DeleteCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/commonEmpty"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "credentials"
+        ]
+      },
+      "put": {
+        "operationId": "credentials_UpdateCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountCredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountCredential"
+            }
+          }
+        ],
+        "tags": [
+          "credentials"
+        ]
+      },
+      "patch": {
+        "operationId": "credentials_UpdateCredential2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountCredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountCredential"
+            }
+          }
+        ],
+        "tags": [
+          "credentials"
+        ]
+      }
+    },
+    "/v1/github/installation": {
+      "get": {
+        "summary": "Start github installation",
+        "operationId": "organization_GithubInstallation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountGithubInstallationReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "metadata",
+            "description": "A small (limited to 400 characters) string of arbitrary metadata which will be encoded in the state.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "organization"
+        ]
+      }
+    },
+    "/v1/github/installation/callback": {
+      "post": {
+        "summary": "Github callback for app installation",
+        "operationId": "organization_GithubInstallationCallback",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountGithubInstallationCallbackReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountGithubInstallationCallbackRequest"
+            }
+          }
+        ],
+        "tags": [
+          "organization"
+        ]
+      }
+    },
+    "/v1/github/installation/repositories": {
+      "get": {
+        "summary": "List Github repos of the organization",
+        "operationId": "organization_GithubInstallationRepoList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountGithubInstallationRepoListReply"
+            }
+          },
+          "400": {
+            "description": "Organization is not linked to a github organization",
+            "schema": {
+              "$ref": "#/definitions/commonError",
+              "example": {
+                "status": "400",
+                "code": "failed_precondition",
+                "message": "No github Installation"
+              }
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "description": "The page id (starting from 1): Maps to: https://docs.github.com/en/free-pro-team@latest/rest/overview/resources-in-the-rest-api#pagination.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "perPage",
+            "description": "The number of page elements per page (max 100): Maps to: https://docs.github.com/en/free-pro-team@latest/rest/overview/resources-in-the-rest-api#pagination.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "organization"
+        ]
+      }
+    },
+    "/v1/organizations/{id}": {
+      "get": {
+        "summary": "Get organization",
+        "operationId": "organization_GetOrganization",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountGetOrganizationReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "organization"
+        ]
+      },
+      "put": {
+        "summary": "Update organization",
+        "operationId": "organization_UpdateOrganization",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountUpdateOrganizationReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountOrganization"
+            }
+          }
+        ],
+        "tags": [
+          "organization"
+        ]
+      },
+      "patch": {
+        "summary": "Update organization",
+        "operationId": "organization_UpdateOrganization2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountUpdateOrganizationReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountOrganization"
+            }
+          }
+        ],
+        "tags": [
+          "organization"
+        ]
+      }
+    },
+    "/v1/s3_credentials": {
+      "get": {
+        "operationId": "s3Credentials_ListS3Credentials",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountListS3CredentialsReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "s3Credentials"
+        ]
+      },
+      "post": {
+        "operationId": "s3Credentials_NewS3Credential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountS3CredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountNewS3Credential"
+            }
+          }
+        ],
+        "tags": [
+          "s3Credentials"
+        ]
+      }
+    },
+    "/v1/s3_credentials/{id}": {
+      "get": {
+        "operationId": "s3Credentials_GetS3Credential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountS3CredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "s3Credentials"
+        ]
+      },
+      "delete": {
+        "operationId": "s3Credentials_DeleteS3Credential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/commonEmpty"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "s3Credentials"
+        ]
+      },
+      "put": {
+        "operationId": "s3Credentials_UpdateS3Credential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountS3CredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountS3Credential"
+            }
+          }
+        ],
+        "tags": [
+          "s3Credentials"
+        ]
+      },
+      "patch": {
+        "operationId": "s3Credentials_UpdateS3Credential2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountS3CredentialReply"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accountS3Credential"
+            }
+          }
+        ],
+        "tags": [
+          "s3Credentials"
+        ]
+      }
+    },
     "/v1/catalog/functions": {
       "get": {
         "summary": "Show catalog of functions",
@@ -646,8 +2423,8 @@
             "type": "string",
             "enum": [
               "UNKNOWN",
-              "WEBHOOK_CLOUDEVENT",
-              "WEBHOOK_RAWHTTP"
+              "CLOUDEVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           }
@@ -3214,1783 +4991,6 @@
           "Catalog"
         ]
       }
-    },
-    "/v1/account/activities": {
-      "get": {
-        "operationId": "accountActivities_GetAccountActivities",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/activityActivityList"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "activity"
-        ]
-      }
-    },
-    "/v1/account/invite": {
-      "post": {
-        "operationId": "invite_NewInvite",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/commonEmpty"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountInviteUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "invite"
-        ]
-      }
-    },
-    "/v1/account/login": {
-      "post": {
-        "summary": "Login user",
-        "operationId": "session_Login",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountLoginReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountLoginRequest"
-            }
-          }
-        ],
-        "tags": [
-          "session"
-        ]
-      }
-    },
-    "/v1/account/logout": {
-      "delete": {
-        "summary": "Logout user",
-        "operationId": "session_Logout",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountLogoutReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "tags": [
-          "session"
-        ]
-      }
-    },
-    "/v1/account/oauth": {
-      "get": {
-        "summary": "Get OAuth Providers",
-        "operationId": "profile_GetOAuthOptions",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountGetOAuthOptionsReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "action",
-            "description": "Which authentication flow is being initiated.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "signin",
-              "signup",
-              "register"
-            ],
-            "default": "signin"
-          },
-          {
-            "name": "metadata",
-            "description": "A small (limited to 400 characters) string of arbitrary metadata which will be encoded in the state.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      },
-      "post": {
-        "summary": "Authenticate using OAuth",
-        "operationId": "profile_OAuthCallback",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountOAuthCallbackReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountOAuthCallbackRequest"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/account/passwordless_login": {
-      "post": {
-        "operationId": "session_PasswordlessLogin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountPasswordlessLoginReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountPasswordlessLoginRequest"
-            }
-          }
-        ],
-        "tags": [
-          "session"
-        ]
-      }
-    },
-    "/v1/account/profile": {
-      "get": {
-        "operationId": "profile_GetCurrentUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountUserReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "tags": [
-          "profile"
-        ]
-      },
-      "delete": {
-        "operationId": "profile_DeleteAccount",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountDeleteAccountReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "tags": [
-          "profile"
-        ]
-      },
-      "put": {
-        "operationId": "profile_UpdateUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountUserReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/UpdateUserRequestUserUpdateBody"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      },
-      "patch": {
-        "operationId": "profile_UpdateUser2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountUserReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/UpdateUserRequestUserUpdateBody"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/account/refresh": {
-      "put": {
-        "summary": "Refresh token",
-        "operationId": "session_RefreshToken",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountLoginReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "tags": [
-          "session"
-        ]
-      }
-    },
-    "/v1/account/resend_validation": {
-      "post": {
-        "operationId": "profile_ResendEmailValidation",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountResendEmailValidationReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountResendEmailValidationRequest"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/account/reset_password": {
-      "post": {
-        "operationId": "profile_ResetPassword",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountResetPasswordReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountResetPasswordRequest"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/account/signup": {
-      "post": {
-        "operationId": "profile_Signup",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountLoginReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountNewAccountRequest"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/account/update_password": {
-      "post": {
-        "operationId": "profile_UpdatePassword",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountLoginReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountUpdatePasswordRequest"
-            }
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/account/validate/{id}": {
-      "post": {
-        "operationId": "profile_Validate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountLoginReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      }
-    },
-    "/v1/credentials": {
-      "get": {
-        "operationId": "credentials_ListCredentials",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountListCredentialsReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "credentials"
-        ]
-      },
-      "post": {
-        "operationId": "credentials_NewCredential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountCredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountNewCredential"
-            }
-          }
-        ],
-        "tags": [
-          "credentials"
-        ]
-      }
-    },
-    "/v1/credentials/{id}": {
-      "get": {
-        "operationId": "credentials_GetCredential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountCredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "credentials"
-        ]
-      },
-      "delete": {
-        "operationId": "credentials_DeleteCredential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/commonEmpty"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "credentials"
-        ]
-      },
-      "put": {
-        "operationId": "credentials_UpdateCredential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountCredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountCredential"
-            }
-          }
-        ],
-        "tags": [
-          "credentials"
-        ]
-      },
-      "patch": {
-        "operationId": "credentials_UpdateCredential2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountCredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountCredential"
-            }
-          }
-        ],
-        "tags": [
-          "credentials"
-        ]
-      }
-    },
-    "/v1/github/installation": {
-      "get": {
-        "summary": "Start github installation",
-        "operationId": "organization_GithubInstallation",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountGithubInstallationReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "metadata",
-            "description": "A small (limited to 400 characters) string of arbitrary metadata which will be encoded in the state.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "organization"
-        ]
-      }
-    },
-    "/v1/github/installation/callback": {
-      "post": {
-        "summary": "Github callback for app installation",
-        "operationId": "organization_GithubInstallationCallback",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountGithubInstallationCallbackReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountGithubInstallationCallbackRequest"
-            }
-          }
-        ],
-        "tags": [
-          "organization"
-        ]
-      }
-    },
-    "/v1/github/installation/repositories": {
-      "get": {
-        "summary": "List Github repos of the organization",
-        "operationId": "organization_GithubInstallationRepoList",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountGithubInstallationRepoListReply"
-            }
-          },
-          "400": {
-            "description": "Organization is not linked to a github organization",
-            "schema": {
-              "$ref": "#/definitions/commonError",
-              "example": {
-                "status": "400",
-                "code": "failed_precondition",
-                "message": "No github Installation"
-              }
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "page",
-            "description": "The page id (starting from 1): Maps to: https://docs.github.com/en/free-pro-team@latest/rest/overview/resources-in-the-rest-api#pagination.",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "perPage",
-            "description": "The number of page elements per page (max 100): Maps to: https://docs.github.com/en/free-pro-team@latest/rest/overview/resources-in-the-rest-api#pagination.",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          }
-        ],
-        "tags": [
-          "organization"
-        ]
-      }
-    },
-    "/v1/organizations/{id}": {
-      "get": {
-        "summary": "Get organization",
-        "operationId": "organization_GetOrganization",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountGetOrganizationReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "organization"
-        ]
-      },
-      "put": {
-        "summary": "Update organization",
-        "operationId": "organization_UpdateOrganization",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountUpdateOrganizationReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountOrganization"
-            }
-          }
-        ],
-        "tags": [
-          "organization"
-        ]
-      },
-      "patch": {
-        "summary": "Update organization",
-        "operationId": "organization_UpdateOrganization2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountUpdateOrganizationReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountOrganization"
-            }
-          }
-        ],
-        "tags": [
-          "organization"
-        ]
-      }
-    },
-    "/v1/s3_credentials": {
-      "get": {
-        "operationId": "s3Credentials_ListS3Credentials",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountListS3CredentialsReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "s3Credentials"
-        ]
-      },
-      "post": {
-        "operationId": "s3Credentials_NewS3Credential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountS3CredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountNewS3Credential"
-            }
-          }
-        ],
-        "tags": [
-          "s3Credentials"
-        ]
-      }
-    },
-    "/v1/s3_credentials/{id}": {
-      "get": {
-        "operationId": "s3Credentials_GetS3Credential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountS3CredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "s3Credentials"
-        ]
-      },
-      "delete": {
-        "operationId": "s3Credentials_DeleteS3Credential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/commonEmpty"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "s3Credentials"
-        ]
-      },
-      "put": {
-        "operationId": "s3Credentials_UpdateS3Credential",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountS3CredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountS3Credential"
-            }
-          }
-        ],
-        "tags": [
-          "s3Credentials"
-        ]
-      },
-      "patch": {
-        "operationId": "s3Credentials_UpdateS3Credential2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/accountS3CredentialReply"
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "schema": {
-              "$ref": "#/definitions/commonErrorWithFields"
-            }
-          },
-          "403": {
-            "description": "Returned when the user does not have permission to access the resource.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/commonError"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/accountS3Credential"
-            }
-          }
-        ],
-        "tags": [
-          "s3Credentials"
-        ]
-      }
     }
   },
   "definitions": {
@@ -5217,1446 +5217,6 @@
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
-    },
-    "FunctionRunInfoState": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "STARTING",
-        "RUNNING",
-        "FAILED",
-        "SUCCEEDED",
-        "CANCELLED",
-        "TIMEOUT"
-      ],
-      "default": "UNKNOWN"
-    },
-    "ParameterParameterType": {
-      "type": "string",
-      "enum": [
-        "STRING",
-        "NUMBER",
-        "BOOLEAN",
-        "LIST",
-        "STRUCT"
-      ],
-      "default": "STRING"
-    },
-    "SCMReferenceSCMType": {
-      "type": "string",
-      "enum": [
-        "GITHUB",
-        "UNKNOWN"
-      ],
-      "default": "GITHUB"
-    },
-    "StorageSummaryReplySummary": {
-      "type": "object",
-      "properties": {
-        "store_count": {
-          "type": "number",
-          "format": "double"
-        },
-        "stack_count": {
-          "type": "number",
-          "format": "double"
-        }
-      }
-    },
-    "commonEmpty": {
-      "type": "object"
-    },
-    "protobufFieldMask": {
-      "type": "object",
-      "properties": {
-        "paths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The set of field mask paths."
-        }
-      },
-      "description": "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nIn order to reset a field's value to the default, the field must\nbe in the mask and set to the default value in the provided resource.\nHence, in order to reset all fields of a resource, provide a default\ninstance of the resource and set all fields in the mask, or do\nnot provide a mask as described below.\n\nIf a field mask is not present on update, the operation applies to\nall fields (as if a field mask of all fields has been specified).\nNote that in the presence of schema evolution, this may mean that\nfields the client does not know and has therefore not filled into\nthe request will be reset to their default. If this is unwanted\nbehavior, a specific service may require a client to always specify\na field mask, producing an error if not.\n\nAs with get operations, the location of the resource which\ndescribes the updated values in the request message depends on the\noperation kind. In any case, the effect of the field mask is\nrequired to be honored by the API.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable.",
-      "title": "`FieldMask` represents a set of symbolic field paths, for example:"
-    },
-    "runtimeStreamError": {
-      "type": "object",
-      "properties": {
-        "grpc_code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "http_code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "http_status": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    },
-    "storageBaseCatalogStatus": {
-      "type": "string",
-      "enum": [
-        "COMING_SOON",
-        "ACTIVE",
-        "DEPRECATED",
-        "DISABLED",
-        "UNKNOWN"
-      ],
-      "default": "COMING_SOON",
-      "title": "The status of a catalog entry"
-    },
-    "storageCancelBuildReply": {
-      "type": "object"
-    },
-    "storageCancelFunctionExecutionReply": {
-      "type": "object"
-    },
-    "storageCatalogFunction": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "The name of the tag in a slug valid format"
-        },
-        "display_name": {
-          "type": "string",
-          "title": "A display name for a stack"
-        },
-        "short_description": {
-          "type": "string",
-          "title": "An short description of the stack (<140 characters)"
-        },
-        "description": {
-          "type": "string",
-          "title": "A longer description of the stack akin to a README in markdown"
-        },
-        "icon": {
-          "type": "string",
-          "title": "An optional url to an icon for this stack (What file format?!)"
-        },
-        "website": {
-          "type": "string",
-          "title": "The website to get more info about this function (for example the source code)"
-        },
-        "status": {
-          "$ref": "#/definitions/storageBaseCatalogStatus",
-          "title": "The current status on the stack catalog"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "A set of tags to identify the catalog"
-        },
-        "version": {
-          "type": "string",
-          "title": "The version of the function in semver format: https://semver.org/"
-        },
-        "image": {
-          "type": "string",
-          "title": "The image this function will use"
-        },
-        "template": {
-          "type": "string",
-          "title": "The template that is used for expanding a catalog function"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageFunctionParameter"
-          },
-          "title": "A list of parameters for the function"
-        }
-      }
-    },
-    "storageCatalogFunctionListItem": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "The name of the tag in a slug valid format"
-        },
-        "display_name": {
-          "type": "string",
-          "title": "A display name for a stack"
-        },
-        "short_description": {
-          "type": "string",
-          "title": "An short description of the stack (<140 characters)"
-        },
-        "icon": {
-          "type": "string",
-          "title": "An optional url to an icon for this stack (What file format?!)"
-        },
-        "website": {
-          "type": "string",
-          "title": "The website to get more info about this function (for example the source code)"
-        },
-        "status": {
-          "$ref": "#/definitions/storageBaseCatalogStatus",
-          "title": "The current status on the stack catalog"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "A set of tags to identify the catalog"
-        },
-        "version": {
-          "type": "string",
-          "title": "The version of the function in semver format: https://semver.org/"
-        },
-        "image": {
-          "type": "string",
-          "title": "The image this function will use"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageFunctionParameter"
-          },
-          "title": "A list of parameters for the function"
-        }
-      },
-      "title": "A shorter version o a CatalogFunction for listing"
-    },
-    "storageCatalogStack": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "The name of the tag in a slug valid format"
-        },
-        "display_name": {
-          "type": "string",
-          "title": "A display name for a stack"
-        },
-        "short_description": {
-          "type": "string",
-          "title": "An short description of the stack (<140 characters)"
-        },
-        "description": {
-          "type": "string",
-          "title": "A longer description of the stack akin to a README in markdown"
-        },
-        "icon": {
-          "type": "string",
-          "title": "An optional url to an icon for this stack (What file format?!)"
-        },
-        "status": {
-          "$ref": "#/definitions/storageBaseCatalogStatus",
-          "title": "The current status on the stack catalog"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "A set of tags to identify the catalog"
-        },
-        "source_control_ref": {
-          "$ref": "#/definitions/storageSCMReference",
-          "title": "A reference to where the stack is defined"
-        },
-        "is_yaml_only": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Whether this stack is only a yaml or not (in which case it can be created as a non git managed stack)."
-        },
-        "yaml": {
-          "type": "string",
-          "description": "The yaml that is represented the stack."
-        }
-      },
-      "title": "A stack entry in the catalog"
-    },
-    "storageCatalogStackListItem": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "display_name": {
-          "type": "string"
-        },
-        "short_description": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "status": {
-          "$ref": "#/definitions/storageBaseCatalogStatus"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "source_control_ref": {
-          "$ref": "#/definitions/storageSCMReference"
-        }
-      },
-      "title": "A shorter version of a CatalogStack for listing"
-    },
-    "storageCatalogStore": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "display_name": {
-          "type": "string"
-        },
-        "short_description": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "website": {
-          "type": "string"
-        },
-        "vendor": {
-          "type": "string"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "status": {
-          "$ref": "#/definitions/storageBaseCatalogStatus"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageParameter"
-          }
-        }
-      }
-    },
-    "storageCatalogStoreReply": {
-      "type": "object",
-      "properties": {
-        "catalog_store": {
-          "$ref": "#/definitions/storageCatalogStore"
-        }
-      }
-    },
-    "storageCommitInfo": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "avatar_url": {
-          "type": "string"
-        },
-        "origin": {
-          "type": "string"
-        }
-      }
-    },
-    "storageConnector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "title": "The id of the connector"
-        },
-        "name": {
-          "type": "string",
-          "title": "Name of the connector"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time",
-          "title": "When the entity was last updated"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "title": "When the entity was created"
-        },
-        "url": {
-          "type": "string",
-          "title": "The url of the connector"
-        },
-        "type": {
-          "$ref": "#/definitions/storageConnectorType",
-          "title": "The type of the connector"
-        },
-        "organization_id": {
-          "type": "string",
-          "title": "The organisation id of the connector"
-        },
-        "webhook_cloudevent": {
-          "$ref": "#/definitions/storageMetadataWebhookCloudEvent",
-          "title": "Cloudevent webhook metadata"
-        },
-        "webhook_rawhttp": {
-          "$ref": "#/definitions/storageMetadataWebhookRawHttp",
-          "title": "RawHttp webhook metadata"
-        }
-      }
-    },
-    "storageConnectorListItem": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "title": "The id of the connector"
-        },
-        "name": {
-          "type": "string",
-          "title": "Name of the connector"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time",
-          "title": "When the entity was last updated"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "title": "When the entity was created"
-        },
-        "url": {
-          "type": "string",
-          "title": "The url of the connector"
-        },
-        "type": {
-          "$ref": "#/definitions/storageConnectorType",
-          "title": "The type of the connector"
-        }
-      }
-    },
-    "storageConnectorType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "WEBHOOK_CLOUDEVENT",
-        "WEBHOOK_RAWHTTP"
-      ],
-      "default": "UNKNOWN"
-    },
-    "storageConnectorUpsert": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "Name of the connector"
-        },
-        "change_url": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "Only valid for update (whether or not to regen the url)"
-        },
-        "webhook_cloudevent": {
-          "$ref": "#/definitions/storageMetadataWebhookCloudEvent",
-          "title": "Cloudevent webhook metadata"
-        },
-        "webhook_rawhttp": {
-          "$ref": "#/definitions/storageMetadataWebhookRawHttp",
-          "title": "RawHttp webhook metadata"
-        }
-      }
-    },
-    "storageDeleteConnectorReply": {
-      "type": "object"
-    },
-    "storageDeleteSecretReply": {
-      "type": "object"
-    },
-    "storageDeleteStackReply": {
-      "type": "object"
-    },
-    "storageEvent": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "event": {
-          "type": "object"
-        },
-        "data": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "storageFetchFunctionExecutionsReply": {
-      "type": "object",
-      "properties": {
-        "executions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageFunctionRunInfoListItem"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageFunction": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/storageFunctionType"
-        }
-      }
-    },
-    "storageFunctionExecution": {
-      "type": "object",
-      "properties": {
-        "state": {
-          "$ref": "#/definitions/FunctionRunInfoState"
-        },
-        "start": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The possibly empty time at which this function started"
-        },
-        "end": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The possibly empty time at which this function stopped"
-        },
-        "exitCode": {
-          "type": "integer",
-          "format": "int32",
-          "title": "The exitCode of the run, it will be -1 if it's meaningless (.e.g. STARTING, RUNNING states), this only makes sense if the state is FAILED or SUCCEEDED (succeeded will always be 0)"
-        }
-      }
-    },
-    "storageFunctionListItem": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/storageFunctionType"
-        }
-      }
-    },
-    "storageFunctionParameter": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "The name of the parameter"
-        },
-        "description": {
-          "type": "string",
-          "title": "A description of this parameter"
-        },
-        "required": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "Whether or not this parameter must be set"
-        },
-        "type": {
-          "$ref": "#/definitions/storageFunctionParameterType",
-          "title": "The type of the parameter"
-        },
-        "default": {
-          "type": "object"
-        }
-      }
-    },
-    "storageFunctionParameterType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "STORE_REF",
-        "SECRET_REF",
-        "STRING",
-        "NUMBER",
-        "BOOLEAN"
-      ],
-      "default": "UNKNOWN",
-      "title": "- UNKNOWN: Only used for error handling\n - STORE_REF: A reference to an existing store\n - SECRET_REF: A reference to an existing secret"
-    },
-    "storageFunctionRunInfoListItem": {
-      "type": "object",
-      "properties": {
-        "run_id": {
-          "type": "string"
-        },
-        "event_id": {
-          "type": "string"
-        },
-        "fn_name": {
-          "type": "string"
-        },
-        "state": {
-          "$ref": "#/definitions/FunctionRunInfoState"
-        },
-        "executions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageFunctionExecution"
-          },
-          "description": "A list of executions, with the first one being the most recent one."
-        }
-      }
-    },
-    "storageFunctionType": {
-      "type": "string",
-      "enum": [
-        "DOCKER",
-        "CATALOG",
-        "CODE"
-      ],
-      "default": "DOCKER"
-    },
-    "storageGetCatalogFunctionsReply": {
-      "type": "object",
-      "properties": {
-        "catalog_function": {
-          "$ref": "#/definitions/storageCatalogFunction"
-        },
-        "versions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "storageGetCatalogStackReply": {
-      "type": "object",
-      "properties": {
-        "catalog_stack": {
-          "$ref": "#/definitions/storageCatalogStack"
-        }
-      }
-    },
-    "storageGetConnectorByUrlReply": {
-      "type": "object",
-      "properties": {
-        "connector": {
-          "$ref": "#/definitions/storageConnector"
-        }
-      }
-    },
-    "storageGetConnectorReply": {
-      "type": "object",
-      "properties": {
-        "connector": {
-          "$ref": "#/definitions/storageConnector"
-        }
-      }
-    },
-    "storageGetFunctionReply": {
-      "type": "object",
-      "properties": {
-        "function": {
-          "$ref": "#/definitions/storageFunction"
-        }
-      }
-    },
-    "storageGetSecretReply": {
-      "type": "object",
-      "properties": {
-        "secret": {
-          "$ref": "#/definitions/storageSecret"
-        }
-      }
-    },
-    "storageGetStackReply": {
-      "type": "object",
-      "properties": {
-        "stack": {
-          "$ref": "#/definitions/storageStack"
-        }
-      }
-    },
-    "storageGetStackRevisionReply": {
-      "type": "object",
-      "properties": {
-        "revision": {
-          "$ref": "#/definitions/storageStackRevision"
-        }
-      }
-    },
-    "storageInvokeFunctionReply": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "storageListCatalogFunctionsReply": {
-      "type": "object",
-      "properties": {
-        "catalog_functions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageCatalogFunctionListItem"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageListCatalogStacksReply": {
-      "type": "object",
-      "properties": {
-        "catalog_stacks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageCatalogStackListItem"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageListCatalogStoresReply": {
-      "type": "object",
-      "properties": {
-        "catalog_stores": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageCatalogStore"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageListConnectorsReply": {
-      "type": "object",
-      "properties": {
-        "connectors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageConnectorListItem"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64",
-          "title": "The limit in the request"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64",
-          "title": "The offset in the request"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64",
-          "title": "The total number of items"
-        }
-      }
-    },
-    "storageListFunctionsReply": {
-      "type": "object",
-      "properties": {
-        "functions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageFunctionListItem"
-          }
-        }
-      }
-    },
-    "storageListSecretsReply": {
-      "type": "object",
-      "properties": {
-        "secrets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageSecret"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageListStackRevisionsReply": {
-      "type": "object",
-      "properties": {
-        "revisions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageStackRevisionListItem"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageListStacksReply": {
-      "type": "object",
-      "properties": {
-        "stacks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageStackListItem"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageListStoresReply": {
-      "type": "object",
-      "properties": {
-        "stores": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/storageStore"
-          }
-        },
-        "limit": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "storageLogEntry": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        },
-        "level": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "stream": {
-          "type": "string",
-          "title": "The stream (stdout/stderr) this log was emitted to"
-        }
-      }
-    },
-    "storageMetadataWebhookCloudEvent": {
-      "type": "object",
-      "properties": {
-        "filter": {
-          "type": "string",
-          "title": "An optional CEL expression to filter events received"
-        }
-      }
-    },
-    "storageMetadataWebhookRawHttp": {
-      "type": "object",
-      "properties": {
-        "filter": {
-          "type": "string",
-          "title": "An optional CEL expression to filter events received"
-        },
-        "mapper": {
-          "type": "string",
-          "title": "An optional CEL expression that will map the received payload to a new cloudevent (data is the data sent in). If data in not json data will be unset"
-        }
-      }
-    },
-    "storageNewConnectorReply": {
-      "type": "object",
-      "properties": {
-        "connector": {
-          "$ref": "#/definitions/storageConnector"
-        }
-      }
-    },
-    "storageNewSecret": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
-      }
-    },
-    "storageNewSecretReply": {
-      "type": "object",
-      "properties": {
-        "secret": {
-          "$ref": "#/definitions/storageSecret"
-        }
-      }
-    },
-    "storageNewStackEventReply": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "storageNewStackReply": {
-      "type": "object",
-      "properties": {
-        "stack": {
-          "$ref": "#/definitions/storageStack"
-        }
-      }
-    },
-    "storageNewStackRevisionRequest": {
-      "type": "object",
-      "properties": {
-        "stack_id": {
-          "type": "string"
-        },
-        "yaml": {
-          "type": "object"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "storageNewStore": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "with": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          }
-        }
-      }
-    },
-    "storageParameter": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "required": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "description": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/ParameterParameterType"
-        },
-        "sensitive": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "options": {
-          "type": "object"
-        },
-        "default": {
-          "type": "object"
-        }
-      }
-    },
-    "storageRetryBuildReply": {
-      "type": "object"
-    },
-    "storageRetryFunctionExecutionReply": {
-      "type": "object"
-    },
-    "storageSCMReference": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "$ref": "#/definitions/SCMReferenceSCMType",
-          "title": "The place where the repository is hosted (github is the only supported place at the moment)"
-        },
-        "repo": {
-          "type": "string",
-          "title": "A way to identify the repository within the git provider"
-        },
-        "ref": {
-          "type": "string",
-          "title": "A git ref to identify the data that needs to be taken from the repo (it can be a commit, a tag, a branch...)"
-        }
-      }
-    },
-    "storageSCMRepository": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "$ref": "#/definitions/storageSCMRepositoryType",
-          "title": "Where the repo lives"
-        },
-        "name": {
-          "type": "string",
-          "title": "The url to find the repo (.e.g: koyeb/gateway)"
-        },
-        "branch": {
-          "type": "string",
-          "description": "The branch to track changes on."
-        }
-      }
-    },
-    "storageSCMRepositoryType": {
-      "type": "string",
-      "enum": [
-        "GITHUB"
-      ],
-      "default": "GITHUB"
-    },
-    "storageSecret": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "organization_id": {
-          "type": "string"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "storageStack": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "title": "The id of the stack"
-        },
-        "name": {
-          "type": "string",
-          "title": "The name of the stack"
-        },
-        "organization_id": {
-          "type": "string",
-          "title": "The organisation id of the stack"
-        },
-        "latest_revision": {
-          "$ref": "#/definitions/storageStackRevision",
-          "title": "The latest definition of the stack"
-        },
-        "latest_revision_sha": {
-          "type": "string",
-          "title": "Sha of the latest revision"
-        },
-        "deployed_revision_sha": {
-          "type": "string",
-          "title": "Sha of the revision that was successfully deployed"
-        },
-        "repository": {
-          "$ref": "#/definitions/storageSCMRepository",
-          "title": "Where is this stack managed in the VCS"
-        },
-        "status": {
-          "$ref": "#/definitions/storageStackStatus"
-        },
-        "status_message": {
-          "type": "string"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "title": "A Stack"
-    },
-    "storageStackListItem": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "latest_revision_sha": {
-          "type": "string"
-        },
-        "deployed_revision_sha": {
-          "type": "string"
-        },
-        "status": {
-          "$ref": "#/definitions/storageStackStatus"
-        },
-        "repository": {
-          "$ref": "#/definitions/storageSCMRepository"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "organization_id": {
-          "type": "string"
-        }
-      },
-      "description": "A smaller representation of a stack to use when listing entities."
-    },
-    "storageStackRevision": {
-      "type": "object",
-      "properties": {
-        "sha": {
-          "type": "string",
-          "title": "The sha of the revision"
-        },
-        "yaml": {
-          "type": "string",
-          "title": "The raw yaml"
-        },
-        "version": {
-          "type": "string",
-          "title": "The version of the schema definition"
-        },
-        "parent_sha": {
-          "type": "string",
-          "title": "The sha of the previous revision of this stack (empty if it's the first revision)"
-        },
-        "status": {
-          "$ref": "#/definitions/storageStackRevisionStatus"
-        },
-        "status_message": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "commit_info": {
-          "$ref": "#/definitions/storageCommitInfo",
-          "title": "Information about the commit that generated this revision (potentially absent)"
-        },
-        "releaseId": {
-          "type": "string",
-          "title": "The release this stack revision was included in (possibly null if not release was done yet)"
-        }
-      },
-      "description": "The actual concrete definition of a stack."
-    },
-    "storageStackRevisionListItem": {
-      "type": "object",
-      "properties": {
-        "sha": {
-          "type": "string",
-          "title": "The sha of the revision"
-        },
-        "version": {
-          "type": "string",
-          "title": "The version of the schema definition"
-        },
-        "parent_sha": {
-          "type": "string",
-          "title": "The sha of the previous revision of this stack (empty if it's the first revision)"
-        },
-        "status": {
-          "$ref": "#/definitions/storageStackRevisionStatus"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "commit_info": {
-          "$ref": "#/definitions/storageCommitInfo",
-          "title": "Information about the commit that generated this revision (potentially absent)"
-        },
-        "releaseId": {
-          "type": "string",
-          "title": "The release this stack revision was included in (possibly null if not release was done yet)"
-        }
-      }
-    },
-    "storageStackRevisionStatus": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "UNAVAILABLE",
-        "PROVISIONING",
-        "STOPPING",
-        "ERROR",
-        "ACTIVE",
-        "VALIDATION_ERROR",
-        "STOPPED",
-        "BUILDING",
-        "BUILD_FAILED"
-      ],
-      "default": "UNKNOWN",
-      "title": "- PROVISIONING: The revision is starting up, events won't be triggered to it\n - STOPPING: The revision is being shutdown, existing runs won't get cancelled but new ones won't be triggered on it.\n - ERROR: An error happened when deploying the new revision or when checking it's availability\n - ACTIVE: The revision is active and everything goes well\n - VALIDATION_ERROR: Indicate that the revision was not valid\n - STOPPED: The revision is fully stopped nothing will get triggered\n - BUILDING: The revision is being built\n - BUILD_FAILED: The revision has failed to build"
-    },
-    "storageStackStatus": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "DRAINING",
-        "PROVISIONING",
-        "ACTIVE",
-        "ERROR",
-        "WARNING",
-        "DEPLOYING"
-      ],
-      "default": "UNKNOWN",
-      "title": "- UNKNOWN: This shouldn't happen but for API completion\n - DRAINING: The stack is getting deleted\n - PROVISIONING: A stack is starting up but doesn't have a deployed revision yet\n - ACTIVE: Everything is ok\n - ERROR: There's no active release and recent releases have failed\n - WARNING: There's an active release, however the most recent release is unhealthy\n - DEPLOYING: There's an active release, and we're deploying a newer release"
-    },
-    "storageStackUpsert": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "Stack name"
-        },
-        "repository": {
-          "$ref": "#/definitions/storageSCMRepository",
-          "title": "Where is this stack managed in the VCS"
-        }
-      }
-    },
-    "storageStorageSummaryReply": {
-      "type": "object",
-      "properties": {
-        "summary": {
-          "$ref": "#/definitions/StorageSummaryReplySummary"
-        }
-      }
-    },
-    "storageStore": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "with": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          }
-        },
-        "region": {
-          "type": "string"
-        },
-        "url": {
-          "type": "string",
-          "title": "The url to the storage endpoint"
-        },
-        "status": {
-          "$ref": "#/definitions/storageStoreStatus"
-        },
-        "status_message": {
-          "type": "string"
-        },
-        "organization_id": {
-          "type": "string"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "store_url": {
-          "type": "string",
-          "title": "The url to the bucket specifically"
-        }
-      }
-    },
-    "storageStoreReply": {
-      "type": "object",
-      "properties": {
-        "store": {
-          "$ref": "#/definitions/storageStore"
-        }
-      }
-    },
-    "storageStoreStatus": {
-      "type": "string",
-      "enum": [
-        "PROVISIONING",
-        "UPDATING",
-        "ENABLING",
-        "ENABLED",
-        "DISABING",
-        "DISABLED",
-        "LOCKING",
-        "LOCKED",
-        "ERROR",
-        "DELETING",
-        "DELETED"
-      ],
-      "default": "PROVISIONING"
-    },
-    "storageUpdateConnectorReply": {
-      "type": "object",
-      "properties": {
-        "connector": {
-          "$ref": "#/definitions/storageConnector"
-        }
-      }
-    },
-    "storageUpdateSecretReply": {
-      "type": "object",
-      "properties": {
-        "secret": {
-          "$ref": "#/definitions/storageSecret"
-        }
-      }
-    },
-    "storageUpdateStackReply": {
-      "type": "object",
-      "properties": {
-        "stack": {
-          "$ref": "#/definitions/storageStack"
-        }
-      }
-    },
-    "storageValidateYamlReply": {
-      "type": "object"
     },
     "UpdateUserRequestUserUpdateBody": {
       "type": "object",
@@ -7286,6 +5846,1426 @@
           "$ref": "#/definitions/accountUser"
         }
       }
+    },
+    "commonEmpty": {
+      "type": "object"
+    },
+    "protobufFieldMask": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The set of field mask paths."
+        }
+      },
+      "description": "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nIn order to reset a field's value to the default, the field must\nbe in the mask and set to the default value in the provided resource.\nHence, in order to reset all fields of a resource, provide a default\ninstance of the resource and set all fields in the mask, or do\nnot provide a mask as described below.\n\nIf a field mask is not present on update, the operation applies to\nall fields (as if a field mask of all fields has been specified).\nNote that in the presence of schema evolution, this may mean that\nfields the client does not know and has therefore not filled into\nthe request will be reset to their default. If this is unwanted\nbehavior, a specific service may require a client to always specify\na field mask, producing an error if not.\n\nAs with get operations, the location of the resource which\ndescribes the updated values in the request message depends on the\noperation kind. In any case, the effect of the field mask is\nrequired to be honored by the API.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable.",
+      "title": "`FieldMask` represents a set of symbolic field paths, for example:"
+    },
+    "FunctionRunInfoState": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "STARTING",
+        "RUNNING",
+        "FAILED",
+        "SUCCEEDED",
+        "CANCELLED",
+        "TIMEOUT"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ParameterParameterType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "BOOLEAN",
+        "LIST",
+        "STRUCT"
+      ],
+      "default": "STRING"
+    },
+    "SCMReferenceSCMType": {
+      "type": "string",
+      "enum": [
+        "GITHUB",
+        "UNKNOWN"
+      ],
+      "default": "GITHUB"
+    },
+    "StorageSummaryReplySummary": {
+      "type": "object",
+      "properties": {
+        "store_count": {
+          "type": "number",
+          "format": "double"
+        },
+        "stack_count": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "http_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "http_status": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "storageBaseCatalogStatus": {
+      "type": "string",
+      "enum": [
+        "COMING_SOON",
+        "ACTIVE",
+        "DEPRECATED",
+        "DISABLED",
+        "UNKNOWN"
+      ],
+      "default": "COMING_SOON",
+      "title": "The status of a catalog entry"
+    },
+    "storageCancelBuildReply": {
+      "type": "object"
+    },
+    "storageCancelFunctionExecutionReply": {
+      "type": "object"
+    },
+    "storageCatalogFunction": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The name of the tag in a slug valid format"
+        },
+        "display_name": {
+          "type": "string",
+          "title": "A display name for a stack"
+        },
+        "short_description": {
+          "type": "string",
+          "title": "An short description of the stack (<140 characters)"
+        },
+        "description": {
+          "type": "string",
+          "title": "A longer description of the stack akin to a README in markdown"
+        },
+        "icon": {
+          "type": "string",
+          "title": "An optional url to an icon for this stack (What file format?!)"
+        },
+        "website": {
+          "type": "string",
+          "title": "The website to get more info about this function (for example the source code)"
+        },
+        "status": {
+          "$ref": "#/definitions/storageBaseCatalogStatus",
+          "title": "The current status on the stack catalog"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "A set of tags to identify the catalog"
+        },
+        "version": {
+          "type": "string",
+          "title": "The version of the function in semver format: https://semver.org/"
+        },
+        "image": {
+          "type": "string",
+          "title": "The image this function will use"
+        },
+        "template": {
+          "type": "string",
+          "title": "The template that is used for expanding a catalog function"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageFunctionParameter"
+          },
+          "title": "A list of parameters for the function"
+        }
+      }
+    },
+    "storageCatalogFunctionListItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The name of the tag in a slug valid format"
+        },
+        "display_name": {
+          "type": "string",
+          "title": "A display name for a stack"
+        },
+        "short_description": {
+          "type": "string",
+          "title": "An short description of the stack (<140 characters)"
+        },
+        "icon": {
+          "type": "string",
+          "title": "An optional url to an icon for this stack (What file format?!)"
+        },
+        "website": {
+          "type": "string",
+          "title": "The website to get more info about this function (for example the source code)"
+        },
+        "status": {
+          "$ref": "#/definitions/storageBaseCatalogStatus",
+          "title": "The current status on the stack catalog"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "A set of tags to identify the catalog"
+        },
+        "version": {
+          "type": "string",
+          "title": "The version of the function in semver format: https://semver.org/"
+        },
+        "image": {
+          "type": "string",
+          "title": "The image this function will use"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageFunctionParameter"
+          },
+          "title": "A list of parameters for the function"
+        }
+      },
+      "title": "A shorter version o a CatalogFunction for listing"
+    },
+    "storageCatalogStack": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The name of the tag in a slug valid format"
+        },
+        "display_name": {
+          "type": "string",
+          "title": "A display name for a stack"
+        },
+        "short_description": {
+          "type": "string",
+          "title": "An short description of the stack (<140 characters)"
+        },
+        "description": {
+          "type": "string",
+          "title": "A longer description of the stack akin to a README in markdown"
+        },
+        "icon": {
+          "type": "string",
+          "title": "An optional url to an icon for this stack (What file format?!)"
+        },
+        "status": {
+          "$ref": "#/definitions/storageBaseCatalogStatus",
+          "title": "The current status on the stack catalog"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "A set of tags to identify the catalog"
+        },
+        "source_control_ref": {
+          "$ref": "#/definitions/storageSCMReference",
+          "title": "A reference to where the stack is defined"
+        },
+        "is_yaml_only": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Whether this stack is only a yaml or not (in which case it can be created as a non git managed stack)."
+        },
+        "yaml": {
+          "type": "string",
+          "description": "The yaml that is represented the stack."
+        }
+      },
+      "title": "A stack entry in the catalog"
+    },
+    "storageCatalogStackListItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "short_description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/storageBaseCatalogStatus"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_control_ref": {
+          "$ref": "#/definitions/storageSCMReference"
+        }
+      },
+      "title": "A shorter version of a CatalogStack for listing"
+    },
+    "storageCatalogStore": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "short_description": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/storageBaseCatalogStatus"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageParameter"
+          }
+        }
+      }
+    },
+    "storageCatalogStoreReply": {
+      "type": "object",
+      "properties": {
+        "catalog_store": {
+          "$ref": "#/definitions/storageCatalogStore"
+        }
+      }
+    },
+    "storageCommitInfo": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "avatar_url": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        }
+      }
+    },
+    "storageConnector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The id of the connector"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of the connector"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the entity was last updated"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the entity was created"
+        },
+        "url": {
+          "type": "string",
+          "title": "The url of the connector"
+        },
+        "type": {
+          "$ref": "#/definitions/storageConnectorType",
+          "title": "The type of the connector"
+        },
+        "organization_id": {
+          "type": "string",
+          "title": "The organisation id of the connector"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "title": "The metadata attached to the type"
+        }
+      }
+    },
+    "storageConnectorListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The id of the connector"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of the connector"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the entity was last updated"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the entity was created"
+        },
+        "url": {
+          "type": "string",
+          "title": "The url of the connector"
+        },
+        "type": {
+          "$ref": "#/definitions/storageConnectorType",
+          "title": "The type of the connector"
+        }
+      }
+    },
+    "storageConnectorType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "CLOUDEVENT",
+        "WEBHOOK"
+      ],
+      "default": "UNKNOWN"
+    },
+    "storageConnectorUpsert": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name of the connector"
+        },
+        "change_url": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Only valid for update (whether or not to regen the url)"
+        },
+        "type": {
+          "$ref": "#/definitions/storageConnectorType",
+          "title": "The tyoe of the connector"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "title": "The metadata attached to the type"
+        }
+      }
+    },
+    "storageDeleteConnectorReply": {
+      "type": "object"
+    },
+    "storageDeleteSecretReply": {
+      "type": "object"
+    },
+    "storageDeleteStackReply": {
+      "type": "object"
+    },
+    "storageEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "event": {
+          "type": "object"
+        },
+        "data": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "storageFetchFunctionExecutionsReply": {
+      "type": "object",
+      "properties": {
+        "executions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageFunctionRunInfoListItem"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageFunction": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/storageFunctionType"
+        }
+      }
+    },
+    "storageFunctionExecution": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/FunctionRunInfoState"
+        },
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The possibly empty time at which this function started"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The possibly empty time at which this function stopped"
+        },
+        "exitCode": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The exitCode of the run, it will be -1 if it's meaningless (.e.g. STARTING, RUNNING states), this only makes sense if the state is FAILED or SUCCEEDED (succeeded will always be 0)"
+        }
+      }
+    },
+    "storageFunctionListItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/storageFunctionType"
+        }
+      }
+    },
+    "storageFunctionParameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The name of the parameter"
+        },
+        "description": {
+          "type": "string",
+          "title": "A description of this parameter"
+        },
+        "required": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Whether or not this parameter must be set"
+        },
+        "type": {
+          "$ref": "#/definitions/storageFunctionParameterType",
+          "title": "The type of the parameter"
+        },
+        "default": {
+          "type": "object"
+        }
+      }
+    },
+    "storageFunctionParameterType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "STORE_REF",
+        "SECRET_REF",
+        "STRING",
+        "NUMBER",
+        "BOOLEAN"
+      ],
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Only used for error handling\n - STORE_REF: A reference to an existing store\n - SECRET_REF: A reference to an existing secret"
+    },
+    "storageFunctionRunInfoListItem": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "fn_name": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/definitions/FunctionRunInfoState"
+        },
+        "executions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageFunctionExecution"
+          },
+          "description": "A list of executions, with the first one being the most recent one."
+        }
+      }
+    },
+    "storageFunctionType": {
+      "type": "string",
+      "enum": [
+        "DOCKER",
+        "CATALOG",
+        "CODE"
+      ],
+      "default": "DOCKER"
+    },
+    "storageGetCatalogFunctionsReply": {
+      "type": "object",
+      "properties": {
+        "catalog_function": {
+          "$ref": "#/definitions/storageCatalogFunction"
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storageGetCatalogStackReply": {
+      "type": "object",
+      "properties": {
+        "catalog_stack": {
+          "$ref": "#/definitions/storageCatalogStack"
+        }
+      }
+    },
+    "storageGetConnectorByUrlReply": {
+      "type": "object",
+      "properties": {
+        "connector": {
+          "$ref": "#/definitions/storageConnector"
+        }
+      }
+    },
+    "storageGetConnectorReply": {
+      "type": "object",
+      "properties": {
+        "connector": {
+          "$ref": "#/definitions/storageConnector"
+        }
+      }
+    },
+    "storageGetFunctionReply": {
+      "type": "object",
+      "properties": {
+        "function": {
+          "$ref": "#/definitions/storageFunction"
+        }
+      }
+    },
+    "storageGetSecretReply": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "$ref": "#/definitions/storageSecret"
+        }
+      }
+    },
+    "storageGetStackReply": {
+      "type": "object",
+      "properties": {
+        "stack": {
+          "$ref": "#/definitions/storageStack"
+        }
+      }
+    },
+    "storageGetStackRevisionReply": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "$ref": "#/definitions/storageStackRevision"
+        }
+      }
+    },
+    "storageInvokeFunctionReply": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "storageListCatalogFunctionsReply": {
+      "type": "object",
+      "properties": {
+        "catalog_functions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageCatalogFunctionListItem"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageListCatalogStacksReply": {
+      "type": "object",
+      "properties": {
+        "catalog_stacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageCatalogStackListItem"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageListCatalogStoresReply": {
+      "type": "object",
+      "properties": {
+        "catalog_stores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageCatalogStore"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageListConnectorsReply": {
+      "type": "object",
+      "properties": {
+        "connectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageConnectorListItem"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64",
+          "title": "The limit in the request"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64",
+          "title": "The offset in the request"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64",
+          "title": "The total number of items"
+        }
+      }
+    },
+    "storageListFunctionsReply": {
+      "type": "object",
+      "properties": {
+        "functions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageFunctionListItem"
+          }
+        }
+      }
+    },
+    "storageListSecretsReply": {
+      "type": "object",
+      "properties": {
+        "secrets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageSecret"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageListStackRevisionsReply": {
+      "type": "object",
+      "properties": {
+        "revisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageStackRevisionListItem"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageListStacksReply": {
+      "type": "object",
+      "properties": {
+        "stacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageStackListItem"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageListStoresReply": {
+      "type": "object",
+      "properties": {
+        "stores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storageStore"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "storageLogEntry": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "stream": {
+          "type": "string",
+          "title": "The stream (stdout/stderr) this log was emitted to"
+        }
+      }
+    },
+    "storageNewConnectorReply": {
+      "type": "object",
+      "properties": {
+        "connector": {
+          "$ref": "#/definitions/storageConnector"
+        }
+      }
+    },
+    "storageNewSecret": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "storageNewSecretReply": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "$ref": "#/definitions/storageSecret"
+        }
+      }
+    },
+    "storageNewStackEventReply": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "storageNewStackReply": {
+      "type": "object",
+      "properties": {
+        "stack": {
+          "$ref": "#/definitions/storageStack"
+        }
+      }
+    },
+    "storageNewStackRevisionRequest": {
+      "type": "object",
+      "properties": {
+        "stack_id": {
+          "type": "string"
+        },
+        "yaml": {
+          "type": "object"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "storageNewStore": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "storageParameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ParameterParameterType"
+        },
+        "sensitive": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "options": {
+          "type": "object"
+        },
+        "default": {
+          "type": "object"
+        }
+      }
+    },
+    "storageRetryBuildReply": {
+      "type": "object"
+    },
+    "storageRetryFunctionExecutionReply": {
+      "type": "object"
+    },
+    "storageSCMReference": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/SCMReferenceSCMType",
+          "title": "The place where the repository is hosted (github is the only supported place at the moment)"
+        },
+        "repo": {
+          "type": "string",
+          "title": "A way to identify the repository within the git provider"
+        },
+        "ref": {
+          "type": "string",
+          "title": "A git ref to identify the data that needs to be taken from the repo (it can be a commit, a tag, a branch...)"
+        }
+      }
+    },
+    "storageSCMRepository": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/storageSCMRepositoryType",
+          "title": "Where the repo lives"
+        },
+        "name": {
+          "type": "string",
+          "title": "The url to find the repo (.e.g: koyeb/gateway)"
+        },
+        "branch": {
+          "type": "string",
+          "description": "The branch to track changes on."
+        }
+      }
+    },
+    "storageSCMRepositoryType": {
+      "type": "string",
+      "enum": [
+        "GITHUB"
+      ],
+      "default": "GITHUB"
+    },
+    "storageSecret": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "organization_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "storageStack": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The id of the stack"
+        },
+        "name": {
+          "type": "string",
+          "title": "The name of the stack"
+        },
+        "organization_id": {
+          "type": "string",
+          "title": "The organisation id of the stack"
+        },
+        "latest_revision": {
+          "$ref": "#/definitions/storageStackRevision",
+          "title": "The latest definition of the stack"
+        },
+        "latest_revision_sha": {
+          "type": "string",
+          "title": "Sha of the latest revision"
+        },
+        "deployed_revision_sha": {
+          "type": "string",
+          "title": "Sha of the revision that was successfully deployed"
+        },
+        "repository": {
+          "$ref": "#/definitions/storageSCMRepository",
+          "title": "Where is this stack managed in the VCS"
+        },
+        "status": {
+          "$ref": "#/definitions/storageStackStatus"
+        },
+        "status_message": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "A Stack"
+    },
+    "storageStackListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "latest_revision_sha": {
+          "type": "string"
+        },
+        "deployed_revision_sha": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/storageStackStatus"
+        },
+        "repository": {
+          "$ref": "#/definitions/storageSCMRepository"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "organization_id": {
+          "type": "string"
+        }
+      },
+      "description": "A smaller representation of a stack to use when listing entities."
+    },
+    "storageStackRevision": {
+      "type": "object",
+      "properties": {
+        "sha": {
+          "type": "string",
+          "title": "The sha of the revision"
+        },
+        "yaml": {
+          "type": "string",
+          "title": "The raw yaml"
+        },
+        "version": {
+          "type": "string",
+          "title": "The version of the schema definition"
+        },
+        "parent_sha": {
+          "type": "string",
+          "title": "The sha of the previous revision of this stack (empty if it's the first revision)"
+        },
+        "status": {
+          "$ref": "#/definitions/storageStackRevisionStatus"
+        },
+        "status_message": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "commit_info": {
+          "$ref": "#/definitions/storageCommitInfo",
+          "title": "Information about the commit that generated this revision (potentially absent)"
+        },
+        "releaseId": {
+          "type": "string",
+          "title": "The release this stack revision was included in (possibly null if not release was done yet)"
+        }
+      },
+      "description": "The actual concrete definition of a stack."
+    },
+    "storageStackRevisionListItem": {
+      "type": "object",
+      "properties": {
+        "sha": {
+          "type": "string",
+          "title": "The sha of the revision"
+        },
+        "version": {
+          "type": "string",
+          "title": "The version of the schema definition"
+        },
+        "parent_sha": {
+          "type": "string",
+          "title": "The sha of the previous revision of this stack (empty if it's the first revision)"
+        },
+        "status": {
+          "$ref": "#/definitions/storageStackRevisionStatus"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "commit_info": {
+          "$ref": "#/definitions/storageCommitInfo",
+          "title": "Information about the commit that generated this revision (potentially absent)"
+        },
+        "releaseId": {
+          "type": "string",
+          "title": "The release this stack revision was included in (possibly null if not release was done yet)"
+        }
+      }
+    },
+    "storageStackRevisionStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "UNAVAILABLE",
+        "PROVISIONING",
+        "STOPPING",
+        "ERROR",
+        "ACTIVE",
+        "VALIDATION_ERROR",
+        "STOPPED",
+        "BUILDING",
+        "BUILD_FAILED"
+      ],
+      "default": "UNKNOWN",
+      "title": "- PROVISIONING: The revision is starting up, events won't be triggered to it\n - STOPPING: The revision is being shutdown, existing runs won't get cancelled but new ones won't be triggered on it.\n - ERROR: An error happened when deploying the new revision or when checking it's availability\n - ACTIVE: The revision is active and everything goes well\n - VALIDATION_ERROR: Indicate that the revision was not valid\n - STOPPED: The revision is fully stopped nothing will get triggered\n - BUILDING: The revision is being built\n - BUILD_FAILED: The revision has failed to build"
+    },
+    "storageStackStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "DRAINING",
+        "PROVISIONING",
+        "ACTIVE",
+        "ERROR",
+        "WARNING",
+        "DEPLOYING"
+      ],
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: This shouldn't happen but for API completion\n - DRAINING: The stack is getting deleted\n - PROVISIONING: A stack is starting up but doesn't have a deployed revision yet\n - ACTIVE: Everything is ok\n - ERROR: There's no active release and recent releases have failed\n - WARNING: There's an active release, however the most recent release is unhealthy\n - DEPLOYING: There's an active release, and we're deploying a newer release"
+    },
+    "storageStackUpsert": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Stack name"
+        },
+        "repository": {
+          "$ref": "#/definitions/storageSCMRepository",
+          "title": "Where is this stack managed in the VCS"
+        }
+      }
+    },
+    "storageStorageSummaryReply": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "$ref": "#/definitions/StorageSummaryReplySummary"
+        }
+      }
+    },
+    "storageStore": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "region": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "title": "The url to the storage endpoint"
+        },
+        "status": {
+          "$ref": "#/definitions/storageStoreStatus"
+        },
+        "status_message": {
+          "type": "string"
+        },
+        "organization_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "store_url": {
+          "type": "string",
+          "title": "The url to the bucket specifically"
+        }
+      }
+    },
+    "storageStoreReply": {
+      "type": "object",
+      "properties": {
+        "store": {
+          "$ref": "#/definitions/storageStore"
+        }
+      }
+    },
+    "storageStoreStatus": {
+      "type": "string",
+      "enum": [
+        "PROVISIONING",
+        "UPDATING",
+        "ENABLING",
+        "ENABLED",
+        "DISABING",
+        "DISABLED",
+        "LOCKING",
+        "LOCKED",
+        "ERROR",
+        "DELETING",
+        "DELETED"
+      ],
+      "default": "PROVISIONING"
+    },
+    "storageUpdateConnectorReply": {
+      "type": "object",
+      "properties": {
+        "connector": {
+          "$ref": "#/definitions/storageConnector"
+        }
+      }
+    },
+    "storageUpdateSecretReply": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "$ref": "#/definitions/storageSecret"
+        }
+      }
+    },
+    "storageUpdateStackReply": {
+      "type": "object",
+      "properties": {
+        "stack": {
+          "$ref": "#/definitions/storageStack"
+        }
+      }
+    },
+    "storageValidateYamlReply": {
+      "type": "object"
     },
     "stack": {
       "$ref": "stackv1.swagger.build.json"

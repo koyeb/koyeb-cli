@@ -22,22 +22,18 @@ type StorageConnectorUpsert struct {
 	// Name of the connector
 	Name string `json:"name,omitempty"`
 
-	// Cloudevent webhook metadata
-	WebhookCloudevent *StorageMetadataWebhookCloudEvent `json:"webhook_cloudevent,omitempty"`
+	// The tyoe of the connector
+	Type StorageConnectorType `json:"type,omitempty"`
 
-	// RawHttp webhook metadata
-	WebhookRawhttp *StorageMetadataWebhookRawHTTP `json:"webhook_rawhttp,omitempty"`
+	// The metadata attached to the type
+	With map[string]interface{} `json:"with,omitempty"`
 }
 
 // Validate validates this storage connector upsert
 func (m *StorageConnectorUpsert) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateWebhookCloudevent(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateWebhookRawhttp(formats); err != nil {
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -47,37 +43,17 @@ func (m *StorageConnectorUpsert) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageConnectorUpsert) validateWebhookCloudevent(formats strfmt.Registry) error {
+func (m *StorageConnectorUpsert) validateType(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.WebhookCloudevent) { // not required
+	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
-	if m.WebhookCloudevent != nil {
-		if err := m.WebhookCloudevent.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("webhook_cloudevent")
-			}
-			return err
+	if err := m.Type.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("type")
 		}
-	}
-
-	return nil
-}
-
-func (m *StorageConnectorUpsert) validateWebhookRawhttp(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.WebhookRawhttp) { // not required
-		return nil
-	}
-
-	if m.WebhookRawhttp != nil {
-		if err := m.WebhookRawhttp.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("webhook_rawhttp")
-			}
-			return err
-		}
+		return err
 	}
 
 	return nil

@@ -1,0 +1,4 @@
+name: conn1
+type: CLOUDEVENT
+with:
+  filter: event.type == "foo"

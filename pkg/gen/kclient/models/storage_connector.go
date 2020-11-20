@@ -40,11 +40,8 @@ type StorageConnector struct {
 	// The url of the connector
 	URL string `json:"url,omitempty"`
 
-	// Cloudevent webhook metadata
-	WebhookCloudevent *StorageMetadataWebhookCloudEvent `json:"webhook_cloudevent,omitempty"`
-
-	// RawHttp webhook metadata
-	WebhookRawhttp *StorageMetadataWebhookRawHTTP `json:"webhook_rawhttp,omitempty"`
+	// The metadata attached to the type
+	With map[string]interface{} `json:"with,omitempty"`
 }
 
 // Validate validates this storage connector
@@ -60,14 +57,6 @@ func (m *StorageConnector) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateUpdatedAt(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateWebhookCloudevent(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateWebhookRawhttp(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -114,42 +103,6 @@ func (m *StorageConnector) validateUpdatedAt(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("updated_at", "body", "date-time", m.UpdatedAt.String(), formats); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *StorageConnector) validateWebhookCloudevent(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.WebhookCloudevent) { // not required
-		return nil
-	}
-
-	if m.WebhookCloudevent != nil {
-		if err := m.WebhookCloudevent.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("webhook_cloudevent")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *StorageConnector) validateWebhookRawhttp(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.WebhookRawhttp) { // not required
-		return nil
-	}
-
-	if m.WebhookRawhttp != nil {
-		if err := m.WebhookRawhttp.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("webhook_rawhttp")
-			}
-			return err
-		}
 	}
 
 	return nil
