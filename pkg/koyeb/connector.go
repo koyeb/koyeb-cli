@@ -246,7 +246,8 @@ func (c ConnectorList) GetTable() TableInfo {
 		var fields []string
 		for _, field := range res.headers {
 			var res string
-			if field == "url" {
+			// TODO remove once the API always returns full URLs
+			if field == "url" && !strings.HasPrefix(item.URL, "https://") {
 				res = genFullUrl(string(item.Type), item.URL)
 			} else {
 				res = getField(item, field)
