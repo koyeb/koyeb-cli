@@ -25,18 +25,11 @@ func TestGetTable(t *testing.T) {
 		"empty": {
 			in: []models.StorageConnectorListItem{},
 		},
-		"with_full_and_non_full_url": {
+		"simple": {
 			in: []models.StorageConnectorListItem{
-				func() models.StorageConnectorListItem {
-					res := baseItem
-					res.Name = "nonabsolute"
-					res.URL = "foo/bar"
-					return res
-				}(),
 				baseItem,
 			},
 			fields: [][]string{
-				{"d7a63c2b-2289-40cb-9e02-b02d0d7ecdc0", "nonabsolute", "CLOUDEVENT", "https://connectors.prod.koyeb.com/CLOUDEVENT/foo/bar", "2020-10-01T00:12:00.000Z", "2020-11-01T00:12:00.000Z"},
 				{"d7a63c2b-2289-40cb-9e02-b02d0d7ecdc0", "foo", "CLOUDEVENT", "https://connectors.prod.koyeb.com/cloudevent/foo/bar", "2020-10-01T00:12:00.000Z", "2020-11-01T00:12:00.000Z"},
 			},
 		},
