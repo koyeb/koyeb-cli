@@ -1,4 +1,4 @@
 name: conn1
-type: CLOUDEVENT
+type: cloudevent
 with:
   filter: event.type == "foo"

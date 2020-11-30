@@ -25,6 +25,8 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	LogsTailConnectorLogs(params *LogsTailConnectorLogsParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailConnectorLogsOK, error)
+
 	LogsTailStackEvents(params *LogsTailStackEventsParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailStackEventsOK, error)
 
 	LogsTailStackRevisionBuildLogs(params *LogsTailStackRevisionBuildLogsParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailStackRevisionBuildLogsOK, error)
@@ -34,6 +36,40 @@ type ClientService interface {
 	LogsTailStackRevisionLogsForFunction(params *LogsTailStackRevisionLogsForFunctionParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailStackRevisionLogsForFunctionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  LogsTailConnectorLogs logs tail connector logs API
+*/
+func (a *Client) LogsTailConnectorLogs(params *LogsTailConnectorLogsParams, authInfo runtime.ClientAuthInfoWriter) (*LogsTailConnectorLogsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLogsTailConnectorLogsParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "logs_TailConnectorLogs",
+		Method:             "GET",
+		PathPattern:        "/v1/connectors/{idOrName}/logs/tail",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LogsTailConnectorLogsReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LogsTailConnectorLogsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LogsTailConnectorLogsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*

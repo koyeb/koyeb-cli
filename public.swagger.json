@@ -2422,11 +2422,11 @@
             "required": false,
             "type": "string",
             "enum": [
-              "UNKNOWN",
-              "CLOUDEVENT",
-              "WEBHOOK"
+              "unknown",
+              "cloudevent",
+              "webhook"
             ],
-            "default": "UNKNOWN"
+            "default": "unknown"
           }
         ],
         "tags": [
@@ -2631,6 +2631,71 @@
         ],
         "tags": [
           "Connectors"
+        ]
+      }
+    },
+    "/v1/connectors/{idOrName}/logs/tail": {
+      "get": {
+        "operationId": "logs_TailConnectorLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/storageLogEntry"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of storageLogEntry"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/commonErrorWithFields"
+            }
+          },
+          "403": {
+            "description": "Returned when the user does not have permission to access the resource.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "description": "The id or name of the connector to tail",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "start",
+            "description": "A timestamp to indicate when to pull the logs from.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "logs"
         ]
       }
     },
@@ -6288,11 +6353,11 @@
     "storageConnectorType": {
       "type": "string",
       "enum": [
-        "UNKNOWN",
-        "CLOUDEVENT",
-        "WEBHOOK"
+        "unknown",
+        "cloudevent",
+        "webhook"
       ],
-      "default": "UNKNOWN"
+      "default": "unknown"
     },
     "storageConnectorUpsert": {
       "type": "object",
@@ -6338,14 +6403,20 @@
           "type": "string"
         },
         "event": {
-          "type": "object"
+          "type": "object",
+          "title": "(Deprecated) Use cloudevent instead"
         },
         "data": {
-          "type": "string"
+          "type": "string",
+          "title": "(Depreacted) Use cloudevent instead"
         },
         "created_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "cloudevent": {
+          "type": "object",
+          "title": "A cloudevent in the json format: https://cloudevents.io/"
         }
       }
     },
@@ -7305,6 +7376,9 @@
     },
     "storeEvent": {
       "$ref": "stackv1.swagger.build.json#/definitions/storeEvent"
+    },
+    "connectorEvent": {
+      "$ref": "stackv1.swagger.build.json#/definitions/connectorEvent"
     },
     "storeOldEvent": {
       "$ref": "stackv1.swagger.build.json#/definitions/storeOldEvent"

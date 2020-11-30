@@ -20,7 +20,7 @@ import (
 // with the default values initialized.
 func NewConnectorsListConnectorsParams() *ConnectorsListConnectorsParams {
 	var (
-		typeVarDefault = string("UNKNOWN")
+		typeVarDefault = string("unknown")
 	)
 	return &ConnectorsListConnectorsParams{
 		Type: &typeVarDefault,
@@ -33,7 +33,7 @@ func NewConnectorsListConnectorsParams() *ConnectorsListConnectorsParams {
 // with the default values initialized, and the ability to set a timeout on a request
 func NewConnectorsListConnectorsParamsWithTimeout(timeout time.Duration) *ConnectorsListConnectorsParams {
 	var (
-		typeVarDefault = string("UNKNOWN")
+		typeVarDefault = string("unknown")
 	)
 	return &ConnectorsListConnectorsParams{
 		Type: &typeVarDefault,
@@ -46,7 +46,7 @@ func NewConnectorsListConnectorsParamsWithTimeout(timeout time.Duration) *Connec
 // with the default values initialized, and the ability to set a context for a request
 func NewConnectorsListConnectorsParamsWithContext(ctx context.Context) *ConnectorsListConnectorsParams {
 	var (
-		typeDefault = string("UNKNOWN")
+		typeDefault = string("unknown")
 	)
 	return &ConnectorsListConnectorsParams{
 		Type: &typeDefault,
@@ -59,7 +59,7 @@ func NewConnectorsListConnectorsParamsWithContext(ctx context.Context) *Connecto
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewConnectorsListConnectorsParamsWithHTTPClient(client *http.Client) *ConnectorsListConnectorsParams {
 	var (
-		typeDefault = string("UNKNOWN")
+		typeDefault = string("unknown")
 	)
 	return &ConnectorsListConnectorsParams{
 		Type:       &typeDefault,

@@ -17,14 +17,17 @@ import (
 // swagger:model storageEvent
 type StorageEvent struct {
 
+	// A cloudevent in the json format: https://cloudevents.io/
+	Cloudevent interface{} `json:"cloudevent,omitempty"`
+
 	// created at
 	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"created_at,omitempty"`
 
-	// data
+	// (Depreacted) Use cloudevent instead
 	Data string `json:"data,omitempty"`
 
-	// event
+	// (Deprecated) Use cloudevent instead
 	Event interface{} `json:"event,omitempty"`
 
 	// id
