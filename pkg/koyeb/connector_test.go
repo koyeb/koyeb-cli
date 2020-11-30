@@ -12,7 +12,7 @@ func TestGetTable(t *testing.T) {
 	baseItem := models.StorageConnectorListItem{
 		ID:        "d7a63c2b-2289-40cb-9e02-b02d0d7ecdc0",
 		Name:      "foo",
-		Type:      models.StorageConnectorTypeCLOUDEVENT,
+		Type:      models.StorageConnectorTypeCloudevent,
 		URL:       "https://connectors.prod.koyeb.com/cloudevent/foo/bar",
 		CreatedAt: strfmt.DateTime(time.Date(2020, 10, 1, 0, 12, 0, 0, time.UTC)),
 		UpdatedAt: strfmt.DateTime(time.Date(2020, 11, 1, 0, 12, 0, 0, time.UTC)),
@@ -30,7 +30,7 @@ func TestGetTable(t *testing.T) {
 				baseItem,
 			},
 			fields: [][]string{
-				{"d7a63c2b-2289-40cb-9e02-b02d0d7ecdc0", "foo", "CLOUDEVENT", "https://connectors.prod.koyeb.com/cloudevent/foo/bar", "2020-10-01T00:12:00.000Z", "2020-11-01T00:12:00.000Z"},
+				{"d7a63c2b-2289-40cb-9e02-b02d0d7ecdc0", "foo", "cloudevent", "https://connectors.prod.koyeb.com/cloudevent/foo/bar", "2020-10-01T00:12:00.000Z", "2020-11-01T00:12:00.000Z"},
 			},
 		},
 	}
