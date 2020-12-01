@@ -150,7 +150,7 @@ func createConnectors(cmd *cobra.Command, args []string) error {
 
 	if file != "" {
 		log.Debugf("Loading file %s", file)
-		err := loadMultiple(file, &all, "stacks")
+		err := loadMultiple(file, &all, "connectors")
 		if err != nil {
 			er(err)
 		}
