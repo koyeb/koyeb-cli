@@ -1,4 +1,5 @@
-name: conn1
-type: cloudevent
-with:
-  filter: event.type == "foo"
+connectors:
+  - name: conn1
+    type: cloudevent
+    with:
+      filter: event.type == "foo"
