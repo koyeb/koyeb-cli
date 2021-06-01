@@ -162,14 +162,16 @@ func getSecretsFormat(cmd *cobra.Command, args []string, format string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
+	var items []ApiResources
 	for _, arg := range args {
 		res, _, err := client.SecretsApi.GetSecret(ctx, arg).Execute()
 		if err != nil {
 			logApiError(err)
 		}
-
-		render(format, &GetSecretReply{res})
+		items = append(items, &GetSecretReply{res})
 	}
+
+	render(format, items...)
 
 	return nil
 }

@@ -60,9 +60,6 @@ func render(defaultFormat string, items ...ApiResources) {
 	for idx, item := range items {
 		switch format {
 		case "yaml":
-			if idx < len(items) {
-				fmt.Printf("---\n")
-			}
 			buf, err := item.MarshalBinary()
 			if err != nil {
 				er(err)
@@ -72,7 +69,10 @@ func render(defaultFormat string, items ...ApiResources) {
 				fmt.Printf("err: %v\n", err)
 				return
 			}
-			fmt.Println(string(y))
+			fmt.Printf("%s", string(y))
+			if idx < len(items)-1 {
+				fmt.Printf("---\n")
+			}
 		case "json":
 			buf, err := item.MarshalBinary()
 			if err != nil {
