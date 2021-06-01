@@ -84,14 +84,18 @@ func (a *GetSecretReply) MarshalBinary() ([]byte, error) {
 	return a.GetSecretReply.GetSecret().MarshalJSON()
 }
 
-func (a *GetSecretReply) GetTable() TableInfo {
-	res := TableInfo{
-		headers: []string{"id", "name", "value", "updated_at"},
-	}
+func (a *GetSecretReply) GetTableHeaders() []string {
+	return []string{"id", "name", "value", "updated_at"}
+}
+
+func (a *GetSecretReply) GetTableValues() [][]string {
+	var res [][]string
 	item := a.GetSecret()
 	var fields []string
-	fields = append(fields, item.GetId(), item.GetName(), item.GetValue(), item.GetUpdatedAt().String())
-	res.fields = append(res.fields, fields)
+	for _, field := range a.GetTableHeaders() {
+		fields = append(fields, getField(item, field))
+	}
+	res = append(res, fields)
 	return res
 }
 
@@ -103,14 +107,18 @@ func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {
 	return a.ListSecretsReply.MarshalJSON()
 }
 
-func (a *ListSecretsReply) GetTable() TableInfo {
-	res := TableInfo{
-		headers: []string{"id", "name", "value", "updated_at"},
-	}
+func (a *ListSecretsReply) GetTableHeaders() []string {
+	return []string{"id", "name", "value", "updated_at"}
+}
+
+func (a *ListSecretsReply) GetTableValues() [][]string {
+	var res [][]string
 	for _, item := range a.GetSecrets() {
 		var fields []string
-		fields = append(fields, item.GetId(), item.GetName(), item.GetValue(), item.GetUpdatedAt().String())
-		res.fields = append(res.fields, fields)
+		for _, field := range a.GetTableHeaders() {
+			fields = append(fields, getField(item, field))
+		}
+		res = append(res, fields)
 	}
 	return res
 }

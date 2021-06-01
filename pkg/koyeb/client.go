@@ -47,7 +47,8 @@ type TableInfo struct {
 }
 
 type ApiResources interface {
-	GetTable() TableInfo
+	GetTableHeaders() []string
+	GetTableValues() [][]string
 	MarshalBinary() ([]byte, error)
 }
 
@@ -96,9 +97,8 @@ func render(defaultFormat string, items ...ApiResources) {
 			}
 			fmt.Println(string(buf))
 		case "table":
-			tableInfo := item.GetTable()
-			table.SetHeader(tableInfo.headers)
-			table.AppendBulk(tableInfo.fields)
+			table.SetHeader(item.GetTableHeaders())
+			table.AppendBulk(item.GetTableValues())
 		default:
 			er("Invalid format")
 		}
@@ -122,13 +122,12 @@ func getField(item interface{}, field string) string {
 
 		if fieldName == field {
 			// TODO we should format depending of the type
-			return fmt.Sprintf("%s", reflect.Indirect(val).FieldByName(t.Field(i).Name))
+			return fmt.Sprintf("%s", reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)))
 		}
 
 		spl := strings.Split(field, ".")
 		if spl[0] == fieldName && len(spl) > 1 {
 			return getField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
-			// []
 		}
 
 	}
