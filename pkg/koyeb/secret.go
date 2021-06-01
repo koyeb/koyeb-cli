@@ -57,7 +57,7 @@ func NewSecretCmd() *cobra.Command {
 	getSecretCmd := &cobra.Command{
 		Use:   "get [name]",
 		Short: "Get secret",
-		// RunE:    createSecrets,
+		RunE:  getSecrets,
 	}
 	secretCmd.AddCommand(getSecretCmd)
 
@@ -193,6 +193,14 @@ func listSecretsFormat(cmd *cobra.Command, args []string, format string) error {
 func listSecrets(cmd *cobra.Command, args []string) error {
 	format := "table"
 	return listSecretsFormat(cmd, args, format)
+}
+
+func getSecrets(cmd *cobra.Command, args []string) error {
+	format := "table"
+	if len(args) == 0 {
+		return listSecretsFormat(cmd, args, format)
+	}
+	return getSecretsFormat(cmd, args, format)
 }
 
 func describeSecrets(cmd *cobra.Command, args []string) error {
