@@ -57,6 +57,22 @@ func render(defaultFormat string, items ...ApiResources) {
 		format = outputFormat
 	}
 
+	var table *tablewriter.Table
+	if format == "table" {
+		table = tablewriter.NewWriter(os.Stdout)
+		table.SetAutoWrapText(false)
+		table.SetAutoFormatHeaders(true)
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		table.SetAlignment(tablewriter.ALIGN_LEFT)
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetHeaderLine(false)
+		table.SetBorder(false)
+		table.SetTablePadding("\t")
+		table.SetNoWhiteSpace(true)
+	}
+
 	for idx, item := range items {
 		switch format {
 		case "yaml":
@@ -81,24 +97,14 @@ func render(defaultFormat string, items ...ApiResources) {
 			fmt.Println(string(buf))
 		case "table":
 			tableInfo := item.GetTable()
-			table := tablewriter.NewWriter(os.Stdout)
 			table.SetHeader(tableInfo.headers)
-			table.SetAutoWrapText(false)
-			table.SetAutoFormatHeaders(true)
-			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-			table.SetAlignment(tablewriter.ALIGN_LEFT)
-			table.SetCenterSeparator("")
-			table.SetColumnSeparator("")
-			table.SetRowSeparator("")
-			table.SetHeaderLine(false)
-			table.SetBorder(false)
-			table.SetTablePadding("\t")
-			table.SetNoWhiteSpace(true)
 			table.AppendBulk(tableInfo.fields)
-			table.Render()
 		default:
 			er("Invalid format")
 		}
+	}
+	if format == "table" {
+		table.Render()
 	}
 }
 
