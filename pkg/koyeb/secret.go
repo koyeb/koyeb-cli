@@ -1,241 +1,275 @@
 package koyeb
 
 import (
-	"fmt"
-
-	"github.com/go-openapi/swag"
-	"github.com/jinzhu/copier"
-	log "github.com/sirupsen/logrus"
+	"context"
+	// "fmt"
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/spf13/cobra"
-
-	"github.com/koyeb/koyeb-cli/pkg/gen/kclient/client/secrets"
-	apimodel "github.com/koyeb/koyeb-cli/pkg/gen/kclient/models"
 )
 
 var (
-	createSecretCommand = &cobra.Command{
-		Use:     "secrets [resource]",
-		Aliases: []string{"secret"},
-		Short:   "Create secrets",
-		RunE:    createSecrets,
-	}
-	getSecretCommand = &cobra.Command{
-		Use:     "secrets [resource]",
-		Aliases: []string{"secret"},
-		Short:   "Get secrets",
-		RunE:    getSecrets,
-	}
-	describeSecretCommand = &cobra.Command{
-		Use:     "secrets [resource]",
-		Aliases: []string{"secret"},
-		Short:   "Describe secrets",
-		RunE:    getSecrets,
-	}
-	updateSecretCommand = &cobra.Command{
-		Use:     "secrets [resource]",
-		Aliases: []string{"secret"},
-		Short:   "Update secrets",
-		RunE:    updateSecrets,
-	}
-	deleteSecretCommand = &cobra.Command{
-		Use:     "secrets [resource]",
-		Aliases: []string{"secret"},
-		Short:   "Delete secrets",
-		RunE:    deleteSecrets,
-	}
+// createSecretCommand = &cobra.Command{
+//   Use:     "secrets [resource]",
+//   Aliases: []string{"secret"},
+//   Short:   "Create secrets",
+//   RunE:    createSecrets,
+// }
+// getSecretCommand = &cobra.Command{
+//   Use:     "secrets [resource]",
+//   Aliases: []string{"secret"},
+//   Short:   "Get secrets",
+//   RunE:    getSecrets,
+// }
+// describeSecretCommand = &cobra.Command{
+//   Use:     "secrets [resource]",
+//   Aliases: []string{"secret"},
+//   Short:   "Describe secrets",
+//   RunE:    getSecrets,
+// }
+// updateSecretCommand = &cobra.Command{
+//   Use:     "secrets [resource]",
+//   Aliases: []string{"secret"},
+//   Short:   "Update secrets",
+//   RunE:    updateSecrets,
+// }
+// deleteSecretCommand = &cobra.Command{
+//   Use:     "secrets [resource]",
+//   Aliases: []string{"secret"},
+//   Short:   "Delete secrets",
+//   RunE:    deleteSecrets,
+// }
 )
 
-type StorageSecretsBody struct {
-	Secrets []StorageSecret `json:"secrets"`
-}
-
-func (a *StorageSecretsBody) MarshalBinary() ([]byte, error) {
-	if len(a.Secrets) == 1 {
-		return swag.WriteJSON(a.Secrets[0])
-	} else {
-		return swag.WriteJSON(a)
+func NewSecretCmd() *cobra.Command {
+	secretCmd := &cobra.Command{
+		Use:     "secrets [action]",
+		Aliases: []string{"s", "secret"},
+		Short:   "Secrets",
 	}
+
+	createSecretCmd := &cobra.Command{
+		Use:   "create [name]",
+		Short: "Create secrets",
+		// RunE:    createSecrets,
+	}
+	secretCmd.AddCommand(createSecretCmd)
+
+	getSecretCmd := &cobra.Command{
+		Use:   "get [name]",
+		Short: "Get secret",
+		// RunE:    createSecrets,
+	}
+	secretCmd.AddCommand(getSecretCmd)
+
+	listSecretCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List secrets",
+		RunE:  listSecrets,
+	}
+	secretCmd.AddCommand(listSecretCmd)
+	describeSecretCmd := &cobra.Command{
+		Use:   "describe [name]",
+		Short: "Describe secrets",
+		RunE:  describeSecrets,
+	}
+	secretCmd.AddCommand(describeSecretCmd)
+	return secretCmd
 }
 
-func (a *StorageSecretsBody) GetTable() TableInfo {
+type GetSecretReply struct {
+	koyeb.GetSecretReply
+}
+
+func (a *GetSecretReply) MarshalBinary() ([]byte, error) {
+	return a.GetSecretReply.GetSecret().MarshalJSON()
+}
+
+func (a *GetSecretReply) GetTable() TableInfo {
 	res := TableInfo{
 		headers: []string{"id", "name", "value", "updated_at"},
 	}
-	for _, item := range a.Secrets {
+	item := a.GetSecret()
+	var fields []string
+	fields = append(fields, item.GetId(), item.GetName(), item.GetValue(), item.GetUpdatedAt().String())
+	res.fields = append(res.fields, fields)
+	return res
+}
+
+type ListSecretsReply struct {
+	koyeb.ListSecretsReply
+}
+
+func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {
+	return a.ListSecretsReply.MarshalJSON()
+}
+
+func (a *ListSecretsReply) GetTable() TableInfo {
+	res := TableInfo{
+		headers: []string{"id", "name", "value", "updated_at"},
+	}
+	for _, item := range a.GetSecrets() {
 		var fields []string
-		for _, field := range res.headers {
-			fields = append(fields, item.GetField(field))
-		}
+		fields = append(fields, item.GetId(), item.GetName(), item.GetValue(), item.GetUpdatedAt().String())
 		res.fields = append(res.fields, fields)
 	}
 	return res
 }
 
-func (a *StorageSecretsBody) New() interface{} {
-	return &apimodel.StorageSecret{}
-}
+// func (a *StorageSecretsBody) New() interface{} {
+//   return &apimodel.StorageSecret{}
+// }
 
-func (a *StorageSecretsBody) Append(item interface{}) {
-	secret := item.(*apimodel.StorageSecret)
-	a.Secrets = append(a.Secrets, StorageSecret{*secret})
-}
+// func (a *StorageSecretsBody) Append(item interface{}) {
+//   secret := item.(*apimodel.StorageSecret)
+//   a.Secrets = append(a.Secrets, StorageSecret{*secret})
+// }
 
-type StorageSecret struct {
-	apimodel.StorageSecret
-}
+// type StorageSecret struct {
+//   apimodel.StorageSecret
+// }
 
-func (a StorageSecret) GetNewBody() *apimodel.StorageNewSecret {
-	newBody := apimodel.StorageNewSecret{}
-	copier.Copy(&newBody, &a.StorageSecret)
-	return &newBody
-}
+// func (a StorageSecret) GetNewBody() *apimodel.StorageNewSecret {
+//   newBody := apimodel.StorageNewSecret{}
+//   copier.Copy(&newBody, &a.StorageSecret)
+//   return &newBody
+// }
 
-func (a StorageSecret) GetUpdateBody() *apimodel.StorageSecret {
-	updateBody := apimodel.StorageSecret{}
-	copier.Copy(&updateBody, &a.StorageSecret)
-	return &updateBody
-}
+// func (a StorageSecret) GetUpdateBody() *apimodel.StorageSecret {
+//   updateBody := apimodel.StorageSecret{}
+//   copier.Copy(&updateBody, &a.StorageSecret)
+//   return &updateBody
+// }
 
-func (a StorageSecret) GetField(field string) string {
+// func (a StorageSecret) GetField(field string) string {
 
-	type StorageSecret struct {
-		apimodel.StorageSecret
-	}
+//   type StorageSecret struct {
+//     apimodel.StorageSecret
+//   }
 
-	return getField(a.StorageSecret, field)
-}
+//   return getField(a.StorageSecret, field)
+// }
 
-func displaySecrets(items []*apimodel.StorageSecret, format string) {
-	var secrets StorageSecretsBody
+// func displaySecrets(items *[]koyeb.Secret, format string) {
+// secrets := &SecretsTable{items}
 
-	for _, item := range items {
-		secrets.Secrets = append(secrets.Secrets, StorageSecret{*item})
-	}
-	render(&secrets, format)
-}
+// for _, item := range items {
+//   secrets.Secrets = append(secrets.Secrets, StorageSecret{*item})
+// }
+// render(secrets, format)
+// }
 
-func getSecrets(cmd *cobra.Command, args []string) error {
+func getSecretsFormat(cmd *cobra.Command, args []string, format string) error {
 	client := getApiClient()
+	ctx := getAuth(context.Background())
 
-	var all []*apimodel.StorageSecret
-
-	if len(args) > 0 {
-		for _, arg := range args {
-			p := secrets.NewSecretsGetSecretParams()
-			p.ID = arg
-			resp, err := client.Secrets.SecretsGetSecret(p, getAuth())
-			if err != nil {
-				logApiError(err)
-				continue
-			}
-			log.Debugf("got response: %v", resp)
-			all = append([]*apimodel.StorageSecret{resp.GetPayload().Secret}, all...)
+	for _, arg := range args {
+		res, _, err := client.SecretsApi.GetSecret(ctx, arg).Execute()
+		if err != nil {
+			logApiError(err)
 		}
 
-	} else {
-		page := 0
-		limit := 10
-		offset := 0
-
-		for {
-			p := secrets.NewSecretsListSecretsParams()
-			strLimit := fmt.Sprintf("%d", limit)
-			p.SetLimit(&strLimit)
-			strOffset := fmt.Sprintf("%d", offset)
-			p.SetOffset(&strOffset)
-
-			resp, err := client.Secrets.SecretsListSecrets(p, getAuth())
-			if err != nil {
-				fatalApiError(err)
-			}
-			log.Debugf("got response: %v", resp)
-			all = append(resp.GetPayload().Secrets, all...)
-			page += 1
-			offset = page * limit
-			if int64(offset) >= resp.GetPayload().Count {
-				break
-			}
-		}
-
+		render(format, &GetSecretReply{res})
 	}
+
+	return nil
+}
+
+func listSecretsFormat(cmd *cobra.Command, args []string, format string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	res, _, err := client.SecretsApi.ListSecrets(ctx).Execute()
+	if err != nil {
+		logApiError(err)
+	}
+
+	render(format, &ListSecretsReply{res})
+
+	return nil
+}
+
+func listSecrets(cmd *cobra.Command, args []string) error {
 	format := "table"
-	if cmd.Parent().Name() == "describe" {
-		format = "yaml"
-	}
-	displaySecrets(all, format)
-
-	return nil
+	return listSecretsFormat(cmd, args, format)
 }
 
-func createSecrets(cmd *cobra.Command, args []string) error {
-	var all StorageSecretsBody
-
-	log.Debugf("Loading file %s", file)
-	err := loadMultiple(file, &all, "secrets")
-	if err != nil {
-		er(err)
+func describeSecrets(cmd *cobra.Command, args []string) error {
+	format := "yaml"
+	if len(args) == 0 {
+		return listSecretsFormat(cmd, args, format)
 	}
-	log.Debugf("Content loaded %v", all.Secrets)
-
-	client := getApiClient()
-	for _, secret := range all.Secrets {
-		p := secrets.NewSecretsNewSecretParams()
-		p.SetBody(secret.GetNewBody())
-		resp, err := client.Secrets.SecretsNewSecret(p, getAuth())
-		if err != nil {
-			logApiError(err)
-			continue
-		}
-		log.Debugf("got response: %v", resp)
-	}
-	return nil
+	return getSecretsFormat(cmd, args, format)
 }
 
-func updateSecrets(cmd *cobra.Command, args []string) error {
-	var all StorageSecretsBody
+// func createSecrets(cmd *cobra.Command, args []string) error {
+//   var all StorageSecretsBody
 
-	log.Debugf("Loading file %s", file)
-	err := loadMultiple(file, &all, "secrets")
-	if err != nil {
-		er(err)
-	}
-	log.Debugf("Content loaded %v", all.Secrets)
+//   log.Debugf("Loading file %s", file)
+//   err := loadMultiple(file, &all, "secrets")
+//   if err != nil {
+//     er(err)
+//   }
+//   log.Debugf("Content loaded %v", all.Secrets)
 
-	client := getApiClient()
-	for _, st := range all.Secrets {
-		p := secrets.NewSecretsUpdateSecretParams()
-		updateBody := st.GetUpdateBody()
-		if updateBody.ID != "" {
-			p.SetID(updateBody.ID)
-		} else {
-			p.SetID(updateBody.Name)
-		}
-		p.SetBody(st.GetUpdateBody())
-		resp, err := client.Secrets.SecretsUpdateSecret(p, getAuth())
-		if err != nil {
-			logApiError(err)
-			continue
-		}
-		log.Debugf("got response: %v", resp)
-	}
-	return nil
-}
+//   client := getApiClient()
+//   for _, secret := range all.Secrets {
+//     p := secrets.NewSecretsNewSecretParams()
+//     p.SetBody(secret.GetNewBody())
+//     resp, err := client.Secrets.SecretsNewSecret(p, getAuth())
+//     if err != nil {
+//       logApiError(err)
+//       continue
+//     }
+//     log.Debugf("got response: %v", resp)
+//   }
+//   return nil
+// }
 
-func deleteSecrets(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
+// func updateSecrets(cmd *cobra.Command, args []string) error {
+//   var all StorageSecretsBody
 
-	if len(args) > 0 {
-		for _, arg := range args {
-			p := secrets.NewSecretsDeleteSecretParams()
-			p.ID = arg
-			resp, err := client.Secrets.SecretsDeleteSecret(p, getAuth())
-			if err != nil {
-				logApiError(err)
-				continue
-			}
-			log.Debugf("got response: %v", resp)
-			log.Infof("Secret %s deleted", p.ID)
-		}
-	}
-	return nil
-}
+//   log.Debugf("Loading file %s", file)
+//   err := loadMultiple(file, &all, "secrets")
+//   if err != nil {
+//     er(err)
+//   }
+//   log.Debugf("Content loaded %v", all.Secrets)
+
+//   client := getApiClient()
+//   for _, st := range all.Secrets {
+//     p := secrets.NewSecretsUpdateSecretParams()
+//     updateBody := st.GetUpdateBody()
+//     if updateBody.ID != "" {
+//       p.SetID(updateBody.ID)
+//     } else {
+//       p.SetID(updateBody.Name)
+//     }
+//     p.SetBody(st.GetUpdateBody())
+//     resp, err := client.Secrets.SecretsUpdateSecret(p, getAuth())
+//     if err != nil {
+//       logApiError(err)
+//       continue
+//     }
+//     log.Debugf("got response: %v", resp)
+//   }
+//   return nil
+// }
+
+// func deleteSecrets(cmd *cobra.Command, args []string) error {
+//   client := getApiClient()
+
+//   if len(args) > 0 {
+//     for _, arg := range args {
+//       p := secrets.NewSecretsDeleteSecretParams()
+//       p.ID = arg
+//       resp, err := client.Secrets.SecretsDeleteSecret(p, getAuth())
+//       if err != nil {
+//         logApiError(err)
+//         continue
+//       }
+//       log.Debugf("got response: %v", resp)
+//       log.Infof("Secret %s deleted", p.ID)
+//     }
+//   }
+//   return nil
+// }

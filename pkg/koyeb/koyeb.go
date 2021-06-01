@@ -26,10 +26,10 @@ var (
 		Use:   "koyeb",
 		Short: "Koyeb cli",
 	}
-	initCmd = &cobra.Command{
-		Use:   "init",
-		Short: "Init configuration",
-		Run:   Init,
+	loginCmd = &cobra.Command{
+		Use:   "login",
+		Short: "Login to your Koyeb account",
+		Run:   Login,
 	}
 	versionCmd = &cobra.Command{
 		Use:   "version",
@@ -37,41 +37,41 @@ var (
 		Run:   PrintVersion,
 	}
 
-	getCmd = &cobra.Command{
-		Use:     "get [resource]",
-		Aliases: []string{"g", "list"},
-		Short:   "Display one or many resources",
-	}
-	describeCmd = &cobra.Command{
-		Use:     "describe [resource]",
-		Aliases: []string{"d", "desc", "show"},
-		Short:   "Display one resources",
-	}
-	updateCmd = &cobra.Command{
-		Use:     "update [resource]",
-		Aliases: []string{"u", "update", "edit"},
-		Short:   "Update one resources",
-	}
-	createCmd = &cobra.Command{
-		Use:     "create [resource]",
-		Aliases: []string{"c", "new"},
-		Short:   "Create a resource from a file",
-	}
-	deleteCmd = &cobra.Command{
-		Use:     "delete [resource]",
-		Aliases: []string{"del", "rm"},
-		Short:   "Delete resources by name and id",
-	}
-	logCmd = &cobra.Command{
-		Use:     "logs [resource]",
-		Aliases: []string{"l", "log"},
-		Short:   "Get the log of one resources",
-	}
-	invokeCmd = &cobra.Command{
-		Use:     "invoke [resource]",
-		Aliases: []string{"i"},
-		Short:   "Invoke a function",
-	}
+	// getCmd = &cobra.Command{
+	//   Use:     "get [resource]",
+	//   Aliases: []string{"g", "list"},
+	//   Short:   "Display one or many resources",
+	// }
+	// describeCmd = &cobra.Command{
+	//   Use:     "describe [resource]",
+	//   Aliases: []string{"d", "desc", "show"},
+	//   Short:   "Display one resources",
+	// }
+	// updateCmd = &cobra.Command{
+	//   Use:     "update [resource]",
+	//   Aliases: []string{"u", "update", "edit"},
+	//   Short:   "Update one resources",
+	// }
+	// createCmd = &cobra.Command{
+	//   Use:     "create [resource]",
+	//   Aliases: []string{"c", "new"},
+	//   Short:   "Create a resource from a file",
+	// }
+	// deleteCmd = &cobra.Command{
+	//   Use:     "delete [resource]",
+	//   Aliases: []string{"del", "rm"},
+	//   Short:   "Delete resources by name and id",
+	// }
+	// logCmd = &cobra.Command{
+	//   Use:     "logs [resource]",
+	//   Aliases: []string{"l", "log"},
+	//   Short:   "Get the log of one resources",
+	// }
+	// invokeCmd = &cobra.Command{
+	//   Use:     "invoke [resource]",
+	//   Aliases: []string{"i"},
+	//   Short:   "Invoke a function",
+	// }
 )
 
 func notImplemented(cmd *cobra.Command, args []string) error {
@@ -119,80 +119,83 @@ func init() {
 	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(completionCmd)
 
+	// Secret
+	rootCmd.AddCommand(NewSecretCmd())
+
 	// Create
-	rootCmd.AddCommand(createCmd)
-	createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
-	createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createCmd.AddCommand(createStackCommand)
-	createStackRevisionCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createStackRevisionCommand.Flags().StringVarP(&stackRevisionMessage, "message", "m", "", "Message")
-	createStackRevisionCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createStackRevisionCommand)
-	createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createStoreCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createStoreCommand)
-	createSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createSecretCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createSecretCommand)
-	createConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	createConnectorCommand.MarkFlagRequired("file")
-	createCmd.AddCommand(createConnectorCommand)
+	// rootCmd.AddCommand(createCmd)
+	// createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
+	// createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// createCmd.AddCommand(createStackCommand)
+	// createStackRevisionCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// createStackRevisionCommand.Flags().StringVarP(&stackRevisionMessage, "message", "m", "", "Message")
+	// createStackRevisionCommand.MarkFlagRequired("file")
+	// createCmd.AddCommand(createStackRevisionCommand)
+	// createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// createStoreCommand.MarkFlagRequired("file")
+	// createCmd.AddCommand(createStoreCommand)
+	// createSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// createSecretCommand.MarkFlagRequired("file")
+	// createCmd.AddCommand(createSecretCommand)
+	// createConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// createConnectorCommand.MarkFlagRequired("file")
+	// createCmd.AddCommand(createConnectorCommand)
 
 	// Get
-	rootCmd.AddCommand(getCmd)
-	getCmd.AddCommand(getAllCommand)
-	getCmd.AddCommand(getStackCommand)
-	getCmd.AddCommand(getStackRevisionCommand)
-	getCmd.AddCommand(getStackFunctionCommand)
-	getCmd.AddCommand(getStoreCommand)
-	getCmd.AddCommand(getSecretCommand)
-	getCmd.AddCommand(getConnectorCommand)
+	// rootCmd.AddCommand(getCmd)
+	// getCmd.AddCommand(getAllCommand)
+	// getCmd.AddCommand(getStackCommand)
+	// getCmd.AddCommand(getStackRevisionCommand)
+	// getCmd.AddCommand(getStackFunctionCommand)
+	// getCmd.AddCommand(getStoreCommand)
+	// getCmd.AddCommand(getSecretCommand)
+	// getCmd.AddCommand(getConnectorCommand)
 
 	// Describe
-	rootCmd.AddCommand(describeCmd)
-	describeCmd.AddCommand(describeStackCommand)
-	describeCmd.AddCommand(describeStackRevisionCommand)
-	describeCmd.AddCommand(describeStackFunctionCommand)
-	describeCmd.AddCommand(describeStoreCommand)
-	describeCmd.AddCommand(describeSecretCommand)
-	describeCmd.AddCommand(describeConnectorCommand)
+	// rootCmd.AddCommand(describeCmd)
+	// describeCmd.AddCommand(describeStackCommand)
+	// describeCmd.AddCommand(describeStackRevisionCommand)
+	// describeCmd.AddCommand(describeStackFunctionCommand)
+	// describeCmd.AddCommand(describeStoreCommand)
+	// describeCmd.AddCommand(describeSecretCommand)
+	// describeCmd.AddCommand(describeConnectorCommand)
 
 	// Update
-	rootCmd.AddCommand(updateCmd)
-	updateStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	updateStackCommand.MarkFlagRequired("file")
-	updateCmd.AddCommand(updateStackCommand)
-	updateStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	updateStoreCommand.MarkFlagRequired("file")
-	updateCmd.AddCommand(updateStoreCommand)
-	updateSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	updateSecretCommand.MarkFlagRequired("file")
-	updateCmd.AddCommand(updateSecretCommand)
-	updateConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	updateConnectorCommand.MarkFlagRequired("file")
-	updateCmd.AddCommand(updateConnectorCommand)
+	// rootCmd.AddCommand(updateCmd)
+	// updateStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// updateStackCommand.MarkFlagRequired("file")
+	// updateCmd.AddCommand(updateStackCommand)
+	// updateStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// updateStoreCommand.MarkFlagRequired("file")
+	// updateCmd.AddCommand(updateStoreCommand)
+	// updateSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// updateSecretCommand.MarkFlagRequired("file")
+	// updateCmd.AddCommand(updateSecretCommand)
+	// updateConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
+	// updateConnectorCommand.MarkFlagRequired("file")
+	// updateCmd.AddCommand(updateConnectorCommand)
 
 	// Delete
-	rootCmd.AddCommand(deleteCmd)
-	deleteCmd.AddCommand(deleteStackCommand)
-	deleteCmd.AddCommand(deleteStoreCommand)
-	deleteCmd.AddCommand(deleteSecretCommand)
-	deleteCmd.AddCommand(deleteConnectorCommand)
+	// rootCmd.AddCommand(deleteCmd)
+	// deleteCmd.AddCommand(deleteStackCommand)
+	// deleteCmd.AddCommand(deleteStoreCommand)
+	// deleteCmd.AddCommand(deleteSecretCommand)
+	// deleteCmd.AddCommand(deleteConnectorCommand)
 
 	// Logs
-	rootCmd.AddCommand(logCmd)
-	logCmd.AddCommand(logsStackFunctionCommand)
-	logCmd.AddCommand(logsStackEventsCommand)
+	// rootCmd.AddCommand(logCmd)
+	// logCmd.AddCommand(logsStackFunctionCommand)
+	// logCmd.AddCommand(logsStackEventsCommand)
 
 	// Run
-	rootCmd.AddCommand(invokeCmd)
-	invokeCmd.AddCommand(invokeStackFunctionCommand)
-	invokeStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
-	invokeStackFunctionCommand.PersistentFlags().BoolVarP(&tailFunctionLog, "tail", "t", false, "tail log")
+	// rootCmd.AddCommand(invokeCmd)
+	// invokeCmd.AddCommand(invokeStackFunctionCommand)
+	// invokeStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
+	// invokeStackFunctionCommand.PersistentFlags().BoolVarP(&tailFunctionLog, "tail", "t", false, "tail log")
 }
 
 func initConfig() {
@@ -221,7 +224,7 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Error("Configuration not found, use `koyeb init` to create a new one, or use `--config`.")
+			log.Error("Configuration not found, use `koyeb login` to create a new one, or use `--config`.")
 		} else {
 			er(err)
 		}

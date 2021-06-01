@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,30 +12,28 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime"
-	httptransport "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/strfmt"
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
-
-	apiclient "github.com/koyeb/koyeb-cli/pkg/gen/kclient/client"
-	apimodel "github.com/koyeb/koyeb-cli/pkg/gen/kclient/models"
 )
 
-func getApiClient() *apiclient.KoyebRest {
+func getApiClient() *koyeb.APIClient {
 	u, err := url.Parse(apiurl)
 	if err != nil {
 		er(err)
 	}
 
 	log.Debugf("Using host: %s using %s", u.Host, u.Scheme)
-	transport := httptransport.New(u.Host, "", []string{u.Scheme})
-	transport.SetDebug(debug)
 
-	return apiclient.New(transport, strfmt.Default)
+	config := koyeb.NewConfiguration()
+	config.Servers[0].URL = u.String()
+	config.Debug = debug
+
+	return koyeb.NewAPIClient(config)
 }
 
-func getAuth() runtime.ClientAuthInfoWriter {
-	return httptransport.BearerToken(token)
+func getAuth(ctx context.Context) context.Context {
+	return context.WithValue(ctx, koyeb.ContextAccessToken, token)
 }
 
 type UpdateApiResources interface {
@@ -52,49 +51,54 @@ type ApiResources interface {
 	MarshalBinary() ([]byte, error)
 }
 
-func render(item ApiResources, defaultFormat string) {
+func render(defaultFormat string, items ...ApiResources) {
 	format := defaultFormat
 	if outputFormat != "" {
 		format = outputFormat
 	}
 
-	switch format {
-	case "yaml":
-		buf, err := item.MarshalBinary()
-		if err != nil {
-			er(err)
+	for idx, item := range items {
+		switch format {
+		case "yaml":
+			if idx < len(items) {
+				fmt.Printf("---\n")
+			}
+			buf, err := item.MarshalBinary()
+			if err != nil {
+				er(err)
+			}
+			y, err := yaml.JSONToYAML(buf)
+			if err != nil {
+				fmt.Printf("err: %v\n", err)
+				return
+			}
+			fmt.Println(string(y))
+		case "json":
+			buf, err := item.MarshalBinary()
+			if err != nil {
+				er(err)
+			}
+			fmt.Println(string(buf))
+		case "table":
+			tableInfo := item.GetTable()
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader(tableInfo.headers)
+			table.SetAutoWrapText(false)
+			table.SetAutoFormatHeaders(true)
+			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAlignment(tablewriter.ALIGN_LEFT)
+			table.SetCenterSeparator("")
+			table.SetColumnSeparator("")
+			table.SetRowSeparator("")
+			table.SetHeaderLine(false)
+			table.SetBorder(false)
+			table.SetTablePadding("\t")
+			table.SetNoWhiteSpace(true)
+			table.AppendBulk(tableInfo.fields)
+			table.Render()
+		default:
+			er("Invalid format")
 		}
-		y, err := yaml.JSONToYAML(buf)
-		if err != nil {
-			fmt.Printf("err: %v\n", err)
-			return
-		}
-		fmt.Println(string(y))
-	case "json":
-		buf, err := item.MarshalBinary()
-		if err != nil {
-			er(err)
-		}
-		fmt.Println(string(buf))
-	case "table":
-		tableInfo := item.GetTable()
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(tableInfo.headers)
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
-		table.AppendBulk(tableInfo.fields)
-		table.Render()
-	default:
-		er("Invalid format")
 	}
 }
 
@@ -126,10 +130,8 @@ func getField(item interface{}, field string) string {
 }
 
 type CommonErrorInterface interface {
-	GetPayload() *apimodel.CommonError
 }
 type CommonErrorWithFieldInterface interface {
-	GetPayload() *apimodel.CommonErrorWithFields
 }
 
 func logApiError(err error) {
@@ -143,17 +145,17 @@ func fatalApiError(err error) {
 func renderApiError(err error, errorFn func(string, ...interface{})) {
 
 	switch er := err.(type) {
-	case CommonErrorInterface:
-		log.Debug(er)
-		payload := er.GetPayload()
-		errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
-	case CommonErrorWithFieldInterface:
-		log.Debug(er)
-		payload := er.GetPayload()
-		for _, f := range payload.Fields {
-			log.Errorf("Error on field %s: %s", f.Field, f.Description)
-		}
-		errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
+	// case CommonErrorInterface:
+	//   log.Debug(er)
+	//   payload := er.GetPayload()
+	//   errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
+	// case CommonErrorWithFieldInterface:
+	//   log.Debug(er)
+	//   payload := er.GetPayload()
+	//   for _, f := range payload.Fields {
+	//     log.Errorf("Error on field %s: %s", f.Field, f.Description)
+	//   }
+	//   errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 	case *runtime.APIError:
 		e := er.Response.(runtime.ClientResponse)
 		if debug {
