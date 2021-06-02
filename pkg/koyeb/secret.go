@@ -2,7 +2,7 @@ package koyeb
 
 import (
 	"context"
-	// "fmt"
+	"fmt"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +41,8 @@ var (
 )
 
 func NewSecretCmd() *cobra.Command {
+	h := NewSecretHandler()
+
 	secretCmd := &cobra.Command{
 		Use:     "secrets [action]",
 		Aliases: []string{"s", "secret"},
@@ -57,23 +59,96 @@ func NewSecretCmd() *cobra.Command {
 	getSecretCmd := &cobra.Command{
 		Use:   "get [name]",
 		Short: "Get secret",
-		RunE:  getSecrets,
+		RunE:  h.Get,
 	}
 	secretCmd.AddCommand(getSecretCmd)
 
 	listSecretCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List secrets",
-		RunE:  listSecrets,
+		RunE:  h.List,
 	}
 	secretCmd.AddCommand(listSecretCmd)
 	describeSecretCmd := &cobra.Command{
 		Use:   "describe [name]",
 		Short: "Describe secrets",
-		RunE:  describeSecrets,
+		RunE:  h.Describe,
 	}
 	secretCmd.AddCommand(describeSecretCmd)
 	return secretCmd
+}
+
+func NewSecretHandler() *SecretHandler {
+	return &SecretHandler{}
+}
+
+type SecretHandler struct {
+}
+
+func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
+	format := "table"
+	if len(args) == 0 {
+		return h.listFormat(cmd, args, format)
+	}
+	return h.getFormat(cmd, args, format)
+}
+
+func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
+	format := "yaml"
+	if len(args) == 0 {
+		return h.listFormat(cmd, args, format)
+	}
+	return h.getFormat(cmd, args, format)
+}
+
+func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
+	format := "table"
+	return h.listFormat(cmd, args, format)
+}
+
+func (h *SecretHandler) getFormat(cmd *cobra.Command, args []string, format string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	var items []ApiResources
+	for _, arg := range args {
+		res, _, err := client.SecretsApi.GetSecret(ctx, arg).Execute()
+		if err != nil {
+			logApiError(err)
+		}
+		items = append(items, &GetSecretReply{res})
+	}
+
+	render(format, items...)
+
+	return nil
+}
+
+func (h *SecretHandler) listFormat(cmd *cobra.Command, args []string, format string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	var items []ApiResources
+
+	page := 0
+	offset := 0
+	limit := 10
+	for {
+		res, _, err := client.SecretsApi.ListSecrets(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		if err != nil {
+			logApiError(err)
+		}
+		items = append(items, &ListSecretsReply{res})
+		page += 1
+		offset = page * limit
+		if int64(offset) >= res.GetCount() {
+			break
+		}
+	}
+
+	render(format, items...)
+
+	return nil
 }
 
 type GetSecretReply struct {
@@ -93,7 +168,7 @@ func (a *GetSecretReply) GetTableValues() [][]string {
 	item := a.GetSecret()
 	var fields []string
 	for _, field := range a.GetTableHeaders() {
-		fields = append(fields, getField(item, field))
+		fields = append(fields, GetField(item, field))
 	}
 	res = append(res, fields)
 	return res
@@ -116,7 +191,7 @@ func (a *ListSecretsReply) GetTableValues() [][]string {
 	for _, item := range a.GetSecrets() {
 		var fields []string
 		for _, field := range a.GetTableHeaders() {
-			fields = append(fields, getField(item, field))
+			fields = append(fields, GetField(item, field))
 		}
 		res = append(res, fields)
 	}
@@ -165,59 +240,6 @@ func (a *ListSecretsReply) GetTableValues() [][]string {
 // }
 // render(secrets, format)
 // }
-
-func getSecretsFormat(cmd *cobra.Command, args []string, format string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	var items []ApiResources
-	for _, arg := range args {
-		res, _, err := client.SecretsApi.GetSecret(ctx, arg).Execute()
-		if err != nil {
-			logApiError(err)
-		}
-		items = append(items, &GetSecretReply{res})
-	}
-
-	render(format, items...)
-
-	return nil
-}
-
-func listSecretsFormat(cmd *cobra.Command, args []string, format string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	res, _, err := client.SecretsApi.ListSecrets(ctx).Execute()
-	if err != nil {
-		logApiError(err)
-	}
-
-	render(format, &ListSecretsReply{res})
-
-	return nil
-}
-
-func listSecrets(cmd *cobra.Command, args []string) error {
-	format := "table"
-	return listSecretsFormat(cmd, args, format)
-}
-
-func getSecrets(cmd *cobra.Command, args []string) error {
-	format := "table"
-	if len(args) == 0 {
-		return listSecretsFormat(cmd, args, format)
-	}
-	return getSecretsFormat(cmd, args, format)
-}
-
-func describeSecrets(cmd *cobra.Command, args []string) error {
-	format := "yaml"
-	if len(args) == 0 {
-		return listSecretsFormat(cmd, args, format)
-	}
-	return getSecretsFormat(cmd, args, format)
-}
 
 // func createSecrets(cmd *cobra.Command, args []string) error {
 //   var all StorageSecretsBody

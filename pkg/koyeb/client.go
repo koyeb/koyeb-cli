@@ -108,7 +108,7 @@ func render(defaultFormat string, items ...ApiResources) {
 	}
 }
 
-func getField(item interface{}, field string) string {
+func GetField(item interface{}, field string) string {
 	// Ugly but simple and generic
 	val := reflect.ValueOf(item)
 	t := val.Type()
@@ -127,7 +127,7 @@ func getField(item interface{}, field string) string {
 
 		spl := strings.Split(field, ".")
 		if spl[0] == fieldName && len(spl) > 1 {
-			return getField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
+			return GetField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
 		}
 
 	}
