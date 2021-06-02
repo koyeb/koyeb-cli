@@ -92,6 +92,9 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 	ctx := getAuth(context.Background())
 
 	createSecret.SetName(args[0])
+	if !cmd.LocalFlags().Lookup("value-from-stdin").Changed || !cmd.LocalFlags().Lookup("value").Changed {
+		log.Fatalf("You must set a value (using --value or --value-from-stdin)")
+	}
 	if cmd.LocalFlags().Lookup("value-from-stdin").Changed && cmd.LocalFlags().Lookup("value").Changed {
 		log.Fatalf("Cannot use value and value-from-stdin at the same time")
 	}
