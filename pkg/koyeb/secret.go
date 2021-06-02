@@ -122,7 +122,7 @@ func (h *SecretHandler) getFormat(cmd *cobra.Command, args []string, format stri
 	for _, arg := range args {
 		res, _, err := client.SecretsApi.GetSecret(ctx, arg).Execute()
 		if err != nil {
-			logApiError(err)
+			fatalApiError(err)
 		}
 		items = append(items, &GetSecretReply{res})
 	}
@@ -144,7 +144,7 @@ func (h *SecretHandler) listFormat(cmd *cobra.Command, args []string, format str
 	for {
 		res, _, err := client.SecretsApi.ListSecrets(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
 		if err != nil {
-			logApiError(err)
+			fatalApiError(err)
 		}
 		items = append(items, &ListSecretsReply{res})
 		page += 1
@@ -205,76 +205,3 @@ func (a *ListSecretsReply) GetTableValues() [][]string {
 	}
 	return res
 }
-
-// func createSecrets(cmd *cobra.Command, args []string) error {
-//   var all StorageSecretsBody
-
-//   log.Debugf("Loading file %s", file)
-//   err := loadMultiple(file, &all, "secrets")
-//   if err != nil {
-//     er(err)
-//   }
-//   log.Debugf("Content loaded %v", all.Secrets)
-
-//   client := getApiClient()
-//   for _, secret := range all.Secrets {
-//     p := secrets.NewSecretsNewSecretParams()
-//     p.SetBody(secret.GetNewBody())
-//     resp, err := client.Secrets.SecretsNewSecret(p, getAuth())
-//     if err != nil {
-//       logApiError(err)
-//       continue
-//     }
-//     log.Debugf("got response: %v", resp)
-//   }
-//   return nil
-// }
-
-// func updateSecrets(cmd *cobra.Command, args []string) error {
-//   var all StorageSecretsBody
-
-//   log.Debugf("Loading file %s", file)
-//   err := loadMultiple(file, &all, "secrets")
-//   if err != nil {
-//     er(err)
-//   }
-//   log.Debugf("Content loaded %v", all.Secrets)
-
-//   client := getApiClient()
-//   for _, st := range all.Secrets {
-//     p := secrets.NewSecretsUpdateSecretParams()
-//     updateBody := st.GetUpdateBody()
-//     if updateBody.ID != "" {
-//       p.SetID(updateBody.ID)
-//     } else {
-//       p.SetID(updateBody.Name)
-//     }
-//     p.SetBody(st.GetUpdateBody())
-//     resp, err := client.Secrets.SecretsUpdateSecret(p, getAuth())
-//     if err != nil {
-//       logApiError(err)
-//       continue
-//     }
-//     log.Debugf("got response: %v", resp)
-//   }
-//   return nil
-// }
-
-// func deleteSecrets(cmd *cobra.Command, args []string) error {
-//   client := getApiClient()
-
-//   if len(args) > 0 {
-//     for _, arg := range args {
-//       p := secrets.NewSecretsDeleteSecretParams()
-//       p.ID = arg
-//       resp, err := client.Secrets.SecretsDeleteSecret(p, getAuth())
-//       if err != nil {
-//         logApiError(err)
-//         continue
-//       }
-//       log.Debugf("got response: %v", resp)
-//       log.Infof("Secret %s deleted", p.ID)
-//     }
-//   }
-//   return nil
-// }
