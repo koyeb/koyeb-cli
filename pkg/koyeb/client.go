@@ -12,9 +12,12 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime"
+	"github.com/iancoleman/strcase"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func getApiClient() *koyeb.APIClient {
@@ -183,4 +186,16 @@ func renderApiError(err error, errorFn func(string, ...interface{})) {
 			errorFn("%v", err)
 		}
 	}
+}
+
+func SyncFlags(cmd *cobra.Command, args []string, i interface{}) {
+	cmd.LocalFlags().VisitAll(
+		func(flag *pflag.Flag) {
+			if !flag.Changed {
+				return
+			}
+			funcName := fmt.Sprintf("Set%s", strcase.ToCamel(flag.Name))
+			meth := reflect.ValueOf(i).MethodByName(funcName)
+			meth.Call([]reflect.Value{reflect.ValueOf(flag.Value.String())})
+		})
 }

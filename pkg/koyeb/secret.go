@@ -7,38 +7,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-// createSecretCommand = &cobra.Command{
-//   Use:     "secrets [resource]",
-//   Aliases: []string{"secret"},
-//   Short:   "Create secrets",
-//   RunE:    createSecrets,
+// type stringValue *string
+
+// func newStringValue(val string, p *string) stringValue {
+//   *p = val
+//   return (*stringValue)(p)
 // }
-// getSecretCommand = &cobra.Command{
-//   Use:     "secrets [resource]",
-//   Aliases: []string{"secret"},
-//   Short:   "Get secrets",
-//   RunE:    getSecrets,
+
+// func (s stringValue) Set(val string) error {
+//   *s = stringValue(val)
+//   return nil
 // }
-// describeSecretCommand = &cobra.Command{
-//   Use:     "secrets [resource]",
-//   Aliases: []string{"secret"},
-//   Short:   "Describe secrets",
-//   RunE:    getSecrets,
+// func (s stringValue) Type() string {
+//   return "string"
 // }
-// updateSecretCommand = &cobra.Command{
-//   Use:     "secrets [resource]",
-//   Aliases: []string{"secret"},
-//   Short:   "Update secrets",
-//   RunE:    updateSecrets,
+
+// func (s *stringValue) String() string { return string(*s) }
+
+// StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
+// func (f *pflag.FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string) {
 // }
-// deleteSecretCommand = &cobra.Command{
-//   Use:     "secrets [resource]",
-//   Aliases: []string{"secret"},
-//   Short:   "Delete secrets",
-//   RunE:    deleteSecrets,
-// }
-)
 
 func NewSecretCmd() *cobra.Command {
 	h := NewSecretHandler()
@@ -52,8 +40,15 @@ func NewSecretCmd() *cobra.Command {
 	createSecretCmd := &cobra.Command{
 		Use:   "create [name]",
 		Short: "Create secrets",
-		// RunE:    createSecrets,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			createSecret := koyeb.NewCreateSecretWithDefaults()
+			SyncFlags(cmd, args, createSecret)
+			return h.Create(cmd, args, createSecret)
+		},
 	}
+	createSecretCmd.Flags().StringP("value", "v", "", "Secret Value")
+	// createSecretCmd.Flags().VarP(newStringValue("", h.secret.Value), "value", "v", "Secret value")
 	secretCmd.AddCommand(createSecretCmd)
 
 	getSecretCmd := &cobra.Command{
@@ -83,6 +78,18 @@ func NewSecretHandler() *SecretHandler {
 }
 
 type SecretHandler struct {
+}
+
+func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *koyeb.CreateSecret) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	createSecret.SetName(args[0])
+	_, _, err := client.SecretsApi.CreateSecret(ctx).Body(*createSecret).Execute()
+	if err != nil {
+		logApiError(err)
+	}
+	return nil
 }
 
 func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
@@ -197,49 +204,6 @@ func (a *ListSecretsReply) GetTableValues() [][]string {
 	}
 	return res
 }
-
-// func (a *StorageSecretsBody) New() interface{} {
-//   return &apimodel.StorageSecret{}
-// }
-
-// func (a *StorageSecretsBody) Append(item interface{}) {
-//   secret := item.(*apimodel.StorageSecret)
-//   a.Secrets = append(a.Secrets, StorageSecret{*secret})
-// }
-
-// type StorageSecret struct {
-//   apimodel.StorageSecret
-// }
-
-// func (a StorageSecret) GetNewBody() *apimodel.StorageNewSecret {
-//   newBody := apimodel.StorageNewSecret{}
-//   copier.Copy(&newBody, &a.StorageSecret)
-//   return &newBody
-// }
-
-// func (a StorageSecret) GetUpdateBody() *apimodel.StorageSecret {
-//   updateBody := apimodel.StorageSecret{}
-//   copier.Copy(&updateBody, &a.StorageSecret)
-//   return &updateBody
-// }
-
-// func (a StorageSecret) GetField(field string) string {
-
-//   type StorageSecret struct {
-//     apimodel.StorageSecret
-//   }
-
-//   return getField(a.StorageSecret, field)
-// }
-
-// func displaySecrets(items *[]koyeb.Secret, format string) {
-// secrets := &SecretsTable{items}
-
-// for _, item := range items {
-//   secrets.Secrets = append(secrets.Secrets, StorageSecret{*item})
-// }
-// render(secrets, format)
-// }
 
 // func createSecrets(cmd *cobra.Command, args []string) error {
 //   var all StorageSecretsBody
