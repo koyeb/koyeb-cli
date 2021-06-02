@@ -150,17 +150,18 @@ func fatalApiError(err error) {
 func renderApiError(err error, errorFn func(string, ...interface{})) {
 
 	switch er := err.(type) {
-	// case CommonErrorInterface:
-	//   log.Debug(er)
-	//   payload := er.GetPayload()
-	//   errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
-	// case CommonErrorWithFieldInterface:
-	//   log.Debug(er)
-	//   payload := er.GetPayload()
-	//   for _, f := range payload.Fields {
-	//     log.Errorf("Error on field %s: %s", f.Field, f.Description)
-	//   }
-	//   errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
+	case koyeb.GenericOpenAPIError:
+		switch mod := er.Model().(type) {
+		case koyeb.ErrorWithFields:
+			for _, f := range mod.GetFields() {
+				log.Errorf("Error on field %s: %s", f.GetField(), f.GetDescription())
+			}
+			errorFn("%s: status:%d code:%s", mod.GetMessage(), mod.GetStatus(), mod.GetCode())
+		case koyeb.Error:
+			errorFn("%s: status:%d code:%s", mod.GetMessage(), mod.GetStatus(), mod.GetCode())
+		default:
+			errorFn("Unhandled error %T: %s", mod, er.Error())
+		}
 	case *runtime.APIError:
 		e := er.Response.(runtime.ClientResponse)
 		if debug {
