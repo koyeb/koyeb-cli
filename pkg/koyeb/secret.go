@@ -55,6 +55,20 @@ func NewSecretCmd() *cobra.Command {
 	}
 	secretCmd.AddCommand(describeSecretCmd)
 
+	updateSecretCmd := &cobra.Command{
+		Use:   "update [name]",
+		Short: "Update secrets",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			updateSecret := koyeb.NewSecretWithDefaults()
+			SyncFlags(cmd, args, updateSecret)
+			return h.Update(cmd, args, updateSecret)
+		},
+	}
+	updateSecretCmd.Flags().StringP("value", "v", "", "Secret Value")
+	updateSecretCmd.Flags().Bool("value-from-stdin", false, "Secret Value from stdin")
+	secretCmd.AddCommand(updateSecretCmd)
+
 	deleteSecretCmd := &cobra.Command{
 		Use:   "delete [name]",
 		Short: "Delete secrets",
@@ -98,6 +112,36 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 		createSecret.SetValue(strings.Join(input, "\n"))
 	}
 	_, _, err := client.SecretsApi.CreateSecret(ctx).Body(*createSecret).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+	return nil
+}
+
+func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *koyeb.Secret) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	if cmd.LocalFlags().Lookup("value-from-stdin").Changed && cmd.LocalFlags().Lookup("value").Changed {
+		log.Fatalf("Cannot use value and value-from-stdin at the same time")
+	}
+	if cmd.LocalFlags().Lookup("value-from-stdin").Changed {
+		var input []string
+
+		scanner := bufio.NewScanner(os.Stdin)
+		for {
+			scanner.Scan()
+			text := scanner.Text()
+			if len(text) != 0 {
+				input = append(input, text)
+			} else {
+				break
+			}
+		}
+
+		updateSecret.SetValue(strings.Join(input, "\n"))
+	}
+	_, _, err := client.SecretsApi.UpdateSecret2(ctx, args[0]).Body(*updateSecret).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
