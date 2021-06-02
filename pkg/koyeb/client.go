@@ -196,6 +196,10 @@ func SyncFlags(cmd *cobra.Command, args []string, i interface{}) {
 			}
 			funcName := fmt.Sprintf("Set%s", strcase.ToCamel(flag.Name))
 			meth := reflect.ValueOf(i).MethodByName(funcName)
+			if !meth.IsValid() {
+				log.Debugf("Unable to find setter %s on %T\n", funcName, i)
+				return
+			}
 			meth.Call([]reflect.Value{reflect.ValueOf(flag.Value.String())})
 		})
 }

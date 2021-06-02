@@ -1,10 +1,14 @@
 package koyeb
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 )
 
 func NewSecretCmd() *cobra.Command {
@@ -27,6 +31,7 @@ func NewSecretCmd() *cobra.Command {
 		},
 	}
 	createSecretCmd.Flags().StringP("value", "v", "", "Secret Value")
+	createSecretCmd.Flags().Bool("value-from-stdin", false, "Secret Value from stdin")
 	secretCmd.AddCommand(createSecretCmd)
 
 	getSecretCmd := &cobra.Command{
@@ -73,6 +78,25 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 	ctx := getAuth(context.Background())
 
 	createSecret.SetName(args[0])
+	if cmd.LocalFlags().Lookup("value-from-stdin").Changed && cmd.LocalFlags().Lookup("value").Changed {
+		log.Fatalf("Cannot use value and value-from-stdin at the same time")
+	}
+	if cmd.LocalFlags().Lookup("value-from-stdin").Changed {
+		var input []string
+
+		scanner := bufio.NewScanner(os.Stdin)
+		for {
+			scanner.Scan()
+			text := scanner.Text()
+			if len(text) != 0 {
+				input = append(input, text)
+			} else {
+				break
+			}
+		}
+
+		createSecret.SetValue(strings.Join(input, "\n"))
+	}
 	_, _, err := client.SecretsApi.CreateSecret(ctx).Body(*createSecret).Execute()
 	if err != nil {
 		fatalApiError(err)
