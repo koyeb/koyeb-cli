@@ -103,7 +103,7 @@ func (h *SecretHandler) Delete(cmd *cobra.Command, args []string) error {
 	for _, arg := range args {
 		_, _, err := client.SecretsApi.DeleteSecret(ctx, arg).Execute()
 		if err != nil {
-			logApiError(err)
+			fatalApiError(err)
 		}
 	}
 	return nil
