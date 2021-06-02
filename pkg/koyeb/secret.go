@@ -7,27 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// type stringValue *string
-
-// func newStringValue(val string, p *string) stringValue {
-//   *p = val
-//   return (*stringValue)(p)
-// }
-
-// func (s stringValue) Set(val string) error {
-//   *s = stringValue(val)
-//   return nil
-// }
-// func (s stringValue) Type() string {
-//   return "string"
-// }
-
-// func (s *stringValue) String() string { return string(*s) }
-
-// StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
-// func (f *pflag.FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string) {
-// }
-
 func NewSecretCmd() *cobra.Command {
 	h := NewSecretHandler()
 
@@ -48,7 +27,6 @@ func NewSecretCmd() *cobra.Command {
 		},
 	}
 	createSecretCmd.Flags().StringP("value", "v", "", "Secret Value")
-	// createSecretCmd.Flags().VarP(newStringValue("", h.secret.Value), "value", "v", "Secret value")
 	secretCmd.AddCommand(createSecretCmd)
 
 	getSecretCmd := &cobra.Command{
@@ -64,12 +42,22 @@ func NewSecretCmd() *cobra.Command {
 		RunE:  h.List,
 	}
 	secretCmd.AddCommand(listSecretCmd)
+
 	describeSecretCmd := &cobra.Command{
 		Use:   "describe [name]",
 		Short: "Describe secrets",
 		RunE:  h.Describe,
 	}
 	secretCmd.AddCommand(describeSecretCmd)
+
+	deleteSecretCmd := &cobra.Command{
+		Use:   "delete [name]",
+		Short: "Delete secrets",
+		Args:  cobra.MinimumNArgs(1),
+		RunE:  h.Delete,
+	}
+	secretCmd.AddCommand(deleteSecretCmd)
+
 	return secretCmd
 }
 
@@ -87,7 +75,7 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 	createSecret.SetName(args[0])
 	_, _, err := client.SecretsApi.CreateSecret(ctx).Body(*createSecret).Execute()
 	if err != nil {
-		logApiError(err)
+		fatalApiError(err)
 	}
 	return nil
 }
@@ -106,6 +94,19 @@ func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
 		return h.listFormat(cmd, args, format)
 	}
 	return h.getFormat(cmd, args, format)
+}
+
+func (h *SecretHandler) Delete(cmd *cobra.Command, args []string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	for _, arg := range args {
+		_, _, err := client.SecretsApi.DeleteSecret(ctx, arg).Execute()
+		if err != nil {
+			logApiError(err)
+		}
+	}
+	return nil
 }
 
 func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
