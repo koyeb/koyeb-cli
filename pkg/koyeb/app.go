@@ -6,7 +6,9 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/logrusorgru/aurora"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func NewAppCmd() *cobra.Command {
@@ -36,6 +38,21 @@ func NewAppCmd() *cobra.Command {
 		RunE:  h.Get,
 	}
 	appCmd.AddCommand(getAppCmd)
+
+	currentAppCmd := &cobra.Command{
+		Use:   "current",
+		Short: "Get current app",
+		RunE:  h.Current,
+	}
+	appCmd.AddCommand(currentAppCmd)
+
+	switchAppCmd := &cobra.Command{
+		Use:   "switch",
+		Short: "Set current app",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Switch,
+	}
+	appCmd.AddCommand(switchAppCmd)
 
 	listAppCmd := &cobra.Command{
 		Use:   "list",
@@ -78,6 +95,15 @@ func NewAppHandler() *AppHandler {
 	return &AppHandler{}
 }
 
+func getSelectedApp() string {
+	if selectedApp == "" {
+		log.Fatalf("No app selected, use: koyeb app switch <app>")
+		return ""
+	} else {
+		return selectedApp
+	}
+}
+
 type AppHandler struct {
 }
 
@@ -109,6 +135,29 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 		return h.listFormat(cmd, args, format)
 	}
 	return h.getFormat(cmd, args, format)
+}
+
+func (h *AppHandler) Switch(cmd *cobra.Command, args []string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+	res, _, err := client.AppsApi.GetApp(ctx, args[0]).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+	log.Infof("Switching app to %s %s", res.App.GetName(), res.App.GetId())
+	viper.Set("app", res.App.GetId())
+	err = viper.WriteConfig()
+	if err != nil {
+		er(err)
+	}
+	return nil
+}
+
+func (h *AppHandler) Current(cmd *cobra.Command, args []string) error {
+	format := getFormat("table")
+
+	app := getSelectedApp()
+	return h.getFormat(cmd, []string{app}, format)
 }
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {

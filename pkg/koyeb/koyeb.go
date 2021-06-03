@@ -21,6 +21,7 @@ var (
 	token        string
 	outputFormat string
 	debug        bool
+	selectedApp  string
 
 	rootCmd = &cobra.Command{
 		Use:   "koyeb",
@@ -112,6 +113,7 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv()
+	viper.SetEnvPrefix("koyeb")
 
 	// TODO check if no .koyeb.yaml or no --config file exists, if not, ask if we want to create a new one
 
@@ -128,4 +130,5 @@ func initConfig() {
 	apiurl = viper.GetString("url")
 	token = viper.GetString("token")
 	debug = viper.GetBool("debug")
+	selectedApp = viper.GetString("app")
 }
