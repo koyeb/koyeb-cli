@@ -191,14 +191,8 @@ func renderApiError(err error, errorFn func(string, ...interface{})) {
 		log.Debug(err)
 		errorFn("Unable to process server response")
 	default:
-		// Workarround for https://github.com/go-swagger/go-swagger/issues/1929
-		if strings.Contains(err.Error(), "is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface") {
-			log.Debug(err)
-			errorFn("Unable to process server response")
-		} else {
-			log.Debugf("Unhandled %T error: %v", err, err)
-			errorFn("%v", err)
-		}
+		log.Debugf("Unhandled %T error: %v", err, err)
+		errorFn("%v", err)
 	}
 }
 
