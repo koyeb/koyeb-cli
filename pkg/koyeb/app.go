@@ -190,7 +190,7 @@ func (a *GetAppReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *GetAppReply) GetTableHeaders() []string {
-	return []string{"id", "name", "updated_at"}
+	return []string{"id", "name", "domains", "updated_at"}
 }
 
 func (a *GetAppReply) GetTableValues() [][]string {
@@ -213,7 +213,7 @@ func (a *ListAppsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *ListAppsReply) GetTableHeaders() []string {
-	return []string{"id", "name", "updated_at"}
+	return []string{"id", "name", "domains", "updated_at"}
 }
 
 func (a *ListAppsReply) GetTableValues() [][]string {
