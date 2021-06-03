@@ -87,8 +87,8 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(completionCmd)
 
-	// Secret
 	rootCmd.AddCommand(NewSecretCmd())
+	rootCmd.AddCommand(NewAppCmd())
 }
 
 func initConfig() {
