@@ -36,42 +36,6 @@ var (
 		Short: "Get version",
 		Run:   PrintVersion,
 	}
-
-	// getCmd = &cobra.Command{
-	//   Use:     "get [resource]",
-	//   Aliases: []string{"g", "list"},
-	//   Short:   "Display one or many resources",
-	// }
-	// describeCmd = &cobra.Command{
-	//   Use:     "describe [resource]",
-	//   Aliases: []string{"d", "desc", "show"},
-	//   Short:   "Display one resources",
-	// }
-	// updateCmd = &cobra.Command{
-	//   Use:     "update [resource]",
-	//   Aliases: []string{"u", "update", "edit"},
-	//   Short:   "Update one resources",
-	// }
-	// createCmd = &cobra.Command{
-	//   Use:     "create [resource]",
-	//   Aliases: []string{"c", "new"},
-	//   Short:   "Create a resource from a file",
-	// }
-	// deleteCmd = &cobra.Command{
-	//   Use:     "delete [resource]",
-	//   Aliases: []string{"del", "rm"},
-	//   Short:   "Delete resources by name and id",
-	// }
-	// logCmd = &cobra.Command{
-	//   Use:     "logs [resource]",
-	//   Aliases: []string{"l", "log"},
-	//   Short:   "Get the log of one resources",
-	// }
-	// invokeCmd = &cobra.Command{
-	//   Use:     "invoke [resource]",
-	//   Aliases: []string{"i"},
-	//   Short:   "Invoke a function",
-	// }
 )
 
 func notImplemented(cmd *cobra.Command, args []string) error {
@@ -125,77 +89,6 @@ func init() {
 
 	// Secret
 	rootCmd.AddCommand(NewSecretCmd())
-
-	// Create
-	// rootCmd.AddCommand(createCmd)
-	// createStackCommand.Flags().StringVarP(&newStackName, "name", "n", "", "Name of the stack")
-	// createStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// createCmd.AddCommand(createStackCommand)
-	// createStackRevisionCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// createStackRevisionCommand.Flags().StringVarP(&stackRevisionMessage, "message", "m", "", "Message")
-	// createStackRevisionCommand.MarkFlagRequired("file")
-	// createCmd.AddCommand(createStackRevisionCommand)
-	// createStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// createStoreCommand.MarkFlagRequired("file")
-	// createCmd.AddCommand(createStoreCommand)
-	// createSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// createSecretCommand.MarkFlagRequired("file")
-	// createCmd.AddCommand(createSecretCommand)
-	// createConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// createConnectorCommand.MarkFlagRequired("file")
-	// createCmd.AddCommand(createConnectorCommand)
-
-	// Get
-	// rootCmd.AddCommand(getCmd)
-	// getCmd.AddCommand(getAllCommand)
-	// getCmd.AddCommand(getStackCommand)
-	// getCmd.AddCommand(getStackRevisionCommand)
-	// getCmd.AddCommand(getStackFunctionCommand)
-	// getCmd.AddCommand(getStoreCommand)
-	// getCmd.AddCommand(getSecretCommand)
-	// getCmd.AddCommand(getConnectorCommand)
-
-	// Describe
-	// rootCmd.AddCommand(describeCmd)
-	// describeCmd.AddCommand(describeStackCommand)
-	// describeCmd.AddCommand(describeStackRevisionCommand)
-	// describeCmd.AddCommand(describeStackFunctionCommand)
-	// describeCmd.AddCommand(describeStoreCommand)
-	// describeCmd.AddCommand(describeSecretCommand)
-	// describeCmd.AddCommand(describeConnectorCommand)
-
-	// Update
-	// rootCmd.AddCommand(updateCmd)
-	// updateStackCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// updateStackCommand.MarkFlagRequired("file")
-	// updateCmd.AddCommand(updateStackCommand)
-	// updateStoreCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// updateStoreCommand.MarkFlagRequired("file")
-	// updateCmd.AddCommand(updateStoreCommand)
-	// updateSecretCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// updateSecretCommand.MarkFlagRequired("file")
-	// updateCmd.AddCommand(updateSecretCommand)
-	// updateConnectorCommand.Flags().StringVarP(&file, "file", "f", "", "Manifest file")
-	// updateConnectorCommand.MarkFlagRequired("file")
-	// updateCmd.AddCommand(updateConnectorCommand)
-
-	// Delete
-	// rootCmd.AddCommand(deleteCmd)
-	// deleteCmd.AddCommand(deleteStackCommand)
-	// deleteCmd.AddCommand(deleteStoreCommand)
-	// deleteCmd.AddCommand(deleteSecretCommand)
-	// deleteCmd.AddCommand(deleteConnectorCommand)
-
-	// Logs
-	// rootCmd.AddCommand(logCmd)
-	// logCmd.AddCommand(logsStackFunctionCommand)
-	// logCmd.AddCommand(logsStackEventsCommand)
-
-	// Run
-	// rootCmd.AddCommand(invokeCmd)
-	// invokeCmd.AddCommand(invokeStackFunctionCommand)
-	// invokeStackFunctionCommand.Flags().StringVarP(&file, "file", "f", "", "Event file")
-	// invokeStackFunctionCommand.PersistentFlags().BoolVarP(&tailFunctionLog, "tail", "t", false, "tail log")
 }
 
 func initConfig() {
