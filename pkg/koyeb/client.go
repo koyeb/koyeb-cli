@@ -113,7 +113,6 @@ func render(defaultFormat string, items ...ApiResources) {
 }
 
 func GetField(item interface{}, field string) string {
-	// Ugly but simple and generic
 	val := reflect.ValueOf(item)
 	t := val.Type()
 	for i := 0; i < t.NumField(); i++ {
