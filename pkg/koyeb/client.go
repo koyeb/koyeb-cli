@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime"
@@ -124,8 +125,22 @@ func GetField(item interface{}, field string) string {
 		}
 
 		if fieldName == field {
-			// TODO we should format depending of the type
-			return fmt.Sprintf("%s", reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)))
+			f := reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name))
+			switch val := f.Interface().(type) {
+			case string:
+				return fmt.Sprintf("%s", val)
+			case []koyeb.Domain:
+				ret := []string{}
+				for _, d := range val {
+					ret = append(ret, fmt.Sprintf("%s", d.GetName()))
+				}
+				return strings.Join(ret, ",")
+			case time.Time:
+				return fmt.Sprintf("%s", val)
+			default:
+				log.Debugf("type not supported %T %v", val, val)
+				return fmt.Sprintf("%s", val)
+			}
 		}
 
 		spl := strings.Split(field, ".")
