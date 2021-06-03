@@ -15,6 +15,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/iancoleman/strcase"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -50,20 +51,24 @@ type TableInfo struct {
 	fields  [][]string
 }
 
+type WithTitle interface {
+	Title() string
+}
+
 type ApiResources interface {
-	GetTableHeaders() []string
-	GetTableValues() [][]string
+	Headers() []string
+	Fields() []map[string]string
 	MarshalBinary() ([]byte, error)
 }
 
-func render(defaultFormat string, items ...ApiResources) {
+func render(defaultFormat string, items interface{}) {
 	format := defaultFormat
 	if outputFormat != "" {
 		format = outputFormat
 	}
 
 	var table *tablewriter.Table
-	if format == "table" {
+	if format == "table" || format == "detail" {
 		table = tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetAutoFormatHeaders(true)
@@ -78,7 +83,13 @@ func render(defaultFormat string, items ...ApiResources) {
 		table.SetNoWhiteSpace(true)
 	}
 
-	for idx, item := range items {
+	all, ok := items.([]ApiResources)
+	if !ok {
+		log.Fatalf("Invalid item type %T", items)
+	}
+
+	for idx, item := range all {
+
 		switch format {
 		case "yaml":
 			buf, err := item.MarshalBinary()
@@ -91,7 +102,7 @@ func render(defaultFormat string, items ...ApiResources) {
 				return
 			}
 			fmt.Printf("%s", string(y))
-			if idx < len(items)-1 {
+			if idx < len(all)-1 {
 				fmt.Printf("---\n")
 			}
 		case "json":
@@ -100,14 +111,35 @@ func render(defaultFormat string, items ...ApiResources) {
 				er(err)
 			}
 			fmt.Println(string(buf))
+		case "detail":
+			if title, ok := item.(WithTitle); ok {
+				fmt.Println(aurora.Bold(title.Title()))
+			}
+			fields := [][]string{}
+			for _, field := range item.Fields() {
+				for _, h := range item.Headers() {
+					fields = append(fields, append([]string{h}, field[h]))
+				}
+			}
+			table.AppendBulk(fields)
 		case "table":
-			table.SetHeader(item.GetTableHeaders())
-			table.AppendBulk(item.GetTableValues())
+			table.SetHeader(item.Headers())
+			fields := [][]string{}
+			for _, field := range item.Fields() {
+				current := []string{}
+				for _, h := range item.Headers() {
+					current = append(current, field[h])
+				}
+				fields = append(fields, current)
+			}
+			table.AppendBulk(fields)
 		default:
 			er("Invalid format")
 		}
+
 	}
-	if format == "table" {
+
+	if format == "table" || format == "detail" {
 		table.Render()
 	}
 }
@@ -133,7 +165,7 @@ func GetField(item interface{}, field string) string {
 				for _, d := range val {
 					ret = append(ret, fmt.Sprintf("%s", d.GetName()))
 				}
-				return strings.Join(ret, ",")
+				return strings.Join(ret, " ")
 			case time.Time:
 				return fmt.Sprintf("%s", val)
 			default:

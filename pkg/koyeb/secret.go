@@ -170,7 +170,7 @@ func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
 }
 
 func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
-	format := "yaml"
+	format := "detail"
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -208,7 +208,7 @@ func (h *SecretHandler) getFormat(cmd *cobra.Command, args []string, format stri
 		items = append(items, &GetSecretReply{res})
 	}
 
-	render(format, items...)
+	render(format, items)
 
 	return nil
 }
@@ -235,7 +235,7 @@ func (h *SecretHandler) listFormat(cmd *cobra.Command, args []string, format str
 		}
 	}
 
-	render(format, items...)
+	render(format, items)
 
 	return nil
 }
@@ -248,16 +248,20 @@ func (a *GetSecretReply) MarshalBinary() ([]byte, error) {
 	return a.GetSecretReply.GetSecret().MarshalJSON()
 }
 
-func (a *GetSecretReply) GetTableHeaders() []string {
+func (a *GetSecretReply) Title() string {
+	return "Secret"
+}
+
+func (a *GetSecretReply) Headers() []string {
 	return []string{"id", "name", "value", "updated_at"}
 }
 
-func (a *GetSecretReply) GetTableValues() [][]string {
-	var res [][]string
+func (a *GetSecretReply) Fields() []map[string]string {
+	res := []map[string]string{}
 	item := a.GetSecret()
-	var fields []string
-	for _, field := range a.GetTableHeaders() {
-		fields = append(fields, GetField(item, field))
+	fields := map[string]string{}
+	for _, field := range a.Headers() {
+		fields[field] = GetField(item, field)
 	}
 	res = append(res, fields)
 	return res
@@ -271,16 +275,16 @@ func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {
 	return a.ListSecretsReply.MarshalJSON()
 }
 
-func (a *ListSecretsReply) GetTableHeaders() []string {
+func (a *ListSecretsReply) Headers() []string {
 	return []string{"id", "name", "value", "updated_at"}
 }
 
-func (a *ListSecretsReply) GetTableValues() [][]string {
-	var res [][]string
+func (a *ListSecretsReply) Fields() []map[string]string {
+	res := []map[string]string{}
 	for _, item := range a.GetSecrets() {
-		var fields []string
-		for _, field := range a.GetTableHeaders() {
-			fields = append(fields, GetField(item, field))
+		fields := map[string]string{}
+		for _, field := range a.Headers() {
+			fields[field] = GetField(item, field)
 		}
 		res = append(res, fields)
 	}
