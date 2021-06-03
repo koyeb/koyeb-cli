@@ -61,10 +61,18 @@ type ApiResources interface {
 	MarshalBinary() ([]byte, error)
 }
 
-func render(defaultFormat string, items interface{}) {
+func getFormat(defaultFormat string) string {
 	format := defaultFormat
 	if outputFormat != "" {
 		format = outputFormat
+	}
+	return format
+}
+
+func render(format string, obj interface{}) {
+	item, ok := obj.(ApiResources)
+	if !ok {
+		log.Fatalf("Invalid item type %T", obj)
 	}
 
 	var table *tablewriter.Table
@@ -83,65 +91,53 @@ func render(defaultFormat string, items interface{}) {
 		table.SetNoWhiteSpace(true)
 	}
 
-	all, ok := items.([]ApiResources)
-	if !ok {
-		log.Fatalf("Invalid item type %T", items)
-	}
-
-	for idx, item := range all {
-
-		switch format {
-		case "yaml":
-			buf, err := item.MarshalBinary()
-			if err != nil {
-				er(err)
-			}
-			y, err := yaml.JSONToYAML(buf)
-			if err != nil {
-				fmt.Printf("err: %v\n", err)
-				return
-			}
-			fmt.Printf("%s", string(y))
-			if idx < len(all)-1 {
-				fmt.Printf("---\n")
-			}
-		case "json":
-			buf, err := item.MarshalBinary()
-			if err != nil {
-				er(err)
-			}
-			fmt.Println(string(buf))
-		case "detail":
-			if title, ok := item.(WithTitle); ok {
-				fmt.Println(aurora.Bold(title.Title()))
-			}
-			fields := [][]string{}
-			for _, field := range item.Fields() {
-				for _, h := range item.Headers() {
-					fields = append(fields, append([]string{h}, field[h]))
-				}
-			}
-			table.AppendBulk(fields)
-		case "table":
-			table.SetHeader(item.Headers())
-			fields := [][]string{}
-			for _, field := range item.Fields() {
-				current := []string{}
-				for _, h := range item.Headers() {
-					current = append(current, field[h])
-				}
-				fields = append(fields, current)
-			}
-			table.AppendBulk(fields)
-		default:
-			er("Invalid format")
+	switch format {
+	case "yaml":
+		buf, err := item.MarshalBinary()
+		if err != nil {
+			er(err)
 		}
-
+		y, err := yaml.JSONToYAML(buf)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return
+		}
+		fmt.Printf("%s", string(y))
+	case "json":
+		buf, err := item.MarshalBinary()
+		if err != nil {
+			er(err)
+		}
+		fmt.Println(string(buf))
+	case "detail":
+		if title, ok := item.(WithTitle); ok {
+			fmt.Println(aurora.Bold(title.Title()))
+		}
+		fields := [][]string{}
+		for _, field := range item.Fields() {
+			for _, h := range item.Headers() {
+				fields = append(fields, append([]string{h}, field[h]))
+			}
+		}
+		table.AppendBulk(fields)
+	case "table":
+		table.SetHeader(item.Headers())
+		fields := [][]string{}
+		for _, field := range item.Fields() {
+			current := []string{}
+			for _, h := range item.Headers() {
+				current = append(current, field[h])
+			}
+			fields = append(fields, current)
+		}
+		table.AppendBulk(fields)
+	default:
+		er("Invalid format")
 	}
-
 	if format == "table" || format == "detail" {
 		table.Render()
 	}
+
 }
 
 func GetField(item interface{}, field string) string {

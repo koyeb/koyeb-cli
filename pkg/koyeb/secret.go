@@ -17,7 +17,7 @@ func NewSecretCmd() *cobra.Command {
 
 	secretCmd := &cobra.Command{
 		Use:     "secrets [action]",
-		Aliases: []string{"s", "secret"},
+		Aliases: []string{"sec", "secret"},
 		Short:   "Secrets",
 	}
 
@@ -162,7 +162,7 @@ func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *
 }
 
 func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
-	format := "table"
+	format := getFormat("table")
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -170,7 +170,7 @@ func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
 }
 
 func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
-	format := "detail"
+	format := getFormat("detail")
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -191,7 +191,7 @@ func (h *SecretHandler) Delete(cmd *cobra.Command, args []string) error {
 }
 
 func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
-	format := "table"
+	format := getFormat("table")
 	return h.listFormat(cmd, args, format)
 }
 
@@ -199,16 +199,13 @@ func (h *SecretHandler) getFormat(cmd *cobra.Command, args []string, format stri
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	var items []ApiResources
 	for _, arg := range args {
 		res, _, err := client.SecretsApi.GetSecret(ctx, arg).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		items = append(items, &GetSecretReply{res})
+		render(format, &GetSecretReply{res})
 	}
-
-	render(format, items)
 
 	return nil
 }
@@ -217,25 +214,21 @@ func (h *SecretHandler) listFormat(cmd *cobra.Command, args []string, format str
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	var items []ApiResources
-
 	page := 0
 	offset := 0
-	limit := 10
+	limit := 100
 	for {
 		res, _, err := client.SecretsApi.ListSecrets(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		items = append(items, &ListSecretsReply{res})
+		render(format, &ListSecretsReply{res})
 		page += 1
 		offset = page * limit
 		if int64(offset) >= res.GetCount() {
 			break
 		}
 	}
-
-	render(format, items)
 
 	return nil
 }
@@ -269,6 +262,10 @@ func (a *GetSecretReply) Fields() []map[string]string {
 
 type ListSecretsReply struct {
 	koyeb.ListSecretsReply
+}
+
+func (a *ListSecretsReply) Title() string {
+	return "Secrets"
 }
 
 func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {

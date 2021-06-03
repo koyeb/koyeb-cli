@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +14,7 @@ func NewAppCmd() *cobra.Command {
 
 	appCmd := &cobra.Command{
 		Use:     "apps [action]",
-		Aliases: []string{"s", "app"},
+		Aliases: []string{"a", "app"},
 		Short:   "Apps",
 	}
 
@@ -103,7 +104,7 @@ func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.
 }
 
 func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
-	format := "table"
+	format := getFormat("table")
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -111,7 +112,7 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 }
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
-	format := "detail"
+	format := getFormat("detail")
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -132,7 +133,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 }
 
 func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
-	format := "table"
+	format := getFormat("table")
 	return h.listFormat(cmd, args, format)
 }
 
@@ -140,16 +141,22 @@ func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string)
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	var items []ApiResources
 	for _, arg := range args {
 		res, _, err := client.AppsApi.GetApp(ctx, arg).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		items = append(items, &GetAppReply{res})
+		render(format, &GetAppReply{res})
+		if format == "detail" {
+			res, _, err := client.ServicesApi.ListServices(ctx, arg).Execute()
+			if err != nil {
+				fatalApiError(err)
+			}
+			rend := &ListServicesReply{res}
+			fmt.Printf("\n%s\n", aurora.Bold(rend.Title()))
+			render("table", rend)
+		}
 	}
-
-	render(format, items)
 
 	return nil
 }
@@ -158,25 +165,21 @@ func (h *AppHandler) listFormat(cmd *cobra.Command, args []string, format string
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	var items []ApiResources
-
 	page := 0
 	offset := 0
-	limit := 10
+	limit := 100
 	for {
 		res, _, err := client.AppsApi.ListApps(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		items = append(items, &ListAppsReply{res})
+		render(format, &ListAppsReply{res})
 		page += 1
 		offset = page * limit
 		if int64(offset) >= res.GetCount() {
 			break
 		}
 	}
-
-	render(format, items)
 
 	return nil
 }
@@ -214,6 +217,10 @@ type ListAppsReply struct {
 
 func (a *ListAppsReply) MarshalBinary() ([]byte, error) {
 	return a.ListAppsReply.MarshalJSON()
+}
+
+func (a *ListAppsReply) Title() string {
+	return "Apps"
 }
 
 func (a *ListAppsReply) Headers() []string {
