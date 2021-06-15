@@ -215,6 +215,8 @@ github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGi
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/koyeb/koyeb-api-client-go v0.0.0-20210601170353-2826ab71de3d h1:BB2PryVG/3rVk6yLU2tfT2i5eVZMVwF71nXWMzXecIA=
 github.com/koyeb/koyeb-api-client-go v0.0.0-20210601170353-2826ab71de3d/go.mod h1:uksc9NVH762dNuQBxTKcSG8D/cFdOh6/qGTmRueWpnM=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20210612053838-a50d2c0e7f5a h1:ncmwz3MlnuIVimn4YRwMLwBW3jRL7sjCc8xt0SZVW8E=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20210612053838-a50d2c0e7f5a/go.mod h1:uksc9NVH762dNuQBxTKcSG8D/cFdOh6/qGTmRueWpnM=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
