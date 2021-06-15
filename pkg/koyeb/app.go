@@ -47,10 +47,11 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(currentAppCmd)
 
 	switchAppCmd := &cobra.Command{
-		Use:   "switch",
-		Short: "Set current app",
-		Args:  cobra.ExactArgs(1),
-		RunE:  h.Switch,
+		Use:     "switch",
+		Aliases: []string{"use"},
+		Short:   "Set current app",
+		Args:    cobra.ExactArgs(1),
+		RunE:    h.Switch,
 	}
 	appCmd.AddCommand(switchAppCmd)
 
