@@ -63,6 +63,14 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(updateServiceCmd)
 
+	redeployServiceCmd := &cobra.Command{
+		Use:   "redeploy [name]",
+		Short: "Redeploy services",
+		Args:  cobra.MinimumNArgs(1),
+		RunE:  h.ReDeploy,
+	}
+	serviceCmd.AddCommand(redeployServiceCmd)
+
 	deleteServiceCmd := &cobra.Command{
 		Use:   "delete [name]",
 		Short: "Delete services",
@@ -119,6 +127,21 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 		return h.listFormat(cmd, args, format)
 	}
 	return h.getFormat(cmd, args, format)
+}
+
+func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	app := getSelectedApp()
+	for _, arg := range args {
+		redeployRequest := koyeb.NewRedeployRequestInfoWithDefaults()
+		_, _, err := client.ServicesApi.ReDeploy(ctx, app, arg).Body(*redeployRequest).Execute()
+		if err != nil {
+			fatalApiError(err)
+		}
+	}
+	return nil
 }
 
 func (h *ServiceHandler) Delete(cmd *cobra.Command, args []string) error {
