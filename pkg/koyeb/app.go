@@ -80,6 +80,7 @@ func NewAppCmd() *cobra.Command {
 		},
 	}
 	appCmd.AddCommand(updateAppCmd)
+	updateAppCmd.Flags().StringP("name", "n", "", "Name of the app")
 
 	deleteAppCmd := &cobra.Command{
 		Use:   "delete [name]",
