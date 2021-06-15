@@ -90,6 +90,7 @@ func init() {
 
 	rootCmd.AddCommand(NewSecretCmd())
 	rootCmd.AddCommand(NewAppCmd())
+	rootCmd.AddCommand(NewServiceCmd())
 }
 
 func initConfig() {
