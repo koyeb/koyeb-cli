@@ -227,7 +227,7 @@ func renderApiError(err error, errorFn func(string, ...interface{})) {
 func SyncFlags(cmd *cobra.Command, args []string, i interface{}) {
 	cmd.LocalFlags().VisitAll(
 		func(flag *pflag.Flag) {
-			if !flag.Changed {
+			if !flag.Changed && flag.DefValue == "" {
 				return
 			}
 			funcName := fmt.Sprintf("Set%s", strcase.ToCamel(flag.Name))
@@ -236,6 +236,15 @@ func SyncFlags(cmd *cobra.Command, args []string, i interface{}) {
 				log.Debugf("Unable to find setter %s on %T\n", funcName, i)
 				return
 			}
-			meth.Call([]reflect.Value{reflect.ValueOf(flag.Value.String())})
+			switch flag.Value.Type() {
+			case "stringSlice":
+				v, _ := cmd.LocalFlags().GetStringSlice(flag.Name)
+				meth.Call([]reflect.Value{reflect.ValueOf(v)})
+			case "intSlice":
+				v, _ := cmd.LocalFlags().GetIntSlice(flag.Name)
+				meth.Call([]reflect.Value{reflect.ValueOf(v)})
+			default:
+				meth.Call([]reflect.Value{reflect.ValueOf(flag.Value.String())})
+			}
 		})
 }
