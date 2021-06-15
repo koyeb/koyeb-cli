@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,33 +9,36 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime"
-	httptransport "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/strfmt"
+	"github.com/iancoleman/strcase"
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
-
-	apiclient "github.com/koyeb/koyeb-cli/pkg/gen/kclient/client"
-	apimodel "github.com/koyeb/koyeb-cli/pkg/gen/kclient/models"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
-func getApiClient() *apiclient.KoyebRest {
+func getApiClient() *koyeb.APIClient {
 	u, err := url.Parse(apiurl)
 	if err != nil {
 		er(err)
 	}
 
 	log.Debugf("Using host: %s using %s", u.Host, u.Scheme)
-	transport := httptransport.New(u.Host, "", []string{u.Scheme})
-	transport.SetDebug(debug)
 
-	return apiclient.New(transport, strfmt.Default)
+	config := koyeb.NewConfiguration()
+	config.Servers[0].URL = u.String()
+	config.Debug = debug
+
+	return koyeb.NewAPIClient(config)
 }
 
-func getAuth() runtime.ClientAuthInfoWriter {
-	return httptransport.BearerToken(token)
+func getAuth(ctx context.Context) context.Context {
+	return context.WithValue(ctx, koyeb.ContextAccessToken, token)
 }
 
 type UpdateApiResources interface {
@@ -47,15 +51,44 @@ type TableInfo struct {
 	fields  [][]string
 }
 
+type WithTitle interface {
+	Title() string
+}
+
 type ApiResources interface {
-	GetTable() TableInfo
+	Headers() []string
+	Fields() []map[string]string
 	MarshalBinary() ([]byte, error)
 }
 
-func render(item ApiResources, defaultFormat string) {
+func getFormat(defaultFormat string) string {
 	format := defaultFormat
 	if outputFormat != "" {
 		format = outputFormat
+	}
+	return format
+}
+
+func render(format string, obj interface{}) {
+	item, ok := obj.(ApiResources)
+	if !ok {
+		log.Fatalf("Invalid item type %T", obj)
+	}
+
+	var table *tablewriter.Table
+	if format == "table" || format == "detail" {
+		table = tablewriter.NewWriter(os.Stdout)
+		table.SetAutoWrapText(false)
+		table.SetAutoFormatHeaders(true)
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		table.SetAlignment(tablewriter.ALIGN_LEFT)
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetHeaderLine(false)
+		table.SetBorder(false)
+		table.SetTablePadding("\t")
+		table.SetNoWhiteSpace(true)
 	}
 
 	switch format {
@@ -69,37 +102,45 @@ func render(item ApiResources, defaultFormat string) {
 			fmt.Printf("err: %v\n", err)
 			return
 		}
-		fmt.Println(string(y))
+		fmt.Printf("%s", string(y))
 	case "json":
 		buf, err := item.MarshalBinary()
 		if err != nil {
 			er(err)
 		}
 		fmt.Println(string(buf))
+	case "detail":
+		if title, ok := item.(WithTitle); ok {
+			fmt.Println(aurora.Bold(title.Title()))
+		}
+		fields := [][]string{}
+		for _, field := range item.Fields() {
+			for _, h := range item.Headers() {
+				fields = append(fields, append([]string{h}, field[h]))
+			}
+		}
+		table.AppendBulk(fields)
 	case "table":
-		tableInfo := item.GetTable()
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(tableInfo.headers)
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
-		table.AppendBulk(tableInfo.fields)
-		table.Render()
+		table.SetHeader(item.Headers())
+		fields := [][]string{}
+		for _, field := range item.Fields() {
+			current := []string{}
+			for _, h := range item.Headers() {
+				current = append(current, field[h])
+			}
+			fields = append(fields, current)
+		}
+		table.AppendBulk(fields)
 	default:
 		er("Invalid format")
 	}
+	if format == "table" || format == "detail" {
+		table.Render()
+	}
+
 }
 
-func getField(item interface{}, field string) string {
-	// Ugly but simple and generic
+func GetField(item interface{}, field string) string {
 	val := reflect.ValueOf(item)
 	t := val.Type()
 	for i := 0; i < t.NumField(); i++ {
@@ -111,14 +152,27 @@ func getField(item interface{}, field string) string {
 		}
 
 		if fieldName == field {
-			// TODO we should format depending of the type
-			return fmt.Sprintf("%s", reflect.Indirect(val).FieldByName(t.Field(i).Name))
+			f := reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name))
+			switch val := f.Interface().(type) {
+			case string:
+				return fmt.Sprintf("%s", val)
+			case []koyeb.Domain:
+				ret := []string{}
+				for _, d := range val {
+					ret = append(ret, fmt.Sprintf("%s", d.GetName()))
+				}
+				return strings.Join(ret, " ")
+			case time.Time:
+				return fmt.Sprintf("%s", val)
+			default:
+				log.Debugf("type not supported %T %v", val, val)
+				return fmt.Sprintf("%s", val)
+			}
 		}
 
 		spl := strings.Split(field, ".")
 		if spl[0] == fieldName && len(spl) > 1 {
-			return getField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
-			// []
+			return GetField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
 		}
 
 	}
@@ -126,10 +180,8 @@ func getField(item interface{}, field string) string {
 }
 
 type CommonErrorInterface interface {
-	GetPayload() *apimodel.CommonError
 }
 type CommonErrorWithFieldInterface interface {
-	GetPayload() *apimodel.CommonErrorWithFields
 }
 
 func logApiError(err error) {
@@ -143,17 +195,18 @@ func fatalApiError(err error) {
 func renderApiError(err error, errorFn func(string, ...interface{})) {
 
 	switch er := err.(type) {
-	case CommonErrorInterface:
-		log.Debug(er)
-		payload := er.GetPayload()
-		errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
-	case CommonErrorWithFieldInterface:
-		log.Debug(er)
-		payload := er.GetPayload()
-		for _, f := range payload.Fields {
-			log.Errorf("Error on field %s: %s", f.Field, f.Description)
+	case koyeb.GenericOpenAPIError:
+		switch mod := er.Model().(type) {
+		case koyeb.ErrorWithFields:
+			for _, f := range mod.GetFields() {
+				log.Errorf("Error on field %s: %s", f.GetField(), f.GetDescription())
+			}
+			errorFn("%s: status:%d code:%s", mod.GetMessage(), mod.GetStatus(), mod.GetCode())
+		case koyeb.Error:
+			errorFn("%s: status:%d code:%s", mod.GetMessage(), mod.GetStatus(), mod.GetCode())
+		default:
+			errorFn("Unhandled error %T: %s", mod, er.Error())
 		}
-		errorFn("%s: status:%d code:%s", payload.Message, payload.Status, payload.Code)
 	case *runtime.APIError:
 		e := er.Response.(runtime.ClientResponse)
 		if debug {
@@ -166,13 +219,32 @@ func renderApiError(err error, errorFn func(string, ...interface{})) {
 		log.Debug(err)
 		errorFn("Unable to process server response")
 	default:
-		// Workarround for https://github.com/go-swagger/go-swagger/issues/1929
-		if strings.Contains(err.Error(), "is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface") {
-			log.Debug(err)
-			errorFn("Unable to process server response")
-		} else {
-			log.Debugf("Unhandled %T error: %v", err, err)
-			errorFn("%v", err)
-		}
+		log.Debugf("Unhandled %T error: %v", err, err)
+		errorFn("%v", err)
 	}
+}
+
+func SyncFlags(cmd *cobra.Command, args []string, i interface{}) {
+	cmd.LocalFlags().VisitAll(
+		func(flag *pflag.Flag) {
+			if !flag.Changed && flag.DefValue == "" {
+				return
+			}
+			funcName := fmt.Sprintf("Set%s", strcase.ToCamel(flag.Name))
+			meth := reflect.ValueOf(i).MethodByName(funcName)
+			if !meth.IsValid() {
+				log.Debugf("Unable to find setter %s on %T\n", funcName, i)
+				return
+			}
+			switch flag.Value.Type() {
+			case "stringSlice":
+				v, _ := cmd.LocalFlags().GetStringSlice(flag.Name)
+				meth.Call([]reflect.Value{reflect.ValueOf(v)})
+			case "intSlice":
+				v, _ := cmd.LocalFlags().GetIntSlice(flag.Name)
+				meth.Call([]reflect.Value{reflect.ValueOf(v)})
+			default:
+				meth.Call([]reflect.Value{reflect.ValueOf(flag.Value.String())})
+			}
+		})
 }

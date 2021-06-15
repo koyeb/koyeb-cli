@@ -1,7 +1,7 @@
 package koyeb
 
 import (
-	"fmt"
+	// "fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -16,14 +16,14 @@ var (
 )
 
 func getAll(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Store:\n")
-	getStores(cmd, args)
+	// fmt.Printf("Store:\n")
+	// getStores(cmd, args)
 
-	fmt.Printf("\nStacks:\n")
-	getStacks(cmd, args)
+	// fmt.Printf("\nStacks:\n")
+	// getStacks(cmd, args)
 
-	fmt.Printf("\nSecret:\n")
-	getSecrets(cmd, args)
+	//fmt.Printf("Secret:\n")
+	//getSecrets(cmd, args)
 
 	return nil
 }
