@@ -308,7 +308,7 @@ func (a *GetServiceRevisionReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *GetServiceRevisionReply) Headers() []string {
-	return []string{"id", "version", "status", "status_message", "instances", "updated_at"}
+	return []string{"id", "version", "status", "status_message", "instances", "definition", "updated_at"}
 }
 
 func (a *GetServiceRevisionReply) Fields() []map[string]string {
@@ -321,6 +321,11 @@ func (a *GetServiceRevisionReply) Fields() []map[string]string {
 			fields[field] = GetField(item, "state.status")
 		case "status_message":
 			fields[field] = GetField(item, "state.status_message")
+		case "definition":
+			b, err := item.Definition.MarshalJSON()
+			if err == nil {
+				fields[field] = string(b)
+			}
 		case "instances":
 			var instances []string
 			for _, inst := range item.State.GetInstances() {
