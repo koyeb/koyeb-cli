@@ -4,37 +4,27 @@
 
 The Koyeb CLI (Command Line Interface) is a powerful tool to manage your Koyeb serverless infrastructure directly from your terminal.
 
-# Installation
+## Installation
 
-## Release from GitHub
+### Download from GitHub
 
-The CLI can be installed from pre-compiled binaries for macOS (darwin), Linux and Windows.
+The CLI can be installed from pre-compiled binaries for macOS (darwin), Linux and Windows. You can download the appropriate version from the [Releases](https://github.com/koyeb/koyeb-cli/releases) page.
 
 ### MacOS
 
-```shell
-# Fetch latest release URL for macOS from GitHub
-LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/koyeb/koyeb-cli/releases/latest | grep 'http.*koyeb-cli-darwin-x86_64' | awk '{print $2}' | sed 's|[\"\,]*||g')
-# Install latest version as /usr/local/bin/koyeb
-curl -sL $LATEST_RELEASE_URL -o /usr/local/bin/koyeb
-chmod +x /usr/local/bin/koyeb
-```
-
-### Linux
+You can install the latest version of the Koyeb CLI on macOS using [Homebrew](http://brew.sh/):
 
 ```shell
-# Fetch latest release URL for Linux from GitHub
-LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/koyeb/koyeb-cli/releases/latest | grep 'http.*koyeb-cli-linux-x86_64' | awk '{print $2}' | sed 's|[\"\,]*||g')
-# Install latest version as /usr/local/bin/koyeb
-curl -sL $LATEST_RELEASE_URL -o /usr/local/bin/koyeb
-chmod +x /usr/local/bin/koyeb
+brew install koyeb/tap/koyeb-cli
 ```
 
-### Windows
+You can upgrade an existing installation of the Koyeb CLI running:
 
-Simply download the latest release: https://github.com/koyeb/koyeb-cli/releases.
+```
+brew upgrade koyeb-cli
+```
 
-## Living at the Edge
+### Living at the Edge
 
 To install the latest `koyeb` binary with go, simply run:
 
@@ -46,15 +36,14 @@ go install github.com/koyeb/koyeb-cli/cmd/koyeb
 If you need a go environment, follow the [official Go installation documentation](https://golang.org/doc/install).
 
 
-
 ## Getting started
 
 ### Initial configuration
 
-Generate an API token and run `koyeb init` to create a new configuration file.
+Generate an API token and run `koyeb login` to create a new configuration file.
 
 ```shell
-➜ koyeb init
+➜ koyeb login
 ? Do you want to create a new configuration file in (/Users/kbot/.koyeb.yaml)? [y/N]
 Enter your api credential: ****************************************************************█
 INFO[0006] Creating new configuration in /Users/kbot/.koyeb.yaml
@@ -70,16 +59,12 @@ Usage:
   koyeb [command]
 
 Available Commands:
+  apps        Apps
   completion  Generate completion script
-  create      Create a resource from a file
-  delete      Delete resources by name and id
-  describe    Display one resources
-  get         Display one or many resources
   help        Help about any command
-  init        Init configuration
-  invoke      Invoke a function
-  logs        Get the log of one resources
-  update      Update one resources
+  login       Login to your Koyeb account
+  secrets     Secrets
+  services    Services
   version     Get version
 
 Flags:
@@ -94,12 +79,11 @@ Use "koyeb [command] --help" for more information about a command.
 ```
 
 
-
-# Enabling shell auto-completion
+### Enabling shell auto-completion
 
 `koyeb` has auto-completion support for `bash` and `zsh`. 
 
-## Bash
+#### Bash
 
 You can easily do `source <(koyeb completion bash)` to add completion to your current Bash session.
 
@@ -119,7 +103,7 @@ koyeb completion bash > /usr/local/etc/bash_completion.d/koyeb
 
 You will need to start a new shell for this setup to take effect.
 
-## Zsh
+#### Zsh
 
 If shell completion is not already enabled in your environment you will need to enable it.  You can execute the following once:
 
@@ -135,9 +119,7 @@ koyeb completion zsh > "${fpath[1]}/_koyeb"
 
 You will need to start a new shell for this setup to take effect.
 
-
-
-# Contribute
+## Contribute
 
 Checkout [CONTRIBUTING.md](CONTRIBUTING.md)
 
