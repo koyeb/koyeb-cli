@@ -15,13 +15,13 @@ The CLI can be installed from pre-compiled binaries for macOS (darwin), Linux an
 You can install the latest version of the Koyeb CLI on macOS using [Homebrew](http://brew.sh/):
 
 ```shell
-brew install koyeb/tap/koyeb-cli
+brew install koyeb/tap/koyeb
 ```
 
 You can upgrade an existing installation of the Koyeb CLI running:
 
 ```
-brew upgrade koyeb-cli
+brew upgrade koyeb
 ```
 
 ### Living at the Edge
