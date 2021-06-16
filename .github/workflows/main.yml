@@ -48,4 +48,4 @@ jobs:
           workdir: ./src/github.com/${{ github.repository }}
           args: release --rm-dist
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
