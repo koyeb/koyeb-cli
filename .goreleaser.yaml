@@ -65,6 +65,7 @@ brews:
   - tap:
       owner: koyeb
       name: homebrew-tap
+    name: koyeb
     folder: Formula
     homepage: https://koyeb.com
     skip_upload: auto
