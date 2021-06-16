@@ -16,7 +16,7 @@ jobs:
             ${{ runner.os }}-go-
       - uses: actions/setup-go@v2
         with:
-          go-version: "1.14"
+          go-version: "1.15"
       - name: "Run tests"
         run: |
           make test
@@ -34,66 +34,15 @@ jobs:
           path: ./src/github.com/${{ github.repository }}
       - uses: actions/setup-go@v2
         with:
-          go-version: "1.14"
+          go-version: "1.15"
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - name: Build project
-        run: |
-          cd ./src/github.com/${{ github.repository }}
-          ./scripts/build.sh ${{steps.get_version.outputs.VERSION}}
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: goreleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          workdir: ./src/github.com/${{ github.repository }}
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Upload linux-x86_64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-linux-x86_64
-          asset_name: koyeb-cli-linux-x86_64
-          asset_content_type: application/octet-stream
-      - name: Upload linux-386
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-linux-386
-          asset_name: koyeb-cli-linux-386
-          asset_content_type: application/octet-stream
-      - name: Upload darwin-x86_64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-darwin-x86_64
-          asset_name: koyeb-cli-darwin-x86_64
-          asset_content_type: application/octet-stream
-      - name: Upload windows-x86_64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-windows-x86_64.exe
-          asset_name: koyeb-cli-windows-x86_64.exe
-          asset_content_type: application/octet-stream
-      - name: Upload windows-386
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/github.com/${{ github.repository }}/build_output/koyeb-cli-${{steps.get_version.outputs.VERSION}}-windows-386.exe
-          asset_name: koyeb-cli-windows-386.exe
-          asset_content_type: application/octet-stream

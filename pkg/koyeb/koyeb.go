@@ -12,7 +12,9 @@ import (
 )
 
 var (
-	Version = "develop"
+	Version   = "develop"
+	BuildDate = "-"
+	Commit    = "-"
 
 	// Used for flags.
 	file         string
@@ -68,6 +70,8 @@ func er(msg interface{}) {
 
 func PrintVersion(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", Version)
+	log.Debugf("Date: %s", BuildDate)
+	log.Debugf("Commit: %s", Commit)
 }
 
 func init() {

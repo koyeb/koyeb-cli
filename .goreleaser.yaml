@@ -1,0 +1,30 @@
+builds:
+  - id: default
+    main: ./cmd/koyeb
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: linux
+        goarch: 386
+    ldflags:
+      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.BuildDate={{ .Date }}
+      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Version={{ .Version }}
+      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Commit={{ .ShortCommit }}
+  - id: windows
+    main: ./cmd/koyeb
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    ignore:
+      - goos: windows
+        goarch: 386
+    ldflags:
+      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.BuildDate={{ .Date }}
+      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Version={{ .Version }}
+      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Commit={{ .ShortCommit }}
