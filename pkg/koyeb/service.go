@@ -3,13 +3,18 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
@@ -162,6 +167,17 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(getServiceCmd)
 
+	logsServiceCmd := &cobra.Command{
+		Use:     "logs [name]",
+		Aliases: []string{"l", "log"},
+		Short:   "Get the service logs",
+		Args:    cobra.ExactArgs(1),
+		RunE:    h.Log,
+	}
+	serviceCmd.AddCommand(logsServiceCmd)
+	logsServiceCmd.Flags().Bool("stderr", false, "Get stderr stream")
+	logsServiceCmd.Flags().String("instance", "", "Instance")
+
 	listServiceCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List services",
@@ -258,6 +274,110 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 		return h.listFormat(cmd, args, format)
 	}
 	return h.getFormat(cmd, args, format)
+}
+
+func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+	app := getSelectedApp()
+	_, _, err := client.ServicesApi.GetService(ctx, app, args[0]).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+	revDetail, _, err := client.ServicesApi.GetRevision(ctx, app, args[0], "_latest").Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+	instances := revDetail.Revision.State.GetInstances()
+	if len(instances) == 0 {
+		log.Fatal("Unable to attach to instance")
+	}
+	instance := instances[0].GetId()
+	selectedInstance, _ := cmd.Flags().GetString("instance")
+	if selectedInstance != "" {
+		instance = selectedInstance
+	}
+	done := make(chan struct{})
+	stream := "stdout"
+	stderr, _ := cmd.Flags().GetBool("stderr")
+	if stderr {
+		stream = "stderr"
+	}
+	return watchLog(app, args[0], revDetail.Revision.GetId(), instance, stream, done, "")
+}
+
+type LogMessageResult struct {
+	Msg string
+}
+
+type LogMessage struct {
+	Result LogMessageResult
+}
+
+func (l LogMessage) String() string {
+	return l.Result.Msg
+}
+
+func watchLog(app string, service string, revision string, instance string, stream string, done chan struct{}, filter string) error {
+	path := fmt.Sprintf("/v1/apps/%s/services/%s/revisions/%s/instances/%s/logs/%s/tail", app, service, revision, instance, stream)
+
+	u, err := url.Parse(apiurl)
+	if err != nil {
+		er(err)
+	}
+
+	u.Path = path
+	if u.Scheme == "https" {
+		u.Scheme = "wss"
+	} else {
+		u.Scheme = "ws"
+	}
+
+	if filter != "" {
+		u.RawQuery = filter
+	}
+
+	log.Debugf("Gettings logs from %v", u.String())
+
+	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer c.Close()
+
+	readDone := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		for {
+			msg := LogMessage{}
+			err := c.ReadJSON(&msg)
+			if err != nil {
+				log.Println("error:", err)
+				return
+			}
+			log.Printf("%s", msg)
+		}
+	}()
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-done:
+			return nil
+		case <-readDone:
+			return nil
+		case t := <-ticker.C:
+			err := c.WriteMessage(websocket.PingMessage, []byte(t.String()))
+			if err != nil {
+				log.Println("write:", err)
+				return err
+			}
+		}
+	}
 }
 
 func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {

@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.11
+	github.com/gorilla/websocket v1.4.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/koyeb/koyeb-api-client-go v0.0.0-20210612053838-a50d2c0e7f5a
 	github.com/logrusorgru/aurora v2.0.3+incompatible
