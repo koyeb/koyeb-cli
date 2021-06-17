@@ -276,7 +276,7 @@ func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string)
 			}
 			rend := &ListServicesReply{res}
 			fmt.Printf("\n%s\n", aurora.Bold(rend.Title()))
-			render("table", rend)
+			render(getFormat("table"), rend)
 		}
 	}
 

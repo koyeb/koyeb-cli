@@ -253,7 +253,7 @@ func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService
 }
 
 func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
-	format := "table"
+	format := getFormat("table")
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -261,7 +261,7 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 }
 
 func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
-	format := "detail"
+	format := getFormat("detail")
 	if len(args) == 0 {
 		return h.listFormat(cmd, args, format)
 	}
@@ -324,12 +324,18 @@ func (h *ServiceHandler) getFormat(cmd *cobra.Command, args []string, format str
 				fatalApiError(err)
 			}
 			rendDetail := &GetServiceRevisionReply{revDetail}
-			fmt.Printf("\n")
-			render("detail", rendDetail)
+			detailFormat := getFormat("detail")
+			if detailFormat == "detail" {
+				fmt.Printf("\n")
+				render(detailFormat, rendDetail)
+			}
 
 			rend := &ListServiceRevisionsReply{res}
-			fmt.Printf("\n%s history\n", aurora.Bold(rend.Title()))
-			render("table", rend)
+			tableFormat := getFormat("table")
+			if tableFormat == "table" {
+				fmt.Printf("\n%s history\n", aurora.Bold(rend.Title()))
+				render(tableFormat, rend)
+			}
 		}
 	}
 
