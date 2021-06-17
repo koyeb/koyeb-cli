@@ -130,7 +130,7 @@ func NewServiceCmd() *cobra.Command {
 
 	serviceCmd := &cobra.Command{
 		Use:     "services [action]",
-		Aliases: []string{"s", "service"},
+		Aliases: []string{"s", "svc", "service"},
 		Short:   "Services",
 	}
 
