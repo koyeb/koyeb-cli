@@ -3,6 +3,7 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/logrusorgru/aurora"
@@ -89,6 +90,7 @@ func NewAppCmd() *cobra.Command {
 		RunE:  h.Delete,
 	}
 	appCmd.AddCommand(deleteAppCmd)
+	deleteAppCmd.Flags().BoolP("force", "f", false, "Force delete app and services")
 
 	return appCmd
 }
@@ -174,7 +176,29 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
+	force, _ := cmd.Flags().GetBool("force")
 	for _, arg := range args {
+		if force {
+			for {
+				res, _, err := client.ServicesApi.ListServices(ctx, arg).Limit("100").Execute()
+				if err != nil {
+					fatalApiError(err)
+				}
+				if res.GetCount() == 0 {
+					break
+				}
+				for _, svc := range res.GetServices() {
+					if svc.State.GetStatus() == "STOPPING" || svc.State.GetStatus() == "STOPPED" {
+						continue
+					}
+					_, _, err := client.ServicesApi.DeleteService(ctx, arg, svc.GetId()).Execute()
+					if err != nil {
+						fatalApiError(err)
+					}
+				}
+				time.Sleep(2 * time.Second)
+			}
+		}
 		_, _, err := client.AppsApi.DeleteApp(ctx, arg).Execute()
 		if err != nil {
 			fatalApiError(err)
