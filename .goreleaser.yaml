@@ -45,7 +45,7 @@ archives:
     format: tar.gz
 
 release:
-  prerelease: auto
+  prerelease: false
 
 dockers:
   - goos: linux
