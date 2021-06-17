@@ -33,6 +33,30 @@ func NewAppCmd() *cobra.Command {
 	}
 	appCmd.AddCommand(createAppCmd)
 
+	initAppCmd := &cobra.Command{
+		Use:   "init [name]",
+		Short: "Create app and service",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			createApp := koyeb.NewCreateAppWithDefaults()
+
+			createService := koyeb.NewCreateServiceWithDefaults()
+			createDef := koyeb.NewServiceDefinitionWithDefaults()
+
+			err := parseServiceDefinitionFlags(cmd.Flags(), createDef, true)
+			if err != nil {
+				return err
+			}
+			createDef.Name = koyeb.PtrString(args[0])
+
+			createService.SetDefinition(*createDef)
+
+			return h.Init(cmd, args, createApp, createService)
+		},
+	}
+	appCmd.AddCommand(initAppCmd)
+	addServiceDefinitionFlags(initAppCmd.Flags())
+
 	getAppCmd := &cobra.Command{
 		Use:   "get [name]",
 		Short: "Get app",
@@ -120,6 +144,29 @@ func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.
 	if err != nil {
 		fatalApiError(err)
 	}
+	return nil
+}
+
+func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
+	client := getApiClient()
+	ctx := getAuth(context.Background())
+
+	_, _, err := client.ServicesApi.CreateService(ctx, args[0]).DryRun(true).Body(*createService).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	createApp.SetName(args[0])
+	_, _, err = client.AppsApi.CreateApp(ctx).Body(*createApp).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	_, _, err = client.ServicesApi.CreateService(ctx, args[0]).Body(*createService).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+
 	return nil
 }
 
