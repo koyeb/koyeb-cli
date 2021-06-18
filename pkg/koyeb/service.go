@@ -130,9 +130,15 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 		command, _ := flags.GetString("docker-command")
 		image_registry_secret, _ := flags.GetString("docker-private-registry-secret")
 		createDockerSource.SetImage(image)
-		createDockerSource.SetCommand(command)
-		createDockerSource.SetArgs(args)
-		createDockerSource.SetImageRegistrySecret(image_registry_secret)
+		if command != "" {
+			createDockerSource.SetCommand(command)
+		}
+		if image_registry_secret != "" {
+			createDockerSource.SetImageRegistrySecret(image_registry_secret)
+		}
+		if len(args) > 0 {
+			createDockerSource.SetArgs(args)
+		}
 		definition.SetDocker(*createDockerSource)
 	}
 	return nil
