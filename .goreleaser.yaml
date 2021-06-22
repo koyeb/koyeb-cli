@@ -45,7 +45,7 @@ archives:
     format: tar.gz
 
 release:
-  prerelease: auto
+  prerelease: false
 
 dockers:
   - goos: linux
@@ -53,7 +53,7 @@ dockers:
     image_templates:
       - "koyeb/koyeb-cli:latest"
       - "koyeb/koyeb-cli:v{{ .Version }}"
-    skip_push: false
+    skip_push: auto
 
 checksum:
   name_template: "checksums.txt"
@@ -68,7 +68,7 @@ brews:
     name: koyeb
     folder: Formula
     homepage: https://koyeb.com
-    skip_upload: false
+    skip_upload: auto
     test: |
       system "#{bin}/koyeb version"
     install: |
