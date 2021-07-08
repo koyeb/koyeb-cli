@@ -26,8 +26,9 @@ var (
 	selectedApp  string
 
 	rootCmd = &cobra.Command{
-		Use:   "koyeb",
-		Short: "Koyeb cli",
+		Use:               "koyeb",
+		Short:             "Koyeb CLI",
+		DisableAutoGenTag: true,
 	}
 	loginCmd = &cobra.Command{
 		Use:   "login",
@@ -57,6 +58,10 @@ func genericArgs(cmd *cobra.Command, args []string) error {
 		return errors.New("requires a resource argument")
 	}
 	return nil
+}
+
+func GetRootCmd() *cobra.Command {
+	return rootCmd
 }
 
 func Run() error {
