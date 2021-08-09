@@ -20,6 +20,11 @@ jobs:
       - name: "Run tests"
         run: |
           make test
+      - name: "Test gen doc"
+        run: |
+          make gen-doc
+          # there should not be a diff
+          git diff --quiet
   build:
     name: Upload Release Asset
     runs-on: ubuntu-latest
