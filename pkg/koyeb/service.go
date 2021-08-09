@@ -3,6 +3,12 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/logrusorgru/aurora"
@@ -10,11 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
 )
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
@@ -259,27 +260,31 @@ type ServiceHandler struct {
 }
 
 func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
+	format := getFormat("table")
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
 	app := getSelectedApp()
-	_, _, err := client.ServicesApi.CreateService(ctx, app).Body(*createService).Execute()
+	res, _, err := client.ServicesApi.CreateService(ctx, app).Body(*createService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	return nil
+	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetName())
+	return h.getFormat(cmd, args, format)
 }
 
 func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
+	format := getFormat("table")
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
 	app := getSelectedApp()
-	_, _, err := client.ServicesApi.UpdateService(ctx, app, args[0]).Body(*updateService).Execute()
+	res, _, err := client.ServicesApi.UpdateService(ctx, app, args[0]).Body(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	return nil
+	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetName())
+	return h.getFormat(cmd, args, format)
 }
 
 func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
@@ -416,6 +421,7 @@ func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
 			fatalApiError(err)
 		}
 	}
+	log.Infof("Services %s redeployed.", strings.Join(args, ", "))
 	return nil
 }
 
@@ -430,6 +436,7 @@ func (h *ServiceHandler) Delete(cmd *cobra.Command, args []string) error {
 			fatalApiError(err)
 		}
 	}
+	log.Infof("Services %s deleted.", strings.Join(args, ", "))
 	return nil
 }
 

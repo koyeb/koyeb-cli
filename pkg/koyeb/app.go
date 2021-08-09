@@ -3,6 +3,7 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -136,6 +137,7 @@ type AppHandler struct {
 }
 
 func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp) error {
+	format := getFormat("table")
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
@@ -144,7 +146,7 @@ func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.
 	if err != nil {
 		fatalApiError(err)
 	}
-	return nil
+	return h.getFormat(cmd, args, format)
 }
 
 func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
@@ -171,13 +173,14 @@ func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.Cr
 }
 
 func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.UpdateApp) error {
+	format := getFormat("table")
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 	_, _, err := client.AppsApi.UpdateApp2(ctx, args[0]).Body(*updateApp).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	return nil
+	return h.getFormat(cmd, args, format)
 }
 
 func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
@@ -195,7 +198,7 @@ func (h *AppHandler) Switch(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		fatalApiError(err)
 	}
-	log.Infof("Switching app to %s %s", res.App.GetName(), res.App.GetId())
+	log.Infof("Switching default app to %s (id: %s).", res.App.GetName(), res.App.GetId())
 	viper.Set("app", res.App.GetId())
 	err = viper.WriteConfig()
 	if err != nil {
@@ -251,6 +254,8 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 			fatalApiError(err)
 		}
 	}
+
+	log.Infof("Apps %s deleted.", strings.Join(args, ", "))
 	return nil
 }
 
