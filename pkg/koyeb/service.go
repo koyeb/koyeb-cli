@@ -347,8 +347,10 @@ func watchLog(app string, service string, revision string, instance string, stre
 		u.Scheme = "ws"
 	}
 
+	u.RawQuery += "offset=-1"
+
 	if filter != "" {
-		u.RawQuery = filter
+		u.RawQuery += "&" + filter
 	}
 
 	log.Debugf("Gettings logs from %v", u.String())
