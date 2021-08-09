@@ -17,10 +17,9 @@ gen-doc: ## generate markdown documentation
 	go install cmd/gen-doc/gen-doc.go
 	gen-doc
 	rm -f ./docs/koyeb_completion.md
-	gsed -i "s/.*koyeb completion.*/fault/" ./docs/*.md
-	gsed -i "s/### SEE ALSO.*//" ./docs/*.md
-	# gsed -r -e "s/[^\`\`\`]([.*])(^\`\`\`)/\1/"
-	gsed -n 's:.*\`\`\`\(.*\)\`\`\`:\1:p'  ./docs/*.md
+	sed -i '' "s/.*koyeb completion.*/fault/" ./docs/*.md
+	sed -i '' "s/### SEE ALSO.*//" ./docs/*.md
+	sed -i '' 's:.*\`\`\`\(.*\)\`\`\`:\1:p'  ./docs/*.md
 	cat ./docs/*.md >> ./docs/reference.md
 	find ./docs -type f -not -name 'reference.md' -delete
 
