@@ -24,7 +24,7 @@ jobs:
         run: |
           make gen-doc
           # there should not be a diff
-          git diff --quiet
+          git diff --quiet || git diff
   build:
     name: Upload Release Asset
     runs-on: ubuntu-latest
