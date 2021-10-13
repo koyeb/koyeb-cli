@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 func NewSecretCmd() *cobra.Command {
@@ -246,7 +247,7 @@ func (a *GetSecretReply) Title() string {
 }
 
 func (a *GetSecretReply) Headers() []string {
-	return []string{"id", "name", "value", "updated_at"}
+	return []string{"id", "name", "type", "value", "updated_at"}
 }
 
 func (a *GetSecretReply) Fields() []map[string]string {
@@ -254,7 +255,11 @@ func (a *GetSecretReply) Fields() []map[string]string {
 	item := a.GetSecret()
 	fields := map[string]string{}
 	for _, field := range a.Headers() {
-		fields[field] = GetField(item, field)
+		if field == "value" {
+			fields[field] = "*****"
+		} else {
+			fields[field] = GetField(item, field)
+		}
 	}
 	res = append(res, fields)
 	return res
@@ -273,7 +278,7 @@ func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *ListSecretsReply) Headers() []string {
-	return []string{"id", "name", "value", "updated_at"}
+	return []string{"id", "name", "type", "value", "updated_at"}
 }
 
 func (a *ListSecretsReply) Fields() []map[string]string {
@@ -281,7 +286,11 @@ func (a *ListSecretsReply) Fields() []map[string]string {
 	for _, item := range a.GetSecrets() {
 		fields := map[string]string{}
 		for _, field := range a.Headers() {
-			fields[field] = GetField(item, field)
+			if field == "value" {
+				fields[field] = "*****"
+			} else {
+				fields[field] = GetField(item, field)
+			}
 		}
 		res = append(res, fields)
 	}
