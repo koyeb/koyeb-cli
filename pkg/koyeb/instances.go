@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"errors"
+
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +32,12 @@ func NewInstanceHandler() *InstanceHandler {
 type InstanceHandler struct {
 }
 
-func (h *InstanceHandler) Exec(*cobra.Command, []string) error {
-	return errors.New("unimplemented")
+func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
+	// Cobra options ensure we have at least 2 arguments here, but still
+	if len(args) < 2 {
+		return errors.New("exec needs at least 2 arguments")
+	}
+	instanceId, userCmd := args[0], args[1:]
+
+	return h.exec(instanceId, userCmd, []string{"Client hello", "Client bye"})
 }

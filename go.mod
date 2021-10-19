@@ -26,4 +26,5 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/tidwall/pretty v1.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
