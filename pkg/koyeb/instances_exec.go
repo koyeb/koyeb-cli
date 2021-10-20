@@ -135,12 +135,18 @@ func read(c *websocket.Conn) error {
 	for {
 		t, r, err := c.NextReader()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure) {
-				return errors.Wrap(err, "read failed")
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				// Two cases:
+				// * we closed the connection by sending the server a close control msg and
+				// this is its ack answer.
+				// * the server wishes to close the connection and is proactively sending a
+				// close control msg. The default client close handler will take care of
+				// sending back a close ack answer.
+				// In both cases, that means that the connection ended normally, we can safely
+				// exit
+				return nil
 			}
-			// The connection has been closed (by either us or the serv, doesn't matter).
-			// This is an expected case.
-			return nil
+			return errors.Wrap(err, "read failed")
 		}
 		if t != websocket.TextMessage {
 			return fmt.Errorf("read failed: expected receiving TextMessages (%d), got %d", websocket.TextMessage, t)
