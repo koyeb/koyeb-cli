@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
+
+	"github.com/moby/term"
 
 	"github.com/spf13/cobra"
 )
@@ -42,20 +43,8 @@ func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	}
 	instanceId, userCmd := args[0], args[1:]
 
-	stderr, err := os.Create("/tmp/stderr")
-	if err != nil {
-		panic(err)
-	}
-	stdout, err := os.Create("/tmp/stdout")
-	if err != nil {
-		panic(err)
-	}
-	stdin, err := os.Open("/tmp/data")
-	if err != nil {
-		panic(err)
-	}
-
-	e := NewExecutor(stdin, stderr, stdout, userCmd, instanceId)
+	stdin, stdout, stderr := term.StdStreams()
+	e := NewExecutor(stdin, stdout, stderr, userCmd, instanceId)
 	returnCode, err := e.Run(context.Background())
 	fmt.Printf("Return code is %d\n", returnCode)
 	return err
