@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"io"
@@ -15,8 +14,6 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	//"github.com/moby/term"
 
 	"fmt"
 	"syscall"
@@ -73,7 +70,7 @@ type Executor struct {
 	instanceId string
 }
 
-func NewExecutor(stdin io.Reader, stderr, stdout io.Writer, cmd []string, instanceId string) *Executor {
+func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, instanceId string) *Executor {
 	return &Executor{
 		stdin:      stdin,
 		stdout:     stdout,
@@ -152,15 +149,15 @@ func (e *Executor) push(ctx context.Context, c *websocket.Conn, stdin io.Reader)
 			}
 
 			n, err := stdin.Read(data)
-			if err != nil && err != io.EOF {
+
+			if err != nil && !errors.Is(err, io.EOF) {
 				errChan <- errors.Wrap(err, "failed reading data from stdin")
 				return
 			}
-			data = data[:n]
 
 			if n != 0 {
 				io := koyeb.NewExecCommandIO()
-				io.SetData(base64.StdEncoding.EncodeToString(data))
+				io.SetData(base64.StdEncoding.EncodeToString(data[:n]))
 
 				body := koyeb.NewExecCommandRequestBody()
 				body.SetCommand(e.cmd)
@@ -175,9 +172,10 @@ func (e *Executor) push(ctx context.Context, c *websocket.Conn, stdin io.Reader)
 					return
 				}
 			}
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return
 			}
+
 		}
 	}()
 
@@ -185,7 +183,8 @@ func (e *Executor) push(ctx context.Context, c *websocket.Conn, stdin io.Reader)
 }
 
 func (e *Executor) report(ctx context.Context, c *websocket.Conn, stdout, stderr io.Writer) (<-chan error, <-chan int) {
-	errCh, exitCodeCh := make(chan error), make(chan int)
+	errCh := make(chan error)
+	exitCodeCh := make(chan int)
 	if c == nil {
 		errCh <- errors.New("fatal: need an open connection")
 		return errCh, exitCodeCh
@@ -197,8 +196,8 @@ func (e *Executor) report(ctx context.Context, c *websocket.Conn, stdout, stderr
 				return
 			}
 
-			var frame koyeb.StreamResultOfExecCommandReply
-			err := c.ReadJSON(&frame) // This blocks
+			frame := &koyeb.StreamResultOfExecCommandReply{}
+			err := c.ReadJSON(frame) // This blocks
 
 			//TODO: Remove this. At some point, we should never stop by ourselves. In fact,
 			// the stop conditions should be:
@@ -230,12 +229,12 @@ func (e *Executor) report(ctx context.Context, c *websocket.Conn, stdout, stderr
 				errCh <- e.cast(frame.Error)
 				return
 			}
-			err = e.forwardStdIO(&frame, stdout, stderr)
+			err = e.forwardStdIO(frame, stdout, stderr)
 			if err != nil {
 				errCh <- errors.Wrap(err, "reporting to stdio failed")
 				return
 			}
-			if *frame.Result.Exited {
+			if frame.Result != nil && *frame.Result.Exited {
 				exitCodeCh <- int(*frame.Result.ExitCode)
 				return
 			}
@@ -252,8 +251,12 @@ func (e *Executor) forwardStdIO(f *koyeb.StreamResultOfExecCommandReply, stdout,
 		if src.Data == nil {
 			return nil
 		}
-		buf := bytes.NewBufferString(*src.Data)
-		_, err := dst.Write(buf.Bytes())
+		buf, err := base64.StdEncoding.DecodeString(*src.Data)
+		if err != nil {
+			log.Errorf("could not base64decode %s", *src.Data)
+			return errors.New("could not decode received data")
+		}
+		_, err = dst.Write(buf)
 		return err
 	}
 
