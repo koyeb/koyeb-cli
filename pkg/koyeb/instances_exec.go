@@ -2,6 +2,8 @@ package koyeb
 
 import (
 	"bytes"
+	"context"
+	"encoding/base64"
 	"io"
 	"net/http"
 	"net/url"
@@ -10,8 +12,11 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	//"github.com/moby/term"
 
 	"fmt"
 	"syscall"
@@ -26,80 +31,8 @@ import (
 // there is no public method to serialize in JSON the struct; it is supposed to
 // be done internally
 type ApiExecCommandRequest struct {
-	Id   *string  `json:"id,omitempty"`
-	Body *ReqBody `json:"body,omitempty"`
-}
-
-type ReqBody struct {
-	Command *[]string `json:"command,omitempty"`
-	TTYSize *TTYSize  `json:"ttysize,omitempty"`
-	Stdin   *IO       `json:"stdin,omitempty"`
-}
-
-type TTYSize struct {
-	Height *int32 `json:"height,omitempty"`
-	Width  *int32 `json:"width,omitempty"`
-}
-
-type IO struct {
-	Data *[]byte `json:"data,omitempty"`
-}
-
-func (h *InstanceHandler) exec(instanceId string, cmd, input []string) error {
-	path := fmt.Sprintf("/v1/instances/exec")
-	c, err := dial(apiurl, path)
-	if err != nil {
-		return errors.Wrapf(err, "could not dial %s", path)
-	}
-	go closeOn(c, syscall.SIGINT, syscall.SIGTERM)
-	// Safeguard: closeOn() should handle this but in case something panics,
-	// let's keep this
-	defer c.Close()
-
-	// Write input
-	for _, txt := range input {
-		data := bytes.NewBufferString(txt).Bytes()
-		r := &ApiExecCommandRequest{
-			Id: &instanceId,
-			Body: &ReqBody{
-				Command: &cmd,
-				Stdin: &IO{
-					Data: &data,
-				},
-			},
-		}
-		c.WriteJSON(r)
-	}
-
-	// Reader prints everything it receives to stdout and returns when:
-	// * an unexpected error arises
-	// * it receives a close control message from the server
-	err = read(c)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func dial(address, path string) (*websocket.Conn, error) {
-	u, err := url.Parse(address)
-	if err != nil {
-		er(err)
-	}
-	u.Path = path
-	if u.Scheme == "https" {
-		u.Scheme = "wss"
-	} else {
-		u.Scheme = "ws"
-	}
-	headers := http.Header{
-		"Sec-Websocket-Protocol": []string{
-			fmt.Sprintf("Bearer, %s", token),
-		},
-	}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), headers)
-	return c, err
+	Id   *string                       `json:"id,omitempty"`
+	Body *koyeb.ExecCommandRequestBody `json:"body,omitempty"`
 }
 
 func closeOn(c *websocket.Conn, s ...os.Signal) {
@@ -131,11 +64,151 @@ func sendCloseMsg(c *websocket.Conn) error {
 	return nil
 }
 
-func read(c *websocket.Conn) error {
+type Executor struct {
+	stdin  io.Reader
+	stderr io.Writer
+	stdout io.Writer
+
+	cmd        []string
+	instanceId string
+}
+
+func NewExecutor(stdin io.Reader, stderr, stdout io.Writer, cmd []string, instanceId string) *Executor {
+	return &Executor{
+		stdin:      stdin,
+		stdout:     stdout,
+		stderr:     stderr,
+		cmd:        cmd,
+		instanceId: instanceId,
+	}
+}
+
+// This is largely inspired from nomad's api/allocations_exec.go, which does mostly the same thing that
+// we're trying to achieve
+func (e *Executor) Run(ctx context.Context) (int, error) {
+	path := fmt.Sprintf("/v1/instances/exec")
+	c, err := e.dial(apiurl, path)
+	if err != nil {
+		return -1, errors.Wrapf(err, "could not dial %s", path)
+	}
+	go closeOn(c, syscall.SIGINT, syscall.SIGTERM)
+
+	pushErrCh := e.push(ctx, c, e.stdin)
+	listenErrCh, exitCh := e.report(ctx, c, e.stdout, e.stderr)
+
 	for {
-		t, r, err := c.NextReader()
-		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+		select {
+		// Context done or cancelled, let's stop there
+		case <-ctx.Done():
+			return -1, ctx.Err()
+		// The server sent us an exit code. That means that the command has finished
+		// its execution. Clean exit
+		case exitCode := <-exitCh:
+			return exitCode, nil
+		// Something went wrong while listening for server messages or while transmitting
+		// to stdout/stderr
+		case listenErr := <-listenErrCh:
+			return -1, listenErr
+		// Something went wrong while sending messages to the server or while reading
+		// user input
+		case pushErr := <-pushErrCh:
+			return -1, pushErr
+		}
+	}
+}
+
+func (e *Executor) dial(address, path string) (*websocket.Conn, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		er(err)
+	}
+	u.Path = path
+	if u.Scheme == "https" {
+		u.Scheme = "wss"
+	} else {
+		u.Scheme = "ws"
+	}
+	headers := http.Header{
+		"Sec-Websocket-Protocol": []string{
+			fmt.Sprintf("Bearer, %s", token),
+		},
+	}
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), headers)
+	return c, err
+}
+
+func (e *Executor) push(ctx context.Context, c *websocket.Conn, stdin io.Reader) <-chan error {
+	errChan := make(chan error)
+	if c == nil {
+		errChan <- errors.New("fatal: need an open connection")
+		return errChan
+	}
+
+	go func() {
+		data := make([]byte, 4096)
+		for {
+			if ctx.Err() != nil {
+				return
+			}
+
+			n, err := stdin.Read(data)
+			if err != nil && err != io.EOF {
+				errChan <- errors.Wrap(err, "failed reading data from stdin")
+				return
+			}
+			data = data[:n]
+
+			if n != 0 {
+				io := koyeb.NewExecCommandIO()
+				io.SetData(base64.StdEncoding.EncodeToString(data))
+
+				body := koyeb.NewExecCommandRequestBody()
+				body.SetCommand(e.cmd)
+				body.SetStdin(*io)
+
+				writeErr := c.WriteJSON(&ApiExecCommandRequest{
+					Id:   &e.instanceId,
+					Body: body,
+				})
+				if writeErr != nil {
+					errChan <- errors.Wrap(writeErr, "failed sending data to remote server")
+					return
+				}
+			}
+			if err == io.EOF {
+				return
+			}
+		}
+	}()
+
+	return errChan
+}
+
+func (e *Executor) report(ctx context.Context, c *websocket.Conn, stdout, stderr io.Writer) (<-chan error, <-chan int) {
+	errCh, exitCodeCh := make(chan error), make(chan int)
+	if c == nil {
+		errCh <- errors.New("fatal: need an open connection")
+		return errCh, exitCodeCh
+	}
+
+	go func() {
+		for {
+			if ctx.Err() != nil {
+				return
+			}
+
+			var frame koyeb.StreamResultOfExecCommandReply
+			err := c.ReadJSON(&frame) // This blocks
+
+			//TODO: Remove this. At some point, we should never stop by ourselves. In fact,
+			// the stop conditions should be:
+			// * the server sends us a frame with exited == true
+			// * an unexpected error arises
+			// Currently, the server is not correctly plugged-in to nomad, so it does not
+			// send stop signals. Hence, we resort to CTRL+C from the client. In the future,
+			// CTRL+C and CTRL+D will be sent all the way to the server which will handle them
+			// and exit if needed
+			if err != nil && websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				// Two cases:
 				// * we closed the connection by sending the server a close control msg and
 				// this is its ack answer.
@@ -144,30 +217,66 @@ func read(c *websocket.Conn) error {
 				// sending back a close ack answer.
 				// In both cases, that means that the connection ended normally, we can safely
 				// exit
-				return nil
+				exitCodeCh <- -1
+				return
 			}
-			return errors.Wrap(err, "read failed")
+
+			if err != nil {
+				errCh <- errors.Wrap(err, "remote read failed")
+				return
+			}
+			if frame.Error != nil {
+				// This is probably bad
+				errCh <- e.cast(frame.Error)
+				return
+			}
+			err = e.forwardStdIO(&frame, stdout, stderr)
+			if err != nil {
+				errCh <- errors.Wrap(err, "reporting to stdio failed")
+				return
+			}
+			if *frame.Result.Exited {
+				exitCodeCh <- int(*frame.Result.ExitCode)
+				return
+			}
 		}
-		if t != websocket.TextMessage {
-			return fmt.Errorf("read failed: expected receiving TextMessages (%d), got %d", websocket.TextMessage, t)
-		}
-		err = readFrom(r)
-		if err != nil {
-			return errors.Wrap(err, "read failed")
-		}
-	}
+	}()
+	return errCh, exitCodeCh
 }
 
-func readFrom(r io.Reader) error {
-	for {
-		buff := make([]byte, 8192)
-		_, err := r.Read(buff)
-		if err == nil {
-			fmt.Printf(string(buff) + "\n")
-		} else if err == io.EOF {
+func (e *Executor) forwardStdIO(f *koyeb.StreamResultOfExecCommandReply, stdout, stderr io.Writer) error {
+	forwardFn := func(src *koyeb.ExecCommandIO, dst io.Writer) error {
+		if src == nil {
 			return nil
-		} else {
-			return err
 		}
+		if src.Data == nil {
+			return nil
+		}
+		buf := bytes.NewBufferString(*src.Data)
+		_, err := dst.Write(buf.Bytes())
+		return err
 	}
+
+	if f == nil {
+		return nil
+	}
+	if f.Result == nil {
+		return nil
+	}
+	err := forwardFn(f.Result.Stderr, stderr)
+	if err != nil {
+		return errors.Wrap(err, "reporting to stderr failed")
+	}
+	err = forwardFn(f.Result.Stdout, stdout)
+	if err != nil {
+		return errors.Wrap(err, "reporting to stdout failed")
+	}
+	return nil
+
+}
+
+func (e *Executor) cast(s *koyeb.GoogleRpcStatus) error {
+	code := s.GetCode()
+	msg := s.GetMessage()
+	return fmt.Errorf("server failure: %s (code %d)", msg, code)
 }
