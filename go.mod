@@ -15,6 +15,7 @@ require (
 	github.com/manifoldco/promptui v0.7.0
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
@@ -26,5 +27,4 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/tidwall/pretty v1.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
