@@ -7,7 +7,7 @@ require (
 	github.com/go-openapi/runtime v0.19.11
 	github.com/gorilla/websocket v1.4.1
 	github.com/iancoleman/strcase v0.1.3
-	github.com/koyeb/koyeb-api-client-go v0.0.0-20211013134411-594916edf925
+	github.com/koyeb/koyeb-api-client-go v0.0.0-20211020050503-5c0376c2938b
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/manifoldco/promptui v0.7.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -17,5 +17,4 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
