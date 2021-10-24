@@ -1,7 +1,10 @@
 package koyeb
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -39,5 +42,21 @@ func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	}
 	instanceId, userCmd := args[0], args[1:]
 
-	return h.exec(instanceId, userCmd, []string{"Client hello", "Client bye"})
+	stderr, err := os.Create("/tmp/stderr")
+	if err != nil {
+		panic(err)
+	}
+	stdout, err := os.Create("/tmp/stdout")
+	if err != nil {
+		panic(err)
+	}
+	stdin, err := os.Open("/tmp/data")
+	if err != nil {
+		panic(err)
+	}
+
+	e := NewExecutor(stdin, stderr, stdout, userCmd, instanceId)
+	returnCode, err := e.Run(context.Background())
+	fmt.Printf("Return code is %d\n", returnCode)
+	return err
 }
