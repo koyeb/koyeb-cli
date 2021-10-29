@@ -91,7 +91,17 @@ func (e *Executor) Run(ctx context.Context) (int, error) {
 	}
 	go closeOn(c, syscall.SIGINT, syscall.SIGTERM)
 
-	pushErrCh := e.push(ctx, c, e.stdin)
+	r := &ApiExecCommandRequest{
+		Id:   &e.instanceId,
+		Body: koyeb.NewExecCommandRequestBody(),
+	}
+	r.Body.SetCommand(e.cmd)
+	err = e.pushOne(ctx, c, r)
+	if err != nil {
+		return -1, errors.Wrap(err, "could not intialize RPC with server")
+	}
+
+	pushErrCh := e.pushMany(ctx, c, e.stdin)
 	listenErrCh, exitCh := e.report(ctx, c, e.stdout, e.stderr)
 
 	for {
@@ -135,7 +145,21 @@ func (e *Executor) dial(address, path string) (*websocket.Conn, error) {
 	return c, err
 }
 
-func (e *Executor) push(ctx context.Context, c *websocket.Conn, stdin io.Reader) <-chan error {
+func (e *Executor) pushOne(ctx context.Context, c *websocket.Conn, r *ApiExecCommandRequest) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if c == nil {
+		return errors.New("fatal: need an open connection")
+	}
+	err := c.WriteJSON(r)
+	if err != nil {
+		return errors.Wrap(err, "failed sending data to remote server")
+	}
+	return nil
+}
+
+func (e *Executor) pushMany(ctx context.Context, c *websocket.Conn, from io.Reader) <-chan error {
 	errChan := make(chan error)
 	if c == nil {
 		errChan <- errors.New("fatal: need an open connection")
@@ -149,10 +173,10 @@ func (e *Executor) push(ctx context.Context, c *websocket.Conn, stdin io.Reader)
 				return
 			}
 
-			n, err := stdin.Read(data)
+			n, err := from.Read(data)
 
 			if err != nil && !errors.Is(err, io.EOF) {
-				errChan <- errors.Wrap(err, "failed reading data from stdin")
+				errChan <- errors.Wrap(err, "failed reading data from input")
 				return
 			}
 
