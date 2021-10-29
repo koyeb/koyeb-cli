@@ -2,11 +2,9 @@ package koyeb
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/moby/term"
-
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -43,8 +41,13 @@ func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	}
 	instanceId, userCmd := args[0], args[1:]
 
-	stdin, stdout, stderr := term.StdStreams()
-	e := NewExecutor(stdin, stdout, stderr, userCmd, instanceId)
+	stdStreams, cleanup, err := GetStdStreams()
+	if err != nil {
+		return errors.Wrap(err, "could not get standard streams")
+	}
+	defer cleanup()
+
+	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, userCmd, instanceId)
 	returnCode, err := e.Run(context.Background())
 	fmt.Printf("Return code is %d\n", returnCode)
 	return err

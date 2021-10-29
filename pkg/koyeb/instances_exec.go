@@ -3,21 +3,24 @@ package koyeb
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/moby/term"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"fmt"
-	"syscall"
 )
+
+// Disclaimer: parts of this file are either taken or largey inspired from Nomad's CLI
+// implementation (command/alloc_exec.go) or API implementation (api/allocations_exec.go)
 
 // ApiExecCommandRequest is == koyeb.ApiExecCommandRequest but with public
 // fields.
@@ -80,8 +83,6 @@ func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, instan
 	}
 }
 
-// This is largely inspired from nomad's api/allocations_exec.go, which does mostly the same thing that
-// we're trying to achieve
 func (e *Executor) Run(ctx context.Context) (int, error) {
 	path := fmt.Sprintf("/v1/instances/exec")
 	c, err := e.dial(apiurl, path)
@@ -282,4 +283,34 @@ func (e *Executor) cast(s *koyeb.GoogleRpcStatus) error {
 	code := s.GetCode()
 	msg := s.GetMessage()
 	return fmt.Errorf("server failure: %s (code %d)", msg, code)
+}
+
+type StdStreams struct {
+	Stdin  io.Reader
+	Stdout io.Writer
+	Stderr io.Writer
+}
+
+func GetStdStreams() (*StdStreams, func() error, error) {
+	stdin, stdout, stderr := term.StdStreams()
+	fd, isTerm := term.GetFdInfo(stdin)
+	if !isTerm {
+		return nil, nil, errors.New("stdin is not a terminal")
+	}
+
+	termState, err := term.SetRawTerminal(fd)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "could not make stdin a raw terminal")
+	}
+
+	resetTermState := func() error {
+		return term.RestoreTerminal(fd, termState)
+	}
+
+	stdStreams := &StdStreams{
+		Stdin:  stdin,
+		Stdout: stdout,
+		Stderr: stderr,
+	}
+	return stdStreams, resetTermState, nil
 }
