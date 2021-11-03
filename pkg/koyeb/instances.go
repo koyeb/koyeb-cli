@@ -2,7 +2,7 @@ package koyeb
 
 import (
 	"context"
-	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -35,20 +35,29 @@ type InstanceHandler struct {
 }
 
 func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
+	returnCode, err := h.exec(cmd, args)
+	if err != nil {
+		return err
+	}
+	if returnCode != 0 {
+		os.Exit(returnCode)
+	}
+	return nil
+}
+
+func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
 	// Cobra options ensure we have at least 2 arguments here, but still
 	if len(args) < 2 {
-		return errors.New("exec needs at least 2 arguments")
+		return 0, errors.New("exec needs at least 2 arguments")
 	}
 	instanceId, userCmd := args[0], args[1:]
 
 	stdStreams, cleanup, err := GetStdStreams()
 	if err != nil {
-		return errors.Wrap(err, "could not get standard streams")
+		return 0, errors.Wrap(err, "could not get standard streams")
 	}
 	defer cleanup()
 
 	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, userCmd, instanceId)
-	returnCode, err := e.Run(context.Background())
-	fmt.Printf("Return code is %d\n", returnCode)
-	return err
+	return e.Run(context.Background())
 }
