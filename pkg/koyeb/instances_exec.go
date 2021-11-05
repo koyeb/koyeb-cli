@@ -64,22 +64,29 @@ func sendCloseMsg(c *websocket.Conn) error {
 	return nil
 }
 
+type TerminalSize struct {
+	Height int32
+	Width  int32
+}
+
 type Executor struct {
-	stdin  io.Reader
-	stderr io.Writer
-	stdout io.Writer
+	stdin        io.Reader
+	stderr       io.Writer
+	stdout       io.Writer
+	termResizeCh <-chan *TerminalSize
 
 	cmd        []string
 	instanceId string
 }
 
-func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, instanceId string) *Executor {
+func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, instanceId string, termResizeCh <-chan *TerminalSize) *Executor {
 	return &Executor{
-		stdin:      stdin,
-		stdout:     stdout,
-		stderr:     stderr,
-		cmd:        cmd,
-		instanceId: instanceId,
+		stdin:        stdin,
+		stdout:       stdout,
+		stderr:       stderr,
+		cmd:          cmd,
+		instanceId:   instanceId,
+		termResizeCh: termResizeCh,
 	}
 }
 
@@ -102,6 +109,7 @@ func (e *Executor) Run(ctx context.Context) (int, error) {
 	}
 
 	pushErrCh := e.pushMany(ctx, c, e.stdin)
+	termResizeErrCh := e.pushTermResizes(ctx, c, e.termResizeCh)
 	listenErrCh, exitCh := e.report(ctx, c, e.stdout, e.stderr)
 
 	for {
@@ -115,12 +123,14 @@ func (e *Executor) Run(ctx context.Context) (int, error) {
 			return exitCode, nil
 		// Something went wrong while listening for server messages or while transmitting
 		// to stdout/stderr
-		case listenErr := <-listenErrCh:
-			return -1, listenErr
+		case err := <-listenErrCh:
+			return 0, err
 		// Something went wrong while sending messages to the server or while reading
 		// user input
-		case pushErr := <-pushErrCh:
-			return -1, pushErr
+		case err := <-pushErrCh:
+			return 0, err
+		case err := <-termResizeErrCh:
+			return 0, err
 		}
 	}
 }
@@ -157,6 +167,42 @@ func (e *Executor) pushOne(ctx context.Context, c *websocket.Conn, r *ApiExecCom
 		return errors.Wrap(err, "failed sending data to remote server")
 	}
 	return nil
+}
+
+func (e *Executor) pushTermResizes(ctx context.Context, c *websocket.Conn, from <-chan *TerminalSize) <-chan error {
+	errChan := make(chan error)
+	go func() {
+		if c == nil {
+			errChan <- errors.New("fatal: need an open connection")
+			return
+		}
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case r := <-from:
+				if r == nil {
+					errChan <- errors.New("cannot resize term to nil size")
+					return
+				}
+				resize := koyeb.NewExecCommandRequestTerminalSize()
+				resize.SetHeight(r.Height)
+				resize.SetWidth(r.Width)
+
+				body := koyeb.NewExecCommandRequestBody()
+				body.SetTtySize(*resize)
+
+				err := c.WriteJSON(&ApiExecCommandRequest{
+					Body: body,
+				})
+				if err != nil {
+					errChan <- errors.Wrap(err, "failed sending term resize to remote server")
+					return
+				}
+			}
+		}
+	}()
+	return errChan
 }
 
 func (e *Executor) pushMany(ctx context.Context, c *websocket.Conn, from io.Reader) <-chan error {
@@ -337,4 +383,16 @@ func GetStdStreams() (*StdStreams, func() error, error) {
 		Stderr: stderr,
 	}
 	return stdStreams, resetTermState, nil
+}
+
+func GetTermSize(t io.Writer) (*TerminalSize, error) {
+	fd, isTerm := term.GetFdInfo(t)
+	if !isTerm {
+		return nil, errors.New("not a terminal")
+	}
+	ws, err := term.GetWinsize(fd)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot get winsize")
+	}
+	return &TerminalSize{Height: int32(ws.Height), Width: int32(ws.Width)}, nil
 }

@@ -3,6 +3,8 @@ package koyeb
 import (
 	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -58,6 +60,36 @@ func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
 	}
 	defer cleanup()
 
-	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, userCmd, instanceId)
-	return e.Run(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	termResizeCh := watchTermSize(ctx, stdStreams)
+
+	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, userCmd, instanceId, termResizeCh)
+	return e.Run(ctx)
+}
+
+func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
+	out := make(chan *TerminalSize)
+	go func() {
+		defer close(out)
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGWINCH)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-sigCh:
+				termSize, err := GetTermSize(s.Stdout)
+				if err != nil {
+					continue
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case out <- termSize:
+				}
+			}
+		}
+	}()
+	return out
 }
