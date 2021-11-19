@@ -20,7 +20,7 @@ func NewInstanceCmd() *cobra.Command {
 
 	execInstanceCmd := &cobra.Command{
 		Use:   "exec [name] [cmd] [cmd...]",
-		Short: "Execute command in instance's context",
+		Short: "Run a command in the context of an instance",
 		Args:  cobra.MinimumNArgs(2),
 		RunE:  h.Exec,
 	}
