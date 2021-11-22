@@ -39,7 +39,7 @@ type InstanceHandler struct {
 func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	returnCode, err := h.exec(cmd, args)
 	if err != nil {
-		return err
+		fatalApiError(err)
 	}
 	if returnCode != 0 {
 		os.Exit(returnCode)
