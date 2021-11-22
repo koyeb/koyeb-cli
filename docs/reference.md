@@ -27,6 +27,7 @@ Koyeb CLI
 
 * [koyeb apps](#koyeb-apps)	 - Apps
 fault
+* [koyeb instances](#koyeb-instances)	 - Instances
 * [koyeb login](#koyeb-login)	 - Login to your Koyeb account
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
@@ -339,6 +340,61 @@ koyeb apps update [name] [flags]
 
 
 * [koyeb apps](#koyeb-apps)	 - Apps
+
+## koyeb instances
+
+Instances
+
+### Options
+
+```
+  -h, --help   help for instances
+```
+
+### Options inherited from parent commands
+
+```
+  -a, --app string      App
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb instances exec](#koyeb-instances-exec)	 - Run a command in the context of an instance
+
+## koyeb instances exec
+
+Run a command in the context of an instance
+
+```
+koyeb instances exec [name] [cmd] [cmd...] [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for exec
+```
+
+### Options inherited from parent commands
+
+```
+  -a, --app string      App
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb instances](#koyeb-instances)	 - Instances
 
 ## koyeb login
 
