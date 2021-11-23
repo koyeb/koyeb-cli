@@ -198,6 +198,8 @@ func NewServiceCmd() *cobra.Command {
 		RunE:  h.List,
 	}
 	serviceCmd.AddCommand(listServiceCmd)
+	listServiceCmd.Flags().String("app_id", "", "App id")
+	listServiceCmd.Flags().String("name", "", "Service name")
 
 	describeServiceCmd := &cobra.Command{
 		Use:   "describe [name]",
@@ -472,13 +474,22 @@ func (h *ServiceHandler) listFormat(cmd *cobra.Command, args []string, format st
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	app := getSelectedApp()
+	// app := getSelectedApp()
 
 	page := 0
 	offset := 0
 	limit := 100
 	for {
-		res, _, err := client.ServicesApi.DeprecatedListServices(ctx, app).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		req := client.ServicesApi.ListServices(ctx)
+		appId, _ := cmd.Flags().GetString("app_id")
+		if appId != "" {
+			req = req.AppId(appId)
+		}
+		name, _ := cmd.Flags().GetString("name")
+		if name != "" {
+			req = req.Name(name)
+		}
+		res, _, err := req.Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
@@ -505,8 +516,9 @@ func (a *GetServiceReply) Title() string {
 	return "Service"
 }
 
+// TODO we should add app_name to the rendering
 func (a *GetServiceReply) Headers() []string {
-	return []string{"id", "name", "version", "status", "updated_at"}
+	return []string{"id", "app_id", "name", "version", "status", "updated_at"}
 }
 
 func (a *GetServiceReply) Fields() []map[string]string {
@@ -537,8 +549,9 @@ func (a *ListServicesReply) MarshalBinary() ([]byte, error) {
 	return a.ListServicesReply.MarshalJSON()
 }
 
+// TODO we should add app_name to the rendering
 func (a *ListServicesReply) Headers() []string {
-	return []string{"id", "name", "status", "updated_at"}
+	return []string{"id", "app_id", "name", "status", "updated_at"}
 }
 
 func (a *ListServicesReply) Fields() []map[string]string {
