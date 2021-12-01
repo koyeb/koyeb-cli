@@ -495,7 +495,7 @@ func (h *ServiceHandler) listFormat(cmd *cobra.Command, args []string, format st
 	offset := 0
 	limit := 100
 	for {
-		res, _, err := client.ServicesApi.ListServices(ctx, app).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		res, _, err := client.ServicesApi.DeprecatedListServices(ctx, app).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
