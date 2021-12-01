@@ -190,7 +190,6 @@ func NewServiceCmd() *cobra.Command {
 		RunE:    h.Log,
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
-	logsServiceCmd.Flags().Bool("stderr", false, "Get stderr stream")
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 
 	listServiceCmd := &cobra.Command{
@@ -299,71 +298,55 @@ func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 	app := getSelectedApp()
-	_, _, err := client.ServicesApi.GetService(ctx, app, args[0]).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	revDetail, _, err := client.ServicesApi.GetRevision(ctx, app, args[0], "_latest").Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	instances := revDetail.Revision.State.GetInstances()
-	if len(instances) == 0 {
-		log.Fatal("Unable to attach to instance")
-	}
-	instance := instances[0].GetId()
-	selectedInstance, _ := cmd.Flags().GetString("instance")
-	if selectedInstance != "" {
-		instance = selectedInstance
-	}
-	done := make(chan struct{})
-	stream := "stdout"
-	stderr, _ := cmd.Flags().GetBool("stderr")
-	if stderr {
-		stream = "stderr"
-	}
-	return watchLog(app, args[0], revDetail.Revision.GetId(), instance, stream, done, "")
-}
 
-type LogMessageResult struct {
-	Msg string
+	serviceDetail, _, err := client.ServicesApi.GetService(ctx, app, args[0]).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	serviceID := serviceDetail.Service.GetId()
+	instanceID, _ := cmd.Flags().GetString("instance")
+
+	done := make(chan struct{})
+
+	return watchLog(app, serviceID, instanceID, done)
 }
 
 type LogMessage struct {
-	Result LogMessageResult
+	Result LogMessageResult `json:"result"`
 }
 
 func (l LogMessage) String() string {
 	return l.Result.Msg
 }
 
-func watchLog(app string, service string, revision string, instance string, stream string, done chan struct{}, filter string) error {
-	path := fmt.Sprintf("/v1/apps/%s/services/%s/revisions/%s/instances/%s/logs/%s/tail", app, service, revision, instance, stream)
+type LogMessageResult struct {
+	Msg string `json:"msg"`
+}
 
-	u, err := url.Parse(apiurl)
+func watchLog(app string, serviceID string, instanceID string, done chan struct{}) error {
+	path := fmt.Sprintf("/v1/apps/%s/logs/tail?service_id=%s", app, serviceID)
+	if instanceID != "" {
+		path = fmt.Sprintf("%s&instance_id=%s", path, instanceID)
+	}
+
+	dest, err := url.Parse(fmt.Sprint(apiurl, path))
 	if err != nil {
-		er(err)
+		return fmt.Errorf("cannot parse url for websocket: %w", err)
 	}
-
-	u.Path = path
-	if u.Scheme == "https" {
-		u.Scheme = "wss"
-	} else {
-		u.Scheme = "ws"
+	switch dest.Scheme {
+	case "https":
+		dest.Scheme = "wss"
+	case "http":
+		dest.Scheme = "ws"
+	default:
+		return fmt.Errorf("unsupported schema: %s", dest.Scheme)
 	}
-
-	u.RawQuery += "offset=-1"
-
-	if filter != "" {
-		u.RawQuery += "&" + filter
-	}
-
-	log.Debugf("Gettings logs from %v", u.String())
 
 	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
+	c, _, err := websocket.DefaultDialer.Dial(dest.String(), h)
 	if err != nil {
-		log.Fatal("dial:", err)
+		return fmt.Errorf("cannot create websocket: %w", err)
 	}
 	defer c.Close()
 
