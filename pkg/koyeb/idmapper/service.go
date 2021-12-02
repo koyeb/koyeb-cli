@@ -26,10 +26,6 @@ func NewServiceMapper(ctx context.Context, client *koyeb.APIClient) *ServiceMapp
 
 // GetID translates a name to an id.
 func (mapper *ServiceMapper) GetID(appID string, name string) (string, error) {
-	if IsUUIDv4(name) {
-		return name, nil
-	}
-
 	cache, ok := mapper.cache[appID]
 	if ok {
 		id, ok := cache.GetID(name)
@@ -53,10 +49,6 @@ func (mapper *ServiceMapper) GetID(appID string, name string) (string, error) {
 
 // GetName translates an id to a name.
 func (mapper *ServiceMapper) GetName(appID string, id string) (string, error) {
-	if !IsUUIDv4(id) {
-		return id, nil
-	}
-
 	cache, ok := mapper.cache[appID]
 	if ok {
 		name, ok := cache.GetName(id)

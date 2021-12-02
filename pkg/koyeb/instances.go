@@ -92,7 +92,6 @@ func (h *InstanceHandler) getListQuery(ctx context.Context, cmd *cobra.Command, 
 	appFilter, _ := cmd.Flags().GetString("app")
 	serviceFilter, _ := cmd.Flags().GetString("service")
 	appID := ""
-	serviceID := ""
 
 	query := client.InstancesApi.ListInstances(ctx).Statuses([]string{
 		string(koyeb.INSTANCESTATUS_ALLOCATING),
@@ -102,28 +101,47 @@ func (h *InstanceHandler) getListQuery(ctx context.Context, cmd *cobra.Command, 
 		string(koyeb.INSTANCESTATUS_STOPPING),
 	})
 
-	if appFilter != "" {
-		id, err := appMapper.GetID(appFilter)
-		if err != nil {
-			fatalApiError(err)
-		}
-		appID = id
-		query = query.AppId(appID)
-	}
-
-	if serviceFilter != "" {
-		if appID == "" {
-			log.Fatalf("Cannot use service filter without an application filter")
-		}
-		id, err := serviceMapper.GetID(appID, serviceFilter)
-		if err != nil {
-			fatalApiError(err)
-		}
-		serviceID = id
-		query = query.ServiceId(serviceID)
-	}
+	query, appID = h.getAppIDForListQuery(query, appFilter, appMapper)
+	query = h.getServiceIDForListQuery(query, appID, serviceFilter, serviceMapper)
 
 	return query
+}
+
+func (h *InstanceHandler) getAppIDForListQuery(query koyeb.ApiListInstancesRequest, filter string, appMapper *idmapper.AppMapper) (koyeb.ApiListInstancesRequest, string) {
+	if filter == "" {
+		return query, ""
+	}
+	if idmapper.IsUUIDv4(filter) {
+		query = query.AppId(filter)
+		return query, filter
+	}
+
+	id, err := appMapper.GetID(filter)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	query = query.AppId(id)
+	return query, id
+}
+
+func (h *InstanceHandler) getServiceIDForListQuery(query koyeb.ApiListInstancesRequest, appID string, filter string, serviceMapper *idmapper.ServiceMapper) koyeb.ApiListInstancesRequest {
+	if filter == "" {
+		return query
+	}
+	if idmapper.IsUUIDv4(filter) {
+		return query.ServiceId(filter)
+	}
+	if appID == "" {
+		log.Fatalf("Cannot use service filter without an application filter")
+	}
+
+	id, err := serviceMapper.GetID(appID, filter)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return query.ServiceId(id)
 }
 
 func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
