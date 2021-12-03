@@ -2,10 +2,8 @@ package koyeb
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -127,41 +125,6 @@ func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.Cr
 	_, _, err = client.ServicesApi.CreateService(ctx, args[0]).Body(*createService).Execute()
 	if err != nil {
 		fatalApiError(err)
-	}
-
-	return nil
-}
-
-func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.UpdateApp) error {
-	format := getFormat("table")
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-	_, _, err := client.AppsApi.UpdateApp2(ctx, args[0]).Body(*updateApp).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	return h.getFormat(cmd, args, format)
-}
-
-func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	for _, arg := range args {
-		res, _, err := client.AppsApi.GetApp(ctx, arg).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-		render(format, &GetAppReply{res: &res})
-		if format == "detail" {
-			res, _, err := client.ServicesApi.ListServices(ctx).AppId(res.App.GetId()).Limit("100").Execute()
-			if err != nil {
-				fatalApiError(err)
-			}
-			rend := &ListServicesReply{res}
-			fmt.Printf("\n%s\n", aurora.Bold(rend.Title()))
-			render(getFormat("table"), rend)
-		}
 	}
 
 	return nil
