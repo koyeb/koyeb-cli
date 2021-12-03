@@ -206,11 +206,6 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
-	format := getFormat("table")
-	return h.listFormat(cmd, args, format)
-}
-
 func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
@@ -229,29 +224,6 @@ func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string)
 			rend := &ListServicesReply{res}
 			fmt.Printf("\n%s\n", aurora.Bold(rend.Title()))
 			render(getFormat("table"), rend)
-		}
-	}
-
-	return nil
-}
-
-func (h *AppHandler) listFormat(cmd *cobra.Command, args []string, format string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	page := 0
-	offset := 0
-	limit := 100
-	for {
-		res, _, err := client.AppsApi.ListApps(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-		render(format, &ListAppsReply{res})
-		page += 1
-		offset = page * limit
-		if int64(offset) >= res.GetCount() {
-			break
 		}
 	}
 
@@ -282,33 +254,5 @@ func (a *GetAppReply) Fields() []map[string]string {
 		fields[field] = GetField(item, field)
 	}
 	res = append(res, fields)
-	return res
-}
-
-type ListAppsReply struct {
-	koyeb.ListAppsReply
-}
-
-func (a *ListAppsReply) MarshalBinary() ([]byte, error) {
-	return a.ListAppsReply.MarshalJSON()
-}
-
-func (a *ListAppsReply) Title() string {
-	return "Apps"
-}
-
-func (a *ListAppsReply) Headers() []string {
-	return []string{"id", "name", "domains", "updated_at"}
-}
-
-func (a *ListAppsReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	for _, item := range a.GetApps() {
-		fields := map[string]string{}
-		for _, field := range a.Headers() {
-			fields[field] = GetField(item, field)
-		}
-		res = append(res, fields)
-	}
 	return res
 }
