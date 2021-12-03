@@ -10,7 +10,6 @@ import (
 	"github.com/logrusorgru/aurora"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func NewAppCmd() *cobra.Command {
@@ -164,22 +163,6 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 		return h.listFormat(cmd, args, format)
 	}
 	return h.getFormat(cmd, args, format)
-}
-
-func (h *AppHandler) Switch(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-	res, _, err := client.AppsApi.GetApp(ctx, args[0]).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	log.Infof("Switching default app to %s (id: %s).", res.App.GetName(), res.App.GetId())
-	viper.Set("app", res.App.GetId())
-	err = viper.WriteConfig()
-	if err != nil {
-		er(err)
-	}
-	return nil
 }
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
