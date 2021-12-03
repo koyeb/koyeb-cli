@@ -23,7 +23,6 @@ var (
 	token        string
 	outputFormat string
 	debug        bool
-	selectedApp  string
 
 	rootCmd = &cobra.Command{
 		Use:               "koyeb",
@@ -89,11 +88,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
-	rootCmd.PersistentFlags().StringP("app", "a", "", "App")
 	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
-	viper.BindPFlag("app", rootCmd.PersistentFlags().Lookup("app"))
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -143,5 +140,4 @@ func initConfig() {
 	apiurl = viper.GetString("url")
 	token = viper.GetString("token")
 	debug = viper.GetBool("debug")
-	selectedApp = viper.GetString("app")
 }

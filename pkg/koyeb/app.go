@@ -65,22 +65,6 @@ func NewAppCmd() *cobra.Command {
 	}
 	appCmd.AddCommand(getAppCmd)
 
-	currentAppCmd := &cobra.Command{
-		Use:   "current",
-		Short: "Get current app",
-		RunE:  h.Current,
-	}
-	appCmd.AddCommand(currentAppCmd)
-
-	switchAppCmd := &cobra.Command{
-		Use:     "switch",
-		Aliases: []string{"use"},
-		Short:   "Set current app",
-		Args:    cobra.ExactArgs(1),
-		RunE:    h.Switch,
-	}
-	appCmd.AddCommand(switchAppCmd)
-
 	listAppCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List apps",
@@ -122,15 +106,6 @@ func NewAppCmd() *cobra.Command {
 
 func NewAppHandler() *AppHandler {
 	return &AppHandler{}
-}
-
-func getSelectedApp() string {
-	if selectedApp == "" {
-		log.Fatalf("No app selected, use: koyeb app switch <app>")
-		return ""
-	} else {
-		return selectedApp
-	}
 }
 
 type AppHandler struct {
@@ -205,13 +180,6 @@ func (h *AppHandler) Switch(cmd *cobra.Command, args []string) error {
 		er(err)
 	}
 	return nil
-}
-
-func (h *AppHandler) Current(cmd *cobra.Command, args []string) error {
-	format := getFormat("table")
-
-	app := getSelectedApp()
-	return h.getFormat(cmd, []string{app}, format)
 }
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
