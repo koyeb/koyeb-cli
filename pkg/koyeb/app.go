@@ -159,11 +159,6 @@ func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.
 	return h.getFormat(cmd, args, format)
 }
 
-func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
-	format := getFormat("detail")
-	return h.getFormat(cmd, args, format)
-}
-
 func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
