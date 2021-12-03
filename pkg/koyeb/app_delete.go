@@ -16,7 +16,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	force, _ := cmd.Flags().GetBool("force")
 	for _, arg := range args {
 		if force {
-			app, _, err := client.AppsApi.GetApp(ctx, args[0]).Execute()
+			app, _, err := client.AppsApi.GetApp(ctx, ResolveAppShortID(args[0])).Execute()
 			if err != nil {
 				fatalApiError(err)
 			}

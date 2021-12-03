@@ -11,7 +11,7 @@ import (
 func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.UpdateApp) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
-	res, _, err := client.AppsApi.UpdateApp2(ctx, args[0]).Body(*updateApp).Execute()
+	res, _, err := client.AppsApi.UpdateApp2(ctx, ResolveAppShortID(args[0])).Body(*updateApp).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
