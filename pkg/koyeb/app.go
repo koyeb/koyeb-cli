@@ -60,6 +60,7 @@ func NewAppCmd() *cobra.Command {
 	getAppCmd := &cobra.Command{
 		Use:   "get [name]",
 		Short: "Get app",
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Get,
 	}
 	appCmd.AddCommand(getAppCmd)
@@ -74,6 +75,7 @@ func NewAppCmd() *cobra.Command {
 	describeAppCmd := &cobra.Command{
 		Use:   "describe [name]",
 		Short: "Describe apps",
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
 	}
 	appCmd.AddCommand(describeAppCmd)
@@ -159,9 +161,6 @@ func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.
 
 func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 	format := getFormat("table")
-	if len(args) == 0 {
-		return h.listFormat(cmd, args, format)
-	}
 	return h.getFormat(cmd, args, format)
 }
 
