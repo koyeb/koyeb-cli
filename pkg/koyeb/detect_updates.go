@@ -19,13 +19,10 @@ func DetectUpdates() {
 	version, err := semver.Parse(Version)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to parse version: %v", err)
+		return
 	}
 
 	detectUpdateFile := path.Join(os.TempDir(), "koyeb-cli-detect-update")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "unable to setup cache: %v", err)
-		return
-	}
 	dFile, _ := os.Stat(detectUpdateFile)
 
 	if dFile != nil {
