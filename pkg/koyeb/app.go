@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/spf13/cobra"
 )
@@ -105,27 +103,4 @@ func NewAppHandler() *AppHandler {
 }
 
 type AppHandler struct {
-}
-
-func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	_, _, err := client.ServicesApi.CreateService(ctx, args[0]).DryRun(true).Body(*createService).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	createApp.SetName(args[0])
-	_, _, err = client.AppsApi.CreateApp(ctx).Body(*createApp).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	_, _, err = client.ServicesApi.CreateService(ctx, args[0]).Body(*createService).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	return nil
 }
