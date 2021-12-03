@@ -3,12 +3,9 @@ package koyeb
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/logrusorgru/aurora"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -144,43 +141,6 @@ func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.
 		fatalApiError(err)
 	}
 	return h.getFormat(cmd, args, format)
-}
-
-func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	force, _ := cmd.Flags().GetBool("force")
-	for _, arg := range args {
-		if force {
-			for {
-				res, _, err := client.ServicesApi.DeprecatedListServices(ctx, arg).Limit("100").Execute()
-				if err != nil {
-					fatalApiError(err)
-				}
-				if res.GetCount() == 0 {
-					break
-				}
-				for _, svc := range res.GetServices() {
-					if svc.State.GetStatus() == "STOPPING" || svc.State.GetStatus() == "STOPPED" {
-						continue
-					}
-					_, _, err := client.ServicesApi.DeleteService(ctx, arg, svc.GetId()).Execute()
-					if err != nil {
-						fatalApiError(err)
-					}
-				}
-				time.Sleep(2 * time.Second)
-			}
-		}
-		_, _, err := client.AppsApi.DeleteApp(ctx, arg).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-	}
-
-	log.Infof("Apps %s deleted.", strings.Join(args, ", "))
-	return nil
 }
 
 func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string) error {
