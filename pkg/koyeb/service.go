@@ -32,6 +32,11 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.Int64("max-scale", 1, "Max scale")
 }
 
+// FIXME should be removed
+func getSelectedApp() string {
+	return ""
+}
+
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.ServiceDefinition, useDefault bool) error {
 
 	if useDefault || flags.Lookup("env").Changed {
