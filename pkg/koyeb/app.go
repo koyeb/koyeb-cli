@@ -222,7 +222,7 @@ func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string)
 		}
 		render(format, &GetAppReply{res})
 		if format == "detail" {
-			res, _, err := client.ServicesApi.DeprecatedListServices(ctx, arg).Limit("100").Execute()
+			res, _, err := client.ServicesApi.ListServices(ctx).AppId(res.App.GetId()).Limit("100").Execute()
 			if err != nil {
 				fatalApiError(err)
 			}
