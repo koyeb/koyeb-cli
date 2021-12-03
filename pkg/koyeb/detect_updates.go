@@ -24,6 +24,7 @@ func DetectUpdates() {
 	detectUpdateFile := path.Join(os.TempDir(), "koyeb-cli-detect-update")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to setup cache: %v", err)
+		return
 	}
 	dFile, _ := os.Stat(detectUpdateFile)
 
@@ -36,7 +37,7 @@ func DetectUpdates() {
 	latest, found, err := selfupdate.DetectLatest(GithubRepo)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return
 	}
 	if !found {
 		return
