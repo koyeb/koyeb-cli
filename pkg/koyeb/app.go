@@ -159,11 +159,6 @@ func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.
 	return h.getFormat(cmd, args, format)
 }
 
-func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
-	format := getFormat("table")
-	return h.getFormat(cmd, args, format)
-}
-
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 	format := getFormat("detail")
 	return h.getFormat(cmd, args, format)
@@ -215,7 +210,7 @@ func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string)
 		if err != nil {
 			fatalApiError(err)
 		}
-		render(format, &GetAppReply{res})
+		render(format, &GetAppReply{res: &res})
 		if format == "detail" {
 			res, _, err := client.ServicesApi.ListServices(ctx).AppId(res.App.GetId()).Limit("100").Execute()
 			if err != nil {
@@ -228,31 +223,4 @@ func (h *AppHandler) getFormat(cmd *cobra.Command, args []string, format string)
 	}
 
 	return nil
-}
-
-type GetAppReply struct {
-	koyeb.GetAppReply
-}
-
-func (a *GetAppReply) MarshalBinary() ([]byte, error) {
-	return a.GetAppReply.GetApp().MarshalJSON()
-}
-
-func (a *GetAppReply) Title() string {
-	return "App"
-}
-
-func (a *GetAppReply) Headers() []string {
-	return []string{"id", "name", "domains", "updated_at"}
-}
-
-func (a *GetAppReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.GetApp()
-	fields := map[string]string{}
-	for _, field := range a.Headers() {
-		fields[field] = GetField(item, field)
-	}
-	res = append(res, fields)
-	return res
 }
