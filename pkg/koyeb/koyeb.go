@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	Version   = "develop"
-	BuildDate = "-"
-	Commit    = "-"
+	Version    = "develop"
+	BuildDate  = "-"
+	Commit     = "-"
+	GithubRepo = "koyeb/koyeb-cli"
 
 	// Used for flags.
 	file         string
@@ -65,6 +66,7 @@ func GetRootCmd() *cobra.Command {
 }
 
 func Run() error {
+	DetectUpdates()
 	return rootCmd.Execute()
 }
 
