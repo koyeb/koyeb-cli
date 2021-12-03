@@ -16,8 +16,14 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	force, _ := cmd.Flags().GetBool("force")
 	for _, arg := range args {
 		if force {
+			app, _, err := client.AppsApi.GetApp(ctx, args[0]).Execute()
+			if err != nil {
+				fatalApiError(err)
+			}
+
+			log.Infof("Deleting app %s...", app.App.GetName())
 			for {
-				res, _, err := client.ServicesApi.ListServices(ctx).AppId(arg).Limit("100").Execute()
+				res, _, err := client.ServicesApi.ListServices(ctx).AppId(app.App.GetId()).Limit("100").Execute()
 				if err != nil {
 					fatalApiError(err)
 				}
@@ -28,7 +34,8 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 					if svc.State.GetStatus() == "STOPPING" || svc.State.GetStatus() == "STOPPED" {
 						continue
 					}
-					_, _, err := client.ServicesApi.DeleteService(ctx, arg, svc.GetId()).Execute()
+					log.Infof("Deleting service %s", svc.GetName())
+					_, _, err := client.ServicesApi.DeleteService(ctx, app.App.GetId(), svc.GetId()).Execute()
 					if err != nil {
 						fatalApiError(err)
 					}
