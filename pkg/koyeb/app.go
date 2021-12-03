@@ -166,9 +166,6 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 	format := getFormat("detail")
-	if len(args) == 0 {
-		return h.listFormat(cmd, args, format)
-	}
 	return h.getFormat(cmd, args, format)
 }
 
