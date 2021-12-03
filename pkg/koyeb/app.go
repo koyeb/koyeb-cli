@@ -112,19 +112,6 @@ func NewAppHandler() *AppHandler {
 type AppHandler struct {
 }
 
-func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp) error {
-	format := getFormat("table")
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	createApp.SetName(args[0])
-	_, _, err := client.AppsApi.CreateApp(ctx).Body(*createApp).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	return h.getFormat(cmd, args, format)
-}
-
 func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
