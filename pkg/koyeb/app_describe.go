@@ -12,7 +12,7 @@ func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	res, _, err := client.AppsApi.GetApp(ctx, args[0]).Execute()
+	res, _, err := client.AppsApi.GetApp(ctx, ResolveAppShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
