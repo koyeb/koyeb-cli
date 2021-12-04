@@ -178,6 +178,8 @@ func NewServiceCmd() *cobra.Command {
 		},
 	}
 	addServiceDefinitionFlags(createServiceCmd.Flags())
+	createServiceCmd.Flags().StringP("app", "a", "", "App")
+	createServiceCmd.MarkFlagRequired("app")
 	serviceCmd.AddCommand(createServiceCmd)
 
 	getServiceCmd := &cobra.Command{
@@ -265,20 +267,6 @@ func NewServiceHandler() *ServiceHandler {
 }
 
 type ServiceHandler struct {
-}
-
-func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
-	format := getFormat("table")
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	app := getSelectedApp()
-	res, _, err := client.ServicesApi.CreateService(ctx, app).Body(*createService).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetName())
-	return h.getFormat(cmd, args, format)
 }
 
 func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
