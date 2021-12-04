@@ -237,6 +237,7 @@ func NewServiceCmd() *cobra.Command {
 			// }
 			// updateService.SetDefinition(*updateDef)
 			// return h.Update(cmd, args, updateService)
+			return nil
 		},
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
