@@ -385,11 +385,6 @@ func watchLog(app string, serviceID string, instanceID string, done chan struct{
 	}
 }
 
-func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
-	format := getFormat("detail")
-	return h.getFormat(cmd, args, format)
-}
-
 func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
