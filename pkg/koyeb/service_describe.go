@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -16,14 +17,33 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		fatalApiError(err)
 	}
+
+	instancesRes, _, err := client.InstancesApi.ListInstances(ctx).Statuses([]string{
+		string(koyeb.INSTANCESTATUS_ALLOCATING),
+		string(koyeb.INSTANCESTATUS_STARTING),
+		string(koyeb.INSTANCESTATUS_HEALTHY),
+		string(koyeb.INSTANCESTATUS_UNHEALTHY),
+		string(koyeb.INSTANCESTATUS_STOPPING),
+	}).ServiceId(res.Service.GetId()).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+	appMapper := idmapper.NewAppMapper(ctx, client)
+	serviceMapper := idmapper.NewServiceMapper(ctx, client)
+
 	full, _ := cmd.Flags().GetBool("full")
 	getServiceReply := NewGetServiceReply(&res, full)
+	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper)
 
 	// TODO add deployments
 
 	output, _ := cmd.Flags().GetString("output")
 	return renderer.MultiRenderer(
-		func() error { return renderer.DescribeRenderer(output, getServiceReply) })
+		func() error { return renderer.DescribeRenderer(output, getServiceReply) },
+		func() error { return renderer.SeparatorRenderer(output) },
+		func() error { return renderer.TitleRenderer(output, listInstancesReply) },
+		func() error { return renderer.ListRenderer(output, listInstancesReply) },
+	)
 }
 
 type DescribeServiceReply struct {

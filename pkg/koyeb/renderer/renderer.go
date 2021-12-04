@@ -1,6 +1,10 @@
 package renderer
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/logrusorgru/aurora"
+)
 
 type WithTitle interface {
 	Title() string
@@ -13,13 +17,26 @@ type ApiResources interface {
 }
 
 func MultiRenderer(funcs ...func() error) error {
-	for i, f := range funcs {
-		if i > 0 && i <= len(funcs) {
-			fmt.Println("")
-		}
+	for _, f := range funcs {
 		err := f()
 		if err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func SeparatorRenderer(format string) error {
+	if format == "" {
+		fmt.Println("")
+	}
+	return nil
+}
+
+func TitleRenderer(format string, item ApiResources) error {
+	if format == "" {
+		if title, ok := item.(WithTitle); ok {
+			fmt.Println(aurora.Bold(title.Title()))
 		}
 	}
 	return nil
