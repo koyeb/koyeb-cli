@@ -20,10 +20,9 @@ func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		fatalApiError(err)
 	}
-	listServicesReply := &ListServicesReply{resListServices}
-
 	full, _ := cmd.Flags().GetBool("full")
 	describeAppsReply := NewDescribeAppReply(&res, full)
+	listServicesReply := NewListServicesReply(&resListServices, full)
 
 	output, _ := cmd.Flags().GetString("output")
 	return renderer.MultiRenderer(
