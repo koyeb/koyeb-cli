@@ -13,7 +13,7 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	res, _, err := client.ServicesApi.GetService(ctx, args[0]).Execute()
+	res, _, err := client.ServicesApi.GetService(ctx, ResolveServiceShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
