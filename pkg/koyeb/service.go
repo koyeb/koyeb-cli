@@ -403,18 +403,6 @@ func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (h *ServiceHandler) Delete(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	app := getSelectedApp()
-	for _, arg := range args {
-		_, _, err := client.ServicesApi.DeleteService(ctx, app, arg).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-	}
-	log.Infof("Services %s deleted.", strings.Join(args, ", "))
 	return nil
 }
 
