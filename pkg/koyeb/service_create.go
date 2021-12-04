@@ -10,7 +10,6 @@ import (
 )
 
 func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
-	// format := getFormat("table")
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
