@@ -270,21 +270,22 @@ type ServiceHandler struct {
 }
 
 func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-	app := getSelectedApp()
+	// client := getApiClient()
+	// ctx := getAuth(context.Background())
+	// app := getSelectedApp()
 
-	serviceDetail, _, err := client.ServicesApi.GetService(ctx, app, args[0]).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
+	// serviceDetail, _, err := client.ServicesApi.GetService(ctx, app, args[0]).Execute()
+	// if err != nil {
+	//   fatalApiError(err)
+	// }
 
-	serviceID := serviceDetail.Service.GetId()
-	instanceID, _ := cmd.Flags().GetString("instance")
+	// serviceID := serviceDetail.Service.GetId()
+	// instanceID, _ := cmd.Flags().GetString("instance")
 
-	done := make(chan struct{})
+	// done := make(chan struct{})
 
-	return watchLog(app, serviceID, instanceID, done)
+	// return watchLog(app, serviceID, instanceID, done)
+	return nil
 }
 
 type LogMessage struct {
