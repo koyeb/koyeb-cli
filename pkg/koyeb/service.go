@@ -204,8 +204,8 @@ func NewServiceCmd() *cobra.Command {
 		RunE:  h.List,
 	}
 	serviceCmd.AddCommand(listServiceCmd)
-	listServiceCmd.Flags().String("app_id", "", "App id")
-	listServiceCmd.Flags().String("name", "", "Service name")
+	listServiceCmd.Flags().StringP("app", "a", "", "App")
+	listServiceCmd.Flags().StringP("name", "n", "", "Service name")
 
 	describeServiceCmd := &cobra.Command{
 		Use:   "describe [name]",
