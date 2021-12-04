@@ -83,7 +83,7 @@ func (a *ListServicesReply) Fields() []map[string]string {
 			"id":         renderer.FormatID(item.GetId(), a.full),
 			"app_id":     renderer.FormatID(item.GetAppId(), a.full),
 			"name":       item.GetName(),
-			"status":     fmt.Sprintf("%s", item.State.GetStatus()),
+			"status":     formatStatus(item.State.GetStatus()),
 			"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 		}
 		res = append(res, fields)

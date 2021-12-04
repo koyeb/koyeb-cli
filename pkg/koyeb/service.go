@@ -293,9 +293,6 @@ func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService
 	return h.getFormat(cmd, args, format)
 }
 
-func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
-	format := getFormat("table")
-	return h.getFormat(cmd, args, format)
 }
 
 func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
@@ -422,78 +419,6 @@ func (h *ServiceHandler) Delete(cmd *cobra.Command, args []string) error {
 	}
 	log.Infof("Services %s deleted.", strings.Join(args, ", "))
 	return nil
-}
-
-func (h *ServiceHandler) getFormat(cmd *cobra.Command, args []string, format string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-	app := getSelectedApp()
-
-	for _, arg := range args {
-		res, _, err := client.ServicesApi.GetService(ctx, app, arg).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-		render(format, &GetServiceReply{res})
-		if format == "detail" {
-			res, _, err := client.ServicesApi.ListRevisions(ctx, app, arg).Limit("100").Execute()
-			if err != nil {
-				fatalApiError(err)
-			}
-
-			revDetail, _, err := client.ServicesApi.GetRevision(ctx, app, arg, "_latest").Execute()
-			if err != nil {
-				fatalApiError(err)
-			}
-			rendDetail := &GetServiceRevisionReply{revDetail}
-			detailFormat := getFormat("detail")
-			if detailFormat == "detail" {
-				fmt.Printf("\n")
-				render(detailFormat, rendDetail)
-			}
-
-			rend := &ListServiceRevisionsReply{res}
-			tableFormat := getFormat("table")
-			if tableFormat == "table" {
-				fmt.Printf("\n%s history\n", aurora.Bold(rend.Title()))
-				render(tableFormat, rend)
-			}
-		}
-	}
-
-	return nil
-}
-
-type GetServiceReply struct {
-	koyeb.GetServiceReply
-}
-
-func (a *GetServiceReply) MarshalBinary() ([]byte, error) {
-	return a.GetServiceReply.GetService().MarshalJSON()
-}
-
-func (a *GetServiceReply) Title() string {
-	return "Service"
-}
-
-func (a *GetServiceReply) Headers() []string {
-	return []string{"id", "name", "version", "status", "updated_at"}
-}
-
-func (a *GetServiceReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.GetService()
-	fields := map[string]string{}
-	for _, field := range a.Headers() {
-		switch field {
-		case "status":
-			fields[field] = GetField(item, "state.status")
-		default:
-			fields[field] = GetField(item, field)
-		}
-	}
-	res = append(res, fields)
-	return res
 }
 
 type ListServiceRevisionsReply struct {
