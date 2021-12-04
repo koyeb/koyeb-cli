@@ -18,10 +18,10 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 	full, _ := cmd.Flags().GetBool("full")
-	getAppsReply := NewGetServiceReply(&res, full)
+	getServiceReply := NewGetServiceReply(&res, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.ItemRenderer(output, getAppsReply)
+	return renderer.ItemRenderer(output, getServiceReply)
 }
 
 type GetServiceReply struct {
