@@ -35,7 +35,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 						continue
 					}
 					log.Infof("Deleting service %s", svc.GetName())
-					_, _, err := client.ServicesApi.DeleteService(ctx, app.App.GetId(), svc.GetId()).Execute()
+					_, _, err := client.ServicesApi.DeleteService(ctx, svc.GetId()).Execute()
 					if err != nil {
 						fatalApiError(err)
 					}
