@@ -19,7 +19,7 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 	limit := 100
 	for {
 		req := client.ServicesApi.ListServices(ctx)
-		appId, _ := cmd.Flags().GetString("app_id")
+		appId, _ := cmd.Flags().GetString("app")
 		if appId != "" {
 			req = req.AppId(ResolveAppShortID(appId))
 		}
@@ -72,7 +72,7 @@ func (a *ListServicesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *ListServicesReply) Headers() []string {
-	return []string{"id", "app_id", "name", "status", "updated_at"}
+	return []string{"id", "app", "name", "status", "updated_at"}
 }
 
 func (a *ListServicesReply) Fields() []map[string]string {
@@ -81,7 +81,7 @@ func (a *ListServicesReply) Fields() []map[string]string {
 	for _, item := range a.res.GetServices() {
 		fields := map[string]string{
 			"id":         renderer.FormatID(item.GetId(), a.full),
-			"app_id":     renderer.FormatID(item.GetAppId(), a.full),
+			"app":        renderer.FormatID(item.GetAppId(), a.full),
 			"name":       item.GetName(),
 			"status":     formatStatus(item.State.GetStatus()),
 			"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
