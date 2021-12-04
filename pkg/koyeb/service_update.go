@@ -9,18 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
+func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
 
-	app, _ := cmd.Flags().GetString("app")
-	resApp, _, err := client.AppsApi.GetApp(ctx, ResolveAppShortID(app)).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	// TODO handle both notations (<app>:<sevice> and --app=app)
-	createService.SetAppId(resApp.App.GetId())
-	res, _, err := client.ServicesApi.CreateService(ctx).Body(*createService).Execute()
+	res, _, err := client.ServicesApi.UpdateService(ctx, ResolveAppShortID(args[0])).Body(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

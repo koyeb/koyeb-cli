@@ -222,22 +222,21 @@ func NewServiceCmd() *cobra.Command {
 		Short: "Update services",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			updateService := koyeb.NewUpdateServiceWithDefaults()
+			// updateService := koyeb.NewUpdateServiceWithDefaults()
 
-			client := getApiClient()
-			ctx := getAuth(context.Background())
-			app := getSelectedApp()
-			revDetail, _, err := client.ServicesApi.GetRevision(ctx, app, args[0], "_latest").Execute()
-			if err != nil {
-				fatalApiError(err)
-			}
-			updateDef := revDetail.GetRevision().Definition
-			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
-			if err != nil {
-				return err
-			}
-			updateService.SetDefinition(*updateDef)
-			return h.Update(cmd, args, updateService)
+			// client := getApiClient()
+			// ctx := getAuth(context.Background())
+			// revDetail, _, err := client.ServicesApi.DeprecatedGetRevision(ctx, app, args[0], "_latest").Execute()
+			// if err != nil {
+			//   fatalApiError(err)
+			// }
+			// updateDef := revDetail.GetRevision().Definition
+			// err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
+			// if err != nil {
+			//   return err
+			// }
+			// updateService.SetDefinition(*updateDef)
+			// return h.Update(cmd, args, updateService)
 		},
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
