@@ -265,6 +265,8 @@ github.com/koyeb/koyeb-api-client-go v0.0.0-20211123082057-dbbce5e2db13 h1:CjuTT
 github.com/koyeb/koyeb-api-client-go v0.0.0-20211123082057-dbbce5e2db13/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
 github.com/koyeb/koyeb-api-client-go v0.0.0-20211201074834-8268b1919b90 h1:MFW5/P/a6cpID3Y90owuKidNqYIk4Yi7W0qnHH3syAA=
 github.com/koyeb/koyeb-api-client-go v0.0.0-20211201074834-8268b1919b90/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20211204123909-b1a186a58775 h1:8MdUXB+9Wh7ntkuoujqL8BEUoQHd666aZH4cdbJMkjY=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20211204123909-b1a186a58775/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.0 h1:s5hAObm+yFO5uHYt5dYjxi2rXrsnmRpJx4OYvIWUaQs=
