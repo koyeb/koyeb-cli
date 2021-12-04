@@ -21,7 +21,7 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 		req := client.ServicesApi.ListServices(ctx)
 		appId, _ := cmd.Flags().GetString("app_id")
 		if appId != "" {
-			req = req.AppId(appId)
+			req = req.AppId(ResolveAppShortID(appId))
 		}
 		name, _ := cmd.Flags().GetString("name")
 		if name != "" {
