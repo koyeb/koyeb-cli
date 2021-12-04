@@ -183,6 +183,7 @@ func NewServiceCmd() *cobra.Command {
 	getServiceCmd := &cobra.Command{
 		Use:   "get [name]",
 		Short: "Get service",
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Get,
 	}
 	serviceCmd.AddCommand(getServiceCmd)
@@ -207,6 +208,7 @@ func NewServiceCmd() *cobra.Command {
 	describeServiceCmd := &cobra.Command{
 		Use:   "describe [name]",
 		Short: "Describe services",
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
 	}
 	serviceCmd.AddCommand(describeServiceCmd)
@@ -293,9 +295,6 @@ func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService
 
 func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 	format := getFormat("table")
-	if len(args) == 0 {
-		return h.listFormat(cmd, args, format)
-	}
 	return h.getFormat(cmd, args, format)
 }
 
@@ -391,9 +390,6 @@ func watchLog(app string, serviceID string, instanceID string, done chan struct{
 
 func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	format := getFormat("detail")
-	if len(args) == 0 {
-		return h.listFormat(cmd, args, format)
-	}
 	return h.getFormat(cmd, args, format)
 }
 
@@ -426,11 +422,6 @@ func (h *ServiceHandler) Delete(cmd *cobra.Command, args []string) error {
 	}
 	log.Infof("Services %s deleted.", strings.Join(args, ", "))
 	return nil
-}
-
-func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
-	format := "table"
-	return h.listFormat(cmd, args, format)
 }
 
 func (h *ServiceHandler) getFormat(cmd *cobra.Command, args []string, format string) error {
@@ -473,31 +464,6 @@ func (h *ServiceHandler) getFormat(cmd *cobra.Command, args []string, format str
 	return nil
 }
 
-func (h *ServiceHandler) listFormat(cmd *cobra.Command, args []string, format string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	app := getSelectedApp()
-
-	page := 0
-	offset := 0
-	limit := 100
-	for {
-		res, _, err := client.ServicesApi.DeprecatedListServices(ctx, app).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-		render(format, &ListServicesReply{res})
-		page += 1
-		offset = page * limit
-		if int64(offset) >= res.GetCount() {
-			break
-		}
-	}
-
-	return nil
-}
-
 type GetServiceReply struct {
 	koyeb.GetServiceReply
 }
@@ -527,39 +493,6 @@ func (a *GetServiceReply) Fields() []map[string]string {
 		}
 	}
 	res = append(res, fields)
-	return res
-}
-
-type ListServicesReply struct {
-	koyeb.ListServicesReply
-}
-
-func (a *ListServicesReply) Title() string {
-	return "Services"
-}
-
-func (a *ListServicesReply) MarshalBinary() ([]byte, error) {
-	return a.ListServicesReply.MarshalJSON()
-}
-
-func (a *ListServicesReply) Headers() []string {
-	return []string{"id", "name", "status", "updated_at"}
-}
-
-func (a *ListServicesReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	for _, item := range a.GetServices() {
-		fields := map[string]string{}
-		for _, field := range a.Headers() {
-			switch field {
-			case "status":
-				fields[field] = GetField(item, "state.status")
-			default:
-				fields[field] = GetField(item, field)
-			}
-		}
-		res = append(res, fields)
-	}
 	return res
 }
 
