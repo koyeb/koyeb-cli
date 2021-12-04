@@ -375,25 +375,6 @@ func watchLog(app string, serviceID string, instanceID string, done chan struct{
 	}
 }
 
-func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	app := getSelectedApp()
-	for _, arg := range args {
-		redeployRequest := koyeb.NewRedeployRequestInfoWithDefaults()
-		_, _, err := client.ServicesApi.ReDeploy(ctx, app, arg).Body(*redeployRequest).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-	}
-	log.Infof("Services %s redeployed.", strings.Join(args, ", "))
-	return nil
-}
-
-	return nil
-}
-
 type ListServiceRevisionsReply struct {
 	koyeb.ListServiceRevisionsReply
 }
