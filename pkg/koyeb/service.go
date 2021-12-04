@@ -269,22 +269,6 @@ func NewServiceHandler() *ServiceHandler {
 type ServiceHandler struct {
 }
 
-func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	format := getFormat("table")
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	app := getSelectedApp()
-	res, _, err := client.ServicesApi.UpdateService(ctx, app, args[0]).Body(*updateService).Execute()
-	if err != nil {
-		fatalApiError(err)
-	}
-	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetName())
-	return h.getFormat(cmd, args, format)
-}
-
-}
-
 func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
 	client := getApiClient()
 	ctx := getAuth(context.Background())
