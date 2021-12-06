@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -57,6 +59,7 @@ func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
 	serviceMapper := idmapper.NewServiceMapper(ctx, client)
 
 	query := h.getListQuery(ctx, cmd, client, appMapper, serviceMapper)
+	results := koyeb.ListInstancesReply{}
 
 	page := int64(0)
 	offset := int64(0)
@@ -66,15 +69,22 @@ func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			fatalApiError(err)
 		}
-		render("table", NewListInstancesReply(resp, appMapper, serviceMapper))
+		if results.Instances == nil {
+			results = resp
+		} else {
+			*results.Instances = append(*results.Instances, *resp.Instances...)
+		}
 		page += 1
 		offset = page * limit
 		if offset >= resp.GetCount() {
 			break
 		}
 	}
+	full, _ := cmd.Flags().GetBool("full")
+	listInstancesReply := NewListInstancesReply(results, appMapper, serviceMapper, full)
 
-	return nil
+	output, _ := cmd.Flags().GetString("output")
+	return renderer.NewListRenderer(listInstancesReply).Render(output)
 }
 
 func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
@@ -195,10 +205,12 @@ type ListInstancesReply struct {
 	items         koyeb.ListInstancesReply
 	appMapper     *idmapper.AppMapper
 	serviceMapper *idmapper.ServiceMapper
+	full          bool
 }
 
-func NewListInstancesReply(items koyeb.ListInstancesReply, appMapper *idmapper.AppMapper, serviceMapper *idmapper.ServiceMapper) *ListInstancesReply {
+func NewListInstancesReply(items koyeb.ListInstancesReply, appMapper *idmapper.AppMapper, serviceMapper *idmapper.ServiceMapper, full bool) *ListInstancesReply {
 	return &ListInstancesReply{
+		full:          full,
 		items:         items,
 		appMapper:     appMapper,
 		serviceMapper: serviceMapper,
@@ -219,13 +231,25 @@ func (reply *ListInstancesReply) Headers() []string {
 
 func (reply *ListInstancesReply) Fields() []map[string]string {
 	items := reply.items.GetInstances()
-	headers := reply.Headers()
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {
-		fields := make(map[string]string, len(headers))
-		for _, field := range headers {
-			fields[field] = reply.getField(field, item)
+		appName, err := reply.appMapper.GetName(*item.AppId)
+		if err != nil {
+			fatalApiError(err)
+		}
+		serviceName, err := reply.serviceMapper.GetName(*item.AppId, *item.ServiceId)
+		if err != nil {
+			fatalApiError(err)
+		}
+
+		fields := map[string]string{
+			"id":            renderer.FormatID(item.GetId(), reply.full),
+			"status":        formatInstanceStatus(item.GetStatus()),
+			"app_name":      appName,
+			"service_name":  serviceName,
+			"deployment_id": renderer.FormatID(item.GetDeploymentId(), reply.full),
+			"datacenter":    item.GetDatacenter(),
 		}
 		resp = append(resp, fields)
 	}
@@ -233,25 +257,6 @@ func (reply *ListInstancesReply) Fields() []map[string]string {
 	return resp
 }
 
-func (reply *ListInstancesReply) getField(field string, item koyeb.InstanceListItem) string {
-	switch field {
-	case "app_name":
-		appName, err := reply.appMapper.GetName(*item.AppId)
-		if err != nil {
-			fatalApiError(err)
-		}
-
-		return appName
-
-	case "service_name":
-		serviceName, err := reply.serviceMapper.GetName(*item.AppId, *item.ServiceId)
-		if err != nil {
-			fatalApiError(err)
-		}
-
-		return serviceName
-
-	default:
-		return GetField(item, field)
-	}
+func formatInstanceStatus(status koyeb.InstanceStatus) string {
+	return fmt.Sprintf("%s", status)
 }
