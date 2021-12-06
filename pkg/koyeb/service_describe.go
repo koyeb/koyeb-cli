@@ -33,7 +33,7 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 
 	full, _ := cmd.Flags().GetBool("full")
 	getServiceReply := NewGetServiceReply(&res, full)
-	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper)
+	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper, full)
 
 	// TODO add deployments
 
