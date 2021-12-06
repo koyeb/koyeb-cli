@@ -29,5 +29,5 @@ func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService
 	getServiceReply := NewGetServiceReply(&koyeb.GetServiceReply{Service: res.Service}, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.DescribeRenderer(output, getServiceReply)
+	return renderer.NewDescribeRenderer(getServiceReply).Render(output)
 }

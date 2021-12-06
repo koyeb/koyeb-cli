@@ -16,9 +16,21 @@ type ApiResources interface {
 	MarshalBinary() ([]byte, error)
 }
 
-func MultiRenderer(funcs ...func() error) error {
-	for _, f := range funcs {
-		err := f()
+type Renderable interface {
+	Render(string) error
+}
+
+type MultiRenderer struct {
+	renderers []Renderable
+}
+
+func NewMultiRenderer(renderers ...Renderable) Renderable {
+	return &MultiRenderer{renderers: renderers}
+}
+
+func (r *MultiRenderer) Render(format string) error {
+	for _, f := range r.renderers {
+		err := f.Render(format)
 		if err != nil {
 			return err
 		}
@@ -26,18 +38,31 @@ func MultiRenderer(funcs ...func() error) error {
 	return nil
 }
 
-func SeparatorRenderer(format string) error {
+type SeparatorRenderer struct {
+}
+
+func NewSeparatorRenderer() Renderable {
+	return &SeparatorRenderer{}
+}
+
+func (r *SeparatorRenderer) Render(format string) error {
 	if format == "" {
 		fmt.Println("")
 	}
 	return nil
 }
 
-func TitleRenderer(format string, item ApiResources) error {
+type TitleRenderer struct {
+	withTitle WithTitle
+}
+
+func NewTitleRenderer(withTitle WithTitle) Renderable {
+	return &TitleRenderer{withTitle: withTitle}
+}
+
+func (r *TitleRenderer) Render(format string) error {
 	if format == "" {
-		if title, ok := item.(WithTitle); ok {
-			fmt.Println(aurora.Bold(title.Title()))
-		}
+		fmt.Println(aurora.Bold(r.withTitle.Title()))
 	}
 	return nil
 }

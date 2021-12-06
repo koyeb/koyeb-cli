@@ -40,7 +40,7 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 	listAppsReply := NewListAppsReply(&results, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.ListRenderer(output, listAppsReply)
+	return renderer.NewListRenderer(listAppsReply).Render(output)
 }
 
 type ListAppsReply struct {

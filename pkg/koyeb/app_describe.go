@@ -25,12 +25,10 @@ func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 	listServicesReply := NewListServicesReply(&resListServices, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.MultiRenderer(
-		func() error { return renderer.DescribeRenderer(output, describeAppsReply) },
-		func() error { return renderer.SeparatorRenderer(output) },
-		func() error { return renderer.TitleRenderer(output, listServicesReply) },
-		func() error { return renderer.ListRenderer(output, listServicesReply) },
-	)
+	return renderer.NewDescribeRenderer(
+		describeAppsReply,
+		listServicesReply,
+	).Render(output)
 }
 
 type DescribeAppReply struct {

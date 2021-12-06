@@ -9,10 +9,18 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func DescribeRenderer(format string, items ...ApiResources) error {
-	for i, item := range items {
+type DescribeItemRenderer struct {
+	items []ApiResources
+}
+
+func NewDescribeItemRenderer(items ...ApiResources) Renderable {
+	return &DescribeItemRenderer{items}
+}
+
+func (r *DescribeItemRenderer) Render(format string) error {
+	for i, item := range r.items {
 		if title, ok := item.(WithTitle); ok {
-			if i > 0 && i <= len(items) {
+			if i > 0 && i <= len(r.items) {
 				fmt.Println("")
 			}
 			fmt.Println(aurora.Bold(title.Title()))
@@ -47,4 +55,17 @@ func DescribeRenderer(format string, items ...ApiResources) error {
 		}
 	}
 	return nil
+}
+
+func NewDescribeRenderer(items ...ApiResources) Renderable {
+	renderers := []Renderable{}
+	renderers = append(renderers, NewDescribeItemRenderer(items[0]))
+	for _, item := range items[1:] {
+		renderers = append(renderers, NewSeparatorRenderer())
+		if withTitle, ok := item.(WithTitle); ok {
+			renderers = append(renderers, NewTitleRenderer(withTitle))
+		}
+		renderers = append(renderers, NewListRenderer(item))
+	}
+	return NewMultiRenderer(renderers...)
 }

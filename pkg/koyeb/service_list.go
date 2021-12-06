@@ -48,7 +48,7 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 	listServicesReply := NewListServicesReply(&results, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.ListRenderer(output, listServicesReply)
+	return renderer.NewListRenderer(listServicesReply).Render(output)
 }
 
 type ListServicesReply struct {
