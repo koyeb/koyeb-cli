@@ -21,5 +21,5 @@ func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.
 	getAppsReply := NewGetAppReply(&koyeb.GetAppReply{App: res.App}, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.DescribeRenderer(output, getAppsReply)
+	return renderer.NewDescribeItemRenderer(getAppsReply).Render(output)
 }

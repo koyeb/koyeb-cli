@@ -21,7 +21,7 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 	getServiceReply := NewGetServiceReply(&res, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.ItemRenderer(output, getServiceReply)
+	return renderer.NewItemRenderer(getServiceReply).Render(output)
 }
 
 type GetServiceReply struct {

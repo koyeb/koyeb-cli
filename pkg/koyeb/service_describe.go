@@ -38,12 +38,10 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	// TODO add deployments
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.MultiRenderer(
-		func() error { return renderer.DescribeRenderer(output, getServiceReply) },
-		func() error { return renderer.SeparatorRenderer(output) },
-		func() error { return renderer.TitleRenderer(output, listInstancesReply) },
-		func() error { return renderer.ListRenderer(output, listInstancesReply) },
-	)
+	return renderer.NewDescribeRenderer(
+		getServiceReply,
+		listInstancesReply,
+	).Render(output)
 }
 
 type DescribeServiceReply struct {

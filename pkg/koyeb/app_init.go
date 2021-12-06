@@ -34,6 +34,8 @@ func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.Cr
 	getServiceReply := NewGetServiceReply(&koyeb.GetServiceReply{Service: serviceRes.Service}, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.MultiRenderer(
-		func() error { return renderer.DescribeRenderer(output, getAppsReply) }, func() error { return renderer.ListRenderer(output, getServiceReply) })
+	return renderer.NewDescribeRenderer(
+		getAppsReply,
+		getServiceReply,
+	).Render(output)
 }
