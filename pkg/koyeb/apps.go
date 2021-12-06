@@ -12,13 +12,13 @@ func NewAppCmd() *cobra.Command {
 	h := NewAppHandler()
 
 	appCmd := &cobra.Command{
-		Use:     "apps [action]",
+		Use:     "apps ACTION",
 		Aliases: []string{"a", "app"},
 		Short:   "Apps",
 	}
 
 	createAppCmd := &cobra.Command{
-		Use:   "create [name]",
+		Use:   "create NAME",
 		Short: "Create apps",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -30,7 +30,7 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(createAppCmd)
 
 	initAppCmd := &cobra.Command{
-		Use:   "init [name]",
+		Use:   "init NAME",
 		Short: "Create app and service",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -54,7 +54,7 @@ func NewAppCmd() *cobra.Command {
 	addServiceDefinitionFlags(initAppCmd.Flags())
 
 	getAppCmd := &cobra.Command{
-		Use:   "get [name]",
+		Use:   "get NAME",
 		Short: "Get app",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Get,
@@ -69,7 +69,7 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(listAppCmd)
 
 	describeAppCmd := &cobra.Command{
-		Use:   "describe [name]",
+		Use:   "describe NAME",
 		Short: "Describe apps",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
@@ -77,7 +77,7 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(describeAppCmd)
 
 	updateAppCmd := &cobra.Command{
-		Use:   "update [name]",
+		Use:   "update NAME",
 		Short: "Update apps",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -90,7 +90,7 @@ func NewAppCmd() *cobra.Command {
 	updateAppCmd.Flags().StringP("name", "n", "", "Name of the app")
 
 	deleteAppCmd := &cobra.Command{
-		Use:   "delete [name]",
+		Use:   "delete NAME",
 		Short: "Delete apps",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.Delete,

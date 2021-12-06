@@ -17,13 +17,13 @@ func NewSecretCmd() *cobra.Command {
 	h := NewSecretHandler()
 
 	secretCmd := &cobra.Command{
-		Use:     "secrets [action]",
+		Use:     "secrets ACTION",
 		Aliases: []string{"sec", "secret"},
 		Short:   "Secrets",
 	}
 
 	createSecretCmd := &cobra.Command{
-		Use:   "create [name]",
+		Use:   "create NAME",
 		Short: "Create secrets",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -37,7 +37,7 @@ func NewSecretCmd() *cobra.Command {
 	secretCmd.AddCommand(createSecretCmd)
 
 	getSecretCmd := &cobra.Command{
-		Use:   "get [name]",
+		Use:   "get NAME",
 		Short: "Get secret",
 		RunE:  h.Get,
 	}
@@ -51,14 +51,14 @@ func NewSecretCmd() *cobra.Command {
 	secretCmd.AddCommand(listSecretCmd)
 
 	describeSecretCmd := &cobra.Command{
-		Use:   "describe [name]",
+		Use:   "describe NAME",
 		Short: "Describe secrets",
 		RunE:  h.Describe,
 	}
 	secretCmd.AddCommand(describeSecretCmd)
 
 	updateSecretCmd := &cobra.Command{
-		Use:   "update [name]",
+		Use:   "update NAME",
 		Short: "Update secrets",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -72,7 +72,7 @@ func NewSecretCmd() *cobra.Command {
 	secretCmd.AddCommand(updateSecretCmd)
 
 	deleteSecretCmd := &cobra.Command{
-		Use:   "delete [name]",
+		Use:   "delete NAME",
 		Short: "Delete secrets",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.Delete,
