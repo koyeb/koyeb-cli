@@ -21,7 +21,7 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 	getAppsReply := NewGetAppReply(&res, full)
 
 	output, _ := cmd.Flags().GetString("output")
-	return renderer.ItemRenderer(output, getAppsReply)
+	return renderer.NewItemRenderer(getAppsReply).Render(output)
 }
 
 type GetAppReply struct {
