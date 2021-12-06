@@ -143,13 +143,13 @@ func NewServiceCmd() *cobra.Command {
 	h := NewServiceHandler()
 
 	serviceCmd := &cobra.Command{
-		Use:     "services [action]",
+		Use:     "services ACTION",
 		Aliases: []string{"s", "svc", "service"},
 		Short:   "Services",
 	}
 
 	createServiceCmd := &cobra.Command{
-		Use:   "create [name]",
+		Use:   "create NAME",
 		Short: "Create services",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -172,7 +172,7 @@ func NewServiceCmd() *cobra.Command {
 	serviceCmd.AddCommand(createServiceCmd)
 
 	getServiceCmd := &cobra.Command{
-		Use:   "get [name]",
+		Use:   "get NAME",
 		Short: "Get service",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Get,
@@ -180,7 +180,7 @@ func NewServiceCmd() *cobra.Command {
 	serviceCmd.AddCommand(getServiceCmd)
 
 	logsServiceCmd := &cobra.Command{
-		Use:     "logs [name]",
+		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},
 		Short:   "Get the service logs",
 		Args:    cobra.ExactArgs(1),
@@ -200,7 +200,7 @@ func NewServiceCmd() *cobra.Command {
 	listServiceCmd.Flags().StringP("name", "n", "", "Service name")
 
 	describeServiceCmd := &cobra.Command{
-		Use:   "describe [name]",
+		Use:   "describe NAME",
 		Short: "Describe services",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
@@ -208,7 +208,7 @@ func NewServiceCmd() *cobra.Command {
 	serviceCmd.AddCommand(describeServiceCmd)
 
 	updateServiceCmd := &cobra.Command{
-		Use:   "update [name]",
+		Use:   "update NAME",
 		Short: "Update services",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -234,7 +234,7 @@ func NewServiceCmd() *cobra.Command {
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{
-		Use:   "redeploy [name]",
+		Use:   "redeploy NAME",
 		Short: "Redeploy services",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.ReDeploy,
@@ -242,7 +242,7 @@ func NewServiceCmd() *cobra.Command {
 	serviceCmd.AddCommand(redeployServiceCmd)
 
 	deleteServiceCmd := &cobra.Command{
-		Use:   "delete [name]",
+		Use:   "delete NAME",
 		Short: "Delete services",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.Delete,

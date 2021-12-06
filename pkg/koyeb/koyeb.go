@@ -26,7 +26,7 @@ var (
 	debug        bool
 
 	rootCmd = &cobra.Command{
-		Use:               "koyeb",
+		Use:               "koyeb RESOURCE ACTION",
 		Short:             "Koyeb CLI",
 		DisableAutoGenTag: true,
 	}
