@@ -8,6 +8,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO
+// rework renderer
+// - port instances
+// - rework usage messages
+// - add back services update etc
+// - add deployments
+// - add logs
+// - add build
+
 func NewAppCmd() *cobra.Command {
 	h := NewAppHandler()
 
