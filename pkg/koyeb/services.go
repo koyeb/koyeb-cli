@@ -3,16 +3,11 @@ package koyeb
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -193,6 +188,7 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
 	logsServiceCmd.Flags().String("instance", "", "Instance")
+	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
 
 	listServiceCmd := &cobra.Command{
 		Use:   "list",
@@ -261,97 +257,6 @@ func NewServiceHandler() *ServiceHandler {
 }
 
 type ServiceHandler struct {
-}
-
-func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
-	// client := getApiClient()
-	// ctx := getAuth(context.Background())
-	// app := getSelectedApp()
-
-	// serviceDetail, _, err := client.ServicesApi.GetService(ctx, app, args[0]).Execute()
-	// if err != nil {
-	//   fatalApiError(err)
-	// }
-
-	// serviceID := serviceDetail.Service.GetId()
-	// instanceID, _ := cmd.Flags().GetString("instance")
-
-	// done := make(chan struct{})
-
-	// return watchLog(app, serviceID, instanceID, done)
-	return nil
-}
-
-type LogMessage struct {
-	Result LogMessageResult `json:"result"`
-}
-
-func (l LogMessage) String() string {
-	return l.Result.Msg
-}
-
-type LogMessageResult struct {
-	Msg string `json:"msg"`
-}
-
-func watchLog(app string, serviceID string, instanceID string, done chan struct{}) error {
-	path := fmt.Sprintf("/v1/apps/%s/logs/tail?service_id=%s", app, serviceID)
-	if instanceID != "" {
-		path = fmt.Sprintf("%s&instance_id=%s", path, instanceID)
-	}
-
-	dest, err := url.Parse(fmt.Sprint(apiurl, path))
-	if err != nil {
-		return fmt.Errorf("cannot parse url for websocket: %w", err)
-	}
-	switch dest.Scheme {
-	case "https":
-		dest.Scheme = "wss"
-	case "http":
-		dest.Scheme = "ws"
-	default:
-		return fmt.Errorf("unsupported schema: %s", dest.Scheme)
-	}
-
-	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
-	c, _, err := websocket.DefaultDialer.Dial(dest.String(), h)
-	if err != nil {
-		return fmt.Errorf("cannot create websocket: %w", err)
-	}
-	defer c.Close()
-
-	readDone := make(chan struct{})
-
-	go func() {
-		defer close(done)
-		for {
-			msg := LogMessage{}
-			err := c.ReadJSON(&msg)
-			if err != nil {
-				log.Println("error:", err)
-				return
-			}
-			log.Printf("%s", msg)
-		}
-	}()
-
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-done:
-			return nil
-		case <-readDone:
-			return nil
-		case t := <-ticker.C:
-			err := c.WriteMessage(websocket.PingMessage, []byte(t.String()))
-			if err != nil {
-				log.Println("write:", err)
-				return err
-			}
-		}
-	}
 }
 
 // type ListServiceRevisionsReply struct {
