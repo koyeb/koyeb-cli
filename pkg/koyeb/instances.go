@@ -33,7 +33,7 @@ func NewInstanceCmd() *cobra.Command {
 	instanceCmd.AddCommand(listInstanceCmd)
 
 	execInstanceCmd := &cobra.Command{
-		Use:   "exec NAME CMD [cmd...]",
+		Use:   "exec NAME CMD -- [args...]",
 		Short: "Run a command in the context of an instance",
 		Args:  cobra.MinimumNArgs(2),
 		RunE:  instanceHandler.Exec,
