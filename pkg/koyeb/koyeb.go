@@ -103,6 +103,7 @@ func init() {
 	rootCmd.AddCommand(NewAppCmd())
 	rootCmd.AddCommand(NewServiceCmd())
 	rootCmd.AddCommand(NewInstanceCmd())
+	rootCmd.AddCommand(NewDeploymentCmd())
 }
 
 func initConfig() {
