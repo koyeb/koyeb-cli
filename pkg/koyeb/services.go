@@ -150,7 +150,7 @@ func NewServiceCmd() *cobra.Command {
 
 	createServiceCmd := &cobra.Command{
 		Use:   "create NAME",
-		Short: "Create services",
+		Short: "Create service",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
@@ -188,7 +188,6 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
 	logsServiceCmd.Flags().String("instance", "", "Instance")
-	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
 
 	listServiceCmd := &cobra.Command{
 		Use:   "list",
@@ -201,7 +200,7 @@ func NewServiceCmd() *cobra.Command {
 
 	describeServiceCmd := &cobra.Command{
 		Use:   "describe NAME",
-		Short: "Describe services",
+		Short: "Describe service",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
 	}
@@ -209,7 +208,7 @@ func NewServiceCmd() *cobra.Command {
 
 	updateServiceCmd := &cobra.Command{
 		Use:   "update NAME",
-		Short: "Update services",
+		Short: "Update service",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// updateService := koyeb.NewUpdateServiceWithDefaults()
@@ -235,7 +234,7 @@ func NewServiceCmd() *cobra.Command {
 
 	redeployServiceCmd := &cobra.Command{
 		Use:   "redeploy NAME",
-		Short: "Redeploy services",
+		Short: "Redeploy service",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.ReDeploy,
 	}
@@ -243,7 +242,7 @@ func NewServiceCmd() *cobra.Command {
 
 	deleteServiceCmd := &cobra.Command{
 		Use:   "delete NAME",
-		Short: "Delete services",
+		Short: "Delete service",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.Delete,
 	}
