@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,10 +13,7 @@ import (
 )
 
 func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	serviceDetail, _, err := client.ServicesApi.GetService(ctx, ResolveServiceShortID(args[0])).Execute()
+	serviceDetail, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

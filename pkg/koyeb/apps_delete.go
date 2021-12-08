@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -9,19 +8,16 @@ import (
 )
 
 func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
 	force, _ := cmd.Flags().GetBool("force")
 	if force {
-		app, _, err := client.AppsApi.GetApp(ctx, ResolveAppShortID(args[0])).Execute()
+		app, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppShortID(args[0])).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
 
 		log.Infof("Deleting app %s...", app.App.GetName())
 		for {
-			res, _, err := client.ServicesApi.ListServices(ctx).AppId(app.App.GetId()).Limit("100").Execute()
+			res, _, err := h.client.ServicesApi.ListServices(h.ctxWithAuth).AppId(app.App.GetId()).Limit("100").Execute()
 			if err != nil {
 				fatalApiError(err)
 			}
@@ -33,7 +29,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 					continue
 				}
 				log.Infof("Deleting service %s", svc.GetName())
-				_, _, err := client.ServicesApi.DeleteService(ctx, svc.GetId()).Execute()
+				_, _, err := h.client.ServicesApi.DeleteService(h.ctxWithAuth, svc.GetId()).Execute()
 				if err != nil {
 					fatalApiError(err)
 				}
@@ -41,7 +37,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 			time.Sleep(2 * time.Second)
 		}
 	}
-	_, _, err := client.AppsApi.DeleteApp(ctx, ResolveAppShortID(args[0])).Execute()
+	_, _, err := h.client.AppsApi.DeleteApp(h.ctxWithAuth, h.ResolveAppShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

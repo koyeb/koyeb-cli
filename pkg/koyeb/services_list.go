@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -10,18 +9,16 @@ import (
 )
 
 func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
 	results := koyeb.ListServicesReply{}
 
 	page := 0
 	offset := 0
 	limit := 100
 	for {
-		req := client.ServicesApi.ListServices(ctx)
+		req := h.client.ServicesApi.ListServices(h.ctxWithAuth)
 		appId, _ := cmd.Flags().GetString("app")
 		if appId != "" {
-			req = req.AppId(ResolveAppShortID(appId))
+			req = req.AppId(h.ResolveAppShortID(appId))
 		}
 		name, _ := cmd.Flags().GetString("name")
 		if name != "" {

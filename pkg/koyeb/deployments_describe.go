@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -10,15 +8,13 @@ import (
 )
 
 func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	res, _, err := client.DeploymentsApi.GetDeployment(ctx, ResolveDeploymentShortID(args[0])).Execute()
+	ctx := h.ctxWithAuth
+	res, _, err := h.client.DeploymentsApi.GetDeployment(ctx, h.ResolveDeploymentShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
-	instancesRes, _, err := client.InstancesApi.ListInstances(ctx).Statuses([]string{
+	instancesRes, _, err := h.client.InstancesApi.ListInstances(ctx).Statuses([]string{
 		string(koyeb.INSTANCESTATUS_ALLOCATING),
 		string(koyeb.INSTANCESTATUS_STARTING),
 		string(koyeb.INSTANCESTATUS_HEALTHY),
@@ -29,8 +25,8 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 
-	appMapper := idmapper.NewAppMapper(ctx, client)
-	serviceMapper := idmapper.NewServiceMapper(ctx, client)
+	appMapper := idmapper.NewAppMapper(ctx, h.client)
+	serviceMapper := idmapper.NewServiceMapper(ctx, h.client)
 
 	full, _ := cmd.Flags().GetBool("full")
 	describeDeploymentsReply := NewDescribeDeploymentReply(&res, full)
