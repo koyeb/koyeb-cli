@@ -19,8 +19,10 @@ func NewListRenderer(items ...ApiResources) Renderable {
 
 func (r *ListRenderer) Render(format string) error {
 	for i, item := range r.items {
-		if i > 0 && i <= len(r.items) {
-			fmt.Println("")
+		if format == "" || format == "table" {
+			if i > 0 && i <= len(r.items) {
+				fmt.Println("")
+			}
 		}
 		switch format {
 		case "", "table":
