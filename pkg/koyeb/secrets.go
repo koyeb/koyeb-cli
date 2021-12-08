@@ -11,9 +11,10 @@ func NewSecretCmd() *cobra.Command {
 	h := NewSecretHandler()
 
 	secretCmd := &cobra.Command{
-		Use:     "secrets ACTION",
-		Aliases: []string{"sec", "secret"},
-		Short:   "Secrets",
+		Use:               "secrets ACTION",
+		Aliases:           []string{"sec", "secret"},
+		Short:             "Secrets",
+		PersistentPreRunE: h.InitHandler,
 	}
 
 	createSecretCmd := &cobra.Command{
@@ -79,15 +80,18 @@ func NewSecretCmd() *cobra.Command {
 }
 
 func NewSecretHandler() *SecretHandler {
-	return &SecretHandler{
-		client:      getApiClient(),
-		ctxWithAuth: getAuth(context.Background()),
-	}
+	return &SecretHandler{}
 }
 
 type SecretHandler struct {
 	client      *koyeb.APIClient
 	ctxWithAuth context.Context
+}
+
+func (d *SecretHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	d.client = getApiClient()
+	d.ctxWithAuth = getAuth(context.Background())
+	return nil
 }
 
 func (d *SecretHandler) ResolveSecretShortID(id string) string {

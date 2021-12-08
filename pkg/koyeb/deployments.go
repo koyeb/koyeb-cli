@@ -11,9 +11,10 @@ func NewDeploymentCmd() *cobra.Command {
 	h := NewDeploymentHandler()
 
 	deploymentCmd := &cobra.Command{
-		Use:     "deployments ACTION",
-		Aliases: []string{"d", "dep", "depl", "deploy", "deployment"},
-		Short:   "Deployments",
+		Use:               "deployments ACTION",
+		Aliases:           []string{"d", "dep", "depl", "deploy", "deployment"},
+		Short:             "Deployments",
+		PersistentPreRunE: h.InitHandler,
 	}
 
 	listDeploymentCmd := &cobra.Command{
@@ -53,15 +54,18 @@ func NewDeploymentCmd() *cobra.Command {
 }
 
 func NewDeploymentHandler() *DeploymentHandler {
-	return &DeploymentHandler{
-		client:      getApiClient(),
-		ctxWithAuth: getAuth(context.Background()),
-	}
+	return &DeploymentHandler{}
 }
 
 type DeploymentHandler struct {
 	client      *koyeb.APIClient
 	ctxWithAuth context.Context
+}
+
+func (d *DeploymentHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	d.client = getApiClient()
+	d.ctxWithAuth = getAuth(context.Background())
+	return nil
 }
 
 func (d *DeploymentHandler) ResolveDeploymentShortID(id string) string {
