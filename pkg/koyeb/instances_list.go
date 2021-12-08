@@ -30,13 +30,12 @@ func (h *InstanceHandler) getListQuery(ctx context.Context, cmd *cobra.Command, 
 }
 
 func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
-	ctx := getAuth(context.Background())
-	client := getApiClient()
+	ctx := h.ctxWithAuth
 
-	appMapper := idmapper.NewAppMapper(ctx, client)
-	serviceMapper := idmapper.NewServiceMapper(ctx, client)
+	appMapper := idmapper.NewAppMapper(ctx, h.client)
+	serviceMapper := idmapper.NewServiceMapper(ctx, h.client)
 
-	query := h.getListQuery(ctx, cmd, client, appMapper, serviceMapper)
+	query := h.getListQuery(ctx, cmd, h.client, appMapper, serviceMapper)
 	results := koyeb.ListInstancesReply{}
 
 	page := int64(0)

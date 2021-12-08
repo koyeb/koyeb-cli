@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"bufio"
-	"context"
 	"os"
 	"strings"
 
@@ -14,9 +13,6 @@ import (
 )
 
 func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *koyeb.CreateSecret) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
 	createSecret.SetName(args[0])
 	if !cmd.LocalFlags().Lookup("value-from-stdin").Changed && !cmd.LocalFlags().Lookup("value").Changed {
 		prompt := promptui.Prompt{
@@ -49,7 +45,7 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 
 		createSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, _, err := client.SecretsApi.CreateSecret(ctx).Body(*createSecret).Execute()
+	res, _, err := h.client.SecretsApi.CreateSecret(h.ctxWithAuth).Body(*createSecret).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"bufio"
-	"context"
 	"os"
 	"strings"
 
@@ -13,9 +12,6 @@ import (
 )
 
 func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *koyeb.Secret) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
 	if cmd.LocalFlags().Lookup("value-from-stdin").Changed && cmd.LocalFlags().Lookup("value").Changed {
 		log.Fatalf("Cannot use value and value-from-stdin at the same time")
 	}
@@ -35,7 +31,7 @@ func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *
 
 		updateSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, _, err := client.SecretsApi.UpdateSecret2(ctx, ResolveSecretShortID(args[0])).Body(*updateSecret).Execute()
+	res, _, err := h.client.SecretsApi.UpdateSecret2(h.ctxWithAuth, h.ResolveSecretShortID(args[0])).Body(*updateSecret).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

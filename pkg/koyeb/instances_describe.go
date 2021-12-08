@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -10,10 +9,7 @@ import (
 )
 
 func (h *InstanceHandler) Describe(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	res, _, err := client.InstancesApi.GetInstance(ctx, ResolveInstanceShortID(args[0])).Execute()
+	res, _, err := h.client.InstancesApi.GetInstance(h.ctxWithAuth, h.ResolveInstanceShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

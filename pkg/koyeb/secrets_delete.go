@@ -1,17 +1,12 @@
 package koyeb
 
 import (
-	"context"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 func (h *SecretHandler) Delete(cmd *cobra.Command, args []string) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	_, _, err := client.SecretsApi.DeleteSecret(ctx, ResolveSecretShortID(args[0])).Execute()
+	_, _, err := h.client.SecretsApi.DeleteSecret(h.ctxWithAuth, h.ResolveSecretShortID(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -11,16 +10,13 @@ import (
 )
 
 func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
-
-	client := getApiClient()
-	ctx := getAuth(context.Background())
 	results := koyeb.ListAppsReply{}
 
 	page := 0
 	offset := 0
 	limit := 100
 	for {
-		res, _, err := client.AppsApi.ListApps(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		res, _, err := h.client.AppsApi.ListApps(h.ctxWithAuth).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}

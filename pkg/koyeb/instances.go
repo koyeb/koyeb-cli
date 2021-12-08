@@ -69,10 +69,20 @@ func NewInstanceCmd() *cobra.Command {
 }
 
 func NewInstanceHandler() *InstanceHandler {
-	return &InstanceHandler{}
+	return &InstanceHandler{
+		client:      getApiClient(),
+		ctxWithAuth: getAuth(context.Background()),
+	}
 }
 
-type InstanceHandler struct{}
+type InstanceHandler struct {
+	client      *koyeb.APIClient
+	ctxWithAuth context.Context
+}
+
+func (d *InstanceHandler) ResolveInstanceShortID(id string) string {
+	return ResolveSecretShortID(d.ctxWithAuth, d.client, id)
+}
 
 func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	returnCode, err := h.exec(cmd, args)
@@ -126,7 +136,7 @@ func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
 	if len(args) < 2 {
 		return 0, errors.New("exec needs at least 2 arguments")
 	}
-	instanceId, userCmd := ResolveInstanceShortID(args[0]), args[1:]
+	instanceId, userCmd := h.ResolveInstanceShortID(args[0]), args[1:]
 
 	stdStreams, cleanup, err := GetStdStreams()
 	if err != nil {
@@ -170,51 +180,4 @@ func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
 
 func formatInstanceStatus(status koyeb.InstanceStatus) string {
 	return fmt.Sprintf("%s", status)
-}
-
-func buildInstanceShortIDCache() map[string][]string {
-	c := make(map[string][]string)
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	page := 0
-	offset := 0
-	limit := 100
-	for {
-		res, _, err := client.InstancesApi.ListInstances(ctx).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-		for _, a := range *res.Instances {
-			id := a.GetId()[:8]
-			c[id] = append(c[id], a.GetId())
-
-		}
-
-		page += 1
-		offset = page * limit
-		if int64(offset) >= res.GetCount() {
-			break
-		}
-	}
-
-	return c
-}
-
-func ResolveInstanceShortID(id string) string {
-	if len(id) == 8 {
-		// TODO do a real cache
-		cache := buildInstanceShortIDCache()
-		nlid, ok := cache[id]
-		if ok {
-			if len(nlid) == 1 {
-				return nlid[0]
-			} else {
-				return "local-short-id-conflict"
-			}
-		}
-		return id
-	} else {
-		return id
-	}
 }
