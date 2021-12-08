@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ghodss/yaml"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 )
@@ -19,15 +20,17 @@ func NewDescribeItemRenderer(items ...ApiResources) Renderable {
 
 func (r *DescribeItemRenderer) Render(format string) error {
 	for i, item := range r.items {
-		if title, ok := item.(WithTitle); ok {
-			if i > 0 && i <= len(r.items) {
-				fmt.Println("")
+		if format == "" || format == "table" {
+			if title, ok := item.(WithTitle); ok {
+				if i > 0 && i <= len(r.items) {
+					fmt.Println("")
+				}
+				fmt.Println(aurora.Bold(title.Title()))
 			}
-			fmt.Println(aurora.Bold(title.Title()))
 		}
 
 		switch format {
-		case "":
+		case "", "table":
 			var table *tablewriter.Table
 
 			table = tablewriter.NewWriter(os.Stdout)
@@ -50,6 +53,22 @@ func (r *DescribeItemRenderer) Render(format string) error {
 			}
 			table.AppendBulk(fields)
 			table.Render()
+		case "yaml":
+			buf, err := item.MarshalBinary()
+			if err != nil {
+				return err
+			}
+			y, err := yaml.JSONToYAML(buf)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s", string(y))
+		case "json":
+			buf, err := item.MarshalBinary()
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(buf))
 		default:
 			return errors.New("Invalid format")
 		}
