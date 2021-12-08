@@ -237,7 +237,7 @@ func NewServiceCmd() *cobra.Command {
 	redeployServiceCmd := &cobra.Command{
 		Use:   "redeploy NAME",
 		Short: "Redeploy service",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.ReDeploy,
 	}
 	serviceCmd.AddCommand(redeployServiceCmd)
@@ -245,7 +245,7 @@ func NewServiceCmd() *cobra.Command {
 	deleteServiceCmd := &cobra.Command{
 		Use:   "delete NAME",
 		Short: "Delete service",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Delete,
 	}
 	serviceCmd.AddCommand(deleteServiceCmd)

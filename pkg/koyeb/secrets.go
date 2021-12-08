@@ -71,7 +71,7 @@ func NewSecretCmd() *cobra.Command {
 	deleteSecretCmd := &cobra.Command{
 		Use:   "delete NAME",
 		Short: "Delete secret",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Delete,
 	}
 	secretCmd.AddCommand(deleteSecretCmd)
