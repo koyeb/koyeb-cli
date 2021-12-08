@@ -32,6 +32,22 @@ func NewInstanceCmd() *cobra.Command {
 	listInstanceCmd.Flags().String("service", "", "Filter on Service id or name")
 	instanceCmd.AddCommand(listInstanceCmd)
 
+	getInstanceCmd := &cobra.Command{
+		Use:   "get NAME",
+		Short: "Get instance",
+		Args:  cobra.ExactArgs(1),
+		RunE:  instanceHandler.Get,
+	}
+	instanceCmd.AddCommand(getInstanceCmd)
+
+	describeInstanceCmd := &cobra.Command{
+		Use:   "describe NAME",
+		Short: "Describe instance",
+		Args:  cobra.ExactArgs(1),
+		RunE:  instanceHandler.Describe,
+	}
+	instanceCmd.AddCommand(describeInstanceCmd)
+
 	execInstanceCmd := &cobra.Command{
 		Use:   "exec NAME CMD -- [args...]",
 		Short: "Run a command in the context of an instance",
