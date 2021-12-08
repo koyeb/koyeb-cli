@@ -45,7 +45,7 @@ func (a *GetAppReply) Title() string {
 }
 
 func (a *GetAppReply) Headers() []string {
-	return []string{"id", "name", "domains", "updated_at"}
+	return []string{"id", "name", "domains", "created_at"}
 }
 
 func (a *GetAppReply) Fields() []map[string]string {
@@ -55,7 +55,7 @@ func (a *GetAppReply) Fields() []map[string]string {
 		"id":         renderer.FormatID(item.GetId(), a.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
-		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
 	res = append(res, fields)
 	return res

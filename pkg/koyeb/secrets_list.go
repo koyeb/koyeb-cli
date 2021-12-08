@@ -62,7 +62,7 @@ func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *ListSecretsReply) Headers() []string {
-	return []string{"id", "name", "type", "value", "updated_at"}
+	return []string{"id", "name", "type", "value", "created_at"}
 }
 
 func (a *ListSecretsReply) Fields() []map[string]string {
@@ -73,7 +73,7 @@ func (a *ListSecretsReply) Fields() []map[string]string {
 			"name":       item.GetName(),
 			"type":       formatSecretType(item.GetType()),
 			"value":      "*****",
-			"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
+			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		res = append(res, fields)
 	}

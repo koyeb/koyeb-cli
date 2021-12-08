@@ -72,7 +72,7 @@ func (a *ListServicesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (a *ListServicesReply) Headers() []string {
-	return []string{"id", "app", "name", "status", "updated_at"}
+	return []string{"id", "app", "name", "status", "created_at"}
 }
 
 func (a *ListServicesReply) Fields() []map[string]string {
@@ -84,7 +84,7 @@ func (a *ListServicesReply) Fields() []map[string]string {
 			"app":        renderer.FormatID(item.GetAppId(), a.full),
 			"name":       item.GetName(),
 			"status":     formatStatus(item.State.GetStatus()),
-			"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
+			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		res = append(res, fields)
 	}

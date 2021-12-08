@@ -52,7 +52,7 @@ func (a *DescribeAppReply) Title() string {
 }
 
 func (a *DescribeAppReply) Headers() []string {
-	return []string{"id", "name", "domains", "updated_at"}
+	return []string{"id", "name", "domains", "created_at", "updated_at"}
 }
 
 func (a *DescribeAppReply) Fields() []map[string]string {
@@ -62,6 +62,7 @@ func (a *DescribeAppReply) Fields() []map[string]string {
 		"id":         renderer.FormatID(item.GetId(), a.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}
 	res = append(res, fields)
