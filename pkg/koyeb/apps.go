@@ -19,7 +19,7 @@ func NewAppCmd() *cobra.Command {
 
 	createAppCmd := &cobra.Command{
 		Use:   "create NAME",
-		Short: "Create apps",
+		Short: "Create app",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			createApp := koyeb.NewCreateAppWithDefaults()
@@ -70,7 +70,7 @@ func NewAppCmd() *cobra.Command {
 
 	describeAppCmd := &cobra.Command{
 		Use:   "describe NAME",
-		Short: "Describe apps",
+		Short: "Describe app",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
 	}
@@ -78,7 +78,7 @@ func NewAppCmd() *cobra.Command {
 
 	updateAppCmd := &cobra.Command{
 		Use:   "update NAME",
-		Short: "Update apps",
+		Short: "Update app",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			updateApp := koyeb.NewUpdateAppWithDefaults()
@@ -91,7 +91,7 @@ func NewAppCmd() *cobra.Command {
 
 	deleteAppCmd := &cobra.Command{
 		Use:   "delete NAME",
-		Short: "Delete apps",
+		Short: "Delete app",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.Delete,
 	}
