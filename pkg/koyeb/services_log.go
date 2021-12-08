@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +21,23 @@ func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
 
 	serviceID := serviceDetail.Service.GetId()
 	instanceID, _ := cmd.Flags().GetString("instance")
+	logType, _ := cmd.Flags().GetString("type")
 
 	done := make(chan struct{})
 	query := &watchLogQuery{serviceID: koyeb.PtrString(serviceID)}
+
+	if logType == "build" {
+		latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).Limit(fmt.Sprintf("%d", 1)).ServiceId(h.ResolveServiceShortID(args[0])).Execute()
+		if err != nil {
+			fatalApiError(err)
+		}
+		if len(latestDeploy.GetDeployments()) == 0 {
+			return errors.New("Unable to load latest deployment")
+		}
+		query.deploymentID = latestDeploy.GetDeployments()[0].Id
+		query.logType = koyeb.PtrString(logType)
+	}
+
 	if instanceID != "" {
 		query.instanceID = koyeb.PtrString(instanceID)
 	}
