@@ -204,6 +204,7 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
 	logsServiceCmd.Flags().String("instance", "", "Instance")
+	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
 
 	listServiceCmd := &cobra.Command{
 		Use:   "list",
