@@ -6,6 +6,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.11
+	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/iancoleman/strcase v0.1.3
