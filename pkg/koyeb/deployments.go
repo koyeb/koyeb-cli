@@ -42,7 +42,7 @@ func NewDeploymentCmd() *cobra.Command {
 	logDeploymentCmd := &cobra.Command{
 		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},
-		Short:   "Get deployment",
+		Short:   "Get deployment logs",
 		Args:    cobra.ExactArgs(1),
 		RunE:    h.Log,
 	}

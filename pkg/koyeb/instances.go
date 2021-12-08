@@ -40,6 +40,15 @@ func NewInstanceCmd() *cobra.Command {
 	}
 	instanceCmd.AddCommand(execInstanceCmd)
 
+	logInstanceCmd := &cobra.Command{
+		Use:     "logs NAME",
+		Aliases: []string{"l", "log"},
+		Short:   "Get instance logs",
+		Args:    cobra.ExactArgs(1),
+		RunE:    instanceHandler.Log,
+	}
+	instanceCmd.AddCommand(logInstanceCmd)
+
 	return instanceCmd
 }
 
