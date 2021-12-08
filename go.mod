@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.11
+	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/gorilla/websocket v1.4.1
 	github.com/iancoleman/strcase v0.1.3
 	github.com/koyeb/koyeb-api-client-go v0.0.0-20211208081118-606064688ca3

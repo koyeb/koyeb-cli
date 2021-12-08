@@ -1,12 +1,15 @@
 package koyeb
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
+	uid := uuid.Must(uuid.NewV4())
+	createService.SetAppId(uid.String())
 	_, _, err := h.client.ServicesApi.CreateService(h.ctxWithAuth).DryRun(true).Body(*createService).Execute()
 	if err != nil {
 		fatalApiError(err)
