@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -23,11 +24,13 @@ func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
 
 	serviceID := serviceDetail.Service.GetId()
 	instanceID, _ := cmd.Flags().GetString("instance")
-	logType, _ := cmd.Flags().GetString("type")
 
 	done := make(chan struct{})
-
-	return watchLog(serviceID, instanceID, logType, done)
+	query := &watchLogQuery{serviceID: koyeb.PtrString(serviceID)}
+	if instanceID != "" {
+		query.instanceID = koyeb.PtrString(instanceID)
+	}
+	return watchLog(query, done)
 }
 
 type LogMessage struct {
@@ -42,13 +45,26 @@ type LogMessageResult struct {
 	Msg string `json:"msg"`
 }
 
-func watchLog(serviceID string, instanceID string, logType string, done chan struct{}) error {
-	path := fmt.Sprintf("/v1/streams/logs/tail?service_id=%s", serviceID)
-	if logType == "" {
-		path = fmt.Sprintf("%s&type=%s", path, "runtime")
+type watchLogQuery struct {
+	serviceID    *string
+	instanceID   *string
+	deploymentID *string
+	logType      *string
+}
+
+func watchLog(q *watchLogQuery, done chan struct{}) error {
+	path := "/v1/streams/logs/tail?"
+	if q.logType != nil {
+		path = fmt.Sprintf("%s&type=%s", path, *q.logType)
 	}
-	if instanceID != "" {
-		path = fmt.Sprintf("%s&instance_id=%s", path, instanceID)
+	if q.deploymentID != nil {
+		path = fmt.Sprintf("%s&deployment_id=%s", path, *q.deploymentID)
+	}
+	if q.serviceID != nil {
+		path = fmt.Sprintf("%s&service_id=%s", path, *q.serviceID)
+	}
+	if q.instanceID != nil {
+		path = fmt.Sprintf("%s&instance_id=%s", path, *q.instanceID)
 	}
 
 	dest, err := url.Parse(fmt.Sprint(apiurl, path))
