@@ -64,7 +64,7 @@ func (a *ListAppsReply) Title() string {
 }
 
 func (a *ListAppsReply) Headers() []string {
-	return []string{"id", "name", "domains", "updated_at"}
+	return []string{"id", "name", "domains", "created_at"}
 }
 
 func formatDomains(domains []koyeb.Domain) string {
@@ -83,7 +83,7 @@ func (a *ListAppsReply) Fields() []map[string]string {
 			"id":         renderer.FormatID(item.GetId(), a.full),
 			"name":       item.GetName(),
 			"domains":    formatDomains(item.GetDomains()),
-			"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
+			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		res = append(res, fields)
 	}
