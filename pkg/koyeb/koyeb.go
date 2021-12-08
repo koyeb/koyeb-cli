@@ -81,7 +81,7 @@ func PrintVersion(cmd *cobra.Command, args []string) {
 func init() {
 	log.SetFormatter(&log.TextFormatter{})
 
-	initConfig()
+	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format (yaml,json,table)")
