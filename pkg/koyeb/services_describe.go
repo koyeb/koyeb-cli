@@ -28,18 +28,24 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		fatalApiError(err)
 	}
+
+	deploymentsRes, _, err := client.DeploymentsApi.ListDeployments(ctx).ServiceId(res.Service.GetId()).Execute()
+	if err != nil {
+		fatalApiError(err)
+	}
+
 	appMapper := idmapper.NewAppMapper(ctx, client)
 	serviceMapper := idmapper.NewServiceMapper(ctx, client)
 
 	full, _ := cmd.Flags().GetBool("full")
 	getServiceReply := NewGetServiceReply(&res, full)
 	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper, full)
-
-	// TODO add deployments
+	listDeploymentsReply := NewListDeploymentsReply(&deploymentsRes, full)
 
 	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewDescribeRenderer(
 		getServiceReply,
+		listDeploymentsReply,
 		listInstancesReply,
 	).Render(output)
 }
