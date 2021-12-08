@@ -92,7 +92,7 @@ func NewAppCmd() *cobra.Command {
 	deleteAppCmd := &cobra.Command{
 		Use:   "delete NAME",
 		Short: "Delete app",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE:  h.Delete,
 	}
 	appCmd.AddCommand(deleteAppCmd)
