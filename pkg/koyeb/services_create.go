@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	log "github.com/sirupsen/logrus"
@@ -10,17 +8,14 @@ import (
 )
 
 func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
 	app, _ := cmd.Flags().GetString("app")
-	resApp, _, err := client.AppsApi.GetApp(ctx, ResolveAppShortID(app)).Execute()
+	resApp, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppShortID(app)).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 	// TODO handle both notations (<app>:<sevice> and --app=app)
 	createService.SetAppId(resApp.App.GetId())
-	res, _, err := client.ServicesApi.CreateService(ctx).Body(*createService).Execute()
+	res, _, err := h.client.ServicesApi.CreateService(h.ctxWithAuth).Body(*createService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

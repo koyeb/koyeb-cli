@@ -1,19 +1,14 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
 	createApp.SetName(args[0])
-	res, _, err := client.AppsApi.CreateApp(ctx).Body(*createApp).Execute()
+	res, _, err := h.client.AppsApi.CreateApp(h.ctxWithAuth).Body(*createApp).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	log "github.com/sirupsen/logrus"
@@ -10,10 +8,7 @@ import (
 )
 
 func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	client := getApiClient()
-	ctx := getAuth(context.Background())
-
-	res, _, err := client.ServicesApi.UpdateService(ctx, ResolveAppShortID(args[0])).Body(*updateService).Execute()
+	res, _, err := h.client.ServicesApi.UpdateService(h.ctxWithAuth, h.ResolveAppShortID(args[0])).Body(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
