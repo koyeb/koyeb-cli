@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"regexp"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -24,41 +23,6 @@ func isJson(file string) bool {
 		return true
 	}
 	return false
-}
-
-func loadMultiple(file string, item UpdateApiResources, root string) error {
-	raw, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-
-	buffers := regexp.MustCompile("(?m)^\\-\\-\\-$").Split(string(raw), -1)
-
-	for _, buf := range buffers {
-		data := []byte(buf)
-		rootDict := make(map[string]interface{})
-
-		err = tryLoad(file, data, &rootDict)
-		if err != nil {
-			return err
-		}
-		if _, ok := rootDict[root]; ok {
-			err = tryLoad(file, data, item)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
-		ne := item.New()
-		err = tryLoad(file, data, ne)
-		if err != nil {
-			return err
-		}
-		item.Append(ne)
-	}
-
-	return nil
 }
 
 func tryLoad(file string, data []byte, item interface{}) error {

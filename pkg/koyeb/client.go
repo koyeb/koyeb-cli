@@ -6,17 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"os"
 	"reflect"
-	"strings"
-	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime"
 	"github.com/iancoleman/strcase"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/logrusorgru/aurora"
-	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -39,144 +33,6 @@ func getApiClient() *koyeb.APIClient {
 
 func getAuth(ctx context.Context) context.Context {
 	return context.WithValue(ctx, koyeb.ContextAccessToken, token)
-}
-
-type UpdateApiResources interface {
-	New() interface{}
-	Append(interface{})
-}
-
-type TableInfo struct {
-	headers []string
-	fields  [][]string
-}
-
-type WithTitle interface {
-	Title() string
-}
-
-type ApiResources interface {
-	Headers() []string
-	Fields() []map[string]string
-	MarshalBinary() ([]byte, error)
-}
-
-func getFormat(defaultFormat string) string {
-	format := defaultFormat
-	if outputFormat != "" {
-		format = outputFormat
-	}
-	return format
-}
-
-func render(format string, obj interface{}) {
-	item, ok := obj.(ApiResources)
-	if !ok {
-		log.Fatalf("Invalid item type %T", obj)
-	}
-
-	var table *tablewriter.Table
-	if format == "table" || format == "detail" {
-		table = tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
-	}
-
-	switch format {
-	case "yaml":
-		buf, err := item.MarshalBinary()
-		if err != nil {
-			er(err)
-		}
-		y, err := yaml.JSONToYAML(buf)
-		if err != nil {
-			fmt.Printf("err: %v\n", err)
-			return
-		}
-		fmt.Printf("%s", string(y))
-	case "json":
-		buf, err := item.MarshalBinary()
-		if err != nil {
-			er(err)
-		}
-		fmt.Println(string(buf))
-	case "detail":
-		if title, ok := item.(WithTitle); ok {
-			fmt.Println(aurora.Bold(title.Title()))
-		}
-		fields := [][]string{}
-		for _, field := range item.Fields() {
-			for _, h := range item.Headers() {
-				fields = append(fields, append([]string{h}, field[h]))
-			}
-		}
-		table.AppendBulk(fields)
-	case "table":
-		table.SetHeader(item.Headers())
-		fields := [][]string{}
-		for _, field := range item.Fields() {
-			current := []string{}
-			for _, h := range item.Headers() {
-				current = append(current, field[h])
-			}
-			fields = append(fields, current)
-		}
-		table.AppendBulk(fields)
-	default:
-		er("Invalid format")
-	}
-	if format == "table" || format == "detail" {
-		table.Render()
-	}
-
-}
-
-func GetField(item interface{}, field string) string {
-	val := reflect.ValueOf(item)
-	t := val.Type()
-	for i := 0; i < t.NumField(); i++ {
-		fieldName := ""
-		if jsonTag := t.Field(i).Tag.Get("json"); jsonTag != "" && jsonTag != "-" {
-			if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
-				fieldName = jsonTag[:commaIdx]
-			}
-		}
-
-		if fieldName == field {
-			f := reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name))
-			switch val := f.Interface().(type) {
-			case string:
-				return fmt.Sprintf("%s", val)
-			case []koyeb.Domain:
-				ret := []string{}
-				for _, d := range val {
-					ret = append(ret, fmt.Sprintf("%s", d.GetName()))
-				}
-				return strings.Join(ret, " ")
-			case time.Time:
-				return fmt.Sprintf("%s", val)
-			default:
-				log.Debugf("type not supported %T %v", val, val)
-				return fmt.Sprintf("%s", val)
-			}
-		}
-
-		spl := strings.Split(field, ".")
-		if spl[0] == fieldName && len(spl) > 1 {
-			return GetField(reflect.Indirect(reflect.Indirect(val).FieldByName(t.Field(i).Name)).Interface(), strings.Join(spl[1:], "."))
-		}
-
-	}
-	return "<empty>"
 }
 
 type CommonErrorInterface interface {
