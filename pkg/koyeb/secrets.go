@@ -16,7 +16,7 @@ func NewSecretCmd() *cobra.Command {
 
 	createSecretCmd := &cobra.Command{
 		Use:   "create NAME",
-		Short: "Create secrets",
+		Short: "Create secret",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			createSecret := koyeb.NewCreateSecretWithDefaults()
@@ -45,7 +45,7 @@ func NewSecretCmd() *cobra.Command {
 
 	describeSecretCmd := &cobra.Command{
 		Use:   "describe NAME",
-		Short: "Describe secrets",
+		Short: "Describe secret",
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.Describe,
 	}
@@ -53,7 +53,7 @@ func NewSecretCmd() *cobra.Command {
 
 	updateSecretCmd := &cobra.Command{
 		Use:   "update NAME",
-		Short: "Update secrets",
+		Short: "Update secret",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			updateSecret := koyeb.NewSecretWithDefaults()
@@ -67,7 +67,7 @@ func NewSecretCmd() *cobra.Command {
 
 	deleteSecretCmd := &cobra.Command{
 		Use:   "delete NAME",
-		Short: "Delete secrets",
+		Short: "Delete secret",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  h.Delete,
 	}
