@@ -11,9 +11,10 @@ func NewAppCmd() *cobra.Command {
 	h := NewAppHandler()
 
 	appCmd := &cobra.Command{
-		Use:     "apps ACTION",
-		Aliases: []string{"a", "app"},
-		Short:   "Apps",
+		Use:               "apps ACTION",
+		Aliases:           []string{"a", "app"},
+		Short:             "Apps",
+		PersistentPreRunE: h.InitHandler,
 	}
 
 	createAppCmd := &cobra.Command{
@@ -101,15 +102,18 @@ func NewAppCmd() *cobra.Command {
 }
 
 func NewAppHandler() *AppHandler {
-	return &AppHandler{
-		client:      getApiClient(),
-		ctxWithAuth: getAuth(context.Background()),
-	}
+	return &AppHandler{}
 }
 
 type AppHandler struct {
 	client      *koyeb.APIClient
 	ctxWithAuth context.Context
+}
+
+func (h *AppHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.client = getApiClient()
+	h.ctxWithAuth = getAuth(context.Background())
+	return nil
 }
 
 func (h *AppHandler) ResolveAppShortID(id string) string {

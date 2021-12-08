@@ -18,9 +18,10 @@ func NewInstanceCmd() *cobra.Command {
 	instanceHandler := NewInstanceHandler()
 
 	instanceCmd := &cobra.Command{
-		Use:     "instances ACTION",
-		Aliases: []string{"i", "inst", "instance"},
-		Short:   "Instances",
+		Use:               "instances ACTION",
+		Aliases:           []string{"i", "inst", "instance"},
+		Short:             "Instances",
+		PersistentPreRunE: instanceHandler.InitHandler,
 	}
 
 	listInstanceCmd := &cobra.Command{
@@ -69,10 +70,7 @@ func NewInstanceCmd() *cobra.Command {
 }
 
 func NewInstanceHandler() *InstanceHandler {
-	return &InstanceHandler{
-		client:      getApiClient(),
-		ctxWithAuth: getAuth(context.Background()),
-	}
+	return &InstanceHandler{}
 }
 
 type InstanceHandler struct {
@@ -82,6 +80,12 @@ type InstanceHandler struct {
 
 func (d *InstanceHandler) ResolveInstanceShortID(id string) string {
 	return ResolveSecretShortID(d.ctxWithAuth, d.client, id)
+}
+
+func (d *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	d.client = getApiClient()
+	d.ctxWithAuth = getAuth(context.Background())
+	return nil
 }
 
 func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {

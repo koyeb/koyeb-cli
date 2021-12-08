@@ -143,9 +143,10 @@ func NewServiceCmd() *cobra.Command {
 	h := NewServiceHandler()
 
 	serviceCmd := &cobra.Command{
-		Use:     "services ACTION",
-		Aliases: []string{"s", "svc", "service"},
-		Short:   "Services",
+		Use:               "services ACTION",
+		Aliases:           []string{"s", "svc", "service"},
+		Short:             "Services",
+		PersistentPreRunE: h.InitHandler,
 	}
 
 	createServiceCmd := &cobra.Command{
@@ -252,15 +253,18 @@ func NewServiceCmd() *cobra.Command {
 }
 
 func NewServiceHandler() *ServiceHandler {
-	return &ServiceHandler{
-		client:      getApiClient(),
-		ctxWithAuth: getAuth(context.Background()),
-	}
+	return &ServiceHandler{}
 }
 
 type ServiceHandler struct {
 	client      *koyeb.APIClient
 	ctxWithAuth context.Context
+}
+
+func (d *ServiceHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	d.client = getApiClient()
+	d.ctxWithAuth = getAuth(context.Background())
+	return nil
 }
 
 func (d *ServiceHandler) ResolveServiceShortID(id string) string {
