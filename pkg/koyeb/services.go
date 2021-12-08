@@ -211,22 +211,24 @@ func NewServiceCmd() *cobra.Command {
 		Short: "Update service",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// updateService := koyeb.NewUpdateServiceWithDefaults()
+			updateService := koyeb.NewUpdateServiceWithDefaults()
 
-			// client := getApiClient()
-			// ctx := getAuth(context.Background())
-			// revDetail, _, err := client.ServicesApi.DeprecatedGetRevision(ctx, app, args[0], "_latest").Execute()
-			// if err != nil {
-			//   fatalApiError(err)
-			// }
-			// updateDef := revDetail.GetRevision().Definition
-			// err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
-			// if err != nil {
-			//   return err
-			// }
-			// updateService.SetDefinition(*updateDef)
-			// return h.Update(cmd, args, updateService)
-			return nil
+			client := getApiClient()
+			ctx := getAuth(context.Background())
+			latestDeploy, _, err := client.DeploymentsApi.ListDeployments(ctx).Limit(fmt.Sprintf("%d", 1)).ServiceId(ResolveServiceShortID(args[0])).Execute()
+			if err != nil {
+				fatalApiError(err)
+			}
+			if len(latestDeploy.GetDeployments()) == 0 {
+				return errors.New("Unable to load latest deployment")
+			}
+			updateDef := latestDeploy.GetDeployments()[0].Definition
+			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
+			if err != nil {
+				return err
+			}
+			updateService.SetDefinition(*updateDef)
+			return h.Update(cmd, args, updateService)
 		},
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
