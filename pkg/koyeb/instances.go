@@ -19,7 +19,7 @@ func NewInstanceCmd() *cobra.Command {
 
 	instanceCmd := &cobra.Command{
 		Use:     "instances ACTION",
-		Aliases: []string{"i", "instance"},
+		Aliases: []string{"i", "inst", "instance"},
 		Short:   "Instances",
 	}
 
