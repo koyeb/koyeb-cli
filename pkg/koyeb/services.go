@@ -13,7 +13,9 @@ import (
 )
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
-	flags.String("docker", "koyeb/demo", "Docker image")
+	flags.String("git", "", "Git repository")
+	flags.String("git-branch", "main", "Git branch")
+	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker args")
@@ -118,7 +120,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 	}
 
 	// Docker
-	if useDefault || flags.Lookup("docker").Changed {
+	if useDefault && !flags.Lookup("git").Changed || flags.Lookup("docker").Changed && !flags.Lookup("git").Changed {
 		createDockerSource := koyeb.NewDockerSourceWithDefaults()
 		image, _ := flags.GetString("docker")
 		args, _ := flags.GetStringSlice("docker-args")
@@ -135,6 +137,19 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 			createDockerSource.SetArgs(args)
 		}
 		definition.SetDocker(*createDockerSource)
+		definition.Git = nil
+	}
+	// Git
+	if flags.Lookup("git").Changed && !flags.Lookup("docker").Changed {
+		createGitSource := koyeb.NewGitSourceWithDefaults()
+		git, _ := flags.GetString("git")
+		branch, _ := flags.GetString("git-branch")
+		createGitSource.SetRepository(git)
+		if branch != "" {
+			createGitSource.SetBranch(branch)
+		}
+		definition.SetGit(*createGitSource)
+		definition.Docker = nil
 	}
 	return nil
 }
