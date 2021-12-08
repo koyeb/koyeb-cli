@@ -45,7 +45,7 @@ func (a *DescribeSecretReply) Title() string {
 }
 
 func (a *DescribeSecretReply) Headers() []string {
-	return []string{"id", "name", "type", "value", "updated_at"}
+	return []string{"id", "name", "type", "value", "created_at", "updated_at"}
 }
 
 func (a *DescribeSecretReply) Fields() []map[string]string {
@@ -56,6 +56,7 @@ func (a *DescribeSecretReply) Fields() []map[string]string {
 		"name":       item.GetName(),
 		"type":       formatSecretType(item.GetType()),
 		"value":      "*****",
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}
 	res = append(res, fields)

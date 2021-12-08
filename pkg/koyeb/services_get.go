@@ -45,7 +45,7 @@ func (a *GetServiceReply) Title() string {
 }
 
 func (a *GetServiceReply) Headers() []string {
-	return []string{"id", "app", "name", "version", "status", "updated_at"}
+	return []string{"id", "app", "name", "version", "status", "created_at"}
 }
 
 func (a *GetServiceReply) Fields() []map[string]string {
@@ -57,7 +57,7 @@ func (a *GetServiceReply) Fields() []map[string]string {
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
 		"status":     formatStatus(item.State.GetStatus()),
-		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
 	res = append(res, fields)
 	return res
