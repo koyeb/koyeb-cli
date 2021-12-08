@@ -11,7 +11,7 @@ func (h *SecretHandler) Delete(cmd *cobra.Command, args []string) error {
 	ctx := getAuth(context.Background())
 
 	for _, arg := range args {
-		_, _, err := client.SecretsApi.DeleteSecret(ctx, arg).Execute()
+		_, _, err := client.SecretsApi.DeleteSecret(ctx, ResolveSecretShortID(arg)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
