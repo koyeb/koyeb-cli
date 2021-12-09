@@ -42,7 +42,7 @@ func (a *GetDeploymentReply) Title() string {
 }
 
 func (a *GetDeploymentReply) Headers() []string {
-	return []string{"id", "app", "service", "status", "status_message", "created_at"}
+	return []string{"id", "service", "status", "status_message", "regions", "created_at"}
 }
 
 func (a *GetDeploymentReply) Fields() []map[string]string {
@@ -50,10 +50,10 @@ func (a *GetDeploymentReply) Fields() []map[string]string {
 	item := a.res.GetDeployment()
 	fields := map[string]string{
 		"id":             renderer.FormatID(item.GetId(), a.full),
-		"app":            renderer.FormatID(item.GetAppId(), a.full),
 		"service":        renderer.FormatID(item.GetServiceId(), a.full),
 		"status":         formatDeploymentStatus(item.State.GetStatus()),
 		"status_message": item.State.GetStatusMessage(),
+		"regions":        renderRegions(item.Definition.Regions),
 		"created_at":     renderer.FormatTime(item.GetCreatedAt()),
 	}
 	res = append(res, fields)
