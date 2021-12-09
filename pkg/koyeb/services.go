@@ -14,7 +14,7 @@ import (
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("git", "", "Git repository")
-	flags.String("git-branch", "main", "Git branch")
+	flags.String("git-branch", "", "Git branch")
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.String("docker-command", "", "Docker command")
