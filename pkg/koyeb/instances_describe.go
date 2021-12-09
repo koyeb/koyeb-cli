@@ -44,7 +44,7 @@ func (a *DescribeInstanceReply) Title() string {
 }
 
 func (a *DescribeInstanceReply) Headers() []string {
-	return []string{"id", "status", "app", "service", "deployment_id", "datacenter", "messages"}
+	return []string{"id", "app", "service", "status", "deployment_id", "datacenter", "messages", "created_at", "updated_at"}
 }
 
 func (a *DescribeInstanceReply) Fields() []map[string]string {
@@ -58,6 +58,8 @@ func (a *DescribeInstanceReply) Fields() []map[string]string {
 		"deployment_id": renderer.FormatID(item.GetDeploymentId(), a.full),
 		"datacenter":    item.GetDatacenter(),
 		"messages":      formatMessages(item.GetMessages()),
+		"created_at":    renderer.FormatTime(item.GetCreatedAt()),
+		"updated_at":    renderer.FormatTime(item.GetUpdatedAt()),
 	}
 	res = append(res, fields)
 	return res

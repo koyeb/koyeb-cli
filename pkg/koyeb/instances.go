@@ -79,7 +79,7 @@ type InstanceHandler struct {
 }
 
 func (d *InstanceHandler) ResolveInstanceShortID(id string) string {
-	return ResolveSecretShortID(d.ctxWithAuth, d.client, id)
+	return ResolveInstanceShortID(d.ctxWithAuth, d.client, id)
 }
 
 func (d *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
