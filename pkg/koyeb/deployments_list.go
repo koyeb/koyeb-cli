@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -59,7 +60,7 @@ func (a *ListDeploymentsReply) Title() string {
 }
 
 func (a *ListDeploymentsReply) Headers() []string {
-	return []string{"id", "app", "service", "status", "status_message", "created_at"}
+	return []string{"id", "service", "status", "status_message", "regions", "created_at"}
 }
 
 func (a *ListDeploymentsReply) Fields() []map[string]string {
@@ -68,13 +69,21 @@ func (a *ListDeploymentsReply) Fields() []map[string]string {
 	for _, item := range a.res.GetDeployments() {
 		fields := map[string]string{
 			"id":             renderer.FormatID(item.GetId(), a.full),
-			"app":            renderer.FormatID(item.GetAppId(), a.full),
 			"service":        renderer.FormatID(item.GetServiceId(), a.full),
 			"status":         formatDeploymentStatus(item.State.GetStatus()),
 			"status_message": item.State.GetStatusMessage(),
+			"regions":        renderRegions(item.Definition.Regions),
 			"created_at":     renderer.FormatTime(item.GetCreatedAt()),
 		}
 		res = append(res, fields)
 	}
 	return res
+}
+
+func renderRegions(regions *[]string) string {
+	if regions == nil {
+		return "-"
+	}
+
+	return strings.Join(*regions, ",")
 }

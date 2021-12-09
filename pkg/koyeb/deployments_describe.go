@@ -65,7 +65,7 @@ func (a *DescribeDeploymentReply) Title() string {
 }
 
 func (a *DescribeDeploymentReply) Headers() []string {
-	return []string{"id", "app", "service", "status", "status_message", "created_at", "updated_at"}
+	return []string{"id", "app", "service", "status", "status_message", "regions", "created_at", "updated_at"}
 }
 
 func (a *DescribeDeploymentReply) Fields() []map[string]string {
@@ -77,6 +77,7 @@ func (a *DescribeDeploymentReply) Fields() []map[string]string {
 		"service":        renderer.FormatID(item.GetServiceId(), a.full),
 		"status":         formatDeploymentStatus(item.State.GetStatus()),
 		"status_message": item.State.GetStatusMessage(),
+		"regions":        renderRegions(item.Definition.Regions),
 		"created_at":     renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at":     renderer.FormatTime(item.GetUpdatedAt()),
 	}
