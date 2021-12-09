@@ -89,7 +89,7 @@ func (reply *ListInstancesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (reply *ListInstancesReply) Headers() []string {
-	return []string{"id", "status", "app", "service", "deployment_id", "datacenter"}
+	return []string{"id", "service", "status", "deployment_id", "datacenter", "created_at"}
 }
 
 func (reply *ListInstancesReply) Fields() []map[string]string {
@@ -100,11 +100,11 @@ func (reply *ListInstancesReply) Fields() []map[string]string {
 
 		fields := map[string]string{
 			"id":            renderer.FormatID(item.GetId(), reply.full),
-			"app":           renderer.FormatID(item.GetAppId(), reply.full),
 			"service":       renderer.FormatID(item.GetServiceId(), reply.full),
 			"status":        formatInstanceStatus(item.GetStatus()),
 			"deployment_id": renderer.FormatID(item.GetDeploymentId(), reply.full),
 			"datacenter":    item.GetDatacenter(),
+			"created_at":    renderer.FormatTime(item.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
 	}
