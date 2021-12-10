@@ -7,7 +7,7 @@ import (
 )
 
 func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppShortID(args[0])).Execute()
+	res, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

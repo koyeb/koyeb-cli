@@ -9,7 +9,7 @@ import (
 )
 
 func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
-	results := koyeb.ListSecretsReply{}
+	results := &koyeb.ListSecretsReply{}
 
 	page := 0
 	offset := 0
@@ -20,10 +20,11 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 			fatalApiError(err)
 		}
 		if results.Secrets == nil {
-			results = res
+			results.Secrets = res.Secrets
 		} else {
 			*results.Secrets = append(*results.Secrets, *res.Secrets...)
 		}
+
 		page += 1
 		offset = page * limit
 		if int64(offset) >= res.GetCount() {
@@ -32,7 +33,7 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 	}
 
 	full, _ := cmd.Flags().GetBool("full")
-	listSecretsReply := NewListSecretsReply(&results, full)
+	listSecretsReply := NewListSecretsReply(results, full)
 
 	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewListRenderer(listSecretsReply).Render(output)
