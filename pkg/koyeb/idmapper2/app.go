@@ -103,7 +103,7 @@ func (mapper *AppMapper) list() error {
 		}
 	}
 
-	shortIDLength := radix.MinimalLength(8) + 3
+	shortIDLength := radix.MinimalLength(8) + 3 // WARNING(tleroux): Remove + 3 used for debug
 	for id, app := range cache {
 		sid := strings.ReplaceAll(id, "-", "")[:shortIDLength]
 		name := app.GetName()
