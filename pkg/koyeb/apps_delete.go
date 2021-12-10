@@ -10,7 +10,7 @@ import (
 func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	force, _ := cmd.Flags().GetBool("force")
 	if force {
-		app, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppShortID(args[0])).Execute()
+		app, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
@@ -37,7 +37,8 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 			time.Sleep(2 * time.Second)
 		}
 	}
-	_, _, err := h.client.AppsApi.DeleteApp(h.ctxWithAuth, h.ResolveAppShortID(args[0])).Execute()
+
+	_, _, err := h.client.AppsApi.DeleteApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
