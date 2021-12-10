@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
-	results := koyeb.ListAppsReply{}
+	results := &koyeb.ListAppsReply{}
 
 	page := 0
 	offset := 0
@@ -21,33 +22,36 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 			fatalApiError(err)
 		}
 		if results.Apps == nil {
-			results = res
+			results.Apps = res.Apps
 		} else {
 			*results.Apps = append(*results.Apps, *res.Apps...)
 		}
 
-		page += 1
+		page++
 		offset = page * limit
 		if int64(offset) >= res.GetCount() {
 			break
 		}
 	}
+
 	full, _ := cmd.Flags().GetBool("full")
-	listAppsReply := NewListAppsReply(&results, full)
+	listAppsReply := NewListAppsReply(h.mapper, results, full)
 
 	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewListRenderer(listAppsReply).Render(output)
 }
 
 type ListAppsReply struct {
-	res  *koyeb.ListAppsReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.ListAppsReply
+	full   bool
 }
 
-func NewListAppsReply(res *koyeb.ListAppsReply, full bool) *ListAppsReply {
+func NewListAppsReply(mapper *idmapper2.Mapper, res *koyeb.ListAppsReply, full bool) *ListAppsReply {
 	return &ListAppsReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -76,7 +80,8 @@ func (a *ListAppsReply) Fields() []map[string]string {
 
 	for _, item := range a.res.GetApps() {
 		fields := map[string]string{
-			"id":         renderer.FormatID(item.GetId(), a.full),
+			"id": renderer.FormatID2(a.mapper, item.GetId(), a.full),
+			//"id":         renderer.FormatID(item.GetId(), a.full),
 			"name":       item.GetName(),
 			"domains":    formatDomains(item.GetDomains()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
