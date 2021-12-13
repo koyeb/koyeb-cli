@@ -1,4 +1,4 @@
-package idmapper2
+package idmapper
 
 // Forked from https://github.com/plar/go-adaptive-radix-tree
 
