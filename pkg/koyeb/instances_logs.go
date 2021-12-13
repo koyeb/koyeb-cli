@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *InstanceHandler) Log(cmd *cobra.Command, args []string) error {
+func (h *InstanceHandler) Logs(cmd *cobra.Command, args []string) error {
 	instanceDetail, _, err := h.client.InstancesApi.GetInstance(h.ctx, h.ResolveInstanceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
@@ -13,6 +13,8 @@ func (h *InstanceHandler) Log(cmd *cobra.Command, args []string) error {
 
 	done := make(chan struct{})
 
-	query := &watchLogQuery{instanceID: koyeb.PtrString(instanceDetail.Instance.GetId())}
-	return watchLog(query, done)
+	query := &WatchLogQuery{}
+	query.InstanceID = koyeb.PtrString(instanceDetail.Instance.GetId())
+
+	return WatchLog(query, done)
 }

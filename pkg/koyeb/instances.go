@@ -56,7 +56,7 @@ func NewInstanceCmd() *cobra.Command {
 		Aliases: []string{"l", "log"},
 		Short:   "Get instance logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    instanceHandler.Log,
+		RunE:    instanceHandler.Logs,
 	}
 	instanceCmd.AddCommand(logInstanceCmd)
 
