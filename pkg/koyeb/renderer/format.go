@@ -10,13 +10,6 @@ func FormatTime(t time.Time) string {
 	return t.Format(time.RFC822)
 }
 
-func FormatID(id string, full bool) string {
-	if full {
-		return id
-	}
-	return id[:4]
-}
-
 func FormatAppID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.App().GetShortID(id)
