@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -276,13 +276,13 @@ func NewServiceHandler() *ServiceHandler {
 type ServiceHandler struct {
 	ctxWithAuth context.Context
 	client      *koyeb.APIClient
-	mapper      *idmapper2.Mapper
+	mapper      *idmapper.Mapper
 }
 
 func (h *ServiceHandler) InitHandler(cmd *cobra.Command, args []string) error {
 	h.client = getApiClient()
 	h.ctxWithAuth = getAuth(context.Background())
-	h.mapper = idmapper2.NewMapper(h.ctxWithAuth, h.client)
+	h.mapper = idmapper.NewMapper(h.ctxWithAuth, h.client)
 	return nil
 }
 

@@ -1,4 +1,4 @@
-package idmapper2
+package idmapper
 
 // IDMap is a bidirectional map to store value <> id translations.
 // A value could either be a short id, a name and/or a slug.

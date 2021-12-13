@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -38,12 +38,12 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 }
 
 type ListSecretsReply struct {
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 	res    *koyeb.ListSecretsReply
 	full   bool
 }
 
-func NewListSecretsReply(mapper *idmapper2.Mapper, res *koyeb.ListSecretsReply, full bool) *ListSecretsReply {
+func NewListSecretsReply(mapper *idmapper.Mapper, res *koyeb.ListSecretsReply, full bool) *ListSecretsReply {
 	return &ListSecretsReply{
 		mapper: mapper,
 		res:    res,

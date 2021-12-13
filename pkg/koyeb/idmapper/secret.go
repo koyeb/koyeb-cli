@@ -1,4 +1,4 @@
-package idmapper2
+package idmapper
 
 import (
 	"context"
@@ -10,23 +10,25 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DeploymentMapper struct {
+type SecretMapper struct {
 	ctx     context.Context
 	client  *koyeb.APIClient
 	fetched bool
 	sidMap  *IDMap
+	nameMap *IDMap
 }
 
-func NewDeploymentMapper(ctx context.Context, client *koyeb.APIClient) *DeploymentMapper {
-	return &DeploymentMapper{
+func NewSecretMapper(ctx context.Context, client *koyeb.APIClient) *SecretMapper {
+	return &SecretMapper{
 		ctx:     ctx,
 		client:  client,
 		fetched: false,
 		sidMap:  NewIDMap(),
+		nameMap: NewIDMap(),
 	}
 }
 
-func (mapper *DeploymentMapper) ResolveID(val string) (string, error) {
+func (mapper *SecretMapper) ResolveID(val string) (string, error) {
 	if IsUUIDv4(val) {
 		return val, nil
 	}
@@ -43,10 +45,15 @@ func (mapper *DeploymentMapper) ResolveID(val string) (string, error) {
 		return id, nil
 	}
 
+	id, ok = mapper.nameMap.GetID(val)
+	if ok {
+		return id, nil
+	}
+
 	return "", fmt.Errorf("id not found %q", val)
 }
 
-func (mapper *DeploymentMapper) GetShortID(id string) (string, error) {
+func (mapper *SecretMapper) GetShortID(id string) (string, error) {
 	if !mapper.fetched {
 		err := mapper.fetch()
 		if err != nil {
@@ -56,13 +63,13 @@ func (mapper *DeploymentMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("deployment short id not found for %q", id)
+		return "", fmt.Errorf("secret short id not found for %q", id)
 	}
 
 	return sid, nil
 }
 
-func (mapper *DeploymentMapper) fetch() error {
+func (mapper *SecretMapper) fetch() error {
 	radix := NewRadixTree()
 
 	page := int64(0)
@@ -70,7 +77,7 @@ func (mapper *DeploymentMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.DeploymentsApi.ListDeployments(mapper.ctx).
+		resp, _, err := mapper.client.SecretsApi.ListSecrets(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
@@ -78,11 +85,11 @@ func (mapper *DeploymentMapper) fetch() error {
 			return errors.Wrap(err, "cannot list apps from API")
 		}
 
-		deployments := resp.GetDeployments()
-		for i := range deployments {
-			deployment := &deployments[i]
-			id := deployment.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), deployment)
+		secrets := resp.GetSecrets()
+		for i := range secrets {
+			secret := &secrets[i]
+			id := secret.GetId()
+			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), secret)
 		}
 
 		page++
@@ -94,11 +101,13 @@ func (mapper *DeploymentMapper) fetch() error {
 
 	minLength := radix.MinimalLength(8)
 	radix.ForEach(func(key Key, value Value) {
-		app := value.(*koyeb.DeploymentListItem)
-		id := app.GetId()
+		secret := value.(*koyeb.Secret)
+		id := secret.GetId()
+		name := secret.GetName()
 		sid := strings.ReplaceAll(id, "-", "")[:minLength]
 
 		mapper.sidMap.Set(id, sid)
+		mapper.nameMap.Set(id, name)
 	})
 
 	mapper.fetched = true

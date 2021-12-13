@@ -1,4 +1,4 @@
-package idmapper2
+package idmapper
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type SecretMapper struct {
+type AppMapper struct {
 	ctx     context.Context
 	client  *koyeb.APIClient
 	fetched bool
@@ -18,8 +18,8 @@ type SecretMapper struct {
 	nameMap *IDMap
 }
 
-func NewSecretMapper(ctx context.Context, client *koyeb.APIClient) *SecretMapper {
-	return &SecretMapper{
+func NewAppMapper(ctx context.Context, client *koyeb.APIClient) *AppMapper {
+	return &AppMapper{
 		ctx:     ctx,
 		client:  client,
 		fetched: false,
@@ -28,7 +28,7 @@ func NewSecretMapper(ctx context.Context, client *koyeb.APIClient) *SecretMapper
 	}
 }
 
-func (mapper *SecretMapper) ResolveID(val string) (string, error) {
+func (mapper *AppMapper) ResolveID(val string) (string, error) {
 	if IsUUIDv4(val) {
 		return val, nil
 	}
@@ -53,7 +53,7 @@ func (mapper *SecretMapper) ResolveID(val string) (string, error) {
 	return "", fmt.Errorf("id not found %q", val)
 }
 
-func (mapper *SecretMapper) GetShortID(id string) (string, error) {
+func (mapper *AppMapper) GetShortID(id string) (string, error) {
 	if !mapper.fetched {
 		err := mapper.fetch()
 		if err != nil {
@@ -63,13 +63,29 @@ func (mapper *SecretMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("secret short id not found for %q", id)
+		return "", fmt.Errorf("app short id not found for %q", id)
 	}
 
 	return sid, nil
 }
 
-func (mapper *SecretMapper) fetch() error {
+func (mapper *AppMapper) GetName(id string) (string, error) {
+	if !mapper.fetched {
+		err := mapper.fetch()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	name, ok := mapper.nameMap.GetValue(id)
+	if !ok {
+		return "", fmt.Errorf("app name not found for %q", id)
+	}
+
+	return name, nil
+}
+
+func (mapper *AppMapper) fetch() error {
 	radix := NewRadixTree()
 
 	page := int64(0)
@@ -77,7 +93,7 @@ func (mapper *SecretMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.SecretsApi.ListSecrets(mapper.ctx).
+		resp, _, err := mapper.client.AppsApi.ListApps(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
@@ -85,11 +101,11 @@ func (mapper *SecretMapper) fetch() error {
 			return errors.Wrap(err, "cannot list apps from API")
 		}
 
-		secrets := resp.GetSecrets()
-		for i := range secrets {
-			secret := &secrets[i]
-			id := secret.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), secret)
+		apps := resp.GetApps()
+		for i := range apps {
+			app := &apps[i]
+			id := app.GetId()
+			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), app)
 		}
 
 		page++
@@ -101,9 +117,9 @@ func (mapper *SecretMapper) fetch() error {
 
 	minLength := radix.MinimalLength(8)
 	radix.ForEach(func(key Key, value Value) {
-		secret := value.(*koyeb.Secret)
-		id := secret.GetId()
-		name := secret.GetName()
+		app := value.(*koyeb.AppListItem)
+		id := app.GetId()
+		name := app.GetName()
 		sid := strings.ReplaceAll(id, "-", "")[:minLength]
 
 		mapper.sidMap.Set(id, sid)

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/spf13/cobra"
 )
 
@@ -70,7 +70,7 @@ func NewInstanceHandler() *InstanceHandler {
 type InstanceHandler struct {
 	ctx    context.Context
 	client *koyeb.APIClient
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 }
 
 func (d *InstanceHandler) ResolveInstanceArgs(id string) string {
@@ -80,6 +80,6 @@ func (d *InstanceHandler) ResolveInstanceArgs(id string) string {
 func (h *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
 	h.ctx = getAuth(context.Background())
 	h.client = getApiClient()
-	h.mapper = idmapper2.NewMapper(h.ctx, h.client)
+	h.mapper = idmapper.NewMapper(h.ctx, h.client)
 	return nil
 }

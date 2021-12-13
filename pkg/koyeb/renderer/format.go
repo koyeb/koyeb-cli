@@ -3,7 +3,7 @@ package renderer
 import (
 	"time"
 
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 )
 
 func FormatTime(t time.Time) string {
@@ -17,7 +17,7 @@ func FormatID(id string, full bool) string {
 	return id[:4]
 }
 
-func FormatAppID(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatAppID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.App().GetShortID(id)
 		if err == nil {
@@ -27,7 +27,7 @@ func FormatAppID(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
-func FormatAppName(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatAppName(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.App().GetName(id)
 		if err == nil {
@@ -37,7 +37,7 @@ func FormatAppName(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
-func FormatServiceID(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatServiceID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Service().GetShortID(id)
 		if err == nil {
@@ -47,7 +47,7 @@ func FormatServiceID(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
-func FormatServiceSlug(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatServiceSlug(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Service().GetSlug(id)
 		if err == nil {
@@ -57,7 +57,7 @@ func FormatServiceSlug(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
-func FormatDeploymentID(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatDeploymentID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Deployment().GetShortID(id)
 		if err == nil {
@@ -67,7 +67,7 @@ func FormatDeploymentID(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
-func FormatInstanceID(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatInstanceID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Instance().GetShortID(id)
 		if err == nil {
@@ -77,7 +77,7 @@ func FormatInstanceID(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
-func FormatSecretID(mapper *idmapper2.Mapper, id string, full bool) string {
+func FormatSecretID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Secret().GetShortID(id)
 		if err == nil {

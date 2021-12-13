@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -47,12 +47,12 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 }
 
 type ListServicesReply struct {
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 	res    *koyeb.ListServicesReply
 	full   bool
 }
 
-func NewListServicesReply(mapper *idmapper2.Mapper, res *koyeb.ListServicesReply, full bool) *ListServicesReply {
+func NewListServicesReply(mapper *idmapper.Mapper, res *koyeb.ListServicesReply, full bool) *ListServicesReply {
 	return &ListServicesReply{
 		mapper: mapper,
 		res:    res,

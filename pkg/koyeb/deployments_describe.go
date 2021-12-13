@@ -2,7 +2,7 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -47,12 +47,12 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 }
 
 type DescribeDeploymentReply struct {
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 	res    *koyeb.GetDeploymentReply
 	full   bool
 }
 
-func NewDescribeDeploymentReply(mapper *idmapper2.Mapper, res *koyeb.GetDeploymentReply, full bool) *DescribeDeploymentReply {
+func NewDescribeDeploymentReply(mapper *idmapper.Mapper, res *koyeb.GetDeploymentReply, full bool) *DescribeDeploymentReply {
 	return &DescribeDeploymentReply{
 		mapper: mapper,
 		res:    res,
