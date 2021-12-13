@@ -58,7 +58,7 @@ func NewServiceCmd() *cobra.Command {
 		Aliases: []string{"l", "log"},
 		Short:   "Get the service logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    h.Log,
+		RunE:    h.Logs,
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
 	logsServiceCmd.Flags().String("instance", "", "Instance")

@@ -46,7 +46,7 @@ func NewDeploymentCmd() *cobra.Command {
 		Aliases: []string{"l", "log"},
 		Short:   "Get deployment logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    h.Log,
+		RunE:    h.Logs,
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
 	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime,build)")
