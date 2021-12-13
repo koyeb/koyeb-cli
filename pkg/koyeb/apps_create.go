@@ -8,7 +8,7 @@ import (
 
 func (h *AppHandler) Create(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp) error {
 	createApp.SetName(args[0])
-	res, _, err := h.client.AppsApi.CreateApp(h.ctxWithAuth).Body(*createApp).Execute()
+	res, _, err := h.client.AppsApi.CreateApp(h.ctx).Body(*createApp).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

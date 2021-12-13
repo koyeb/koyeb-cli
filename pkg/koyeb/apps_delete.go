@@ -10,14 +10,14 @@ import (
 func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 	force := GetBoolFlags(cmd, "force")
 	if force {
-		app, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
+		app, _, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
 
 		log.Infof("Deleting app %s...", app.App.GetName())
 		for {
-			res, _, err := h.client.ServicesApi.ListServices(h.ctxWithAuth).AppId(app.App.GetId()).Limit("100").Execute()
+			res, _, err := h.client.ServicesApi.ListServices(h.ctx).AppId(app.App.GetId()).Limit("100").Execute()
 			if err != nil {
 				fatalApiError(err)
 			}
@@ -29,7 +29,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 					continue
 				}
 				log.Infof("Deleting service %s", svc.GetName())
-				_, _, err := h.client.ServicesApi.DeleteService(h.ctxWithAuth, svc.GetId()).Execute()
+				_, _, err := h.client.ServicesApi.DeleteService(h.ctx, svc.GetId()).Execute()
 				if err != nil {
 					fatalApiError(err)
 				}
@@ -38,7 +38,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	_, _, err := h.client.AppsApi.DeleteApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
+	_, _, err := h.client.AppsApi.DeleteApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

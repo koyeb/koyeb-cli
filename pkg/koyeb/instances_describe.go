@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"strings"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -19,19 +17,19 @@ func (h *InstanceHandler) Describe(cmd *cobra.Command, args []string) error {
 	output := GetStringFlags(cmd, "output")
 	describeInstancesReply := NewDescribeInstanceReply(h.mapper, &res, full)
 
-	return renderer.NewMultiRenderer(renderer.NewDescribeRenderer(describeInstancesReply)).Render(output)
+	return renderer.NewDescribeRenderer(describeInstancesReply).Render(output)
 }
 
 type DescribeInstanceReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetInstanceReply
+	value  *koyeb.GetInstanceReply
 	full   bool
 }
 
-func NewDescribeInstanceReply(mapper *idmapper.Mapper, res *koyeb.GetInstanceReply, full bool) *DescribeInstanceReply {
+func NewDescribeInstanceReply(mapper *idmapper.Mapper, value *koyeb.GetInstanceReply, full bool) *DescribeInstanceReply {
 	return &DescribeInstanceReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
@@ -41,7 +39,7 @@ func (DescribeInstanceReply) Title() string {
 }
 
 func (r *DescribeInstanceReply) MarshalBinary() ([]byte, error) {
-	return r.res.GetInstance().MarshalJSON()
+	return r.value.GetInstance().MarshalJSON()
 }
 
 func (r *DescribeInstanceReply) Headers() []string {
@@ -49,7 +47,7 @@ func (r *DescribeInstanceReply) Headers() []string {
 }
 
 func (r *DescribeInstanceReply) Fields() []map[string]string {
-	item := r.res.GetInstance()
+	item := r.value.GetInstance()
 	fields := map[string]string{
 		"id":            renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
 		"service":       renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
@@ -61,10 +59,6 @@ func (r *DescribeInstanceReply) Fields() []map[string]string {
 		"updated_at":    renderer.FormatTime(item.GetUpdatedAt()),
 	}
 
-	res := []map[string]string{fields}
-	return res
-}
-
-func formatMessages(msg []string) string {
-	return strings.Join(msg, "\n")
+	resp := []map[string]string{fields}
+	return resp
 }

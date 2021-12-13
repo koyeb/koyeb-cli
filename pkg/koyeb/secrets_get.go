@@ -10,7 +10,7 @@ import (
 )
 
 func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.SecretsApi.GetSecret(h.ctxWithAuth, h.ResolveSecretArgs(args[0])).Execute()
+	res, _, err := h.client.SecretsApi.GetSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -25,42 +25,42 @@ func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
 
 type GetSecretReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetSecretReply
+	value  *koyeb.GetSecretReply
 	full   bool
 }
 
 func NewGetSecretReply(mapper *idmapper.Mapper, res *koyeb.GetSecretReply, full bool) *GetSecretReply {
 	return &GetSecretReply{
 		mapper: mapper,
-		res:    res,
+		value:  res,
 		full:   full,
 	}
 }
 
-func (a *GetSecretReply) Title() string {
+func (GetSecretReply) Title() string {
 	return "Secret"
 }
 
-func (a *GetSecretReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetSecret().MarshalJSON()
+func (r *GetSecretReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetSecret().MarshalJSON()
 }
 
-func (a *GetSecretReply) Headers() []string {
+func (r *GetSecretReply) Headers() []string {
 	return []string{"id", "name", "type", "value", "created_at"}
 }
 
-func (a *GetSecretReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetSecret()
+func (r *GetSecretReply) Fields() []map[string]string {
+	item := r.value.GetSecret()
 	fields := map[string]string{
-		"id":         renderer.FormatSecretID(a.mapper, item.GetId(), a.full),
+		"id":         renderer.FormatSecretID(r.mapper, item.GetId(), r.full),
 		"name":       item.GetName(),
 		"type":       formatSecretType(item.GetType()),
 		"value":      "*****",
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
 }
 
 func formatSecretType(st koyeb.SecretType) string {

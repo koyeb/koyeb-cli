@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
@@ -17,7 +16,7 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, _, err := h.client.AppsApi.ListApps(h.ctxWithAuth).
+		res, _, err := h.client.AppsApi.ListApps(h.ctx).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err)
@@ -40,50 +39,43 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 
 type ListAppsReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.ListAppsReply
+	value  *koyeb.ListAppsReply
 	full   bool
 }
 
-func NewListAppsReply(mapper *idmapper.Mapper, res *koyeb.ListAppsReply, full bool) *ListAppsReply {
+func NewListAppsReply(mapper *idmapper.Mapper, value *koyeb.ListAppsReply, full bool) *ListAppsReply {
 	return &ListAppsReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *ListAppsReply) MarshalBinary() ([]byte, error) {
-	return a.res.MarshalJSON()
-}
-
-func (a *ListAppsReply) Title() string {
+func (ListAppsReply) Title() string {
 	return "Apps"
 }
 
-func (a *ListAppsReply) Headers() []string {
+func (r *ListAppsReply) MarshalBinary() ([]byte, error) {
+	return r.value.MarshalJSON()
+}
+
+func (r *ListAppsReply) Headers() []string {
 	return []string{"id", "name", "domains", "created_at"}
 }
 
-func formatDomains(domains []koyeb.Domain) string {
-	strL := []string{}
-	for _, d := range domains {
-		strL = append(strL, d.GetName())
-	}
-	return strings.Join(strL, ",")
-}
+func (r *ListAppsReply) Fields() []map[string]string {
+	items := r.value.GetApps()
+	resp := make([]map[string]string, 0, len(items))
 
-func (a *ListAppsReply) Fields() []map[string]string {
-	res := []map[string]string{}
-
-	for _, item := range a.res.GetApps() {
+	for _, item := range items {
 		fields := map[string]string{
-			"id":         renderer.FormatAppID(a.mapper, item.GetId(), a.full),
+			"id":         renderer.FormatAppID(r.mapper, item.GetId(), r.full),
 			"name":       item.GetName(),
 			"domains":    formatDomains(item.GetDomains()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
-		res = append(res, fields)
+		resp = append(resp, fields)
 	}
 
-	return res
+	return resp
 }

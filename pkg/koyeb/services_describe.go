@@ -8,13 +8,12 @@ import (
 )
 
 func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
-	ctx := h.ctxWithAuth
-	res, _, err := h.client.ServicesApi.GetService(ctx, h.ResolveServiceArgs(args[0])).Execute()
+	res, _, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
-	instancesRes, _, err := h.client.InstancesApi.ListInstances(ctx).
+	instancesRes, _, err := h.client.InstancesApi.ListInstances(h.ctx).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -28,7 +27,7 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 
-	deploymentsRes, _, err := h.client.DeploymentsApi.ListDeployments(ctx).ServiceId(res.Service.GetId()).Execute()
+	deploymentsRes, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).ServiceId(res.Service.GetId()).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -45,42 +44,42 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 
 type DescribeServiceReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetServiceReply
+	value  *koyeb.GetServiceReply
 	full   bool
 }
 
-func NewDescribeServiceReply(mapper *idmapper.Mapper, res *koyeb.GetServiceReply, full bool) *DescribeServiceReply {
+func NewDescribeServiceReply(mapper *idmapper.Mapper, value *koyeb.GetServiceReply, full bool) *DescribeServiceReply {
 	return &DescribeServiceReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *DescribeServiceReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetService().MarshalJSON()
-}
-
-func (a *DescribeServiceReply) Title() string {
+func (DescribeServiceReply) Title() string {
 	return "Service"
 }
 
-func (a *DescribeServiceReply) Headers() []string {
+func (r *DescribeServiceReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetService().MarshalJSON()
+}
+
+func (r *DescribeServiceReply) Headers() []string {
 	return []string{"id", "app", "name", "version", "status", "created_at", "updated_at"}
 }
 
-func (a *DescribeServiceReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetService()
+func (r *DescribeServiceReply) Fields() []map[string]string {
+	item := r.value.GetService()
 	fields := map[string]string{
-		"id":         renderer.FormatServiceID(a.mapper, item.GetId(), a.full),
-		"app":        renderer.FormatAppName(a.mapper, item.GetAppId(), a.full),
+		"id":         renderer.FormatServiceID(r.mapper, item.GetId(), r.full),
+		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
 		"status":     formatStatus(item.State.GetStatus()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
 }

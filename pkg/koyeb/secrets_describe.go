@@ -8,7 +8,7 @@ import (
 )
 
 func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.SecretsApi.GetSecret(h.ctxWithAuth, h.ResolveSecretArgs(args[0])).Execute()
+	res, _, err := h.client.SecretsApi.GetSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -23,41 +23,41 @@ func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
 
 type DescribeSecretReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetSecretReply
+	value  *koyeb.GetSecretReply
 	full   bool
 }
 
-func NewDescribeSecretReply(mapper *idmapper.Mapper, res *koyeb.GetSecretReply, full bool) *DescribeSecretReply {
+func NewDescribeSecretReply(mapper *idmapper.Mapper, value *koyeb.GetSecretReply, full bool) *DescribeSecretReply {
 	return &DescribeSecretReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *DescribeSecretReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetSecret().MarshalJSON()
-}
-
-func (a *DescribeSecretReply) Title() string {
+func (DescribeSecretReply) Title() string {
 	return "Secret"
 }
 
-func (a *DescribeSecretReply) Headers() []string {
+func (r *DescribeSecretReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetSecret().MarshalJSON()
+}
+
+func (r *DescribeSecretReply) Headers() []string {
 	return []string{"id", "name", "type", "value", "created_at", "updated_at"}
 }
 
-func (a *DescribeSecretReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetSecret()
+func (r *DescribeSecretReply) Fields() []map[string]string {
+	item := r.value.GetSecret()
 	fields := map[string]string{
-		"id":         renderer.FormatSecretID(a.mapper, item.GetId(), a.full),
+		"id":         renderer.FormatSecretID(r.mapper, item.GetId(), r.full),
 		"name":       item.GetName(),
 		"type":       formatSecretType(item.GetType()),
 		"value":      "*****",
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
 }

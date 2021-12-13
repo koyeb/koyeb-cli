@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
@@ -24,14 +25,14 @@ func (h *InstanceHandler) Get(cmd *cobra.Command, args []string) error {
 
 type GetInstanceReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetInstanceReply
+	value  *koyeb.GetInstanceReply
 	full   bool
 }
 
-func NewGetInstanceReply(mapper *idmapper.Mapper, res *koyeb.GetInstanceReply, full bool) *GetInstanceReply {
+func NewGetInstanceReply(mapper *idmapper.Mapper, value *koyeb.GetInstanceReply, full bool) *GetInstanceReply {
 	return &GetInstanceReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
@@ -41,7 +42,7 @@ func (GetInstanceReply) Title() string {
 }
 
 func (r *GetInstanceReply) MarshalBinary() ([]byte, error) {
-	return r.res.GetInstance().MarshalJSON()
+	return r.value.GetInstance().MarshalJSON()
 }
 
 func (r *GetInstanceReply) Headers() []string {
@@ -49,7 +50,7 @@ func (r *GetInstanceReply) Headers() []string {
 }
 
 func (r *GetInstanceReply) Fields() []map[string]string {
-	item := r.res.GetInstance()
+	item := r.value.GetInstance()
 	fields := map[string]string{
 		"id":            renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
 		"service":       renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
@@ -59,10 +60,14 @@ func (r *GetInstanceReply) Fields() []map[string]string {
 		"created_at":    renderer.FormatTime(item.GetCreatedAt()),
 	}
 
-	res := []map[string]string{fields}
-	return res
+	resp := []map[string]string{fields}
+	return resp
 }
 
 func formatInstanceStatus(status koyeb.InstanceStatus) string {
 	return fmt.Sprintf("%s", status)
+}
+
+func formatMessages(msg []string) string {
+	return strings.Join(msg, "\n")
 }

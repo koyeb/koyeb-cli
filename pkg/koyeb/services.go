@@ -12,6 +12,158 @@ import (
 	"github.com/spf13/pflag"
 )
 
+func NewServiceCmd() *cobra.Command {
+	h := NewServiceHandler()
+
+	serviceCmd := &cobra.Command{
+		Use:               "services ACTION",
+		Aliases:           []string{"s", "svc", "service"},
+		Short:             "Services",
+		PersistentPreRunE: h.InitHandler,
+	}
+
+	createServiceCmd := &cobra.Command{
+		Use:   "create NAME",
+		Short: "Create service",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			createService := koyeb.NewCreateServiceWithDefaults()
+			createDef := koyeb.NewServiceDefinitionWithDefaults()
+
+			err := parseServiceDefinitionFlags(cmd.Flags(), createDef, true)
+			if err != nil {
+				return err
+			}
+			createDef.Name = koyeb.PtrString(args[0])
+
+			createService.SetDefinition(*createDef)
+			return h.Create(cmd, args, createService)
+		},
+	}
+	addServiceDefinitionFlags(createServiceCmd.Flags())
+	createServiceCmd.Flags().StringP("app", "a", "", "App")
+	createServiceCmd.MarkFlagRequired("app")
+	serviceCmd.AddCommand(createServiceCmd)
+
+	getServiceCmd := &cobra.Command{
+		Use:   "get NAME",
+		Short: "Get service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Get,
+	}
+	serviceCmd.AddCommand(getServiceCmd)
+
+	logsServiceCmd := &cobra.Command{
+		Use:     "logs NAME",
+		Aliases: []string{"l", "log"},
+		Short:   "Get the service logs",
+		Args:    cobra.ExactArgs(1),
+		RunE:    h.Log,
+	}
+	serviceCmd.AddCommand(logsServiceCmd)
+	logsServiceCmd.Flags().String("instance", "", "Instance")
+	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
+
+	listServiceCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List services",
+		RunE:  h.List,
+	}
+	serviceCmd.AddCommand(listServiceCmd)
+	listServiceCmd.Flags().StringP("app", "a", "", "App")
+	listServiceCmd.Flags().StringP("name", "n", "", "Service name")
+
+	describeServiceCmd := &cobra.Command{
+		Use:   "describe NAME",
+		Short: "Describe service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Describe,
+	}
+	serviceCmd.AddCommand(describeServiceCmd)
+
+	updateServiceCmd := &cobra.Command{
+		Use:   "update NAME",
+		Short: "Update service",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			updateService := koyeb.NewUpdateServiceWithDefaults()
+
+			latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
+				Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
+			if err != nil {
+				fatalApiError(err)
+			}
+			if len(latestDeploy.GetDeployments()) == 0 {
+				return errors.New("Unable to load latest deployment")
+			}
+			updateDef := latestDeploy.GetDeployments()[0].Definition
+			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
+			if err != nil {
+				return err
+			}
+			updateService.SetDefinition(*updateDef)
+			return h.Update(cmd, args, updateService)
+		},
+	}
+	addServiceDefinitionFlags(updateServiceCmd.Flags())
+	serviceCmd.AddCommand(updateServiceCmd)
+
+	redeployServiceCmd := &cobra.Command{
+		Use:   "redeploy NAME",
+		Short: "Redeploy service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.ReDeploy,
+	}
+	serviceCmd.AddCommand(redeployServiceCmd)
+
+	deleteServiceCmd := &cobra.Command{
+		Use:   "delete NAME",
+		Short: "Delete service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Delete,
+	}
+	serviceCmd.AddCommand(deleteServiceCmd)
+
+	return serviceCmd
+}
+
+func NewServiceHandler() *ServiceHandler {
+	return &ServiceHandler{}
+}
+
+type ServiceHandler struct {
+	ctx    context.Context
+	client *koyeb.APIClient
+	mapper *idmapper.Mapper
+}
+
+func (h *ServiceHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.ctx = getAuth(context.Background())
+	h.client = getApiClient()
+	h.mapper = idmapper.NewMapper(h.ctx, h.client)
+	return nil
+}
+
+func (h *ServiceHandler) ResolveServiceArgs(val string) string {
+	serviceMapper := h.mapper.Service()
+	id, err := serviceMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
+}
+
+func (h *ServiceHandler) ResolveAppArgs(val string) string {
+	appMapper := h.mapper.App()
+	id, err := appMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
+}
+
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "", "Git branch")
@@ -152,156 +304,4 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 		definition.Docker = nil
 	}
 	return nil
-}
-
-func NewServiceCmd() *cobra.Command {
-	h := NewServiceHandler()
-
-	serviceCmd := &cobra.Command{
-		Use:               "services ACTION",
-		Aliases:           []string{"s", "svc", "service"},
-		Short:             "Services",
-		PersistentPreRunE: h.InitHandler,
-	}
-
-	createServiceCmd := &cobra.Command{
-		Use:   "create NAME",
-		Short: "Create service",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			createService := koyeb.NewCreateServiceWithDefaults()
-			createDef := koyeb.NewServiceDefinitionWithDefaults()
-
-			err := parseServiceDefinitionFlags(cmd.Flags(), createDef, true)
-			if err != nil {
-				return err
-			}
-			createDef.Name = koyeb.PtrString(args[0])
-
-			createService.SetDefinition(*createDef)
-			return h.Create(cmd, args, createService)
-		},
-	}
-	addServiceDefinitionFlags(createServiceCmd.Flags())
-	createServiceCmd.Flags().StringP("app", "a", "", "App")
-	createServiceCmd.MarkFlagRequired("app")
-	serviceCmd.AddCommand(createServiceCmd)
-
-	getServiceCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  h.Get,
-	}
-	serviceCmd.AddCommand(getServiceCmd)
-
-	logsServiceCmd := &cobra.Command{
-		Use:     "logs NAME",
-		Aliases: []string{"l", "log"},
-		Short:   "Get the service logs",
-		Args:    cobra.ExactArgs(1),
-		RunE:    h.Log,
-	}
-	serviceCmd.AddCommand(logsServiceCmd)
-	logsServiceCmd.Flags().String("instance", "", "Instance")
-	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
-
-	listServiceCmd := &cobra.Command{
-		Use:   "list",
-		Short: "List services",
-		RunE:  h.List,
-	}
-	serviceCmd.AddCommand(listServiceCmd)
-	listServiceCmd.Flags().StringP("app", "a", "", "App")
-	listServiceCmd.Flags().StringP("name", "n", "", "Service name")
-
-	describeServiceCmd := &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  h.Describe,
-	}
-	serviceCmd.AddCommand(describeServiceCmd)
-
-	updateServiceCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update service",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			updateService := koyeb.NewUpdateServiceWithDefaults()
-
-			latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).
-				Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
-			if err != nil {
-				fatalApiError(err)
-			}
-			if len(latestDeploy.GetDeployments()) == 0 {
-				return errors.New("Unable to load latest deployment")
-			}
-			updateDef := latestDeploy.GetDeployments()[0].Definition
-			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
-			if err != nil {
-				return err
-			}
-			updateService.SetDefinition(*updateDef)
-			return h.Update(cmd, args, updateService)
-		},
-	}
-	addServiceDefinitionFlags(updateServiceCmd.Flags())
-	serviceCmd.AddCommand(updateServiceCmd)
-
-	redeployServiceCmd := &cobra.Command{
-		Use:   "redeploy NAME",
-		Short: "Redeploy service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  h.ReDeploy,
-	}
-	serviceCmd.AddCommand(redeployServiceCmd)
-
-	deleteServiceCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  h.Delete,
-	}
-	serviceCmd.AddCommand(deleteServiceCmd)
-
-	return serviceCmd
-}
-
-func NewServiceHandler() *ServiceHandler {
-	return &ServiceHandler{}
-}
-
-type ServiceHandler struct {
-	ctxWithAuth context.Context
-	client      *koyeb.APIClient
-	mapper      *idmapper.Mapper
-}
-
-func (h *ServiceHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	h.client = getApiClient()
-	h.ctxWithAuth = getAuth(context.Background())
-	h.mapper = idmapper.NewMapper(h.ctxWithAuth, h.client)
-	return nil
-}
-
-func (h *ServiceHandler) ResolveServiceArgs(val string) string {
-	serviceMapper := h.mapper.Service()
-	id, err := serviceMapper.ResolveID(val)
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	return id
-}
-
-func (h *ServiceHandler) ResolveAppArgs(val string) string {
-	appMapper := h.mapper.App()
-	id, err := appMapper.ResolveID(val)
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	return id
 }

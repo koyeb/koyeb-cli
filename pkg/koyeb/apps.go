@@ -107,15 +107,15 @@ func NewAppHandler() *AppHandler {
 }
 
 type AppHandler struct {
-	ctxWithAuth context.Context
-	client      *koyeb.APIClient
-	mapper      *idmapper.Mapper
+	ctx    context.Context
+	client *koyeb.APIClient
+	mapper *idmapper.Mapper
 }
 
 func (h *AppHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.ctx = getAuth(context.Background())
 	h.client = getApiClient()
-	h.ctxWithAuth = getAuth(context.Background())
-	h.mapper = idmapper.NewMapper(h.ctxWithAuth, h.client)
+	h.mapper = idmapper.NewMapper(h.ctx, h.client)
 	return nil
 }
 
