@@ -30,7 +30,7 @@ func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.Cr
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 	getAppsReply := NewGetAppReply(h.mapper, &koyeb.GetAppReply{App: res.App}, full)
-	getServiceReply := NewGetServiceReply(&koyeb.GetServiceReply{Service: serviceRes.Service}, full)
+	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: serviceRes.Service}, full)
 
 	return renderer.NewDescribeRenderer(getAppsReply, getServiceReply).Render(output)
 }

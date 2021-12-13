@@ -2,11 +2,11 @@ package koyeb
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -230,7 +230,8 @@ func NewServiceCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			updateService := koyeb.NewUpdateServiceWithDefaults()
 
-			latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).Limit(fmt.Sprintf("%d", 1)).ServiceId(h.ResolveServiceShortID(args[0])).Execute()
+			latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).
+				Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
 			if err != nil {
 				fatalApiError(err)
 			}
@@ -273,20 +274,34 @@ func NewServiceHandler() *ServiceHandler {
 }
 
 type ServiceHandler struct {
-	client      *koyeb.APIClient
 	ctxWithAuth context.Context
+	client      *koyeb.APIClient
+	mapper      *idmapper2.Mapper
 }
 
-func (d *ServiceHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	d.client = getApiClient()
-	d.ctxWithAuth = getAuth(context.Background())
+func (h *ServiceHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.client = getApiClient()
+	h.ctxWithAuth = getAuth(context.Background())
+	h.mapper = idmapper2.NewMapper(h.ctxWithAuth, h.client)
 	return nil
 }
 
-func (d *ServiceHandler) ResolveServiceShortID(id string) string {
-	return ResolveServiceShortID(d.ctxWithAuth, d.client, id)
+func (h *ServiceHandler) ResolveServiceArgs(val string) string {
+	serviceMapper := h.mapper.Service()
+	id, err := serviceMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
 }
 
-func (d *ServiceHandler) ResolveAppShortID(id string) string {
-	return ResolveAppShortID(d.ctxWithAuth, d.client, id)
+func (h *ServiceHandler) ResolveAppArgs(val string) string {
+	appMapper := h.mapper.App()
+	id, err := appMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
 }

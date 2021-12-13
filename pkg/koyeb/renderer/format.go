@@ -14,12 +14,32 @@ func FormatID(id string, full bool) string {
 	if full {
 		return id
 	}
-	return id[:8]
+	return id[:4]
 }
 
 func FormatAppID(mapper *idmapper2.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.App().GetShortID(id)
+		if err == nil {
+			return sid
+		}
+	}
+	return id
+}
+
+func FormatAppName(mapper *idmapper2.Mapper, id string, full bool) string {
+	if !full {
+		sid, err := mapper.App().GetName(id)
+		if err == nil {
+			return sid
+		}
+	}
+	return id
+}
+
+func FormatServiceID(mapper *idmapper2.Mapper, id string, full bool) string {
+	if !full {
+		sid, err := mapper.Service().GetShortID(id)
 		if err == nil {
 			return sid
 		}
