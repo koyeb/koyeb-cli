@@ -8,14 +8,15 @@ import (
 )
 
 func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	res, _, err := h.client.ServicesApi.UpdateService(h.ctxWithAuth, h.ResolveServiceShortID(args[0])).Body(*updateService).Execute()
+	res, _, err := h.client.ServicesApi.UpdateService(h.ctxWithAuth, h.ResolveServiceArgs(args[0])).Body(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
-	full, _ := cmd.Flags().GetBool("full")
-	getServiceReply := NewGetServiceReply(&koyeb.GetServiceReply{Service: res.Service}, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+
 	return renderer.NewDescribeItemRenderer(getServiceReply).Render(output)
 }

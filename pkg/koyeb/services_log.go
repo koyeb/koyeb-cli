@@ -14,25 +14,26 @@ import (
 )
 
 func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
-	serviceDetail, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceShortID(args[0])).Execute()
+	serviceDetail, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
 	serviceID := serviceDetail.Service.GetId()
-	instanceID, _ := cmd.Flags().GetString("instance")
-	logType, _ := cmd.Flags().GetString("type")
+	instanceID := GetStringFlags(cmd, "instance")
+	logType := GetStringFlags(cmd, "type")
 
 	done := make(chan struct{})
 	query := &watchLogQuery{serviceID: koyeb.PtrString(serviceID)}
 
 	if logType == "build" {
-		latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).Limit(fmt.Sprintf("%d", 1)).ServiceId(h.ResolveServiceShortID(args[0])).Execute()
+		latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).
+			Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
 		if len(latestDeploy.GetDeployments()) == 0 {
-			return errors.New("Unable to load latest deployment")
+			return errors.New("unable to load latest deployment")
 		}
 		query.deploymentID = latestDeploy.GetDeployments()[0].Id
 		query.logType = koyeb.PtrString(logType)
@@ -41,6 +42,7 @@ func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
 	if instanceID != "" {
 		query.instanceID = koyeb.PtrString(instanceID)
 	}
+
 	return watchLog(query, done)
 }
 

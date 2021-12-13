@@ -3,13 +3,14 @@ package koyeb
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	ctx := h.ctxWithAuth
-	res, _, err := h.client.ServicesApi.GetService(ctx, h.ResolveServiceShortID(args[0])).Execute()
+	res, _, err := h.client.ServicesApi.GetService(ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -33,28 +34,27 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	appMapper := idmapper.NewAppMapper(ctx, h.client)
 	serviceMapper := idmapper.NewServiceMapper(ctx, h.client)
 
-	full, _ := cmd.Flags().GetBool("full")
-	getServiceReply := NewGetServiceReply(&res, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+
+	getServiceReply := NewGetServiceReply(h.mapper, &res, full)
 	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper, full)
 	listDeploymentsReply := NewListDeploymentsReply(&deploymentsRes, full)
 
-	output, _ := cmd.Flags().GetString("output")
-	return renderer.NewDescribeRenderer(
-		getServiceReply,
-		listDeploymentsReply,
-		listInstancesReply,
-	).Render(output)
+	return renderer.NewDescribeRenderer(getServiceReply, listDeploymentsReply, listInstancesReply).Render(output)
 }
 
 type DescribeServiceReply struct {
-	res  *koyeb.GetServiceReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.GetServiceReply
+	full   bool
 }
 
-func NewDescribeServiceReply(res *koyeb.GetServiceReply, full bool) *DescribeServiceReply {
+func NewDescribeServiceReply(mapper *idmapper2.Mapper, res *koyeb.GetServiceReply, full bool) *DescribeServiceReply {
 	return &DescribeServiceReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -74,8 +74,8 @@ func (a *DescribeServiceReply) Fields() []map[string]string {
 	res := []map[string]string{}
 	item := a.res.GetService()
 	fields := map[string]string{
-		"id":         renderer.FormatID(item.GetId(), a.full),
-		"app":        renderer.FormatID(item.GetAppId(), a.full),
+		"id":         renderer.FormatServiceID(a.mapper, item.GetId(), a.full),
+		"app":        renderer.FormatAppName(a.mapper, item.GetAppId(), a.full),
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
 		"status":     formatStatus(item.State.GetStatus()),

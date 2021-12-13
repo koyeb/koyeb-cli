@@ -4,31 +4,35 @@ import (
 	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceShortID(args[0])).Execute()
+	res, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	getServiceReply := NewGetServiceReply(&res, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getServiceReply := NewGetServiceReply(h.mapper, &res, full)
+
 	return renderer.NewItemRenderer(getServiceReply).Render(output)
 }
 
 type GetServiceReply struct {
-	res  *koyeb.GetServiceReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.GetServiceReply
+	full   bool
 }
 
-func NewGetServiceReply(res *koyeb.GetServiceReply, full bool) *GetServiceReply {
+func NewGetServiceReply(mapper *idmapper2.Mapper, res *koyeb.GetServiceReply, full bool) *GetServiceReply {
 	return &GetServiceReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -48,8 +52,8 @@ func (a *GetServiceReply) Fields() []map[string]string {
 	res := []map[string]string{}
 	item := a.res.GetService()
 	fields := map[string]string{
-		"id":         renderer.FormatID(item.GetId(), a.full),
-		"app":        renderer.FormatID(item.GetAppId(), a.full),
+		"id":         renderer.FormatServiceID(a.mapper, item.GetId(), a.full),
+		"app":        renderer.FormatAppName(a.mapper, item.GetAppId(), a.full),
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
 		"status":     formatStatus(item.State.GetStatus()),
