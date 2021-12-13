@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -12,22 +13,24 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 
-	full, _ := cmd.Flags().GetBool("full")
-	getAppsReply := NewGetAppReply(&res, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getAppsReply := NewGetAppReply(h.mapper, &res, full)
 
-	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewItemRenderer(getAppsReply).Render(output)
 }
 
 type GetAppReply struct {
-	res  *koyeb.GetAppReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.GetAppReply
+	full   bool
 }
 
-func NewGetAppReply(res *koyeb.GetAppReply, full bool) *GetAppReply {
+func NewGetAppReply(mapper *idmapper2.Mapper, res *koyeb.GetAppReply, full bool) *GetAppReply {
 	return &GetAppReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -47,7 +50,7 @@ func (a *GetAppReply) Fields() []map[string]string {
 	res := []map[string]string{}
 	item := a.res.GetApp()
 	fields := map[string]string{
-		"id":         renderer.FormatID(item.GetId(), a.full),
+		"id":         renderer.FormatID2(a.mapper, item.GetId(), a.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
