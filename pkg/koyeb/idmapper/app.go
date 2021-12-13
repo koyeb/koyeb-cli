@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
@@ -104,8 +103,7 @@ func (mapper *AppMapper) fetch() error {
 		apps := resp.GetApps()
 		for i := range apps {
 			app := &apps[i]
-			id := app.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), app)
+			radix.Insert(getKey(app.GetId()), app)
 		}
 
 		page++
@@ -116,15 +114,20 @@ func (mapper *AppMapper) fetch() error {
 	}
 
 	minLength := radix.MinimalLength(8)
-	radix.ForEach(func(key Key, value Value) {
+	err := radix.ForEach(func(key Key, value Value) error {
 		app := value.(*koyeb.AppListItem)
 		id := app.GetId()
 		name := app.GetName()
-		sid := strings.ReplaceAll(id, "-", "")[:minLength]
+		sid := getShortID(id, minLength)
 
 		mapper.sidMap.Set(id, sid)
 		mapper.nameMap.Set(id, name)
+
+		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	mapper.fetched = true
 

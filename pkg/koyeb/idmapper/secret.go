@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
@@ -88,8 +87,7 @@ func (mapper *SecretMapper) fetch() error {
 		secrets := resp.GetSecrets()
 		for i := range secrets {
 			secret := &secrets[i]
-			id := secret.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), secret)
+			radix.Insert(getKey(secret.GetId()), secret)
 		}
 
 		page++
@@ -100,15 +98,20 @@ func (mapper *SecretMapper) fetch() error {
 	}
 
 	minLength := radix.MinimalLength(8)
-	radix.ForEach(func(key Key, value Value) {
+	err := radix.ForEach(func(key Key, value Value) error {
 		secret := value.(*koyeb.Secret)
 		id := secret.GetId()
 		name := secret.GetName()
-		sid := strings.ReplaceAll(id, "-", "")[:minLength]
+		sid := getShortID(id, minLength)
 
 		mapper.sidMap.Set(id, sid)
 		mapper.nameMap.Set(id, name)
+
+		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	mapper.fetched = true
 
