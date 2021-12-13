@@ -8,7 +8,7 @@ import (
 )
 
 func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
-	force, _ := cmd.Flags().GetBool("force")
+	force := GetBoolFlags(cmd, "force")
 	if force {
 		app, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
 		if err != nil {

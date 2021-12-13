@@ -11,22 +11,20 @@ import (
 )
 
 type AppMapper struct {
-	ctx        context.Context
-	client     *koyeb.APIClient
-	cache      map[string]*koyeb.AppListItem
-	idCache    map[string]string
-	shortCache map[string]string
-	nameCache  map[string]string
+	ctx     context.Context
+	client  *koyeb.APIClient
+	fetched bool
+	sidMap  *IDMap
+	nameMap *IDMap
 }
 
 func NewAppMapper(ctx context.Context, client *koyeb.APIClient) *AppMapper {
 	return &AppMapper{
-		ctx:        ctx,
-		client:     client,
-		cache:      map[string]*koyeb.AppListItem{},
-		idCache:    map[string]string{},
-		shortCache: map[string]string{},
-		nameCache:  map[string]string{},
+		ctx:     ctx,
+		client:  client,
+		fetched: false,
+		sidMap:  NewIDMap(),
+		nameMap: NewIDMap(),
 	}
 }
 
@@ -35,19 +33,19 @@ func (mapper *AppMapper) ResolveID(val string) (string, error) {
 		return val, nil
 	}
 
-	if len(mapper.cache) == 0 {
-		err := mapper.list()
+	if !mapper.fetched {
+		err := mapper.fetch()
 		if err != nil {
 			return "", err
 		}
 	}
 
-	id, ok := mapper.shortCache[val]
+	id, ok := mapper.sidMap.GetID(val)
 	if ok {
 		return id, nil
 	}
 
-	id, ok = mapper.nameCache[val]
+	id, ok = mapper.nameMap.GetID(val)
 	if ok {
 		return id, nil
 	}
@@ -56,14 +54,14 @@ func (mapper *AppMapper) ResolveID(val string) (string, error) {
 }
 
 func (mapper *AppMapper) GetShortID(id string) (string, error) {
-	if len(mapper.cache) == 0 {
-		err := mapper.list()
+	if !mapper.fetched {
+		err := mapper.fetch()
 		if err != nil {
 			return "", err
 		}
 	}
 
-	sid, ok := mapper.idCache[id]
+	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
 		return "", fmt.Errorf("id not found %q", id)
 	}
@@ -71,7 +69,7 @@ func (mapper *AppMapper) GetShortID(id string) (string, error) {
 	return sid, nil
 }
 
-func (mapper *AppMapper) list() error {
+func (mapper *AppMapper) fetch() error {
 	cache := map[string]*koyeb.AppListItem{}
 	radix := NewRadixTree()
 
@@ -92,7 +90,7 @@ func (mapper *AppMapper) list() error {
 		for i := range apps {
 			app := &apps[i]
 			id := app.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")))
+			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), app)
 			cache[id] = app
 		}
 
@@ -104,15 +102,17 @@ func (mapper *AppMapper) list() error {
 	}
 
 	shortIDLength := radix.MinimalLength(8) + 3 // WARNING(tleroux): Remove + 3 used for debug
-	for id, app := range cache {
-		sid := strings.ReplaceAll(id, "-", "")[:shortIDLength]
+	radix.ForEach(func(key Key, value Value) {
+		app := value.(*koyeb.AppListItem)
+		id := app.GetId()
 		name := app.GetName()
+		sid := strings.ReplaceAll(id, "-", "")[:shortIDLength]
 
-		mapper.cache[id] = app
-		mapper.idCache[id] = sid
-		mapper.shortCache[sid] = id
-		mapper.nameCache[name] = id
-	}
+		mapper.sidMap.Set(id, sid)
+		mapper.nameMap.Set(id, name)
+	})
+
+	mapper.fetched = true
 
 	return nil
 }

@@ -1,7 +1,7 @@
 package koyeb
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -11,52 +11,52 @@ import (
 )
 
 func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
-	results := &koyeb.ListAppsReply{}
+	list := []koyeb.AppListItem{}
 
-	page := 0
-	offset := 0
-	limit := 100
+	page := int64(0)
+	offset := int64(0)
+	limit := int64(100)
 	for {
-		res, _, err := h.client.AppsApi.ListApps(h.ctxWithAuth).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		res, _, err := h.client.AppsApi.ListApps(h.ctxWithAuth).
+			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		if results.Apps == nil {
-			results.Apps = res.Apps
-		} else {
-			*results.Apps = append(*results.Apps, *res.Apps...)
-		}
+		list = append(list, res.GetApps()...)
 
 		page++
 		offset = page * limit
-		if int64(offset) >= res.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}
 
-	full, _ := cmd.Flags().GetBool("full")
-	listAppsReply := NewListAppsReply(h.mapper, results, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	listAppsReply := NewListAppsReply(h.mapper, list, full)
 
-	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewListRenderer(listAppsReply).Render(output)
 }
 
 type ListAppsReply struct {
 	mapper *idmapper2.Mapper
-	res    *koyeb.ListAppsReply
+	list   []koyeb.AppListItem
 	full   bool
 }
 
-func NewListAppsReply(mapper *idmapper2.Mapper, res *koyeb.ListAppsReply, full bool) *ListAppsReply {
+func NewListAppsReply(mapper *idmapper2.Mapper, list []koyeb.AppListItem, full bool) *ListAppsReply {
 	return &ListAppsReply{
 		mapper: mapper,
-		res:    res,
+		list:   list,
 		full:   full,
 	}
 }
 
 func (a *ListAppsReply) MarshalBinary() ([]byte, error) {
-	return a.res.MarshalJSON()
+	rep := &koyeb.ListAppsReply{
+		Apps: &a.list,
+	}
+	return rep.MarshalJSON()
 }
 
 func (a *ListAppsReply) Title() string {
@@ -78,10 +78,9 @@ func formatDomains(domains []koyeb.Domain) string {
 func (a *ListAppsReply) Fields() []map[string]string {
 	res := []map[string]string{}
 
-	for _, item := range a.res.GetApps() {
+	for _, item := range a.list {
 		fields := map[string]string{
-			"id": renderer.FormatID2(a.mapper, item.GetId(), a.full),
-			//"id":         renderer.FormatID(item.GetId(), a.full),
+			"id":         renderer.FormatID2(a.mapper, item.GetId(), a.full),
 			"name":       item.GetName(),
 			"domains":    formatDomains(item.GetDomains()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
