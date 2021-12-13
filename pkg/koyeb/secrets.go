@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/spf13/cobra"
 )
 
@@ -84,16 +85,24 @@ func NewSecretHandler() *SecretHandler {
 }
 
 type SecretHandler struct {
-	client      *koyeb.APIClient
 	ctxWithAuth context.Context
+	client      *koyeb.APIClient
+	mapper      *idmapper2.Mapper
 }
 
-func (d *SecretHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	d.client = getApiClient()
-	d.ctxWithAuth = getAuth(context.Background())
+func (h *SecretHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.client = getApiClient()
+	h.ctxWithAuth = getAuth(context.Background())
+	h.mapper = idmapper2.NewMapper(h.ctxWithAuth, h.client)
 	return nil
 }
 
-func (d *SecretHandler) ResolveSecretShortID(id string) string {
-	return ResolveSecretShortID(d.ctxWithAuth, d.client, id)
+func (h *SecretHandler) ResolveSecretArgs(val string) string {
+	secretMapper := h.mapper.Secret()
+	id, err := secretMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
 }

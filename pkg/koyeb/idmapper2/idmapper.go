@@ -7,15 +7,21 @@ import (
 )
 
 type Mapper struct {
-	app *AppMapper
+	app    *AppMapper
+	secret *SecretMapper
 }
 
 func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 	return &Mapper{
-		app: NewAppMapper(ctx, client),
+		app:    NewAppMapper(ctx, client),
+		secret: NewSecretMapper(ctx, client),
 	}
 }
 
 func (mapper *Mapper) App() *AppMapper {
 	return mapper.app
+}
+
+func (mapper *Mapper) Secret() *SecretMapper {
+	return mapper.secret
 }
