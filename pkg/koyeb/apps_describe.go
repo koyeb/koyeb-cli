@@ -55,7 +55,7 @@ func (a *DescribeAppReply) Fields() []map[string]string {
 	res := []map[string]string{}
 	item := a.res.GetApp()
 	fields := map[string]string{
-		"id":         renderer.FormatID2(a.mapper, item.GetId(), a.full),
+		"id":         renderer.FormatAppID(a.mapper, item.GetId(), a.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
