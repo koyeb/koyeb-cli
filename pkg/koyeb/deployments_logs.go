@@ -5,20 +5,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DeploymentHandler) Log(cmd *cobra.Command, args []string) error {
+func (h *DeploymentHandler) Logs(cmd *cobra.Command, args []string) error {
 	deploymentDetail, _, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
-	logType := GetStringFlags(cmd, "type")
-
 	done := make(chan struct{})
 
-	query := &watchLogQuery{deploymentID: koyeb.PtrString(deploymentDetail.Deployment.GetId())}
+	logType := GetStringFlags(cmd, "type")
+
+	query := &WatchLogQuery{}
+	query.DeploymentID = koyeb.PtrString(deploymentDetail.Deployment.GetId())
 	if logType != "" {
-		query.logType = koyeb.PtrString(logType)
+		query.LogType = koyeb.PtrString(logType)
 	}
 
-	return watchLog(query, done)
+	return WatchLog(query, done)
 }
