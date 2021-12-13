@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
@@ -16,7 +15,6 @@ type ServiceMapper struct {
 	appMapper *AppMapper
 	fetched   bool
 	sidMap    *IDMap
-	nameMap   *IDMap
 	slugMap   *IDMap
 }
 
@@ -27,7 +25,6 @@ func NewServiceMapper(ctx context.Context, client *koyeb.APIClient, appMapper *A
 		appMapper: appMapper,
 		fetched:   false,
 		sidMap:    NewIDMap(),
-		nameMap:   NewIDMap(),
 		slugMap:   NewIDMap(),
 	}
 }
@@ -108,8 +105,7 @@ func (mapper *ServiceMapper) fetch() error {
 		services := resp.GetServices()
 		for i := range services {
 			service := &services[i]
-			id := service.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), service)
+			radix.Insert(getKey(service.GetId()), service)
 		}
 
 		page++
@@ -120,21 +116,27 @@ func (mapper *ServiceMapper) fetch() error {
 	}
 
 	minLength := radix.MinimalLength(8)
-	radix.ForEach(func(key Key, value Value) {
+	err := radix.ForEach(func(key Key, value Value) error {
 		service := value.(*koyeb.ServiceListItem)
-		id := service.GetId()
-		name := service.GetName()
-		sid := strings.ReplaceAll(id, "-", "")[:minLength]
-
-		mapper.sidMap.Set(id, sid)
-		mapper.nameMap.Set(id, name)
 
 		appName, err := mapper.appMapper.GetName(service.GetAppId())
-		if err == nil {
-			slug := fmt.Sprint(appName, "/", name)
-			mapper.slugMap.Set(id, slug)
+		if err != nil {
+			return err
 		}
+
+		serviceID := service.GetId()
+		serviceSID := getShortID(serviceID, minLength)
+		serviceName := service.GetName()
+		serviceSlug := fmt.Sprint(appName, "/", serviceName)
+
+		mapper.sidMap.Set(serviceID, serviceSID)
+		mapper.slugMap.Set(serviceID, serviceSlug)
+
+		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	mapper.fetched = true
 
