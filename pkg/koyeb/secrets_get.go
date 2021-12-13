@@ -4,32 +4,36 @@ import (
 	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.SecretsApi.GetSecret(h.ctxWithAuth, h.ResolveSecretShortID(args[0])).Execute()
+	res, _, err := h.client.SecretsApi.GetSecret(h.ctxWithAuth, h.ResolveSecretArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	getSecretsReply := NewGetSecretReply(&res, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getSecretsReply := NewGetSecretReply(h.mapper, &res, full)
+
 	return renderer.NewItemRenderer(getSecretsReply).Render(output)
 
 }
 
 type GetSecretReply struct {
-	res  *koyeb.GetSecretReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.GetSecretReply
+	full   bool
 }
 
-func NewGetSecretReply(res *koyeb.GetSecretReply, full bool) *GetSecretReply {
+func NewGetSecretReply(mapper *idmapper2.Mapper, res *koyeb.GetSecretReply, full bool) *GetSecretReply {
 	return &GetSecretReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -49,7 +53,7 @@ func (a *GetSecretReply) Fields() []map[string]string {
 	res := []map[string]string{}
 	item := a.res.GetSecret()
 	fields := map[string]string{
-		"id":         renderer.FormatID(item.GetId(), a.full),
+		"id":         renderer.FormatSecretID(a.mapper, item.GetId(), a.full),
 		"name":       item.GetName(),
 		"type":       formatSecretType(item.GetType()),
 		"value":      "*****",

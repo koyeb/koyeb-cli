@@ -1,53 +1,53 @@
 package koyeb
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
-	results := &koyeb.ListSecretsReply{}
+	list := []koyeb.Secret{}
 
-	page := 0
-	offset := 0
-	limit := 100
+	page := int64(0)
+	offset := int64(0)
+	limit := int64(100)
 	for {
-		res, _, err := h.client.SecretsApi.ListSecrets(h.ctxWithAuth).Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		res, _, err := h.client.SecretsApi.ListSecrets(h.ctxWithAuth).
+			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		if results.Secrets == nil {
-			results.Secrets = res.Secrets
-		} else {
-			*results.Secrets = append(*results.Secrets, *res.Secrets...)
-		}
+		list = append(list, res.GetSecrets()...)
 
-		page += 1
+		page++
 		offset = page * limit
-		if int64(offset) >= res.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}
 
-	full, _ := cmd.Flags().GetBool("full")
-	listSecretsReply := NewListSecretsReply(results, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	listSecretsReply := NewListSecretsReply(h.mapper, &koyeb.ListSecretsReply{Secrets: &list}, full)
 
-	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewListRenderer(listSecretsReply).Render(output)
 }
 
 type ListSecretsReply struct {
-	res  *koyeb.ListSecretsReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.ListSecretsReply
+	full   bool
 }
 
-func NewListSecretsReply(res *koyeb.ListSecretsReply, full bool) *ListSecretsReply {
+func NewListSecretsReply(mapper *idmapper2.Mapper, res *koyeb.ListSecretsReply, full bool) *ListSecretsReply {
 	return &ListSecretsReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -65,9 +65,10 @@ func (a *ListSecretsReply) Headers() []string {
 
 func (a *ListSecretsReply) Fields() []map[string]string {
 	res := []map[string]string{}
+
 	for _, item := range a.res.GetSecrets() {
 		fields := map[string]string{
-			"id":         renderer.FormatID(item.GetId(), a.full),
+			"id":         renderer.FormatSecretID(a.mapper, item.GetId(), a.full),
 			"name":       item.GetName(),
 			"type":       formatSecretType(item.GetType()),
 			"value":      "*****",
@@ -75,5 +76,6 @@ func (a *ListSecretsReply) Fields() []map[string]string {
 		}
 		res = append(res, fields)
 	}
+
 	return res
 }

@@ -49,9 +49,10 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 	if err != nil {
 		fatalApiError(err)
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	getSecretsReply := NewGetSecretReply(&koyeb.GetSecretReply{Secret: res.Secret}, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getSecretsReply := NewGetSecretReply(h.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
+
 	return renderer.NewDescribeItemRenderer(getSecretsReply).Render(output)
 }

@@ -31,13 +31,14 @@ func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *
 
 		updateSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, _, err := h.client.SecretsApi.UpdateSecret2(h.ctxWithAuth, h.ResolveSecretShortID(args[0])).Body(*updateSecret).Execute()
+	res, _, err := h.client.SecretsApi.UpdateSecret2(h.ctxWithAuth, h.ResolveSecretArgs(args[0])).Body(*updateSecret).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	getSecretsReply := NewGetSecretReply(&koyeb.GetSecretReply{Secret: res.Secret}, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getSecretsReply := NewGetSecretReply(h.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
+
 	return renderer.NewDescribeItemRenderer(getSecretsReply).Render(output)
 }
