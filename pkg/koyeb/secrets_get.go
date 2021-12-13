@@ -37,12 +37,12 @@ func NewGetSecretReply(mapper *idmapper2.Mapper, res *koyeb.GetSecretReply, full
 	}
 }
 
-func (a *GetSecretReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetSecret().MarshalJSON()
-}
-
 func (a *GetSecretReply) Title() string {
 	return "Secret"
+}
+
+func (a *GetSecretReply) MarshalBinary() ([]byte, error) {
+	return a.res.GetSecret().MarshalJSON()
 }
 
 func (a *GetSecretReply) Headers() []string {

@@ -2,15 +2,9 @@ package koyeb
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/spf13/cobra"
 )
 
@@ -74,114 +68,18 @@ func NewInstanceHandler() *InstanceHandler {
 }
 
 type InstanceHandler struct {
-	client      *koyeb.APIClient
-	ctxWithAuth context.Context
+	ctx    context.Context
+	client *koyeb.APIClient
+	mapper *idmapper2.Mapper
 }
 
-func (d *InstanceHandler) ResolveInstanceShortID(id string) string {
-	return ResolveInstanceShortID(d.ctxWithAuth, d.client, id)
+func (d *InstanceHandler) ResolveInstanceArgs(id string) string {
+	return ResolveInstanceShortID(d.ctx, d.client, id)
 }
 
-func (d *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	d.client = getApiClient()
-	d.ctxWithAuth = getAuth(context.Background())
+func (h *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.ctx = getAuth(context.Background())
+	h.client = getApiClient()
+	h.mapper = idmapper2.NewMapper(h.ctx, h.client)
 	return nil
-}
-
-func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
-	returnCode, err := h.exec(cmd, args)
-	if err != nil {
-		fatalApiError(err)
-	}
-	if returnCode != 0 {
-		os.Exit(returnCode)
-	}
-	return nil
-}
-func (h *InstanceHandler) getAppIDForListQuery(query koyeb.ApiListInstancesRequest, filter string, appMapper *idmapper.AppMapper) (koyeb.ApiListInstancesRequest, string) {
-	if filter == "" {
-		return query, ""
-	}
-	if idmapper.IsUUIDv4(filter) {
-		query = query.AppId(filter)
-		return query, filter
-	}
-
-	id, err := appMapper.GetID(filter)
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	query = query.AppId(id)
-	return query, id
-}
-
-func (h *InstanceHandler) getServiceIDForListQuery(query koyeb.ApiListInstancesRequest, appID string, filter string, serviceMapper *idmapper.ServiceMapper) koyeb.ApiListInstancesRequest {
-	if filter == "" {
-		return query
-	}
-	if idmapper.IsUUIDv4(filter) {
-		return query.ServiceId(filter)
-	}
-	if appID == "" {
-		log.Fatalf("Cannot use service filter without an application filter")
-	}
-
-	id, err := serviceMapper.GetID(appID, filter)
-	if err != nil {
-		fatalApiError(err)
-	}
-
-	return query.ServiceId(id)
-}
-
-func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
-	// Cobra options ensure we have at least 2 arguments here, but still
-	if len(args) < 2 {
-		return 0, errors.New("exec needs at least 2 arguments")
-	}
-	instanceId, userCmd := h.ResolveInstanceShortID(args[0]), args[1:]
-
-	stdStreams, cleanup, err := GetStdStreams()
-	if err != nil {
-		return 0, errors.Wrap(err, "could not get standard streams")
-	}
-	defer cleanup()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	termResizeCh := watchTermSize(ctx, stdStreams)
-
-	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, userCmd, instanceId, termResizeCh)
-	return e.Run(ctx)
-}
-
-func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
-	out := make(chan *TerminalSize)
-	go func() {
-		defer close(out)
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGWINCH)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-sigCh:
-				termSize, err := GetTermSize(s.Stdout)
-				if err != nil {
-					continue
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case out <- termSize:
-				}
-			}
-		}
-	}()
-	return out
-}
-
-func formatInstanceStatus(status koyeb.InstanceStatus) string {
-	return fmt.Sprintf("%s", status)
 }
