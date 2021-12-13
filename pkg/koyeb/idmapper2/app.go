@@ -70,7 +70,6 @@ func (mapper *AppMapper) GetShortID(id string) (string, error) {
 }
 
 func (mapper *AppMapper) fetch() error {
-	cache := map[string]*koyeb.AppListItem{}
 	radix := NewRadixTree()
 
 	page := int64(0)
@@ -91,7 +90,6 @@ func (mapper *AppMapper) fetch() error {
 			app := &apps[i]
 			id := app.GetId()
 			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), app)
-			cache[id] = app
 		}
 
 		page++
@@ -101,12 +99,12 @@ func (mapper *AppMapper) fetch() error {
 		}
 	}
 
-	shortIDLength := radix.MinimalLength(8) + 3 // WARNING(tleroux): Remove + 3 used for debug
+	minLength := radix.MinimalLength(8)
 	radix.ForEach(func(key Key, value Value) {
 		app := value.(*koyeb.AppListItem)
 		id := app.GetId()
 		name := app.GetName()
-		sid := strings.ReplaceAll(id, "-", "")[:shortIDLength]
+		sid := strings.ReplaceAll(id, "-", "")[:minLength]
 
 		mapper.sidMap.Set(id, sid)
 		mapper.nameMap.Set(id, name)
