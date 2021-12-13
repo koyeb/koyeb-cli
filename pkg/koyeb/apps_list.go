@@ -33,30 +33,27 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listAppsReply := NewListAppsReply(h.mapper, list, full)
+	listAppsReply := NewListAppsReply(h.mapper, &koyeb.ListAppsReply{Apps: &list}, full)
 
 	return renderer.NewListRenderer(listAppsReply).Render(output)
 }
 
 type ListAppsReply struct {
 	mapper *idmapper2.Mapper
-	list   []koyeb.AppListItem
+	res    *koyeb.ListAppsReply
 	full   bool
 }
 
-func NewListAppsReply(mapper *idmapper2.Mapper, list []koyeb.AppListItem, full bool) *ListAppsReply {
+func NewListAppsReply(mapper *idmapper2.Mapper, res *koyeb.ListAppsReply, full bool) *ListAppsReply {
 	return &ListAppsReply{
 		mapper: mapper,
-		list:   list,
+		res:    res,
 		full:   full,
 	}
 }
 
 func (a *ListAppsReply) MarshalBinary() ([]byte, error) {
-	rep := &koyeb.ListAppsReply{
-		Apps: &a.list,
-	}
-	return rep.MarshalJSON()
+	return a.res.MarshalJSON()
 }
 
 func (a *ListAppsReply) Title() string {
@@ -78,14 +75,15 @@ func formatDomains(domains []koyeb.Domain) string {
 func (a *ListAppsReply) Fields() []map[string]string {
 	res := []map[string]string{}
 
-	for _, item := range a.list {
+	for _, item := range a.res.GetApps() {
 		fields := map[string]string{
-			"id":         renderer.FormatID2(a.mapper, item.GetId(), a.full),
+			"id":         renderer.FormatAppID(a.mapper, item.GetId(), a.full),
 			"name":       item.GetName(),
 			"domains":    formatDomains(item.GetDomains()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		res = append(res, fields)
 	}
+
 	return res
 }
