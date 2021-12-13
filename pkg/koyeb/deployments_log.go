@@ -6,12 +6,12 @@ import (
 )
 
 func (h *DeploymentHandler) Log(cmd *cobra.Command, args []string) error {
-	deploymentDetail, _, err := h.client.DeploymentsApi.GetDeployment(h.ctxWithAuth, h.ResolveDeploymentShortID(args[0])).Execute()
+	deploymentDetail, _, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
-	logType, _ := cmd.Flags().GetString("type")
+	logType := GetStringFlags(cmd, "type")
 
 	done := make(chan struct{})
 
@@ -19,5 +19,6 @@ func (h *DeploymentHandler) Log(cmd *cobra.Command, args []string) error {
 	if logType != "" {
 		query.logType = koyeb.PtrString(logType)
 	}
+
 	return watchLog(query, done)
 }
