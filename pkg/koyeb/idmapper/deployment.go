@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/pkg/errors"
@@ -81,8 +80,7 @@ func (mapper *DeploymentMapper) fetch() error {
 		deployments := resp.GetDeployments()
 		for i := range deployments {
 			deployment := &deployments[i]
-			id := deployment.GetId()
-			radix.Insert(Key(strings.ReplaceAll(id, "-", "")), deployment)
+			radix.Insert(getKey(deployment.GetId()), deployment)
 		}
 
 		page++
@@ -93,13 +91,18 @@ func (mapper *DeploymentMapper) fetch() error {
 	}
 
 	minLength := radix.MinimalLength(8)
-	radix.ForEach(func(key Key, value Value) {
+	err := radix.ForEach(func(key Key, value Value) error {
 		app := value.(*koyeb.DeploymentListItem)
 		id := app.GetId()
-		sid := strings.ReplaceAll(id, "-", "")[:minLength]
+		sid := getShortID(id, minLength)
 
 		mapper.sidMap.Set(id, sid)
+
+		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	mapper.fetched = true
 
