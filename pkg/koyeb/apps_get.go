@@ -1,6 +1,8 @@
 package koyeb
 
 import (
+	"strings"
+
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -8,7 +10,7 @@ import (
 )
 
 func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
+	res, _, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -22,39 +24,47 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 
 type GetAppReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetAppReply
+	value  *koyeb.GetAppReply
 	full   bool
 }
 
-func NewGetAppReply(mapper *idmapper.Mapper, res *koyeb.GetAppReply, full bool) *GetAppReply {
+func NewGetAppReply(mapper *idmapper.Mapper, value *koyeb.GetAppReply, full bool) *GetAppReply {
 	return &GetAppReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *GetAppReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetApp().MarshalJSON()
-}
-
-func (a *GetAppReply) Title() string {
+func (GetAppReply) Title() string {
 	return "App"
 }
 
-func (a *GetAppReply) Headers() []string {
+func (r *GetAppReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetApp().MarshalJSON()
+}
+
+func (r *GetAppReply) Headers() []string {
 	return []string{"id", "name", "domains", "created_at"}
 }
 
-func (a *GetAppReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetApp()
+func (r *GetAppReply) Fields() []map[string]string {
+	item := r.value.GetApp()
 	fields := map[string]string{
-		"id":         renderer.FormatAppID(a.mapper, item.GetId(), a.full),
+		"id":         renderer.FormatAppID(r.mapper, item.GetId(), r.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
+}
+
+func formatDomains(domains []koyeb.Domain) string {
+	strL := []string{}
+	for _, d := range domains {
+		strL = append(strL, d.GetName())
+	}
+	return strings.Join(strL, ",")
 }

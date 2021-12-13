@@ -16,7 +16,7 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, _, err := h.client.SecretsApi.ListSecrets(h.ctxWithAuth).
+		res, _, err := h.client.SecretsApi.ListSecrets(h.ctx).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err)
@@ -39,14 +39,14 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 
 type ListSecretsReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.ListSecretsReply
+	value  *koyeb.ListSecretsReply
 	full   bool
 }
 
-func NewListSecretsReply(mapper *idmapper.Mapper, res *koyeb.ListSecretsReply, full bool) *ListSecretsReply {
+func NewListSecretsReply(mapper *idmapper.Mapper, value *koyeb.ListSecretsReply, full bool) *ListSecretsReply {
 	return &ListSecretsReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
@@ -55,27 +55,28 @@ func (ListSecretsReply) Title() string {
 	return "Secrets"
 }
 
-func (a *ListSecretsReply) MarshalBinary() ([]byte, error) {
-	return a.res.MarshalJSON()
+func (r *ListSecretsReply) MarshalBinary() ([]byte, error) {
+	return r.value.MarshalJSON()
 }
 
-func (a *ListSecretsReply) Headers() []string {
+func (r *ListSecretsReply) Headers() []string {
 	return []string{"id", "name", "type", "value", "created_at"}
 }
 
-func (a *ListSecretsReply) Fields() []map[string]string {
-	res := []map[string]string{}
+func (r *ListSecretsReply) Fields() []map[string]string {
+	items := r.value.GetSecrets()
+	resp := make([]map[string]string, 0, len(items))
 
-	for _, item := range a.res.GetSecrets() {
+	for _, item := range items {
 		fields := map[string]string{
-			"id":         renderer.FormatSecretID(a.mapper, item.GetId(), a.full),
+			"id":         renderer.FormatSecretID(r.mapper, item.GetId(), r.full),
 			"name":       item.GetName(),
 			"type":       formatSecretType(item.GetType()),
 			"value":      "*****",
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
-		res = append(res, fields)
+		resp = append(resp, fields)
 	}
 
-	return res
+	return resp
 }

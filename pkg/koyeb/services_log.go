@@ -14,7 +14,7 @@ import (
 )
 
 func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
-	serviceDetail, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceArgs(args[0])).Execute()
+	serviceDetail, _, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -27,7 +27,7 @@ func (h *ServiceHandler) Log(cmd *cobra.Command, args []string) error {
 	query := &watchLogQuery{serviceID: koyeb.PtrString(serviceID)}
 
 	if logType == "build" {
-		latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctxWithAuth).
+		latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
 			Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
 		if err != nil {
 			fatalApiError(err)

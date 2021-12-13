@@ -9,14 +9,14 @@ import (
 
 func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
 	app, _ := cmd.Flags().GetString("app")
-	resApp, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(app)).Execute()
+	resApp, _, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(app)).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
 	// TODO handle both notations (<app>:<sevice> and --app=app)
 	createService.SetAppId(resApp.App.GetId())
-	res, _, err := h.client.ServicesApi.CreateService(h.ctxWithAuth).Body(*createService).Execute()
+	res, _, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

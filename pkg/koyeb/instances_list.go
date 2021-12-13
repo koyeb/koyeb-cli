@@ -80,14 +80,14 @@ func (h *InstanceHandler) getServiceIDForListQuery(query koyeb.ApiListInstancesR
 
 type ListInstancesReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.ListInstancesReply
+	value  *koyeb.ListInstancesReply
 	full   bool
 }
 
-func NewListInstancesReply(mapper *idmapper.Mapper, res *koyeb.ListInstancesReply, full bool) *ListInstancesReply {
+func NewListInstancesReply(mapper *idmapper.Mapper, value *koyeb.ListInstancesReply, full bool) *ListInstancesReply {
 	return &ListInstancesReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
@@ -97,7 +97,7 @@ func (ListInstancesReply) Title() string {
 }
 
 func (r *ListInstancesReply) MarshalBinary() ([]byte, error) {
-	return r.res.MarshalJSON()
+	return r.value.MarshalJSON()
 }
 
 func (r *ListInstancesReply) Headers() []string {
@@ -105,7 +105,7 @@ func (r *ListInstancesReply) Headers() []string {
 }
 
 func (r *ListInstancesReply) Fields() []map[string]string {
-	items := r.res.GetInstances()
+	items := r.value.GetInstances()
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {

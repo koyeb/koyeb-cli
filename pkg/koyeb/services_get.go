@@ -10,7 +10,7 @@ import (
 )
 
 func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.ServicesApi.GetService(h.ctxWithAuth, h.ResolveServiceArgs(args[0])).Execute()
+	res, _, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -24,43 +24,43 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 
 type GetServiceReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetServiceReply
+	value  *koyeb.GetServiceReply
 	full   bool
 }
 
-func NewGetServiceReply(mapper *idmapper.Mapper, res *koyeb.GetServiceReply, full bool) *GetServiceReply {
+func NewGetServiceReply(mapper *idmapper.Mapper, value *koyeb.GetServiceReply, full bool) *GetServiceReply {
 	return &GetServiceReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *GetServiceReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetService().MarshalJSON()
-}
-
-func (a *GetServiceReply) Title() string {
+func (GetServiceReply) Title() string {
 	return "Service"
 }
 
-func (a *GetServiceReply) Headers() []string {
+func (r *GetServiceReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetService().MarshalJSON()
+}
+
+func (r *GetServiceReply) Headers() []string {
 	return []string{"id", "app", "name", "version", "status", "created_at"}
 }
 
-func (a *GetServiceReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetService()
+func (r *GetServiceReply) Fields() []map[string]string {
+	item := r.value.GetService()
 	fields := map[string]string{
-		"id":         renderer.FormatServiceID(a.mapper, item.GetId(), a.full),
-		"app":        renderer.FormatAppName(a.mapper, item.GetAppId(), a.full),
+		"id":         renderer.FormatServiceID(r.mapper, item.GetId(), r.full),
+		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
 		"status":     formatStatus(item.State.GetStatus()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
 }
 
 func formatStatus(status koyeb.ServiceStateStatus) string {
