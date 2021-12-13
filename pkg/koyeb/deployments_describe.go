@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
@@ -28,15 +27,12 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 
-	appMapper := idmapper.NewAppMapper(h.ctx, h.client)
-	serviceMapper := idmapper.NewServiceMapper(h.ctx, h.client)
-
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
 	describeDeploymentsReply := NewDescribeDeploymentReply(h.mapper, &res, full)
 	defDeployment := renderer.NewGenericRenderer("Definition", res.Deployment.Definition)
-	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper, full)
+	listInstancesReply := NewListInstancesReply(h.mapper, &instancesRes, full)
 
 	return renderer.
 		NewMultiRenderer(
