@@ -73,8 +73,14 @@ type InstanceHandler struct {
 	mapper *idmapper.Mapper
 }
 
-func (d *InstanceHandler) ResolveInstanceArgs(id string) string {
-	return ResolveInstanceShortID(d.ctx, d.client, id)
+func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
+	instanceMapper := h.mapper.Instance()
+	id, err := instanceMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
 }
 
 func (h *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
