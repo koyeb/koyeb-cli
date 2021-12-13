@@ -47,6 +47,26 @@ func FormatServiceID(mapper *idmapper2.Mapper, id string, full bool) string {
 	return id
 }
 
+func FormatServiceSlug(mapper *idmapper2.Mapper, id string, full bool) string {
+	if !full {
+		sid, err := mapper.Service().GetSlug(id)
+		if err == nil {
+			return sid
+		}
+	}
+	return id
+}
+
+func FormatDeploymentID(mapper *idmapper2.Mapper, id string, full bool) string {
+	if !full {
+		sid, err := mapper.Deployment().GetShortID(id)
+		if err == nil {
+			return sid
+		}
+	}
+	return id
+}
+
 func FormatSecretID(mapper *idmapper2.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Secret().GetShortID(id)

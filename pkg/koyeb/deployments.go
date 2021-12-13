@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/spf13/cobra"
 )
 
@@ -58,16 +59,24 @@ func NewDeploymentHandler() *DeploymentHandler {
 }
 
 type DeploymentHandler struct {
-	client      *koyeb.APIClient
-	ctxWithAuth context.Context
+	ctx    context.Context
+	client *koyeb.APIClient
+	mapper *idmapper2.Mapper
 }
 
-func (d *DeploymentHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	d.client = getApiClient()
-	d.ctxWithAuth = getAuth(context.Background())
+func (h *DeploymentHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.ctx = getAuth(context.Background())
+	h.client = getApiClient()
+	h.mapper = idmapper2.NewMapper(h.ctx, h.client)
 	return nil
 }
 
-func (d *DeploymentHandler) ResolveDeploymentShortID(id string) string {
-	return ResolveDeploymentShortID(d.ctxWithAuth, d.client, id)
+func (h *DeploymentHandler) ResolveDeploymentArgs(val string) string {
+	deploymentMapper := h.mapper.Deployment()
+	id, err := deploymentMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return id
 }
