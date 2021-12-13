@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -15,26 +16,26 @@ func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		fatalApiError(err)
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	describeAppsReply := NewDescribeAppReply(&res, full)
+
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	describeAppsReply := NewDescribeAppReply(h.mapper, &res, full)
 	listServicesReply := NewListServicesReply(&resListServices, full)
 
-	output, _ := cmd.Flags().GetString("output")
-	return renderer.NewDescribeRenderer(
-		describeAppsReply,
-		listServicesReply,
-	).Render(output)
+	return renderer.NewDescribeRenderer(describeAppsReply, listServicesReply).Render(output)
 }
 
 type DescribeAppReply struct {
-	res  *koyeb.GetAppReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.GetAppReply
+	full   bool
 }
 
-func NewDescribeAppReply(res *koyeb.GetAppReply, full bool) *DescribeAppReply {
+func NewDescribeAppReply(mapper *idmapper2.Mapper, res *koyeb.GetAppReply, full bool) *DescribeAppReply {
 	return &DescribeAppReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -54,7 +55,7 @@ func (a *DescribeAppReply) Fields() []map[string]string {
 	res := []map[string]string{}
 	item := a.res.GetApp()
 	fields := map[string]string{
-		"id":         renderer.FormatID(item.GetId(), a.full),
+		"id":         renderer.FormatID2(a.mapper, item.GetId(), a.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),

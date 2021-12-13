@@ -27,13 +27,10 @@ func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.Cr
 		fatalApiError(err)
 	}
 
-	full, _ := cmd.Flags().GetBool("full")
-	getAppsReply := NewGetAppReply(&koyeb.GetAppReply{App: res.App}, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getAppsReply := NewGetAppReply(h.mapper, &koyeb.GetAppReply{App: res.App}, full)
 	getServiceReply := NewGetServiceReply(&koyeb.GetServiceReply{Service: serviceRes.Service}, full)
 
-	output, _ := cmd.Flags().GetString("output")
-	return renderer.NewDescribeRenderer(
-		getAppsReply,
-		getServiceReply,
-	).Render(output)
+	return renderer.NewDescribeRenderer(getAppsReply, getServiceReply).Render(output)
 }

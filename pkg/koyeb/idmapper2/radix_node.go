@@ -108,15 +108,16 @@ func newNode256() *artNode {
 
 // Leaf node with variable key length
 type leaf struct {
-	key Key
+	key   Key
+	value Value
 }
 
-func newLeaf(key Key) *artNode {
+func newLeaf(key Key, value Value) *artNode {
 	clonedKey := make(Key, len(key))
 	copy(clonedKey, key)
 	return &artNode{
 		kind: radixLeaf,
-		ref:  unsafe.Pointer(&leaf{key: clonedKey}),
+		ref:  unsafe.Pointer(&leaf{key: clonedKey, value: value}),
 	}
 }
 
@@ -142,6 +143,9 @@ func (k Key) charAt(pos int) byte {
 func (k Key) valid(pos int) bool {
 	return pos >= 0 && pos < len(k)
 }
+
+// Value type.
+type Value interface{}
 
 // Node interface implementation
 func (an *artNode) node() *node {

@@ -11,9 +11,10 @@ func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.
 	if err != nil {
 		fatalApiError(err)
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	getAppsReply := NewGetAppReply(&koyeb.GetAppReply{App: res.App}, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getAppsReply := NewGetAppReply(h.mapper, &koyeb.GetAppReply{App: res.App}, full)
+
 	return renderer.NewDescribeItemRenderer(getAppsReply).Render(output)
 }

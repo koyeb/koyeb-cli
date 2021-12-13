@@ -4,6 +4,7 @@ package idmapper2
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -229,6 +230,17 @@ func (ts *treeStringer) baseNode(an *artNode, depth int, childNum int, childrenT
 		ts.append(pad).append(fmt.Sprintf("key(%d): %v ", len(n.key), n.key)).append("\n")
 		ts.append(pad).append(fmt.Sprintf("key: %s\n", string(n.key[:])))
 
+		switch val := n.value.(type) {
+		case string:
+			ts.append(pad).append(fmt.Sprintf("val: %s\n", val))
+		case []byte:
+			ts.append(pad).append(fmt.Sprintf("val: %s\n", string(val)))
+		default:
+			buffer, err := json.Marshal(val)
+			if err == nil {
+				ts.append(pad).append(fmt.Sprintf("val: %s\n", string(buffer)))
+			}
+		}
 	}
 
 	ts.append(pad).append("\n")
