@@ -8,11 +8,11 @@ import (
 )
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(args[0])).Execute()
+	res, _, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	resListServices, _, err := h.client.ServicesApi.ListServices(h.ctxWithAuth).AppId(res.App.GetId()).Limit("100").Execute()
+	resListServices, _, err := h.client.ServicesApi.ListServices(h.ctx).AppId(res.App.GetId()).Limit("100").Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -27,40 +27,40 @@ func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 
 type DescribeAppReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetAppReply
+	value  *koyeb.GetAppReply
 	full   bool
 }
 
-func NewDescribeAppReply(mapper *idmapper.Mapper, res *koyeb.GetAppReply, full bool) *DescribeAppReply {
+func NewDescribeAppReply(mapper *idmapper.Mapper, value *koyeb.GetAppReply, full bool) *DescribeAppReply {
 	return &DescribeAppReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *DescribeAppReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetApp().MarshalJSON()
-}
-
-func (a *DescribeAppReply) Title() string {
+func (DescribeAppReply) Title() string {
 	return "App"
 }
 
-func (a *DescribeAppReply) Headers() []string {
+func (r *DescribeAppReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetApp().MarshalJSON()
+}
+
+func (r *DescribeAppReply) Headers() []string {
 	return []string{"id", "name", "domains", "created_at", "updated_at"}
 }
 
-func (a *DescribeAppReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetApp()
+func (r *DescribeAppReply) Fields() []map[string]string {
+	item := r.value.GetApp()
 	fields := map[string]string{
-		"id":         renderer.FormatAppID(a.mapper, item.GetId(), a.full),
+		"id":         renderer.FormatAppID(r.mapper, item.GetId(), r.full),
 		"name":       item.GetName(),
 		"domains":    formatDomains(item.GetDomains()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
 }

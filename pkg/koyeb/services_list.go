@@ -16,7 +16,7 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		req := h.client.ServicesApi.ListServices(h.ctxWithAuth)
+		req := h.client.ServicesApi.ListServices(h.ctx)
 		appId := GetStringFlags(cmd, "app")
 		if appId != "" {
 			req = req.AppId(h.ResolveAppArgs(appId))
@@ -48,43 +48,44 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 
 type ListServicesReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.ListServicesReply
+	value  *koyeb.ListServicesReply
 	full   bool
 }
 
-func NewListServicesReply(mapper *idmapper.Mapper, res *koyeb.ListServicesReply, full bool) *ListServicesReply {
+func NewListServicesReply(mapper *idmapper.Mapper, value *koyeb.ListServicesReply, full bool) *ListServicesReply {
 	return &ListServicesReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *ListServicesReply) Title() string {
+func (ListServicesReply) Title() string {
 	return "Services"
 }
 
-func (a *ListServicesReply) MarshalBinary() ([]byte, error) {
-	return a.res.MarshalJSON()
+func (r *ListServicesReply) MarshalBinary() ([]byte, error) {
+	return r.value.MarshalJSON()
 }
 
-func (a *ListServicesReply) Headers() []string {
+func (r *ListServicesReply) Headers() []string {
 	return []string{"id", "app", "name", "status", "created_at"}
 }
 
-func (a *ListServicesReply) Fields() []map[string]string {
-	res := []map[string]string{}
+func (r *ListServicesReply) Fields() []map[string]string {
+	items := r.value.GetServices()
+	resp := make([]map[string]string, 0, len(items))
 
-	for _, item := range a.res.GetServices() {
+	for _, item := range items {
 		fields := map[string]string{
-			"id":         renderer.FormatServiceID(a.mapper, item.GetId(), a.full),
-			"app":        renderer.FormatAppName(a.mapper, item.GetAppId(), a.full),
+			"id":         renderer.FormatServiceID(r.mapper, item.GetId(), r.full),
+			"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 			"name":       item.GetName(),
 			"status":     formatStatus(item.State.GetStatus()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
-		res = append(res, fields)
+		resp = append(resp, fields)
 	}
 
-	return res
+	return resp
 }

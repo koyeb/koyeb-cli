@@ -48,42 +48,42 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 
 type DescribeDeploymentReply struct {
 	mapper *idmapper.Mapper
-	res    *koyeb.GetDeploymentReply
+	value  *koyeb.GetDeploymentReply
 	full   bool
 }
 
-func NewDescribeDeploymentReply(mapper *idmapper.Mapper, res *koyeb.GetDeploymentReply, full bool) *DescribeDeploymentReply {
+func NewDescribeDeploymentReply(mapper *idmapper.Mapper, value *koyeb.GetDeploymentReply, full bool) *DescribeDeploymentReply {
 	return &DescribeDeploymentReply{
 		mapper: mapper,
-		res:    res,
+		value:  value,
 		full:   full,
 	}
 }
 
-func (a *DescribeDeploymentReply) Title() string {
+func (DescribeDeploymentReply) Title() string {
 	return "Deployment"
 }
 
-func (a *DescribeDeploymentReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetDeployment().MarshalJSON()
+func (r *DescribeDeploymentReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetDeployment().MarshalJSON()
 }
 
-func (a *DescribeDeploymentReply) Headers() []string {
+func (r *DescribeDeploymentReply) Headers() []string {
 	return []string{"id", "service", "status", "status_message", "regions", "created_at", "updated_at"}
 }
 
-func (a *DescribeDeploymentReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetDeployment()
+func (r *DescribeDeploymentReply) Fields() []map[string]string {
+	item := r.value.GetDeployment()
 	fields := map[string]string{
-		"id":             renderer.FormatDeploymentID(a.mapper, item.GetId(), a.full),
-		"service":        renderer.FormatServiceSlug(a.mapper, item.GetServiceId(), a.full),
+		"id":             renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
+		"service":        renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 		"status":         formatDeploymentStatus(item.State.GetStatus()),
 		"status_message": item.State.GetStatusMessage(),
 		"regions":        renderRegions(item.Definition.Regions),
 		"created_at":     renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at":     renderer.FormatTime(item.GetUpdatedAt()),
 	}
-	res = append(res, fields)
-	return res
+
+	resp := []map[string]string{fields}
+	return resp
 }

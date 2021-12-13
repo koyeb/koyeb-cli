@@ -45,7 +45,7 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 
 		createSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, _, err := h.client.SecretsApi.CreateSecret(h.ctxWithAuth).Body(*createSecret).Execute()
+	res, _, err := h.client.SecretsApi.CreateSecret(h.ctx).Body(*createSecret).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}

@@ -73,6 +73,13 @@ type InstanceHandler struct {
 	mapper *idmapper.Mapper
 }
 
+func (h *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
+	h.ctx = getAuth(context.Background())
+	h.client = getApiClient()
+	h.mapper = idmapper.NewMapper(h.ctx, h.client)
+	return nil
+}
+
 func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
 	instanceMapper := h.mapper.Instance()
 	id, err := instanceMapper.ResolveID(val)
@@ -81,11 +88,4 @@ func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
 	}
 
 	return id
-}
-
-func (h *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	h.ctx = getAuth(context.Background())
-	h.client = getApiClient()
-	h.mapper = idmapper.NewMapper(h.ctx, h.client)
-	return nil
 }

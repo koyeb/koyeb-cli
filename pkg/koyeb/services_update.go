@@ -8,7 +8,7 @@ import (
 )
 
 func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	res, _, err := h.client.ServicesApi.UpdateService(h.ctxWithAuth, h.ResolveServiceArgs(args[0])).Body(*updateService).Execute()
+	res, _, err := h.client.ServicesApi.UpdateService(h.ctx, h.ResolveServiceArgs(args[0])).Body(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
