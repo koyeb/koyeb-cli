@@ -51,7 +51,7 @@ func NewListSecretsReply(mapper *idmapper2.Mapper, res *koyeb.ListSecretsReply, 
 	}
 }
 
-func (a *ListSecretsReply) Title() string {
+func (ListSecretsReply) Title() string {
 	return "Secrets"
 }
 

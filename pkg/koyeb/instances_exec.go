@@ -17,7 +17,68 @@ import (
 	"github.com/moby/term"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
+
+func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
+	returnCode, err := h.exec(cmd, args)
+	if err != nil {
+		fatalApiError(err)
+	}
+	if returnCode != 0 {
+		os.Exit(returnCode)
+	}
+	return nil
+}
+
+func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
+	// Cobra options ensure we have at least 2 arguments here, but still
+	if len(args) < 2 {
+		return 0, errors.New("exec needs at least 2 arguments")
+	}
+
+	instanceId := h.ResolveInstanceArgs(args[0])
+	userCmd := args[1:]
+
+	stdStreams, cleanup, err := GetStdStreams()
+	if err != nil {
+		return 0, errors.Wrap(err, "could not get standard streams")
+	}
+	defer cleanup()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	termResizeCh := watchTermSize(ctx, stdStreams)
+
+	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, userCmd, instanceId, termResizeCh)
+	return e.Run(ctx)
+}
+
+func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
+	out := make(chan *TerminalSize)
+	go func() {
+		defer close(out)
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGWINCH)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-sigCh:
+				termSize, err := GetTermSize(s.Stdout)
+				if err != nil {
+					continue
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case out <- termSize:
+				}
+			}
+		}
+	}()
+	return out
+}
 
 // Disclaimer: parts of this file are either taken or largey inspired from Nomad's CLI
 // implementation (command/alloc_exec.go) or API implementation (api/allocations_exec.go)

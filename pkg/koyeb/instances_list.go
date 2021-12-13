@@ -1,21 +1,44 @@
 package koyeb
 
 import (
-	"context"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
-func (h *InstanceHandler) getListQuery(ctx context.Context, cmd *cobra.Command, client *koyeb.APIClient, appMapper *idmapper.AppMapper, serviceMapper *idmapper.ServiceMapper) koyeb.ApiListInstancesRequest {
-	appFilter, _ := cmd.Flags().GetString("app")
-	serviceFilter, _ := cmd.Flags().GetString("service")
-	appID := ""
+func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
+	query := h.getListQuery(cmd)
+	list := []koyeb.InstanceListItem{}
 
-	query := client.InstancesApi.ListInstances(ctx).Statuses([]string{
+	page := int64(0)
+	offset := int64(0)
+	limit := int64(100)
+	for {
+		res, _, err := query.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
+		if err != nil {
+			fatalApiError(err)
+		}
+		list = append(list, res.GetInstances()...)
+
+		page++
+		offset = page * limit
+		if offset >= res.GetCount() {
+			break
+		}
+	}
+
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	listInstancesReply := NewListInstancesReply(h.mapper, &koyeb.ListInstancesReply{Instances: &list}, full)
+
+	return renderer.NewListRenderer(listInstancesReply).Render(output)
+}
+
+func (h *InstanceHandler) getListQuery(cmd *cobra.Command) koyeb.ApiListInstancesRequest {
+	query := h.client.InstancesApi.ListInstances(h.ctx).Statuses([]string{
 		string(koyeb.INSTANCESTATUS_ALLOCATING),
 		string(koyeb.INSTANCESTATUS_STARTING),
 		string(koyeb.INSTANCESTATUS_HEALTHY),
@@ -23,60 +46,49 @@ func (h *InstanceHandler) getListQuery(ctx context.Context, cmd *cobra.Command, 
 		string(koyeb.INSTANCESTATUS_STOPPING),
 	})
 
-	query, appID = h.getAppIDForListQuery(query, appFilter, appMapper)
-	query = h.getServiceIDForListQuery(query, appID, serviceFilter, serviceMapper)
+	query = h.getAppIDForListQuery(query, GetStringFlags(cmd, "app"))
+	query = h.getServiceIDForListQuery(query, GetStringFlags(cmd, "service"))
 
 	return query
 }
 
-func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
-	ctx := h.ctxWithAuth
-
-	appMapper := idmapper.NewAppMapper(ctx, h.client)
-	serviceMapper := idmapper.NewServiceMapper(ctx, h.client)
-
-	query := h.getListQuery(ctx, cmd, h.client, appMapper, serviceMapper)
-	results := koyeb.ListInstancesReply{}
-
-	page := int64(0)
-	offset := int64(0)
-	limit := int64(100)
-	for {
-		resp, _, err := query.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
-		if err != nil {
-			fatalApiError(err)
-		}
-		if results.Instances == nil {
-			results = resp
-		} else {
-			*results.Instances = append(*results.Instances, *resp.Instances...)
-		}
-		page += 1
-		offset = page * limit
-		if offset >= resp.GetCount() {
-			break
-		}
+func (h *InstanceHandler) getAppIDForListQuery(query koyeb.ApiListInstancesRequest, filter string) koyeb.ApiListInstancesRequest {
+	if filter == "" {
+		return query
 	}
-	full, _ := cmd.Flags().GetBool("full")
-	listInstancesReply := NewListInstancesReply(results, appMapper, serviceMapper, full)
 
-	output, _ := cmd.Flags().GetString("output")
-	return renderer.NewListRenderer(listInstancesReply).Render(output)
+	id, err := h.mapper.App().ResolveID(filter)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return query.AppId(id)
+}
+
+func (h *InstanceHandler) getServiceIDForListQuery(query koyeb.ApiListInstancesRequest, filter string) koyeb.ApiListInstancesRequest {
+	if filter == "" {
+		return query
+	}
+
+	id, err := h.mapper.Service().ResolveID(filter)
+	if err != nil {
+		fatalApiError(err)
+	}
+
+	return query.ServiceId(id)
 }
 
 type ListInstancesReply struct {
-	items         koyeb.ListInstancesReply
-	appMapper     *idmapper.AppMapper
-	serviceMapper *idmapper.ServiceMapper
-	full          bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.ListInstancesReply
+	full   bool
 }
 
-func NewListInstancesReply(items koyeb.ListInstancesReply, appMapper *idmapper.AppMapper, serviceMapper *idmapper.ServiceMapper, full bool) *ListInstancesReply {
+func NewListInstancesReply(mapper *idmapper2.Mapper, res *koyeb.ListInstancesReply, full bool) *ListInstancesReply {
 	return &ListInstancesReply{
-		full:          full,
-		items:         items,
-		appMapper:     appMapper,
-		serviceMapper: serviceMapper,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -84,25 +96,24 @@ func (ListInstancesReply) Title() string {
 	return "Instances"
 }
 
-func (reply *ListInstancesReply) MarshalBinary() ([]byte, error) {
-	return reply.items.MarshalJSON()
+func (r *ListInstancesReply) MarshalBinary() ([]byte, error) {
+	return r.res.MarshalJSON()
 }
 
-func (reply *ListInstancesReply) Headers() []string {
+func (r *ListInstancesReply) Headers() []string {
 	return []string{"id", "service", "status", "deployment_id", "datacenter", "created_at"}
 }
 
-func (reply *ListInstancesReply) Fields() []map[string]string {
-	items := reply.items.GetInstances()
+func (r *ListInstancesReply) Fields() []map[string]string {
+	items := r.res.GetInstances()
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {
-
 		fields := map[string]string{
-			"id":            renderer.FormatID(item.GetId(), reply.full),
-			"service":       renderer.FormatID(item.GetServiceId(), reply.full),
+			"id":            renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
+			"service":       renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 			"status":        formatInstanceStatus(item.GetStatus()),
-			"deployment_id": renderer.FormatID(item.GetDeploymentId(), reply.full),
+			"deployment_id": renderer.FormatDeploymentID(r.mapper, item.GetDeploymentId(), r.full),
 			"datacenter":    item.GetDatacenter(),
 			"created_at":    renderer.FormatTime(item.GetCreatedAt()),
 		}

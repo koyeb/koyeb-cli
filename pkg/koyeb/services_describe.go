@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
@@ -15,13 +14,16 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 
-	instancesRes, _, err := h.client.InstancesApi.ListInstances(ctx).Statuses([]string{
-		string(koyeb.INSTANCESTATUS_ALLOCATING),
-		string(koyeb.INSTANCESTATUS_STARTING),
-		string(koyeb.INSTANCESTATUS_HEALTHY),
-		string(koyeb.INSTANCESTATUS_UNHEALTHY),
-		string(koyeb.INSTANCESTATUS_STOPPING),
-	}).ServiceId(res.Service.GetId()).Execute()
+	instancesRes, _, err := h.client.InstancesApi.ListInstances(ctx).
+		Statuses([]string{
+			string(koyeb.INSTANCESTATUS_ALLOCATING),
+			string(koyeb.INSTANCESTATUS_STARTING),
+			string(koyeb.INSTANCESTATUS_HEALTHY),
+			string(koyeb.INSTANCESTATUS_UNHEALTHY),
+			string(koyeb.INSTANCESTATUS_STOPPING),
+		}).
+		ServiceId(res.Service.GetId()).
+		Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
@@ -31,14 +33,11 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err)
 	}
 
-	appMapper := idmapper.NewAppMapper(ctx, h.client)
-	serviceMapper := idmapper.NewServiceMapper(ctx, h.client)
-
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
 	getServiceReply := NewGetServiceReply(h.mapper, &res, full)
-	listInstancesReply := NewListInstancesReply(instancesRes, appMapper, serviceMapper, full)
+	listInstancesReply := NewListInstancesReply(h.mapper, &instancesRes, full)
 	listDeploymentsReply := NewListDeploymentsReply(h.mapper, &deploymentsRes, full)
 
 	return renderer.NewDescribeRenderer(getServiceReply, listDeploymentsReply, listInstancesReply).Render(output)

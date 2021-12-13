@@ -4,64 +4,64 @@ import (
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *InstanceHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.InstancesApi.GetInstance(h.ctxWithAuth, h.ResolveInstanceShortID(args[0])).Execute()
+	res, _, err := h.client.InstancesApi.GetInstance(h.ctx, h.ResolveInstanceArgs(args[0])).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
 
-	full, _ := cmd.Flags().GetBool("full")
-	describeInstancesReply := NewDescribeInstanceReply(&res, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	describeInstancesReply := NewDescribeInstanceReply(h.mapper, &res, full)
 
-	output, _ := cmd.Flags().GetString("output")
-	return renderer.NewMultiRenderer(
-		renderer.NewDescribeRenderer(describeInstancesReply),
-	).Render(output)
+	return renderer.NewMultiRenderer(renderer.NewDescribeRenderer(describeInstancesReply)).Render(output)
 }
 
 type DescribeInstanceReply struct {
-	res  *koyeb.GetInstanceReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.GetInstanceReply
+	full   bool
 }
 
-func NewDescribeInstanceReply(res *koyeb.GetInstanceReply, full bool) *DescribeInstanceReply {
+func NewDescribeInstanceReply(mapper *idmapper2.Mapper, res *koyeb.GetInstanceReply, full bool) *DescribeInstanceReply {
 	return &DescribeInstanceReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
-func (a *DescribeInstanceReply) MarshalBinary() ([]byte, error) {
-	return a.res.GetInstance().MarshalJSON()
-}
-
-func (a *DescribeInstanceReply) Title() string {
+func (DescribeInstanceReply) Title() string {
 	return "Instance"
 }
 
-func (a *DescribeInstanceReply) Headers() []string {
-	return []string{"id", "app", "service", "status", "deployment_id", "datacenter", "messages", "created_at", "updated_at"}
+func (r *DescribeInstanceReply) MarshalBinary() ([]byte, error) {
+	return r.res.GetInstance().MarshalJSON()
 }
 
-func (a *DescribeInstanceReply) Fields() []map[string]string {
-	res := []map[string]string{}
-	item := a.res.GetInstance()
+func (r *DescribeInstanceReply) Headers() []string {
+	return []string{"id", "service", "status", "deployment_id", "datacenter", "messages", "created_at", "updated_at"}
+}
+
+func (r *DescribeInstanceReply) Fields() []map[string]string {
+	item := r.res.GetInstance()
 	fields := map[string]string{
-		"id":            renderer.FormatID(item.GetId(), a.full),
-		"app":           renderer.FormatID(item.GetAppId(), a.full),
-		"service":       renderer.FormatID(item.GetServiceId(), a.full),
+		"id":            renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
+		"service":       renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 		"status":        formatInstanceStatus(item.GetStatus()),
-		"deployment_id": renderer.FormatID(item.GetDeploymentId(), a.full),
+		"deployment_id": renderer.FormatDeploymentID(r.mapper, item.GetDeploymentId(), r.full),
 		"datacenter":    item.GetDatacenter(),
 		"messages":      formatMessages(item.GetMessages()),
 		"created_at":    renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at":    renderer.FormatTime(item.GetUpdatedAt()),
 	}
-	res = append(res, fields)
+
+	res := []map[string]string{fields}
 	return res
 }
 
