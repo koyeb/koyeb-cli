@@ -2,7 +2,7 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -22,12 +22,12 @@ func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
 }
 
 type DescribeSecretReply struct {
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 	res    *koyeb.GetSecretReply
 	full   bool
 }
 
-func NewDescribeSecretReply(mapper *idmapper2.Mapper, res *koyeb.GetSecretReply, full bool) *DescribeSecretReply {
+func NewDescribeSecretReply(mapper *idmapper.Mapper, res *koyeb.GetSecretReply, full bool) *DescribeSecretReply {
 	return &DescribeSecretReply{
 		mapper: mapper,
 		res:    res,

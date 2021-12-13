@@ -1,4 +1,4 @@
-package idmapper2
+package idmapper
 
 import (
 	"context"

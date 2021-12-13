@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -23,12 +23,12 @@ func (h *InstanceHandler) Describe(cmd *cobra.Command, args []string) error {
 }
 
 type DescribeInstanceReply struct {
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 	res    *koyeb.GetInstanceReply
 	full   bool
 }
 
-func NewDescribeInstanceReply(mapper *idmapper2.Mapper, res *koyeb.GetInstanceReply, full bool) *DescribeInstanceReply {
+func NewDescribeInstanceReply(mapper *idmapper.Mapper, res *koyeb.GetInstanceReply, full bool) *DescribeInstanceReply {
 	return &DescribeInstanceReply{
 		mapper: mapper,
 		res:    res,

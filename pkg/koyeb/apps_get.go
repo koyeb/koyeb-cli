@@ -2,7 +2,7 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
@@ -21,12 +21,12 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 }
 
 type GetAppReply struct {
-	mapper *idmapper2.Mapper
+	mapper *idmapper.Mapper
 	res    *koyeb.GetAppReply
 	full   bool
 }
 
-func NewGetAppReply(mapper *idmapper2.Mapper, res *koyeb.GetAppReply, full bool) *GetAppReply {
+func NewGetAppReply(mapper *idmapper.Mapper, res *koyeb.GetAppReply, full bool) *GetAppReply {
 	return &GetAppReply{
 		mapper: mapper,
 		res:    res,
