@@ -63,7 +63,7 @@ func (mapper *SecretMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("id not found %q", id)
+		return "", fmt.Errorf("secret short id not found for %q", id)
 	}
 
 	return sid, nil
@@ -101,9 +101,9 @@ func (mapper *SecretMapper) fetch() error {
 
 	minLength := radix.MinimalLength(8)
 	radix.ForEach(func(key Key, value Value) {
-		app := value.(*koyeb.Secret)
-		id := app.GetId()
-		name := app.GetName()
+		secret := value.(*koyeb.Secret)
+		id := secret.GetId()
+		name := secret.GetName()
 		sid := strings.ReplaceAll(id, "-", "")[:minLength]
 
 		mapper.sidMap.Set(id, sid)

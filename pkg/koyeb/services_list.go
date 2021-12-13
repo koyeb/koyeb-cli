@@ -1,62 +1,62 @@
 package koyeb
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper2"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
-	results := koyeb.ListServicesReply{}
+	list := []koyeb.ServiceListItem{}
 
-	page := 0
-	offset := 0
-	limit := 100
+	page := int64(0)
+	offset := int64(0)
+	limit := int64(100)
 	for {
 		req := h.client.ServicesApi.ListServices(h.ctxWithAuth)
-		appId, _ := cmd.Flags().GetString("app")
+		appId := GetStringFlags(cmd, "app")
 		if appId != "" {
-			req = req.AppId(h.ResolveAppShortID(appId))
+			req = req.AppId(h.ResolveAppArgs(appId))
 		}
-		name, _ := cmd.Flags().GetString("name")
+		name := GetStringFlags(cmd, "name")
 		if name != "" {
 			req = req.Name(name)
 		}
-		res, _, err := req.Limit(fmt.Sprintf("%d", limit)).Offset(fmt.Sprintf("%d", offset)).Execute()
+		res, _, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err)
 		}
-		if results.Services == nil {
-			results = res
-		} else {
-			*results.Services = append(*results.Services, *res.Services...)
-		}
 
-		page += 1
+		list = append(list, res.GetServices()...)
+
+		page++
 		offset = page * limit
-		if int64(offset) >= res.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}
 
-	full, _ := cmd.Flags().GetBool("full")
-	listServicesReply := NewListServicesReply(&results, full)
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	listServicesReply := NewListServicesReply(h.mapper, &koyeb.ListServicesReply{Services: &list}, full)
 
-	output, _ := cmd.Flags().GetString("output")
 	return renderer.NewListRenderer(listServicesReply).Render(output)
 }
 
 type ListServicesReply struct {
-	res  *koyeb.ListServicesReply
-	full bool
+	mapper *idmapper2.Mapper
+	res    *koyeb.ListServicesReply
+	full   bool
 }
 
-func NewListServicesReply(res *koyeb.ListServicesReply, full bool) *ListServicesReply {
+func NewListServicesReply(mapper *idmapper2.Mapper, res *koyeb.ListServicesReply, full bool) *ListServicesReply {
 	return &ListServicesReply{
-		res:  res,
-		full: full,
+		mapper: mapper,
+		res:    res,
+		full:   full,
 	}
 }
 
@@ -77,13 +77,14 @@ func (a *ListServicesReply) Fields() []map[string]string {
 
 	for _, item := range a.res.GetServices() {
 		fields := map[string]string{
-			"id":         renderer.FormatID(item.GetId(), a.full),
-			"app":        renderer.FormatID(item.GetAppId(), a.full),
+			"id":         renderer.FormatServiceID(a.mapper, item.GetId(), a.full),
+			"app":        renderer.FormatAppName(a.mapper, item.GetAppId(), a.full),
 			"name":       item.GetName(),
 			"status":     formatStatus(item.State.GetStatus()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		res = append(res, fields)
 	}
+
 	return res
 }

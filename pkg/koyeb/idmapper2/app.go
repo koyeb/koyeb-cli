@@ -63,10 +63,26 @@ func (mapper *AppMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("id not found %q", id)
+		return "", fmt.Errorf("app short id not found for %q", id)
 	}
 
 	return sid, nil
+}
+
+func (mapper *AppMapper) GetName(id string) (string, error) {
+	if !mapper.fetched {
+		err := mapper.fetch()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	name, ok := mapper.nameMap.GetValue(id)
+	if !ok {
+		return "", fmt.Errorf("app name not found for %q", id)
+	}
+
+	return name, nil
 }
 
 func (mapper *AppMapper) fetch() error {

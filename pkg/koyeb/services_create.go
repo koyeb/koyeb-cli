@@ -9,20 +9,23 @@ import (
 
 func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
 	app, _ := cmd.Flags().GetString("app")
-	resApp, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppShortID(app)).Execute()
+	resApp, _, err := h.client.AppsApi.GetApp(h.ctxWithAuth, h.ResolveAppArgs(app)).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
+
 	// TODO handle both notations (<app>:<sevice> and --app=app)
 	createService.SetAppId(resApp.App.GetId())
 	res, _, err := h.client.ServicesApi.CreateService(h.ctxWithAuth).Body(*createService).Execute()
 	if err != nil {
 		fatalApiError(err)
 	}
-	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
-	full, _ := cmd.Flags().GetBool("full")
-	getServiceReply := NewGetServiceReply(&koyeb.GetServiceReply{Service: res.Service}, full)
 
-	output, _ := cmd.Flags().GetString("output")
+	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
+
+	full := GetBoolFlags(cmd, "full")
+	output := GetStringFlags(cmd, "output")
+	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+
 	return renderer.NewDescribeRenderer(getServiceReply).Render(output)
 }
