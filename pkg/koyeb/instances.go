@@ -85,7 +85,7 @@ func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
 	instanceMapper := h.mapper.Instance()
 	id, err := instanceMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return id

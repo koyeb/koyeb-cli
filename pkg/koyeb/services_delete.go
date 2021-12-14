@@ -6,9 +6,9 @@ import (
 )
 
 func (h *ServiceHandler) Delete(cmd *cobra.Command, args []string) error {
-	_, _, err := h.client.ServicesApi.DeleteService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+	_, resp, err := h.client.ServicesApi.DeleteService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 	log.Infof("Service %s deleted.", args[0])
 	return nil

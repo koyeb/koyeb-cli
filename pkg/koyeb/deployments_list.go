@@ -16,10 +16,10 @@ func (h *DeploymentHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
+		res, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err)
+			fatalApiError(err, resp)
 		}
 		list = append(list, res.GetDeployments()...)
 

@@ -6,9 +6,9 @@ import (
 )
 
 func (h *InstanceHandler) Logs(cmd *cobra.Command, args []string) error {
-	instanceDetail, _, err := h.client.InstancesApi.GetInstance(h.ctx, h.ResolveInstanceArgs(args[0])).Execute()
+	instanceDetail, resp, err := h.client.InstancesApi.GetInstance(h.ctx, h.ResolveInstanceArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	done := make(chan struct{})

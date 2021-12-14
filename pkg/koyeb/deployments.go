@@ -75,7 +75,7 @@ func (h *DeploymentHandler) ResolveDeploymentArgs(val string) string {
 	deploymentMapper := h.mapper.Deployment()
 	id, err := deploymentMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return id

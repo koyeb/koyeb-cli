@@ -16,10 +16,10 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, _, err := h.client.AppsApi.ListApps(h.ctx).
+		res, st, err := h.client.AppsApi.ListApps(h.ctx).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err)
+			fatalApiError(err, st)
 		}
 		list = append(list, res.GetApps()...)
 

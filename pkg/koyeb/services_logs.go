@@ -7,9 +7,9 @@ import (
 )
 
 func (h *ServiceHandler) Logs(cmd *cobra.Command, args []string) error {
-	serviceDetail, _, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+	serviceDetail, resp, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	done := make(chan struct{})
@@ -22,10 +22,10 @@ func (h *ServiceHandler) Logs(cmd *cobra.Command, args []string) error {
 	query.ServiceID = koyeb.PtrString(serviceID)
 
 	if logType == "build" {
-		latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
+		latestDeploy, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
 			Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
 		if err != nil {
-			fatalApiError(err)
+			fatalApiError(err, resp)
 		}
 		if len(latestDeploy.GetDeployments()) == 0 {
 			return errors.New("unable to load latest deployment")

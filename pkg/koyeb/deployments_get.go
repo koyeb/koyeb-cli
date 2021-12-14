@@ -11,9 +11,9 @@ import (
 )
 
 func (h *DeploymentHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
+	res, resp, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

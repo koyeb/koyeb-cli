@@ -8,9 +8,9 @@ import (
 )
 
 func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	res, _, err := h.client.ServicesApi.UpdateService(h.ctx, h.ResolveServiceArgs(args[0])).Body(*updateService).Execute()
+	res, resp, err := h.client.ServicesApi.UpdateService(h.ctx, h.ResolveServiceArgs(args[0])).Body(*updateService).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
 

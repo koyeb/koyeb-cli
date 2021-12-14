@@ -31,9 +31,9 @@ func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *
 
 		updateSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, _, err := h.client.SecretsApi.UpdateSecret2(h.ctx, h.ResolveSecretArgs(args[0])).Body(*updateSecret).Execute()
+	res, resp, err := h.client.SecretsApi.UpdateSecret2(h.ctx, h.ResolveSecretArgs(args[0])).Body(*updateSecret).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

@@ -10,9 +10,9 @@ import (
 )
 
 func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+	res, resp, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

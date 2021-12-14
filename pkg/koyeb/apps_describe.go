@@ -8,13 +8,13 @@ import (
 )
 
 func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
+	res, resp, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
-	resListServices, _, err := h.client.ServicesApi.ListServices(h.ctx).AppId(res.App.GetId()).Limit("100").Execute()
+	resListServices, resp, err := h.client.ServicesApi.ListServices(h.ctx).AppId(res.App.GetId()).Limit("100").Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

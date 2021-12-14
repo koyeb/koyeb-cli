@@ -6,9 +6,9 @@ import (
 )
 
 func (h *DeploymentHandler) Logs(cmd *cobra.Command, args []string) error {
-	deploymentDetail, _, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
+	deploymentDetail, resp, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	done := make(chan struct{})

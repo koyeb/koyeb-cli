@@ -8,12 +8,12 @@ import (
 )
 
 func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+	res, resp, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
-	instancesRes, _, err := h.client.InstancesApi.ListInstances(h.ctx).
+	instancesRes, resp, err := h.client.InstancesApi.ListInstances(h.ctx).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -24,12 +24,12 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 		ServiceId(res.Service.GetId()).
 		Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
-	deploymentsRes, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).ServiceId(res.Service.GetId()).Execute()
+	deploymentsRes, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).ServiceId(res.Service.GetId()).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
