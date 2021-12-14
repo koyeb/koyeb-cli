@@ -45,7 +45,7 @@ Generate an API token and run `koyeb login` to create a new configuration file.
 ```shell
 ➜ koyeb login
 ? Do you want to create a new configuration file in (/Users/kbot/.koyeb.yaml)? [y/N]
-Enter your api credential: ****************************************************************█
+✗ Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/profile ): █****************************************************************
 INFO[0006] Creating new configuration in /Users/kbot/.koyeb.yaml
 ```
 
@@ -53,7 +53,7 @@ INFO[0006] Creating new configuration in /Users/kbot/.koyeb.yaml
 
 ```shell
 ➜ koyeb --help
-Koyeb cli
+Koyeb CLI
 
 Usage:
   koyeb [command]
@@ -61,7 +61,9 @@ Usage:
 Available Commands:
   apps        Apps
   completion  Generate completion script
+  deployments Deployments
   help        Help about any command
+  instances   Instances
   login       Login to your Koyeb account
   secrets     Secrets
   services    Services
@@ -70,6 +72,7 @@ Available Commands:
 Flags:
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
+      --full            show full id
   -h, --help            help for koyeb
   -o, --output string   output format (yaml,json,table)
       --token string    API token
