@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"reflect"
 
@@ -40,15 +42,38 @@ type CommonErrorInterface interface {
 type CommonErrorWithFieldInterface interface {
 }
 
-func logApiError(err error) {
-	renderApiError(err, log.Errorf)
+func logApiError(err error, resp *http.Response) {
+	renderApiError(err, resp, log.Errorf)
 }
 
-func fatalApiError(err error) {
-	renderApiError(err, log.Fatalf)
+func fatalApiError(err error, resp *http.Response) {
+	renderApiError(err, resp, log.Fatalf)
 }
 
-func renderApiError(err error, errorFn func(string, ...interface{})) {
+type genericError struct {
+	Status  int
+	Code    string
+	Message string
+}
+
+func renderHTTPResponse(resp *http.Response) string {
+	if resp == nil {
+		return fmt.Sprintf("Unhandled error")
+	}
+
+	gError := genericError{}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Sprintf("Error status:%d message:unable to read response body", resp.StatusCode)
+	}
+	err = json.Unmarshal(bodyBytes, &gError)
+	if err != nil {
+		return fmt.Sprintf("Error status:%d message:%v\n", resp.StatusCode, resp.Body)
+	}
+	return fmt.Sprintf("Error status:%d code:%s message:%v\n", gError.Status, gError.Code, gError.Message)
+}
+
+func renderApiError(err error, resp *http.Response, errorFn func(string, ...interface{})) {
 
 	switch er := err.(type) {
 	case koyeb.GenericOpenAPIError:
@@ -60,6 +85,12 @@ func renderApiError(err error, errorFn func(string, ...interface{})) {
 			errorFn("%s: status:%d code:%s", mod.GetMessage(), mod.GetStatus(), mod.GetCode())
 		case koyeb.Error:
 			errorFn("%s: status:%d code:%s", mod.GetMessage(), mod.GetStatus(), mod.GetCode())
+		case nil:
+			if resp == nil {
+				errorFn("Unhandled error %T: %s", err, err.Error())
+			} else {
+				errorFn(renderHTTPResponse(resp))
+			}
 		default:
 			errorFn("Unhandled error %T: %s", mod, er.Error())
 		}

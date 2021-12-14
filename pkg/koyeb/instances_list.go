@@ -17,9 +17,9 @@ func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, _, err := query.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
+		res, resp, err := query.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err)
+			fatalApiError(err, resp)
 		}
 		list = append(list, res.GetInstances()...)
 
@@ -59,7 +59,7 @@ func (h *InstanceHandler) getAppIDForListQuery(query koyeb.ApiListInstancesReque
 
 	id, err := h.mapper.App().ResolveID(filter)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return query.AppId(id)
@@ -72,7 +72,7 @@ func (h *InstanceHandler) getServiceIDForListQuery(query koyeb.ApiListInstancesR
 
 	id, err := h.mapper.Service().ResolveID(filter)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return query.ServiceId(id)

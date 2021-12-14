@@ -10,21 +10,21 @@ import (
 func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
 	uid := uuid.Must(uuid.NewV4())
 	createService.SetAppId(uid.String())
-	_, _, err := h.client.ServicesApi.CreateService(h.ctx).DryRun(true).Body(*createService).Execute()
+	_, resp, err := h.client.ServicesApi.CreateService(h.ctx).DryRun(true).Body(*createService).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	createApp.SetName(args[0])
-	res, _, err := h.client.AppsApi.CreateApp(h.ctx).Body(*createApp).Execute()
+	res, resp, err := h.client.AppsApi.CreateApp(h.ctx).Body(*createApp).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 	createService.SetAppId(res.App.GetId())
 
-	serviceRes, _, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
+	serviceRes, resp, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

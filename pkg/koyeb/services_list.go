@@ -25,9 +25,9 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 		if name != "" {
 			req = req.Name(name)
 		}
-		res, _, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
+		res, resp, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err)
+			fatalApiError(err, resp)
 		}
 
 		list = append(list, res.GetServices()...)

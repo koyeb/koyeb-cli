@@ -8,12 +8,12 @@ import (
 )
 
 func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
+	res, resp, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
-	instancesRes, _, err := h.client.InstancesApi.ListInstances(h.ctx).
+	instancesRes, resp, err := h.client.InstancesApi.ListInstances(h.ctx).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -24,7 +24,7 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 		DeploymentId(res.Deployment.GetId()).
 		Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

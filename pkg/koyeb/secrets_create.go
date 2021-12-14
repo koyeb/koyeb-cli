@@ -45,9 +45,9 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 
 		createSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, _, err := h.client.SecretsApi.CreateSecret(h.ctx).Body(*createSecret).Execute()
+	res, resp, err := h.client.SecretsApi.CreateSecret(h.ctx).Body(*createSecret).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

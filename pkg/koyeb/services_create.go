@@ -9,16 +9,15 @@ import (
 
 func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
 	app, _ := cmd.Flags().GetString("app")
-	resApp, _, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(app)).Execute()
+	resApp, resp, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(app)).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
-	// TODO handle both notations (<app>:<sevice> and --app=app)
 	createService.SetAppId(resApp.App.GetId())
-	res, _, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
+	res, resp, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])

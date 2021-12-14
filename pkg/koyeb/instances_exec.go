@@ -23,7 +23,7 @@ import (
 func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	returnCode, err := h.exec(cmd, args)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 	if returnCode != 0 {
 		os.Exit(returnCode)

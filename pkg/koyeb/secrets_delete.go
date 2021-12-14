@@ -6,9 +6,9 @@ import (
 )
 
 func (h *SecretHandler) Delete(cmd *cobra.Command, args []string) error {
-	_, _, err := h.client.SecretsApi.DeleteSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
+	_, resp, err := h.client.SecretsApi.DeleteSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 	log.Infof("Secret %s deleted.", args[0])
 	return nil

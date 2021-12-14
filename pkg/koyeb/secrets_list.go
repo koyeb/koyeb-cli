@@ -16,10 +16,10 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, _, err := h.client.SecretsApi.ListSecrets(h.ctx).
+		res, resp, err := h.client.SecretsApi.ListSecrets(h.ctx).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err)
+			fatalApiError(err, resp)
 		}
 		list = append(list, res.GetSecrets()...)
 

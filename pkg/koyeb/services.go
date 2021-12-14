@@ -88,10 +88,10 @@ func NewServiceCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			updateService := koyeb.NewUpdateServiceWithDefaults()
 
-			latestDeploy, _, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
+			latestDeploy, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
 				Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
 			if err != nil {
-				fatalApiError(err)
+				fatalApiError(err, resp)
 			}
 			if len(latestDeploy.GetDeployments()) == 0 {
 				return errors.New("Unable to load latest deployment")
@@ -148,7 +148,7 @@ func (h *ServiceHandler) ResolveServiceArgs(val string) string {
 	serviceMapper := h.mapper.Service()
 	id, err := serviceMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return id
@@ -158,7 +158,7 @@ func (h *ServiceHandler) ResolveAppArgs(val string) string {
 	appMapper := h.mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return id

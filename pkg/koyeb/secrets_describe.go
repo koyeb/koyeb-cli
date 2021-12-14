@@ -8,9 +8,9 @@ import (
 )
 
 func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, _, err := h.client.SecretsApi.GetSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
+	res, resp, err := h.client.SecretsApi.GetSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

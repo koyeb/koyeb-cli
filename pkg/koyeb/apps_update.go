@@ -7,9 +7,9 @@ import (
 )
 
 func (h *AppHandler) Update(cmd *cobra.Command, args []string, updateApp *koyeb.UpdateApp) error {
-	res, _, err := h.client.AppsApi.UpdateApp2(h.ctx, h.ResolveAppArgs(args[0])).Body(*updateApp).Execute()
+	res, resp, err := h.client.AppsApi.UpdateApp2(h.ctx, h.ResolveAppArgs(args[0])).Body(*updateApp).Execute()
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")

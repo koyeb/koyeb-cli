@@ -101,7 +101,7 @@ func (h *SecretHandler) ResolveSecretArgs(val string) string {
 	secretMapper := h.mapper.Secret()
 	id, err := secretMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return id

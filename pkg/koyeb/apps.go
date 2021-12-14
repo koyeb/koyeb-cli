@@ -123,7 +123,7 @@ func (h *AppHandler) ResolveAppArgs(val string) string {
 	appMapper := h.mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err)
+		fatalApiError(err, nil)
 	}
 
 	return id
