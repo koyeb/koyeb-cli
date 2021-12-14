@@ -12,19 +12,30 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Login(cmd *cobra.Command, args []string) {
+func Login(cmd *cobra.Command, args []string) error {
 
-	home, err := homedir.Dir()
-	if err != nil {
-		er(err)
+	configPath := ""
+	if cfgFile != "" {
+		configPath = cfgFile
+	} else {
+		home, err := homedir.Dir()
+		if err != nil {
+			er(err)
+		}
+		configPath = home + "/.koyeb.yaml"
 	}
-	configPath := home + "/.koyeb.yaml"
+	viper.SetConfigFile(configPath)
+
+	writeFileMessage := fmt.Sprintf("Do you want to create a new configuration file in (%s)", configPath)
+	if _, err := os.Stat(configPath); !errors.Is(err, os.ErrNotExist) {
+		writeFileMessage = fmt.Sprintf("Do you want to update configuration file (%s)", configPath)
+	}
 
 	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to create a new configuration file in (%s)", configPath),
+		Label:     writeFileMessage,
 		IsConfirm: true,
 	}
-	_, err = prompt.Run()
+	_, err := prompt.Run()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -37,7 +48,7 @@ func Login(cmd *cobra.Command, args []string) {
 	}
 
 	prompt = promptui.Prompt{
-		Label:    "Enter your api credential",
+		Label:    "Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/profile )",
 		Validate: validate,
 		Mask:     '*',
 	}
@@ -50,10 +61,11 @@ func Login(cmd *cobra.Command, args []string) {
 	viper.Set("token", result)
 
 	viper.SetConfigType("yaml")
-	err = viper.SafeWriteConfig()
+	err = viper.WriteConfig()
 	if err != nil {
 		er(err)
 	}
 
 	log.Infof("Creating new configuration in %s", configPath)
+	return nil
 }

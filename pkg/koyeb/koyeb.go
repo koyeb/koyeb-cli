@@ -3,6 +3,7 @@ package koyeb
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -33,7 +34,7 @@ var (
 	loginCmd = &cobra.Command{
 		Use:   "login",
 		Short: "Login to your Koyeb account",
-		Run:   Login,
+		RunE:  Login,
 	}
 	versionCmd = &cobra.Command{
 		Use:   "version",
@@ -129,13 +130,17 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("koyeb")
 
-	// TODO check if no .koyeb.yaml or no --config file exists, if not, ask if we want to create a new one
+	if "" != loginCmd.CalledAs() {
+		return
+	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Error("Configuration not found, use `koyeb login` to create a new one, or use `--config`.")
+			log.Fatal("Configuration not found, use `koyeb login` to create a new one, or use `--config`.")
+		} else if _, ok := err.(*fs.PathError); ok {
+			log.Fatal("Configuration not found, use `koyeb login` to create a new one.")
 		} else {
-			er(err)
+			log.Fatal(err)
 		}
 	} else {
 		log.Debugf("Using config file: %s", viper.ConfigFileUsed())
