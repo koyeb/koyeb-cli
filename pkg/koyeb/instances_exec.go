@@ -54,32 +54,6 @@ func (h *InstanceHandler) exec(cmd *cobra.Command, args []string) (int, error) {
 	return e.Run(ctx)
 }
 
-func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
-	out := make(chan *TerminalSize)
-	go func() {
-		defer close(out)
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGWINCH)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-sigCh:
-				termSize, err := GetTermSize(s.Stdout)
-				if err != nil {
-					continue
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case out <- termSize:
-				}
-			}
-		}
-	}()
-	return out
-}
-
 // Disclaimer: parts of this file are either taken or largey inspired from Nomad's CLI
 // implementation (command/alloc_exec.go) or API implementation (api/allocations_exec.go)
 
@@ -444,16 +418,4 @@ func GetStdStreams() (*StdStreams, func() error, error) {
 		Stderr: stderr,
 	}
 	return stdStreams, resetTermState, nil
-}
-
-func GetTermSize(t io.Writer) (*TerminalSize, error) {
-	fd, isTerm := term.GetFdInfo(t)
-	if !isTerm {
-		return nil, errors.New("not a terminal")
-	}
-	ws, err := term.GetWinsize(fd)
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot get winsize")
-	}
-	return &TerminalSize{Height: int32(ws.Height), Width: int32(ws.Width)}, nil
 }
