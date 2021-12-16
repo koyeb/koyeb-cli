@@ -16,7 +16,7 @@ gen-doc: ## generate markdown documentation
 	rm -f ./docs/*
 	go run cmd/gen-doc/gen-doc.go
 	rm -f ./docs/koyeb_completion.md
-	sed -i.bak 's/.*koyeb completion.*/fault/' ./docs/*.md
+	sed -i.bak 's/.*koyeb completion.*//' ./docs/*.md
 	sed -i.bak 's/### SEE ALSO.*//' ./docs/*.md
 	cat ./docs/*.md >> ./docs/reference.md
 	find ./docs -type f -not -name 'reference.md' -delete
