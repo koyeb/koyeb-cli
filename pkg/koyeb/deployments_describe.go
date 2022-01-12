@@ -69,19 +69,19 @@ func (r *DescribeDeploymentReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *DescribeDeploymentReply) Headers() []string {
-	return []string{"id", "service", "status", "status_message", "regions", "created_at", "updated_at"}
+	return []string{"id", "service", "status", "messages", "regions", "created_at", "updated_at"}
 }
 
 func (r *DescribeDeploymentReply) Fields() []map[string]string {
 	item := r.value.GetDeployment()
 	fields := map[string]string{
-		"id":             renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
-		"service":        renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
-		"status":         formatDeploymentStatus(item.State.GetStatus()),
-		"status_message": item.State.GetStatusMessage(),
-		"regions":        renderRegions(item.Definition.Regions),
-		"created_at":     renderer.FormatTime(item.GetCreatedAt()),
-		"updated_at":     renderer.FormatTime(item.GetUpdatedAt()),
+		"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
+		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+		"status":     formatDeploymentStatus(item.GetStatus()),
+		"messages":   formatDeploymentMessages(item.GetMessages()),
+		"regions":    renderRegions(item.Definition.Regions),
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
+		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}
 
 	resp := []map[string]string{fields}

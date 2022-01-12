@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -46,26 +45,30 @@ func (r *GetDeploymentReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetDeploymentReply) Headers() []string {
-	return []string{"id", "service", "status", "status_message", "regions", "created_at"}
+	return []string{"id", "service", "status", "messages", "regions", "created_at"}
 }
 
 func (r *GetDeploymentReply) Fields() []map[string]string {
 	item := r.value.GetDeployment()
 	fields := map[string]string{
-		"id":             renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
-		"service":        renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
-		"status":         formatDeploymentStatus(item.State.GetStatus()),
-		"status_message": item.State.GetStatusMessage(),
-		"regions":        renderRegions(item.Definition.Regions),
-		"created_at":     renderer.FormatTime(item.GetCreatedAt()),
+		"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
+		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+		"status":     formatDeploymentStatus(item.GetStatus()),
+		"messages":   formatDeploymentMessages(item.GetMessages()),
+		"regions":    renderRegions(item.Definition.Regions),
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
 
 	resp := []map[string]string{fields}
 	return resp
 }
 
-func formatDeploymentStatus(ds koyeb.ServiceRevisionStateStatus) string {
-	return fmt.Sprintf("%s", ds)
+func formatDeploymentStatus(ds koyeb.DeploymentStatus) string {
+	return string(ds)
+}
+
+func formatDeploymentMessages(messages []string) string {
+	return strings.Join(messages, " ")
 }
 
 func renderRegions(regions *[]string) string {
