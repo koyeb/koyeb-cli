@@ -78,7 +78,7 @@ func (r *DescribeDeploymentReply) Fields() []map[string]string {
 		"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 		"status":     formatDeploymentStatus(item.GetStatus()),
-		"messages":   formatDeploymentMessages(item.GetMessages()),
+		"messages":   formatDeploymentMessages(item.GetMessages(), 0),
 		"regions":    renderRegions(item.Definition.Regions),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
