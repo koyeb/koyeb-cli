@@ -60,7 +60,7 @@ func (r *ListDeploymentsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListDeploymentsReply) Headers() []string {
-	return []string{"id", "service", "status", "status_message", "regions", "created_at"}
+	return []string{"id", "service", "status", "messages", "regions", "created_at"}
 }
 
 func (r *ListDeploymentsReply) Fields() []map[string]string {
@@ -69,12 +69,12 @@ func (r *ListDeploymentsReply) Fields() []map[string]string {
 
 	for _, item := range items {
 		fields := map[string]string{
-			"id":             renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
-			"service":        renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
-			"status":         formatDeploymentStatus(item.State.GetStatus()),
-			"status_message": item.State.GetStatusMessage(),
-			"regions":        renderRegions(item.Definition.Regions),
-			"created_at":     renderer.FormatTime(item.GetCreatedAt()),
+			"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
+			"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+			"status":     formatDeploymentStatus(item.GetStatus()),
+			"messages":   formatDeploymentMessages(item.GetMessages()),
+			"regions":    renderRegions(item.Definition.Regions),
+			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
 	}
