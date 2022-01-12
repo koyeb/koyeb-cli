@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -54,7 +55,7 @@ func (r *GetDeploymentReply) Fields() []map[string]string {
 		"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 		"status":     formatDeploymentStatus(item.GetStatus()),
-		"messages":   formatDeploymentMessages(item.GetMessages()),
+		"messages":   formatDeploymentMessages(item.GetMessages(), 0),
 		"regions":    renderRegions(item.Definition.Regions),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
@@ -67,8 +68,12 @@ func formatDeploymentStatus(ds koyeb.DeploymentStatus) string {
 	return string(ds)
 }
 
-func formatDeploymentMessages(messages []string) string {
-	return strings.Join(messages, " ")
+func formatDeploymentMessages(messages []string, max int) string {
+	concat := strings.Join(messages, " ")
+	if max == 0 || len(concat) < max {
+		return concat
+	}
+	return fmt.Sprint(concat[:max], "...")
 }
 
 func renderRegions(regions *[]string) string {
