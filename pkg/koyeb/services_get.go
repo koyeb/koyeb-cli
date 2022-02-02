@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"fmt"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -55,7 +53,7 @@ func (r *GetServiceReply) Fields() []map[string]string {
 		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
-		"status":     formatStatus(item.State.GetStatus()),
+		"status":     formatServiceStatus(item.GetStatus()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
 
@@ -63,6 +61,6 @@ func (r *GetServiceReply) Fields() []map[string]string {
 	return resp
 }
 
-func formatStatus(status koyeb.ServiceStateStatus) string {
-	return fmt.Sprintf("%s", status)
+func formatServiceStatus(status koyeb.ServiceStatus) string {
+	return string(status)
 }

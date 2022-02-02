@@ -75,7 +75,7 @@ func (r *DescribeServiceReply) Fields() []map[string]string {
 		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"name":       item.GetName(),
 		"version":    item.GetVersion(),
-		"status":     formatStatus(item.State.GetStatus()),
+		"status":     formatServiceStatus(item.GetStatus()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
 	}

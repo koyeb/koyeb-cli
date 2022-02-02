@@ -3,6 +3,7 @@ package koyeb
 import (
 	"time"
 
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -25,7 +26,7 @@ func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
 				break
 			}
 			for _, svc := range res.GetServices() {
-				if svc.State.GetStatus() == "STOPPING" || svc.State.GetStatus() == "STOPPED" {
+				if svc.GetStatus() == koyeb.SERVICESTATUS_DELETING || svc.GetStatus() == koyeb.SERVICESTATUS_DELETED {
 					continue
 				}
 				log.Infof("Deleting service %s", svc.GetName())

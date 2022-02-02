@@ -10,7 +10,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/iancoleman/strcase v0.1.3
-	github.com/koyeb/koyeb-api-client-go v0.0.0-20220112085253-fecd904ef385
+	github.com/koyeb/koyeb-api-client-go v0.0.0-20220202142608-40af05d1a354
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/manifoldco/promptui v0.7.0
