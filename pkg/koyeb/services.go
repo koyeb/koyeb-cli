@@ -42,6 +42,7 @@ func NewServiceCmd() *cobra.Command {
 	}
 	addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "App")
+	createServiceCmd.Flags().BoolP("wait", "w", false, "Wait for the service deployment to be completed")
 	createServiceCmd.MarkFlagRequired("app")
 	serviceCmd.AddCommand(createServiceCmd)
 
@@ -106,6 +107,7 @@ func NewServiceCmd() *cobra.Command {
 		},
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
+	updateServiceCmd.Flags().BoolP("wait", "w", false, "Wait for the service deployment to be completed")
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{
@@ -114,6 +116,7 @@ func NewServiceCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  h.ReDeploy,
 	}
+	redeployServiceCmd.Flags().BoolP("wait", "w", false, "Wait for the service deployment to be completed")
 	serviceCmd.AddCommand(redeployServiceCmd)
 
 	deleteServiceCmd := &cobra.Command{
@@ -178,6 +181,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("instance-type", "nano", "Instance type")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
+
 }
 
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.ServiceDefinition, useDefault bool) error {
