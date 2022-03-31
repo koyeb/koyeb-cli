@@ -13,6 +13,14 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err, resp)
 	}
 
+	// TODO(tleroux): Experimental for now.
+	regionalRes, resp, err := h.client.RegionalDeploymentsApi.ListRegionalDeployments(h.ctx).
+		DeploymentId(res.Deployment.GetId()).
+		Execute()
+	if err != nil {
+		fatalApiError(err, resp)
+	}
+
 	instancesRes, resp, err := h.client.InstancesApi.ListInstances(h.ctx).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
@@ -33,12 +41,16 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 	describeDeploymentsReply := NewDescribeDeploymentReply(h.mapper, &res, full)
 	defDeployment := renderer.NewGenericRenderer("Definition", res.Deployment.Definition)
 	listInstancesReply := NewListInstancesReply(h.mapper, &instancesRes, full)
+	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(h.mapper, &regionalRes, full)
 
 	return renderer.
 		NewMultiRenderer(
 			renderer.NewDescribeRenderer(describeDeploymentsReply),
 			renderer.NewSeparatorRenderer(),
 			defDeployment,
+			renderer.NewSeparatorRenderer(),
+			renderer.NewTitleRenderer(listRegionalDeploymentsReply),
+			renderer.NewListRenderer(listRegionalDeploymentsReply),
 			renderer.NewSeparatorRenderer(),
 			renderer.NewTitleRenderer(listInstancesReply),
 			renderer.NewListRenderer(listInstancesReply),

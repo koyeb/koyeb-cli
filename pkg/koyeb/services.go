@@ -28,15 +28,15 @@ func NewServiceCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
-			createDef := koyeb.NewServiceDefinitionWithDefaults()
+			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-			err := parseServiceDefinitionFlags(cmd.Flags(), createDef, true)
+			err := parseServiceDefinitionFlags(cmd.Flags(), createDefinition, true)
 			if err != nil {
 				return err
 			}
-			createDef.Name = koyeb.PtrString(args[0])
+			createDefinition.Name = koyeb.PtrString(args[0])
 
-			createService.SetDefinition(*createDef)
+			createService.SetDefinition(*createDefinition)
 			return h.Create(cmd, args, createService)
 		},
 	}
@@ -180,23 +180,23 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.Int64("max-scale", 1, "Max scale")
 }
 
-func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.ServiceDefinition, useDefault bool) error {
+func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
 
 	if useDefault || flags.Lookup("env").Changed {
 		env, _ := flags.GetStringSlice("env")
-		var envs []koyeb.Env
+		envs := []koyeb.DeploymentEnv{}
 		for _, e := range env {
-			newEnv := koyeb.NewEnvWithDefaults()
+			newEnv := koyeb.NewDeploymentEnvWithDefaults()
 
-			spli := strings.Split(e, "=")
-			if len(spli) < 2 {
+			split := strings.Split(e, "=")
+			if len(split) < 2 {
 				return errors.New("Unable to parse env")
 			}
-			newEnv.Key = koyeb.PtrString(spli[0])
-			if spli[1][0] == '@' {
-				newEnv.ValueFromSecret = koyeb.PtrString(spli[1][1:])
+			newEnv.Key = koyeb.PtrString(split[0])
+			if split[1][0] == '@' {
+				newEnv.Secret = koyeb.PtrString(split[1][1:])
 			} else {
-				newEnv.Value = koyeb.PtrString(spli[1])
+				newEnv.Value = koyeb.PtrString(split[1])
 			}
 			envs = append(envs, *newEnv)
 		}
@@ -204,8 +204,10 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 	}
 
 	if useDefault || flags.Lookup("instance-type").Changed {
-		instanceType, _ := flags.GetString("instance-type")
-		definition.SetInstanceType(instanceType)
+		instanceType := koyeb.NewDeploymentInstanceTypeWithDefaults()
+		val, _ := flags.GetString("instance-type")
+		instanceType.SetType(val)
+		definition.SetInstanceTypes([]koyeb.DeploymentInstanceType{*instanceType})
 	}
 	if useDefault || flags.Lookup("regions").Changed {
 		regions, _ := flags.GetStringSlice("regions")
@@ -214,22 +216,22 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 
 	if useDefault || flags.Lookup("ports").Changed {
 		port, _ := flags.GetStringSlice("ports")
-		var ports []koyeb.Port
+		ports := []koyeb.DeploymentPort{}
 		for _, p := range port {
-			newPort := koyeb.NewPortWithDefaults()
+			newPort := koyeb.NewDeploymentPortWithDefaults()
 
-			spli := strings.Split(p, ":")
-			if len(spli) < 1 {
+			split := strings.Split(p, ":")
+			if len(split) < 1 {
 				return errors.New("Unable to parse port")
 			}
-			portNum, err := strconv.Atoi(spli[0])
+			portNum, err := strconv.Atoi(split[0])
 			if err != nil {
 				errors.Wrap(err, "Invalid port number")
 			}
 			newPort.Port = koyeb.PtrInt64(int64(portNum))
 			newPort.Protocol = koyeb.PtrString("http")
-			if len(spli) > 1 {
-				newPort.Protocol = koyeb.PtrString(spli[1])
+			if len(split) > 1 {
+				newPort.Protocol = koyeb.PtrString(split[1])
 			}
 			ports = append(ports, *newPort)
 
@@ -239,9 +241,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 
 	if useDefault || flags.Lookup("routes").Changed {
 		route, _ := flags.GetStringSlice("routes")
-		var routes []koyeb.Route
+		routes := []koyeb.DeploymentRoute{}
 		for _, p := range route {
-			newRoute := koyeb.NewRouteWithDefaults()
+			newRoute := koyeb.NewDeploymentRouteWithDefaults()
 
 			spli := strings.Split(p, ":")
 			if len(spli) < 1 {
@@ -263,12 +265,12 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Service
 	}
 
 	if useDefault || flags.Lookup("min-scale").Changed || flags.Lookup("max-scale").Changed {
-		scaling := koyeb.NewScalingWithDefaults()
+		scaling := koyeb.NewDeploymentScalingWithDefaults()
 		minScale, _ := flags.GetInt64("min-scale")
 		maxScale, _ := flags.GetInt64("max-scale")
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
-		definition.SetScaling(*scaling)
+		definition.SetScalings([]koyeb.DeploymentScaling{*scaling})
 	}
 
 	// Docker

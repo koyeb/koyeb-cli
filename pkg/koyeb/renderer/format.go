@@ -60,6 +60,17 @@ func FormatDeploymentID(mapper *idmapper.Mapper, id string, full bool) string {
 	return id
 }
 
+func FormatRegionalDeploymentID(mapper *idmapper.Mapper, id string, full bool) string {
+	if !full {
+		sid, err := mapper.RegionalDeployment().GetShortID(id)
+		if err == nil {
+			return sid
+		}
+		panic(err)
+	}
+	return id
+}
+
 func FormatInstanceID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Instance().GetShortID(id)

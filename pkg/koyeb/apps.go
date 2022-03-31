@@ -38,15 +38,15 @@ func NewAppCmd() *cobra.Command {
 			createApp := koyeb.NewCreateAppWithDefaults()
 
 			createService := koyeb.NewCreateServiceWithDefaults()
-			createDef := koyeb.NewServiceDefinitionWithDefaults()
+			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-			err := parseServiceDefinitionFlags(cmd.Flags(), createDef, true)
+			err := parseServiceDefinitionFlags(cmd.Flags(), createDefinition, true)
 			if err != nil {
 				return err
 			}
-			createDef.Name = koyeb.PtrString(args[0])
+			createDefinition.Name = koyeb.PtrString(args[0])
 
-			createService.SetDefinition(*createDef)
+			createService.SetDefinition(*createDefinition)
 
 			return h.Init(cmd, args, createApp, createService)
 		},

@@ -99,7 +99,7 @@ func (mapper *ServiceMapper) fetch() error {
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list apps from API")
+			return errors.Wrap(err, "cannot list services from API")
 		}
 
 		services := resp.GetServices()

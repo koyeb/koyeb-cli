@@ -74,7 +74,7 @@ func (mapper *DeploymentMapper) fetch() error {
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list apps from API")
+			return errors.Wrap(err, "cannot list deployments from API")
 		}
 
 		deployments := resp.GetDeployments()
@@ -92,8 +92,8 @@ func (mapper *DeploymentMapper) fetch() error {
 
 	minLength := radix.MinimalLength(8)
 	err := radix.ForEach(func(key Key, value Value) error {
-		app := value.(*koyeb.DeploymentListItem)
-		id := app.GetId()
+		deployment := value.(*koyeb.DeploymentListItem)
+		id := deployment.GetId()
 		sid := getShortID(id, minLength)
 
 		mapper.sidMap.Set(id, sid)
