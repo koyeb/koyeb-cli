@@ -101,7 +101,7 @@ func (r *ListInstancesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListInstancesReply) Headers() []string {
-	return []string{"id", "service", "status", "deployment_id", "datacenter", "created_at"}
+	return []string{"id", "service", "status", "region", "datacenter", "created_at"}
 }
 
 func (r *ListInstancesReply) Fields() []map[string]string {
@@ -110,12 +110,12 @@ func (r *ListInstancesReply) Fields() []map[string]string {
 
 	for _, item := range items {
 		fields := map[string]string{
-			"id":            renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
-			"service":       renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
-			"status":        formatInstanceStatus(item.GetStatus()),
-			"deployment_id": renderer.FormatDeploymentID(r.mapper, item.GetDeploymentId(), r.full),
-			"datacenter":    item.GetDatacenter(),
-			"created_at":    renderer.FormatTime(item.GetCreatedAt()),
+			"id":         renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
+			"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+			"status":     formatInstanceStatus(item.GetStatus()),
+			"region":     item.GetRegion(),
+			"datacenter": item.GetDatacenter(),
+			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
 	}

@@ -9,15 +9,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-type InstanceMapper struct {
+type RegionalDeploymentMapper struct {
 	ctx     context.Context
 	client  *koyeb.APIClient
 	fetched bool
 	sidMap  *IDMap
 }
 
-func NewInstanceMapper(ctx context.Context, client *koyeb.APIClient) *InstanceMapper {
-	return &InstanceMapper{
+func NewRegionalDeploymentMapper(ctx context.Context, client *koyeb.APIClient) *RegionalDeploymentMapper {
+	return &RegionalDeploymentMapper{
 		ctx:     ctx,
 		client:  client,
 		fetched: false,
@@ -25,7 +25,7 @@ func NewInstanceMapper(ctx context.Context, client *koyeb.APIClient) *InstanceMa
 	}
 }
 
-func (mapper *InstanceMapper) ResolveID(val string) (string, error) {
+func (mapper *RegionalDeploymentMapper) ResolveID(val string) (string, error) {
 	if IsUUIDv4(val) {
 		return val, nil
 	}
@@ -45,7 +45,7 @@ func (mapper *InstanceMapper) ResolveID(val string) (string, error) {
 	return "", fmt.Errorf("id not found %q", val)
 }
 
-func (mapper *InstanceMapper) GetShortID(id string) (string, error) {
+func (mapper *RegionalDeploymentMapper) GetShortID(id string) (string, error) {
 	if !mapper.fetched {
 		err := mapper.fetch()
 		if err != nil {
@@ -55,13 +55,13 @@ func (mapper *InstanceMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("instance short id not found for %q", id)
+		return "", fmt.Errorf("deployment short id not found for %q", id)
 	}
 
 	return sid, nil
 }
 
-func (mapper *InstanceMapper) fetch() error {
+func (mapper *RegionalDeploymentMapper) fetch() error {
 	radix := NewRadixTree()
 
 	page := int64(0)
@@ -69,18 +69,18 @@ func (mapper *InstanceMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.InstancesApi.ListInstances(mapper.ctx).
+		resp, _, err := mapper.client.RegionalDeploymentsApi.ListRegionalDeployments(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list instances from API")
+			return errors.Wrap(err, "cannot list regional deployments from API")
 		}
 
-		instances := resp.GetInstances()
-		for i := range instances {
-			instance := &instances[i]
-			radix.Insert(getKey(instance.GetId()), instance)
+		deployments := resp.GetRegionalDeployments()
+		for i := range deployments {
+			deployment := &deployments[i]
+			radix.Insert(getKey(deployment.GetId()), deployment)
 		}
 
 		page++
@@ -92,8 +92,8 @@ func (mapper *InstanceMapper) fetch() error {
 
 	minLength := radix.MinimalLength(8)
 	err := radix.ForEach(func(key Key, value Value) error {
-		instance := value.(*koyeb.InstanceListItem)
-		id := instance.GetId()
+		deployment := value.(*koyeb.RegionalDeploymentListItem)
+		id := deployment.GetId()
 		sid := getShortID(id, minLength)
 
 		mapper.sidMap.Set(id, sid)

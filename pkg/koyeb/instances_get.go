@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -46,18 +45,18 @@ func (r *GetInstanceReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetInstanceReply) Headers() []string {
-	return []string{"id", "service", "status", "deployment_id", "datacenter", "created_at"}
+	return []string{"id", "service", "status", "region", "datacenter", "created_at"}
 }
 
 func (r *GetInstanceReply) Fields() []map[string]string {
 	item := r.value.GetInstance()
 	fields := map[string]string{
-		"id":            renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
-		"service":       renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
-		"status":        formatInstanceStatus(item.GetStatus()),
-		"deployment_id": renderer.FormatDeploymentID(r.mapper, item.GetDeploymentId(), r.full),
-		"datacenter":    item.GetDatacenter(),
-		"created_at":    renderer.FormatTime(item.GetCreatedAt()),
+		"id":         renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
+		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+		"status":     formatInstanceStatus(item.GetStatus()),
+		"region":     item.GetRegion(),
+		"datacenter": item.GetDatacenter(),
+		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
 
 	resp := []map[string]string{fields}
@@ -65,7 +64,7 @@ func (r *GetInstanceReply) Fields() []map[string]string {
 }
 
 func formatInstanceStatus(status koyeb.InstanceStatus) string {
-	return fmt.Sprintf("%s", status)
+	return string(status)
 }
 
 func formatMessages(msg []string) string {
