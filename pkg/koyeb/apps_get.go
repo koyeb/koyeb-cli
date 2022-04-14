@@ -1,7 +1,7 @@
 package koyeb
 
 import (
-	"strings"
+	"encoding/json"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
@@ -53,7 +53,7 @@ func (r *GetAppReply) Fields() []map[string]string {
 	fields := map[string]string{
 		"id":         renderer.FormatAppID(r.mapper, item.GetId(), r.full),
 		"name":       item.GetName(),
-		"domains":    formatDomains(item.GetDomains()),
+		"domains":    formatDomains(item.GetDomains(), 80),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 	}
 
@@ -61,10 +61,25 @@ func (r *GetAppReply) Fields() []map[string]string {
 	return resp
 }
 
-func formatDomains(domains []koyeb.Domain) string {
-	strL := []string{}
+func formatDomains(domains []koyeb.Domain, max int) string {
+	domainNames := []string{}
+	totalLen := 0
 	for _, d := range domains {
-		strL = append(strL, d.GetName())
+		name := d.GetName()
+		if max > 0 && totalLen+len(name) >= max {
+			domainNames = append(domainNames, "...")
+			break
+		}
+
+		domainNames = append(domainNames, name)
+		totalLen += len(name)
 	}
-	return strings.Join(strL, ",")
+
+	data, err := json.Marshal(domainNames)
+	if err != nil {
+		// We're supposed to marshal a list of strings. If this fails, we can fairly panic
+		panic(err)
+	}
+
+	return string(data)
 }
