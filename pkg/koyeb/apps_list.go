@@ -71,7 +71,7 @@ func (r *ListAppsReply) Fields() []map[string]string {
 		fields := map[string]string{
 			"id":         renderer.FormatAppID(r.mapper, item.GetId(), r.full),
 			"name":       item.GetName(),
-			"domains":    formatDomains(item.GetDomains()),
+			"domains":    formatDomains(item.GetDomains(), 80),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
