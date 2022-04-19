@@ -26,8 +26,9 @@ Koyeb CLI
 
 
 * [koyeb apps](#koyeb-apps)	 - Apps
-fault
+
 * [koyeb deployments](#koyeb-deployments)	 - Deployments
+* [koyeb domains](#koyeb-domains)	 - Domains
 * [koyeb instances](#koyeb-instances)	 - Instances
 * [koyeb login](#koyeb-login)	 - Login to your Koyeb account
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
@@ -429,6 +430,272 @@ koyeb deployments logs NAME [flags]
 
 
 * [koyeb deployments](#koyeb-deployments)	 - Deployments
+
+## koyeb domains
+
+Domains
+
+### Options
+
+```
+  -h, --help   help for domains
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb domains attach](#koyeb-domains-attach)	 - Attach a custom domain to an existing app
+* [koyeb domains create](#koyeb-domains-create)	 - Create domain
+* [koyeb domains delete](#koyeb-domains-delete)	 - Delete domain
+* [koyeb domains describe](#koyeb-domains-describe)	 - Describe domain
+* [koyeb domains detach](#koyeb-domains-detach)	 - Detach a custom domain from the app it is currently attached to
+* [koyeb domains get](#koyeb-domains-get)	 - Get domain
+* [koyeb domains list](#koyeb-domains-list)	 - List domains
+* [koyeb domains refresh](#koyeb-domains-refresh)	 - Refresh a custom domain verification status
+
+## koyeb domains attach
+
+Attach a custom domain to an existing app
+
+```
+koyeb domains attach NAME APP [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for attach
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains create
+
+Create domain
+
+```
+koyeb domains create NAME [flags]
+```
+
+### Options
+
+```
+      --attach-to string   Upon creation, assign to given app
+  -h, --help               help for create
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains delete
+
+Delete domain
+
+```
+koyeb domains delete [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains describe
+
+Describe domain
+
+```
+koyeb domains describe [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for describe
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains detach
+
+Detach a custom domain from the app it is currently attached to
+
+```
+koyeb domains detach NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for detach
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains get
+
+Get domain
+
+```
+koyeb domains get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains list
+
+List domains
+
+```
+koyeb domains list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
+
+## koyeb domains refresh
+
+Refresh a custom domain verification status
+
+```
+koyeb domains refresh NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for refresh
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb domains](#koyeb-domains)	 - Domains
 
 ## koyeb instances
 
