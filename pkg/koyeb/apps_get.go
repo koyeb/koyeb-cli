@@ -6,6 +6,7 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -77,8 +78,8 @@ func formatDomains(domains []koyeb.Domain, max int) string {
 
 	data, err := json.Marshal(domainNames)
 	if err != nil {
-		// We're supposed to marshal a list of strings. If this fails, we can fairly panic
-		panic(err)
+		// We're supposed to marshal a list of strings. If this fails, we can fairly fatal
+		log.Fatalf("Could not marshal domain names as json: %+v", err)
 	}
 
 	return string(data)
