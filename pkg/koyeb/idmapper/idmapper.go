@@ -8,6 +8,7 @@ import (
 
 type Mapper struct {
 	app        *AppMapper
+	domain     *DomainMapper
 	service    *ServiceMapper
 	deployment *DeploymentMapper
 	regional   *RegionalDeploymentMapper
@@ -17,6 +18,7 @@ type Mapper struct {
 
 func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 	appMapper := NewAppMapper(ctx, client)
+	domainMapper := NewDomainMapper(ctx, client)
 	serviceMapper := NewServiceMapper(ctx, client, appMapper)
 	deploymentMapper := NewDeploymentMapper(ctx, client)
 	regionalMapper := NewRegionalDeploymentMapper(ctx, client)
@@ -25,6 +27,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 
 	return &Mapper{
 		app:        appMapper,
+		domain:     domainMapper,
 		service:    serviceMapper,
 		deployment: deploymentMapper,
 		regional:   regionalMapper,
@@ -35,6 +38,10 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 
 func (mapper *Mapper) App() *AppMapper {
 	return mapper.app
+}
+
+func (mapper *Mapper) Domain() *DomainMapper {
+	return mapper.domain
 }
 
 func (mapper *Mapper) Service() *ServiceMapper {

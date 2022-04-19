@@ -30,6 +30,16 @@ func FormatAppName(mapper *idmapper.Mapper, id string, full bool) string {
 	return id
 }
 
+func FormatDomainID(mapper *idmapper.Mapper, id string, full bool) string {
+	if !full {
+		sid, err := mapper.Domain().GetShortID(id)
+		if err == nil {
+			return sid
+		}
+	}
+	return id
+}
+
 func FormatServiceID(mapper *idmapper.Mapper, id string, full bool) string {
 	if !full {
 		sid, err := mapper.Service().GetShortID(id)
