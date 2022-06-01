@@ -167,6 +167,7 @@ func (h *ServiceHandler) ResolveAppArgs(val string) string {
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "", "Git branch")
+	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.String("docker-command", "", "Docker command")
@@ -298,10 +299,12 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		createGitSource := koyeb.NewGitSourceWithDefaults()
 		git, _ := flags.GetString("git")
 		branch, _ := flags.GetString("git-branch")
+		noDeployOnPush, _ := flags.GetBool("git-no-deploy-on-push")
 		createGitSource.SetRepository(git)
 		if branch != "" {
 			createGitSource.SetBranch(branch)
 		}
+		createGitSource.SetNoDeployOnPush(noDeployOnPush)
 		definition.SetGit(*createGitSource)
 		definition.Docker = nil
 	}
