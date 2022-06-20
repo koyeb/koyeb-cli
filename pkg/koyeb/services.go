@@ -124,6 +124,22 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(deleteServiceCmd)
 
+	pauseServiceCmd := &cobra.Command{
+		Use:   "pause NAME",
+		Short: "Pause service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Pause,
+	}
+	serviceCmd.AddCommand(pauseServiceCmd)
+
+	resumeServiceCmd := &cobra.Command{
+		Use:   "resume NAME",
+		Short: "Resume service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Resume,
+	}
+	serviceCmd.AddCommand(resumeServiceCmd)
+
 	return serviceCmd
 }
 
