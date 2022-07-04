@@ -202,6 +202,9 @@ koyeb apps init NAME [flags]
       --env strings                             Env
       --git string                              Git repository
       --git-branch string                       Git branch
+      --git-build-command string                Buid command
+      --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                  Run command
   -h, --help                                    help for init
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
@@ -1142,7 +1145,9 @@ Services
 * [koyeb services get](#koyeb-services-get)	 - Get service
 * [koyeb services list](#koyeb-services-list)	 - List services
 * [koyeb services logs](#koyeb-services-logs)	 - Get the service logs
+* [koyeb services pause](#koyeb-services-pause)	 - Pause service
 * [koyeb services redeploy](#koyeb-services-redeploy)	 - Redeploy service
+* [koyeb services resume](#koyeb-services-resume)	 - Resume service
 * [koyeb services update](#koyeb-services-update)	 - Update service
 
 ## koyeb services create
@@ -1164,6 +1169,9 @@ koyeb services create NAME [flags]
       --env strings                             Env
       --git string                              Git repository
       --git-branch string                       Git branch
+      --git-build-command string                Buid command
+      --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                  Run command
   -h, --help                                    help for create
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
@@ -1337,6 +1345,35 @@ koyeb services logs NAME [flags]
 
 * [koyeb services](#koyeb-services)	 - Services
 
+## koyeb services pause
+
+Pause service
+
+```
+koyeb services pause NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for pause
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+
 ## koyeb services redeploy
 
 Redeploy service
@@ -1349,6 +1386,35 @@ koyeb services redeploy NAME [flags]
 
 ```
   -h, --help   help for redeploy
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+
+## koyeb services resume
+
+Resume service
+
+```
+koyeb services resume NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for resume
 ```
 
 ### Options inherited from parent commands
@@ -1384,6 +1450,9 @@ koyeb services update NAME [flags]
       --env strings                             Env
       --git string                              Git repository
       --git-branch string                       Git branch
+      --git-build-command string                Buid command
+      --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                  Run command
   -h, --help                                    help for update
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
