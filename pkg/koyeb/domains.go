@@ -13,7 +13,7 @@ func NewDomainCmd() *cobra.Command {
 
 	domainCmd := &cobra.Command{
 		Use:               "domains ACTION",
-		Aliases:           []string{"d", "domain"},
+		Aliases:           []string{"dom", "domain"},
 		Short:             "Domains",
 		PersistentPreRunE: h.InitHandler,
 	}
