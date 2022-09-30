@@ -35,6 +35,35 @@ Koyeb CLI
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb version](#koyeb-version)	 - Get version
 
+## koyeb login
+
+Login to your Koyeb account
+
+```
+koyeb login [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for login
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+
 ## koyeb apps
 
 Apps
@@ -65,6 +94,8 @@ Apps
 * [koyeb apps get](#koyeb-apps-get)	 - Get app
 * [koyeb apps init](#koyeb-apps-init)	 - Create app and service
 * [koyeb apps list](#koyeb-apps-list)	 - List apps
+* [koyeb apps pause](#koyeb-apps-pause)	 - Pause app
+* [koyeb apps resume](#koyeb-apps-resume)	 - Resume app
 * [koyeb apps update](#koyeb-apps-update)	 - Update app
 
 ## koyeb apps create
@@ -107,8 +138,7 @@ koyeb apps delete NAME [flags]
 ### Options
 
 ```
-  -f, --force   Force delete app and services
-  -h, --help    help for delete
+  -h, --help   help for delete
 ```
 
 ### Options inherited from parent commands
@@ -258,6 +288,64 @@ koyeb apps list [flags]
 
 * [koyeb apps](#koyeb-apps)	 - Apps
 
+## koyeb apps pause
+
+Pause app
+
+```
+koyeb apps pause NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for pause
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb apps](#koyeb-apps)	 - Apps
+
+## koyeb apps resume
+
+Resume app
+
+```
+koyeb apps resume NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for resume
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb apps](#koyeb-apps)	 - Apps
+
 ## koyeb apps update
 
 Update app
@@ -287,152 +375,6 @@ koyeb apps update NAME [flags]
 
 
 * [koyeb apps](#koyeb-apps)	 - Apps
-
-## koyeb deployments
-
-Deployments
-
-### Options
-
-```
-  -h, --help   help for deployments
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb](#koyeb)	 - Koyeb CLI
-* [koyeb deployments describe](#koyeb-deployments-describe)	 - Describe deployment
-* [koyeb deployments get](#koyeb-deployments-get)	 - Get deployment
-* [koyeb deployments list](#koyeb-deployments-list)	 - List deployments
-* [koyeb deployments logs](#koyeb-deployments-logs)	 - Get deployment logs
-
-## koyeb deployments describe
-
-Describe deployment
-
-```
-koyeb deployments describe NAME [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for describe
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb deployments](#koyeb-deployments)	 - Deployments
-
-## koyeb deployments get
-
-Get deployment
-
-```
-koyeb deployments get NAME [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for get
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb deployments](#koyeb-deployments)	 - Deployments
-
-## koyeb deployments list
-
-List deployments
-
-```
-koyeb deployments list [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for list
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb deployments](#koyeb-deployments)	 - Deployments
-
-## koyeb deployments logs
-
-Get deployment logs
-
-```
-koyeb deployments logs NAME [flags]
-```
-
-### Options
-
-```
-  -h, --help          help for logs
-  -t, --type string   Type of log (runtime,build)
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb deployments](#koyeb-deployments)	 - Deployments
 
 ## koyeb domains
 
@@ -699,212 +641,6 @@ koyeb domains refresh NAME [flags]
 
 
 * [koyeb domains](#koyeb-domains)	 - Domains
-
-## koyeb instances
-
-Instances
-
-### Options
-
-```
-  -h, --help   help for instances
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb](#koyeb)	 - Koyeb CLI
-* [koyeb instances describe](#koyeb-instances-describe)	 - Describe instance
-* [koyeb instances exec](#koyeb-instances-exec)	 - Run a command in the context of an instance
-* [koyeb instances get](#koyeb-instances-get)	 - Get instance
-* [koyeb instances list](#koyeb-instances-list)	 - List instances
-* [koyeb instances logs](#koyeb-instances-logs)	 - Get instance logs
-
-## koyeb instances describe
-
-Describe instance
-
-```
-koyeb instances describe NAME [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for describe
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb instances](#koyeb-instances)	 - Instances
-
-## koyeb instances exec
-
-Run a command in the context of an instance
-
-```
-koyeb instances exec NAME CMD -- [args...] [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for exec
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb instances](#koyeb-instances)	 - Instances
-
-## koyeb instances get
-
-Get instance
-
-```
-koyeb instances get NAME [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for get
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb instances](#koyeb-instances)	 - Instances
-
-## koyeb instances list
-
-List instances
-
-```
-koyeb instances list [flags]
-```
-
-### Options
-
-```
-      --app string       Filter on App id or name
-  -h, --help             help for list
-      --service string   Filter on Service id or name
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb instances](#koyeb-instances)	 - Instances
-
-## koyeb instances logs
-
-Get instance logs
-
-```
-koyeb instances logs NAME [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for logs
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb instances](#koyeb-instances)	 - Instances
-
-## koyeb login
-
-Login to your Koyeb account
-
-```
-koyeb login [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for login
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb](#koyeb)	 - Koyeb CLI
 
 ## koyeb secrets
 
@@ -1476,6 +1212,329 @@ koyeb services update NAME [flags]
 
 
 * [koyeb services](#koyeb-services)	 - Services
+
+## koyeb deployments
+
+Deployments
+
+### Options
+
+```
+  -h, --help   help for deployments
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb deployments describe](#koyeb-deployments-describe)	 - Describe deployment
+* [koyeb deployments get](#koyeb-deployments-get)	 - Get deployment
+* [koyeb deployments list](#koyeb-deployments-list)	 - List deployments
+* [koyeb deployments logs](#koyeb-deployments-logs)	 - Get deployment logs
+
+## koyeb deployments describe
+
+Describe deployment
+
+```
+koyeb deployments describe NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for describe
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb deployments](#koyeb-deployments)	 - Deployments
+
+## koyeb deployments get
+
+Get deployment
+
+```
+koyeb deployments get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb deployments](#koyeb-deployments)	 - Deployments
+
+## koyeb deployments list
+
+List deployments
+
+```
+koyeb deployments list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb deployments](#koyeb-deployments)	 - Deployments
+
+## koyeb deployments logs
+
+Get deployment logs
+
+```
+koyeb deployments logs NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help          help for logs
+  -t, --type string   Type of log (runtime,build)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb deployments](#koyeb-deployments)	 - Deployments
+
+## koyeb instances
+
+Instances
+
+### Options
+
+```
+  -h, --help   help for instances
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb instances describe](#koyeb-instances-describe)	 - Describe instance
+* [koyeb instances exec](#koyeb-instances-exec)	 - Run a command in the context of an instance
+* [koyeb instances get](#koyeb-instances-get)	 - Get instance
+* [koyeb instances list](#koyeb-instances-list)	 - List instances
+* [koyeb instances logs](#koyeb-instances-logs)	 - Get instance logs
+
+## koyeb instances describe
+
+Describe instance
+
+```
+koyeb instances describe NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for describe
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb instances](#koyeb-instances)	 - Instances
+
+## koyeb instances exec
+
+Run a command in the context of an instance
+
+```
+koyeb instances exec NAME CMD -- [args...] [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for exec
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb instances](#koyeb-instances)	 - Instances
+
+## koyeb instances get
+
+Get instance
+
+```
+koyeb instances get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb instances](#koyeb-instances)	 - Instances
+
+## koyeb instances list
+
+List instances
+
+```
+koyeb instances list [flags]
+```
+
+### Options
+
+```
+      --app string       Filter on App id or name
+  -h, --help             help for list
+      --service string   Filter on Service id or name
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb instances](#koyeb-instances)	 - Instances
+
+## koyeb instances logs
+
+Get instance logs
+
+```
+koyeb instances logs NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for logs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb instances](#koyeb-instances)	 - Instances
 
 ## koyeb version
 
