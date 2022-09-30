@@ -250,37 +250,35 @@ func (ts *treeStringer) rootNode(an *artNode) {
 	ts.baseNode(an, 0, 0, 0)
 }
 
-//
 // debugNode returns adaptive radix tree in the human readable format:
 //
-//  Output:
-//  ─── Node4 (0xc00008a240)
-//      prefix(0): [0 0 0 0 0 0 0 0 0 0][··········]
-//      keys: [65 97 · ·] [Aa··]
-//      children(2): [0xc00008a210 0xc00008a270 <nil> <nil> <nil>]
-//      ├── Leaf (0xc00008a210)
-//      │   key(1): [65] [A]
-//      │   val: A
-//      │
-//      ├── Node4 (0xc00008a270)
-//      │   prefix(0): [0 0 0 0 0 0 0 0 0 0][··········]
-//      │   keys: [97 · · ·] [a···]
-//      │   children(1): [0xc00008a260 <nil> <nil> <nil> 0xc00008a230]
-//      │   ├── Leaf (0xc00008a260)
-//      │   │   key(2): [97 97] [aa]
-//      │   │   val: aa
-//      │   │
-//      │   ├── nil
-//      │   ├── nil
-//      │   ├── nil
-//      │   └── Leaf (0xc00008a230)
-//      │       key(1): [97] [a]
-//      │       val: a
-//      │
-//      ├── nil
-//      ├── nil
-//      └── nil
-//
+//	Output:
+//	─── Node4 (0xc00008a240)
+//	    prefix(0): [0 0 0 0 0 0 0 0 0 0][··········]
+//	    keys: [65 97 · ·] [Aa··]
+//	    children(2): [0xc00008a210 0xc00008a270 <nil> <nil> <nil>]
+//	    ├── Leaf (0xc00008a210)
+//	    │   key(1): [65] [A]
+//	    │   val: A
+//	    │
+//	    ├── Node4 (0xc00008a270)
+//	    │   prefix(0): [0 0 0 0 0 0 0 0 0 0][··········]
+//	    │   keys: [97 · · ·] [a···]
+//	    │   children(1): [0xc00008a260 <nil> <nil> <nil> 0xc00008a230]
+//	    │   ├── Leaf (0xc00008a260)
+//	    │   │   key(2): [97 97] [aa]
+//	    │   │   val: aa
+//	    │   │
+//	    │   ├── nil
+//	    │   ├── nil
+//	    │   ├── nil
+//	    │   └── Leaf (0xc00008a230)
+//	    │       key(1): [97] [a]
+//	    │       val: a
+//	    │
+//	    ├── nil
+//	    ├── nil
+//	    └── nil
 func debugNode(root *artNode) string {
 	ts := &treeStringer{make([]depthStorage, 4096), bytes.NewBufferString("")}
 	ts.rootNode(root)
