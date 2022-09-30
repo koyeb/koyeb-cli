@@ -97,7 +97,22 @@ func NewAppCmd() *cobra.Command {
 		RunE:  h.Delete,
 	}
 	appCmd.AddCommand(deleteAppCmd)
-	deleteAppCmd.Flags().BoolP("force", "f", false, "Force delete app and services")
+
+	pauseServiceCmd := &cobra.Command{
+		Use:   "pause NAME",
+		Short: "Pause app",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Pause,
+	}
+	appCmd.AddCommand(pauseServiceCmd)
+
+	resumeServiceCmd := &cobra.Command{
+		Use:   "resume NAME",
+		Short: "Resume app",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Resume,
+	}
+	appCmd.AddCommand(resumeServiceCmd)
 
 	return appCmd
 }
