@@ -65,7 +65,7 @@ func (r *DescribeServiceReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *DescribeServiceReply) Headers() []string {
-	return []string{"id", "app", "name", "version", "status", "created_at", "updated_at"}
+	return []string{"id", "app", "name", "status", "created_at", "updated_at"}
 }
 
 func (r *DescribeServiceReply) Fields() []map[string]string {
@@ -74,7 +74,6 @@ func (r *DescribeServiceReply) Fields() []map[string]string {
 		"id":         renderer.FormatServiceID(r.mapper, item.GetId(), r.full),
 		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"name":       item.GetName(),
-		"version":    item.GetVersion(),
 		"status":     formatServiceStatus(item.GetStatus()),
 		"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
