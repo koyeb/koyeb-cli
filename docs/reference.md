@@ -1237,10 +1237,40 @@ Deployments
 
 
 * [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb deployments cancel](#koyeb-deployments-cancel)	 - Cancel deployment
 * [koyeb deployments describe](#koyeb-deployments-describe)	 - Describe deployment
 * [koyeb deployments get](#koyeb-deployments-get)	 - Get deployment
 * [koyeb deployments list](#koyeb-deployments-list)	 - List deployments
 * [koyeb deployments logs](#koyeb-deployments-logs)	 - Get deployment logs
+
+## koyeb deployments cancel
+
+Cancel deployment
+
+```
+koyeb deployments cancel NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for cancel
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb deployments](#koyeb-deployments)	 - Deployments
 
 ## koyeb deployments describe
 
