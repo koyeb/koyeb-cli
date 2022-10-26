@@ -41,6 +41,14 @@ func NewDeploymentCmd() *cobra.Command {
 	}
 	deploymentCmd.AddCommand(describeDeploymentCmd)
 
+	cancelDeploymentCmd := &cobra.Command{
+		Use:   "cancel NAME",
+		Short: "Cancel deployment",
+		Args:  cobra.ExactArgs(1),
+		RunE:  h.Cancel,
+	}
+	deploymentCmd.AddCommand(cancelDeploymentCmd)
+
 	logDeploymentCmd := &cobra.Command{
 		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},
