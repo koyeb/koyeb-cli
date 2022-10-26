@@ -240,7 +240,7 @@ koyeb apps init NAME [flags]
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
       --ports strings                           Ports (default [80:http])
-      --regions strings                         Regions (default [par])
+      --regions strings                         Regions (default [fra])
       --routes strings                          Ports (default [/:80])
 ```
 
@@ -913,7 +913,7 @@ koyeb services create NAME [flags]
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
       --ports strings                           Ports (default [80:http])
-      --regions strings                         Regions (default [par])
+      --regions strings                         Regions (default [fra])
       --routes strings                          Ports (default [/:80])
 ```
 
@@ -1194,7 +1194,7 @@ koyeb services update NAME [flags]
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
       --ports strings                           Ports (default [80:http])
-      --regions strings                         Regions (default [par])
+      --regions strings                         Regions (default [fra])
       --routes strings                          Ports (default [/:80])
 ```
 

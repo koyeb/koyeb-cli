@@ -190,7 +190,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker args")
-	flags.StringSlice("regions", []string{"par"}, "Regions")
+	flags.StringSlice("regions", []string{"fra"}, "Regions")
 	flags.StringSlice("env", []string{}, "Env")
 	flags.StringSlice("routes", []string{"/:80"}, "Ports")
 	flags.StringSlice("ports", []string{"80:http"}, "Ports")
