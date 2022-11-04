@@ -137,7 +137,11 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatal("Configuration not found, use `koyeb login` to create a new one, or use `--config`.")
+			if viper.GetString("token") != "" {
+				log.Debug("Configuration not found, using token from cmdline.")
+			} else {
+				log.Fatal("Configuration not found, use `koyeb login` to create a new one, or use `--config`.")
+			}
 		} else if _, ok := err.(*fs.PathError); ok {
 			log.Fatal("Configuration not found, use `koyeb login` to create a new one.")
 		} else {
