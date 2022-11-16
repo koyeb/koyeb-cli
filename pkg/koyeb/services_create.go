@@ -22,9 +22,20 @@ func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService
 
 	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
 
+	wait := GetBoolFlags(cmd, "wait")
+	if wait {
+		watchDeployment(h, res.Service.GetLatestDeploymentId())
+	}
+
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+
+	gRes, gResp, err := h.client.ServicesApi.GetService(h.ctx, res.Service.GetId()).Execute()
+	if err != nil {
+		fatalApiError(err, gResp)
+	}
+
+	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: gRes.Service}, full)
 
 	return renderer.NewDescribeRenderer(getServiceReply).Render(output)
 }
