@@ -225,6 +225,7 @@ koyeb apps init NAME [flags]
 ### Options
 
 ```
+      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -898,6 +899,7 @@ koyeb services create NAME [flags]
 
 ```
   -a, --app string                              App
+      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -1179,6 +1181,7 @@ koyeb services update NAME [flags]
 ### Options
 
 ```
+      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command

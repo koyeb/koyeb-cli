@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -197,6 +198,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("instance-type", "nano", "Instance type")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
+	flags.StringSlice("checks", []string{""}, "HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)")
 }
 
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
@@ -290,6 +292,46 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
 		definition.SetScalings([]koyeb.DeploymentScaling{*scaling})
+	}
+
+	if flags.Lookup("checks").Changed {
+		checks, _ := flags.GetStringSlice("checks")
+		healthchecks := []koyeb.DeploymentHealthCheck{}
+
+		for _, c := range checks {
+			healthcheck := koyeb.NewDeploymentHealthCheck()
+			components := strings.Split(c, ":")
+			componentsCount := len(components)
+			if componentsCount < 2 || componentsCount > 3 {
+				return fmt.Errorf(`Invalid checks: "%s", must be either "<port>:http:<path>" or "<port>:tcp"`, c)
+			}
+
+			healthcheckType := components[1]
+			portStr := components[0]
+			port, err := strconv.Atoi(portStr)
+			if err != nil {
+				return errors.Errorf(`Invalid port: "%s"`, portStr)
+			}
+
+			switch healthcheckType {
+			case "http":
+				if componentsCount < 3 {
+					return errors.New("Missing path definition for http check")
+				}
+				HTTPHealthCheck := koyeb.NewHTTPHealthCheck()
+				HTTPHealthCheck.Port = koyeb.PtrInt64(int64(port))
+				HTTPHealthCheck.Path = koyeb.PtrString(components[2])
+				healthcheck.SetHttp(*HTTPHealthCheck)
+			case "tcp":
+				TCPHealthCheck := koyeb.NewTCPHealthCheck()
+				TCPHealthCheck.Port = koyeb.PtrInt64(int64(port))
+				healthcheck.SetTcp(*TCPHealthCheck)
+			default:
+				return fmt.Errorf(`Invalid healthcheck: "%s", must be either "http" or "tcp"`, healthcheckType)
+			}
+			healthchecks = append(healthchecks, *healthcheck)
+		}
+		definition.SetHealthChecks(healthchecks)
 	}
 
 	// Docker
