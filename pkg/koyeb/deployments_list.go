@@ -60,7 +60,7 @@ func (r *ListDeploymentsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListDeploymentsReply) Headers() []string {
-	return []string{"id", "service", "status", "messages", "regions", "created_at"}
+	return []string{"id", "service", "type", "status", "messages", "regions", "created_at"}
 }
 
 func (r *ListDeploymentsReply) Fields() []map[string]string {
@@ -71,6 +71,7 @@ func (r *ListDeploymentsReply) Fields() []map[string]string {
 		fields := map[string]string{
 			"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
 			"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+			"type":       formatDeploymentType(item.Definition.GetType()),
 			"status":     formatDeploymentStatus(item.GetStatus()),
 			"messages":   formatDeploymentMessages(item.GetMessages(), 80),
 			"regions":    renderRegions(item.Definition.Regions),
