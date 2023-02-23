@@ -182,6 +182,7 @@ func (h *ServiceHandler) ResolveAppArgs(val string) string {
 }
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
+	flags.String("type", "WEB", `Service type, either "WEB" or "WORKER"`)
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "", "Git branch")
 	flags.String("git-build-command", "", "Buid command")
@@ -193,15 +194,29 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.StringSlice("docker-args", []string{}, "Docker args")
 	flags.StringSlice("regions", []string{"fra"}, "Regions")
 	flags.StringSlice("env", []string{}, "Env")
-	flags.StringSlice("routes", []string{"/:80"}, "Ports")
-	flags.StringSlice("ports", []string{"80:http"}, "Ports")
+	flags.StringSlice("routes", []string{"/:80"}, `Routes - Available for "WEB" service only`)
+	flags.StringSlice("ports", []string{"80:http"}, `Ports - Available for "WEB" service only`)
 	flags.String("instance-type", "nano", "Instance type")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
-	flags.StringSlice("checks", []string{""}, "HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)")
+	flags.StringSlice("checks", []string{""}, `HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only`)
 }
 
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
+	if useDefault || flags.Lookup("type").Changed {
+		deploymentTypeStr, _ := flags.GetString("type")
+		deploymentType, err := koyeb.NewDeploymentDefinitionTypeFromValue(deploymentTypeStr)
+		if err != nil {
+			return errors.Errorf("%s is not a valid deployment type", deploymentTypeStr)
+		}
+		definition.SetType(*deploymentType)
+	}
+
+	if definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WORKER {
+		definition.Ports = nil
+		definition.Routes = nil
+		definition.HealthChecks = nil
+	}
 
 	if useDefault || flags.Lookup("env").Changed {
 		env, _ := flags.GetStringSlice("env")
@@ -235,7 +250,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		definition.SetRegions(regions)
 	}
 
-	if useDefault || flags.Lookup("ports").Changed {
+	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("ports").Changed {
 		port, _ := flags.GetStringSlice("ports")
 		ports := []koyeb.DeploymentPort{}
 		for _, p := range port {
@@ -260,7 +275,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		definition.SetPorts(ports)
 	}
 
-	if useDefault || flags.Lookup("routes").Changed {
+	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("routes").Changed {
 		route, _ := flags.GetStringSlice("routes")
 		routes := []koyeb.DeploymentRoute{}
 		for _, p := range route {
