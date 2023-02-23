@@ -225,7 +225,7 @@ koyeb apps init NAME [flags]
 ### Options
 
 ```
-      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)
+      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -240,9 +240,10 @@ koyeb apps init NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Ports (default [80:http])
+      --ports strings                           Ports - Available for "WEB" service only (default [80:http])
       --regions strings                         Regions (default [fra])
-      --routes strings                          Ports (default [/:80])
+      --routes strings                          Routes - Available for "WEB" service only (default [/:80])
+      --type string                             Service type, either "WEB" or "WORKER" (default "WEB")
 ```
 
 ### Options inherited from parent commands
@@ -899,7 +900,7 @@ koyeb services create NAME [flags]
 
 ```
   -a, --app string                              App
-      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)
+      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -914,9 +915,10 @@ koyeb services create NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Ports (default [80:http])
+      --ports strings                           Ports - Available for "WEB" service only (default [80:http])
       --regions strings                         Regions (default [fra])
-      --routes strings                          Ports (default [/:80])
+      --routes strings                          Routes - Available for "WEB" service only (default [/:80])
+      --type string                             Service type, either "WEB" or "WORKER" (default "WEB")
 ```
 
 ### Options inherited from parent commands
@@ -1181,7 +1183,7 @@ koyeb services update NAME [flags]
 ### Options
 
 ```
-      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp)
+      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -1196,9 +1198,10 @@ koyeb services update NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Ports (default [80:http])
+      --ports strings                           Ports - Available for "WEB" service only (default [80:http])
       --regions strings                         Regions (default [fra])
-      --routes strings                          Ports (default [/:80])
+      --routes strings                          Routes - Available for "WEB" service only (default [/:80])
+      --type string                             Service type, either "WEB" or "WORKER" (default "WEB")
 ```
 
 ### Options inherited from parent commands
