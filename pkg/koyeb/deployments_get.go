@@ -46,7 +46,7 @@ func (r *GetDeploymentReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetDeploymentReply) Headers() []string {
-	return []string{"id", "service", "status", "messages", "regions", "created_at"}
+	return []string{"id", "service", "type", "status", "messages", "regions", "created_at"}
 }
 
 func (r *GetDeploymentReply) Fields() []map[string]string {
@@ -54,6 +54,7 @@ func (r *GetDeploymentReply) Fields() []map[string]string {
 	fields := map[string]string{
 		"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+		"type":       formatDeploymentType(item.Definition.GetType()),
 		"status":     formatDeploymentStatus(item.GetStatus()),
 		"messages":   formatDeploymentMessages(item.GetMessages(), 0),
 		"regions":    renderRegions(item.Definition.Regions),
@@ -62,6 +63,10 @@ func (r *GetDeploymentReply) Fields() []map[string]string {
 
 	resp := []map[string]string{fields}
 	return resp
+}
+
+func formatDeploymentType(dt koyeb.DeploymentDefinitionType) string {
+	return string(dt)
 }
 
 func formatDeploymentStatus(ds koyeb.DeploymentStatus) string {
