@@ -45,7 +45,7 @@ Generate an API token and run `koyeb login` to create a new configuration file.
 ```shell
 ➜ koyeb login
 ? Do you want to create a new configuration file in (/Users/kbot/.koyeb.yaml)? [y/N]
-✗ Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/profile ): █****************************************************************
+✗ Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/api ): █****************************************************************
 INFO[0006] Creating new configuration in /Users/kbot/.koyeb.yaml
 ```
 
