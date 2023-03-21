@@ -188,6 +188,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("git-build-command", "", "Buid command")
 	flags.String("git-run-command", "", "Run command")
 	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
+	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.String("docker-command", "", "Docker command")
@@ -377,6 +378,8 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		buildCommand, _ := flags.GetString("git-build-command")
 		runCommand, _ := flags.GetString("git-run-command")
 		noDeployOnPush, _ := flags.GetBool("git-no-deploy-on-push")
+		workdir, _ := flags.GetString("git-workdir")
+
 		createGitSource.SetRepository(git)
 		if branch != "" {
 			createGitSource.SetBranch(branch)
@@ -391,6 +394,8 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		}
 
 		createGitSource.SetNoDeployOnPush(noDeployOnPush)
+		createGitSource.SetWorkdir(workdir)
+
 		definition.SetGit(*createGitSource)
 		definition.Docker = nil
 	}

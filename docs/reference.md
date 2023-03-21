@@ -236,6 +236,7 @@ koyeb apps init NAME [flags]
       --git-build-command string                Buid command
       --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
       --git-run-command string                  Run command
+      --git-workdir string                      Path to the sub-directory containing the code to build and deploy
   -h, --help                                    help for init
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
@@ -911,6 +912,7 @@ koyeb services create NAME [flags]
       --git-build-command string                Buid command
       --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
       --git-run-command string                  Run command
+      --git-workdir string                      Path to the sub-directory containing the code to build and deploy
   -h, --help                                    help for create
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
@@ -1194,6 +1196,7 @@ koyeb services update NAME [flags]
       --git-build-command string                Buid command
       --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
       --git-run-command string                  Run command
+      --git-workdir string                      Path to the sub-directory containing the code to build and deploy
   -h, --help                                    help for update
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
