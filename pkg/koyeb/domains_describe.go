@@ -17,7 +17,7 @@ func (h *DomainHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err, resp)
 	}
 
-	describeDomainsReply := NewDescribeDomainReply(h.mapper, &getDomainRes, full)
+	describeDomainsReply := NewDescribeDomainReply(h.mapper, getDomainRes, full)
 	replies = append(replies, describeDomainsReply)
 
 	// Grab attached app
@@ -28,7 +28,7 @@ func (h *DomainHandler) Describe(cmd *cobra.Command, args []string) error {
 			fatalApiError(err, resp)
 		}
 
-		describeAppsReply := NewDescribeAppReply(h.mapper, &getAppRes, full)
+		describeAppsReply := NewDescribeAppReply(h.mapper, getAppRes, full)
 		replies = append(replies, describeAppsReply)
 	}
 
@@ -39,7 +39,7 @@ func (h *DomainHandler) Describe(cmd *cobra.Command, args []string) error {
 			fatalApiError(err, resp)
 		}
 
-		listServicesReply := NewListServicesReply(h.mapper, &resListServices, full)
+		listServicesReply := NewListServicesReply(h.mapper, resListServices, full)
 		replies = append(replies, listServicesReply)
 	}
 

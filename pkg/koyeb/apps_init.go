@@ -10,19 +10,19 @@ import (
 func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
 	uid := uuid.Must(uuid.NewV4())
 	createService.SetAppId(uid.String())
-	_, resp, err := h.client.ServicesApi.CreateService(h.ctx).DryRun(true).Body(*createService).Execute()
+	_, resp, err := h.client.ServicesApi.CreateService(h.ctx).DryRun(true).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	createApp.SetName(args[0])
-	res, resp, err := h.client.AppsApi.CreateApp(h.ctx).Body(*createApp).Execute()
+	res, resp, err := h.client.AppsApi.CreateApp(h.ctx).App(*createApp).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 	createService.SetAppId(res.App.GetId())
 
-	serviceRes, resp, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
+	serviceRes, resp, err := h.client.ServicesApi.CreateService(h.ctx).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

@@ -38,10 +38,10 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	describeDeploymentsReply := NewDescribeDeploymentReply(h.mapper, &res, full)
+	describeDeploymentsReply := NewDescribeDeploymentReply(h.mapper, res, full)
 	defDeployment := renderer.NewGenericRenderer("Definition", res.Deployment.Definition)
-	listInstancesReply := NewListInstancesReply(h.mapper, &instancesRes, full)
-	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(h.mapper, &regionalRes, full)
+	listInstancesReply := NewListInstancesReply(h.mapper, instancesRes, full)
+	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(h.mapper, regionalRes, full)
 
 	return renderer.
 		NewMultiRenderer(

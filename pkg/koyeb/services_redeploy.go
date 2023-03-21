@@ -8,7 +8,7 @@ import (
 
 func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
 	redeployBody := *koyeb.NewRedeployRequestInfoWithDefaults()
-	_, resp, err := h.client.ServicesApi.ReDeploy(h.ctx, h.ResolveServiceArgs(args[0])).Body(redeployBody).Execute()
+	_, resp, err := h.client.ServicesApi.ReDeploy(h.ctx, h.ResolveServiceArgs(args[0])).Info(redeployBody).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

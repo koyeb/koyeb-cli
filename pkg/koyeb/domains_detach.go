@@ -14,7 +14,7 @@ func (h *DomainHandler) Detach(cmd *cobra.Command, args []string) error {
 
 	updateDomainReq := koyeb.NewUpdateDomainWithDefaults()
 	updateDomainReq.SetAppId("")
-	res, resp, err := h.client.DomainsApi.UpdateDomain(h.ctx, domainID).Body(*updateDomainReq).Execute()
+	res, resp, err := h.client.DomainsApi.UpdateDomain(h.ctx, domainID).Domain(*updateDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

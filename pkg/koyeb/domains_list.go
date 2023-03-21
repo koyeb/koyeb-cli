@@ -35,7 +35,7 @@ func (h *DomainHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listDomainsReply := NewListDomainsReply(h.mapper, &koyeb.ListDomainsReply{Domains: &list}, full)
+	listDomainsReply := NewListDomainsReply(h.mapper, &koyeb.ListDomainsReply{Domains: list}, full)
 
 	return renderer.NewListRenderer(listDomainsReply).Render(output)
 }

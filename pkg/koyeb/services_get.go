@@ -15,7 +15,7 @@ func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getServiceReply := NewGetServiceReply(h.mapper, &res, full)
+	getServiceReply := NewGetServiceReply(h.mapper, res, full)
 
 	return renderer.NewItemRenderer(getServiceReply).Render(output)
 }

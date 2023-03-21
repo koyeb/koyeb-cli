@@ -18,7 +18,7 @@ func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getAppsReply := NewGetAppReply(h.mapper, &res, full)
+	getAppsReply := NewGetAppReply(h.mapper, res, full)
 
 	return renderer.NewItemRenderer(getAppsReply).Render(output)
 }

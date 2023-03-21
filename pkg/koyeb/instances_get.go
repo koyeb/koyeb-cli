@@ -17,7 +17,7 @@ func (h *InstanceHandler) Get(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getInstancesReply := NewGetInstanceReply(h.mapper, &res, full)
+	getInstancesReply := NewGetInstanceReply(h.mapper, res, full)
 
 	return renderer.NewItemRenderer(getInstancesReply).Render(output)
 }

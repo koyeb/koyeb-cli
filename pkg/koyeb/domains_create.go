@@ -21,7 +21,7 @@ func (h *DomainHandler) Create(cmd *cobra.Command, args []string) error {
 		createDomainReq.SetAppId(appID)
 	}
 
-	res, resp, err := h.client.DomainsApi.CreateDomain(h.ctx).Body(*createDomainReq).Execute()
+	res, resp, err := h.client.DomainsApi.CreateDomain(h.ctx).Domain(*createDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

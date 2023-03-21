@@ -19,8 +19,8 @@ func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	describeAppsReply := NewDescribeAppReply(h.mapper, &res, full)
-	listServicesReply := NewListServicesReply(h.mapper, &resListServices, full)
+	describeAppsReply := NewDescribeAppReply(h.mapper, res, full)
+	listServicesReply := NewListServicesReply(h.mapper, resListServices, full)
 
 	return renderer.NewDescribeRenderer(describeAppsReply, listServicesReply).Render(output)
 }
