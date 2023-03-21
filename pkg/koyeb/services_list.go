@@ -41,7 +41,7 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listServicesReply := NewListServicesReply(h.mapper, &koyeb.ListServicesReply{Services: &list}, full)
+	listServicesReply := NewListServicesReply(h.mapper, &koyeb.ListServicesReply{Services: list}, full)
 
 	return renderer.NewListRenderer(listServicesReply).Render(output)
 }

@@ -32,7 +32,7 @@ func (h *DeploymentHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listDeploymentsReply := NewListDeploymentsReply(h.mapper, &koyeb.ListDeploymentsReply{Deployments: &list}, full)
+	listDeploymentsReply := NewListDeploymentsReply(h.mapper, &koyeb.ListDeploymentsReply{Deployments: list}, full)
 
 	return renderer.NewListRenderer(listDeploymentsReply).Render(output)
 }

@@ -32,7 +32,7 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listAppsReply := NewListAppsReply(h.mapper, &koyeb.ListAppsReply{Apps: &list}, full)
+	listAppsReply := NewListAppsReply(h.mapper, &koyeb.ListAppsReply{Apps: list}, full)
 
 	return renderer.NewListRenderer(listAppsReply).Render(output)
 }

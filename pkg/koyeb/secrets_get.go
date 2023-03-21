@@ -17,7 +17,7 @@ func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getSecretsReply := NewGetSecretReply(h.mapper, &res, full)
+	getSecretsReply := NewGetSecretReply(h.mapper, res, full)
 
 	return renderer.NewItemRenderer(getSecretsReply).Render(output)
 

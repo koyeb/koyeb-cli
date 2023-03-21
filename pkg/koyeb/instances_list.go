@@ -32,7 +32,7 @@ func (h *InstanceHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listInstancesReply := NewListInstancesReply(h.mapper, &koyeb.ListInstancesReply{Instances: &list}, full)
+	listInstancesReply := NewListInstancesReply(h.mapper, &koyeb.ListInstancesReply{Instances: list}, full)
 
 	return renderer.NewListRenderer(listInstancesReply).Render(output)
 }

@@ -35,9 +35,9 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	getServiceReply := NewGetServiceReply(h.mapper, &res, full)
-	listInstancesReply := NewListInstancesReply(h.mapper, &instancesRes, full)
-	listDeploymentsReply := NewListDeploymentsReply(h.mapper, &deploymentsRes, full)
+	getServiceReply := NewGetServiceReply(h.mapper, res, full)
+	listInstancesReply := NewListInstancesReply(h.mapper, instancesRes, full)
+	listDeploymentsReply := NewListDeploymentsReply(h.mapper, deploymentsRes, full)
 
 	return renderer.NewDescribeRenderer(getServiceReply, listDeploymentsReply, listInstancesReply).Render(output)
 }

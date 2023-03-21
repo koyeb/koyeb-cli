@@ -15,7 +15,7 @@ func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService
 	}
 
 	createService.SetAppId(resApp.App.GetId())
-	res, resp, err := h.client.ServicesApi.CreateService(h.ctx).Body(*createService).Execute()
+	res, resp, err := h.client.ServicesApi.CreateService(h.ctx).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

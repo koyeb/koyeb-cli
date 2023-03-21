@@ -15,7 +15,7 @@ func (h *InstanceHandler) Describe(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	describeInstancesReply := NewDescribeInstanceReply(h.mapper, &res, full)
+	describeInstancesReply := NewDescribeInstanceReply(h.mapper, res, full)
 
 	return renderer.NewDescribeRenderer(describeInstancesReply).Render(output)
 }

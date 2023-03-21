@@ -32,7 +32,7 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listSecretsReply := NewListSecretsReply(h.mapper, &koyeb.ListSecretsReply{Secrets: &list}, full)
+	listSecretsReply := NewListSecretsReply(h.mapper, &koyeb.ListSecretsReply{Secrets: list}, full)
 
 	return renderer.NewListRenderer(listSecretsReply).Render(output)
 }

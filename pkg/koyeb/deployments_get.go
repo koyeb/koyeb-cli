@@ -18,7 +18,7 @@ func (h *DeploymentHandler) Get(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getDeploymentsReply := NewGetDeploymentReply(h.mapper, &res, full)
+	getDeploymentsReply := NewGetDeploymentReply(h.mapper, res, full)
 
 	return renderer.NewItemRenderer(getDeploymentsReply).Render(output)
 }
@@ -81,10 +81,10 @@ func formatDeploymentMessages(messages []string, max int) string {
 	return fmt.Sprint(concat[:max], "...")
 }
 
-func renderRegions(regions *[]string) string {
-	if regions == nil {
+func renderRegions(regions []string) string {
+	if len(regions) == 0 {
 		return "-"
 	}
 
-	return strings.Join(*regions, ",")
+	return strings.Join(regions, ",")
 }

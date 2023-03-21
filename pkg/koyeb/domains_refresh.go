@@ -19,7 +19,7 @@ func (h *DomainHandler) Refresh(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getDomainsReply := NewGetDomainReply(h.mapper, &res, full)
+	getDomainsReply := NewGetDomainReply(h.mapper, res, full)
 
 	return renderer.NewItemRenderer(getDomainsReply).Render(output)
 }

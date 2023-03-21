@@ -20,7 +20,7 @@ func (h *DomainHandler) Attach(cmd *cobra.Command, args []string) error {
 	updateDomainReq := koyeb.NewUpdateDomainWithDefaults()
 	updateDomainReq.SetAppId(appID)
 
-	_, resp, err := h.client.DomainsApi.UpdateDomain(h.ctx, domainID).Body(*updateDomainReq).Execute()
+	_, resp, err := h.client.DomainsApi.UpdateDomain(h.ctx, domainID).Domain(*updateDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -33,6 +33,6 @@ func (h *DomainHandler) Attach(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	getAppReply := NewGetAppReply(h.mapper, &res, full)
+	getAppReply := NewGetAppReply(h.mapper, res, full)
 	return renderer.NewDescribeItemRenderer(getAppReply).Render(output)
 }

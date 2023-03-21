@@ -15,7 +15,7 @@ func (h *SecretHandler) Describe(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getSecretsReply := NewDescribeSecretReply(h.mapper, &res, full)
+	getSecretsReply := NewDescribeSecretReply(h.mapper, res, full)
 
 	return renderer.NewDescribeRenderer(getSecretsReply).Render(output)
 
