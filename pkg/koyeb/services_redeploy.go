@@ -7,8 +7,12 @@ import (
 )
 
 func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
+	useCache := GetBoolFlags(cmd, "use-cache")
+
 	redeployBody := *koyeb.NewRedeployRequestInfoWithDefaults()
+	redeployBody.UseCache = &useCache
 	_, resp, err := h.client.ServicesApi.ReDeploy(h.ctx, h.ResolveServiceArgs(args[0])).Info(redeployBody).Execute()
+
 	if err != nil {
 		fatalApiError(err, resp)
 	}

@@ -116,6 +116,7 @@ func NewServiceCmd() *cobra.Command {
 		RunE:  h.ReDeploy,
 	}
 	serviceCmd.AddCommand(redeployServiceCmd)
+	redeployServiceCmd.Flags().Bool("use-cache", false, "Use cache to redeploy")
 
 	deleteServiceCmd := &cobra.Command{
 		Use:   "delete NAME",
