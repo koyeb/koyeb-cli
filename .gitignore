@@ -17,4 +17,4 @@ build_output
 dist
 
 vendor/
-koyeb
+/koyeb
