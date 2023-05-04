@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	termutil "github.com/andrew-d/go-termutil"
 	"github.com/manifoldco/promptui"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/term"
 )
 
 func Login(cmd *cobra.Command, args []string) error {
@@ -27,7 +27,7 @@ func Login(cmd *cobra.Command, args []string) error {
 	}
 	viper.SetConfigFile(configPath)
 
-	if !termutil.Isatty(os.Stdin.Fd()) {
+	if !term.Isatty(os.Stdin.Fd()) {
 		log.Fatalf("Unable to read from stdin, please launch the command in interactive mode")
 	}
 
