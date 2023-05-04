@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	termutil "github.com/andrew-d/go-termutil"
 	"github.com/manifoldco/promptui"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +26,10 @@ func Login(cmd *cobra.Command, args []string) error {
 		configPath = home + "/.koyeb.yaml"
 	}
 	viper.SetConfigFile(configPath)
+
+	if !termutil.Isatty(os.Stdin.Fd()) {
+		log.Fatalf("Unable to read from stdin, please launch the command in interactive mode")
+	}
 
 	writeFileMessage := fmt.Sprintf("Do you want to create a new configuration file in (%s)", configPath)
 	if _, err := os.Stat(configPath); !errors.Is(err, os.ErrNotExist) {
