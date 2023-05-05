@@ -27,7 +27,7 @@ func Login(cmd *cobra.Command, args []string) error {
 	}
 	viper.SetConfigFile(configPath)
 
-	if !term.Isatty(os.Stdin.Fd()) {
+	if !term.IsTerminal(int(os.Stdin.Fd())) {
 		log.Fatalf("Unable to read from stdin, please launch the command in interactive mode")
 	}
 
