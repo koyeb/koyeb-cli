@@ -61,6 +61,16 @@ func genericArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func isHelpCalled(cmd *cobra.Command) bool {
+	for _, subcmd := range cmd.Commands() {
+		if subcmd.Name() == "help" {
+			return subcmd.CalledAs() != ""
+		}
+	}
+
+	return false
+}
+
 func GetRootCmd() *cobra.Command {
 	return rootCmd
 }
@@ -131,7 +141,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("koyeb")
 
-	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() {
+	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() || isHelpCalled(rootCmd) {
 		return
 	}
 
