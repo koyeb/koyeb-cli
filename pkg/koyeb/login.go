@@ -66,6 +66,7 @@ func Login(cmd *cobra.Command, args []string) error {
 	viper.Set("token", result)
 
 	viper.SetConfigType("yaml")
+	viper.SetConfigPermissions(os.FileMode(0o600))
 	err = viper.WriteConfig()
 	if err != nil {
 		er(err)
