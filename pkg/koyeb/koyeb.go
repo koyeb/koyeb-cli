@@ -71,6 +71,11 @@ func isHelpCalled(cmd *cobra.Command) bool {
 	return false
 }
 
+func skipConfigLoading(cmd *cobra.Command) bool {
+	return "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() ||
+		"" != completionCmd.CalledAs() || isHelpCalled(rootCmd)
+}
+
 func GetRootCmd() *cobra.Command {
 	return rootCmd
 }
@@ -141,7 +146,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("koyeb")
 
-	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() || isHelpCalled(rootCmd) {
+	if skipConfigLoading(rootCmd) {
 		return
 	}
 
