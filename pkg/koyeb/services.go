@@ -204,6 +204,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
+	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker args")
 	flags.StringSlice("regions", []string{"fra"}, "Regions")
@@ -369,6 +370,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		image, _ := flags.GetString("docker")
 		args, _ := flags.GetStringSlice("docker-args")
 		command, _ := flags.GetString("docker-command")
+		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
 		image_registry_secret, _ := flags.GetString("docker-private-registry-secret")
 		createDockerSource.SetImage(image)
 		if command != "" {
@@ -379,6 +381,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		}
 		if len(args) > 0 {
 			createDockerSource.SetArgs(args)
+		}
+		if len(entrypoint) > 0 {
+			createDockerSource.SetEntrypoint(entrypoint)
 		}
 		definition.SetDocker(*createDockerSource)
 		definition.Git = nil
