@@ -53,6 +53,11 @@ func isHelpCalled(cmd *cobra.Command) bool {
 	return false
 }
 
+func skipConfigLoading(cmd *cobra.Command) bool {
+	return "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() ||
+		"" != completionCmd.CalledAs() || isHelpCalled(cmd)
+}
+
 func GetRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:               "koyeb RESOURCE ACTION",
@@ -193,7 +198,7 @@ func initConfig(rootCmd *cobra.Command) error {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("koyeb")
 
-	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() || isHelpCalled(rootCmd) {
+	if skipConfigLoading(rootCmd) {
 		return nil
 	}
 
