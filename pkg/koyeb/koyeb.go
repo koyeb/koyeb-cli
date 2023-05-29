@@ -131,7 +131,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("koyeb")
 
-	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() {
+	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() {
 		return
 	}
 
