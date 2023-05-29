@@ -43,6 +43,16 @@ var (
 	}
 )
 
+func isHelpCalled(cmd *cobra.Command) bool {
+	for _, subcmd := range cmd.Commands() {
+		if subcmd.Name() == "help" {
+			return subcmd.CalledAs() != ""
+		}
+	}
+
+	return false
+}
+
 func GetRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:               "koyeb RESOURCE ACTION",
@@ -57,7 +67,7 @@ func GetRootCommand() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := initConfig(); err != nil {
+			if err := initConfig(cmd.Root()); err != nil {
 				return err
 			}
 			DetectUpdates()
@@ -163,7 +173,7 @@ func getHomeDir() (string, error) {
 	return home, nil
 }
 
-func initConfig() error {
+func initConfig(rootCmd *cobra.Command) error {
 	if debug {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -183,7 +193,7 @@ func initConfig() error {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("koyeb")
 
-	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() {
+	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() || "" != completionCmd.CalledAs() || isHelpCalled(rootCmd) {
 		return nil
 	}
 
