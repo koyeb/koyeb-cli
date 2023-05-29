@@ -186,10 +186,22 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("type", "WEB", `Service type, either "WEB" or "WORKER"`)
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "", "Git branch")
-	flags.String("git-build-command", "", "Buid command")
-	flags.String("git-run-command", "", "Run command")
+	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
+	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
 	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
 	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
+
+	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	flags.String("git-buildpack-build-command", "", "Buid command")
+	flags.String("git-buildpack-run-command", "", "Run command")
+
+	flags.String("git-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("git-docker-command", "", "Docker CMD")
+	flags.StringSlice("git-docker-args", []string{}, "Arguments for the Docker CMD")
+	flags.String("git-docker-target", "", "Docker target")
+
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.String("docker-command", "", "Docker command")
@@ -373,11 +385,27 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	// Git
 	if flags.Lookup("git").Changed && !flags.Lookup("docker").Changed {
+		builder, _ := flags.GetString("git-builder")
+		if builder != "buildpack" && builder != "docker" {
+			return errors.New("Invalid --git-builder, must be either 'buildpack' or 'docker'")
+		}
+
+		if builder == "buildpack" && (flags.Lookup("git-docker-dockerfile").Changed ||
+			flags.Lookup("git-docker-entrypoint").Changed ||
+			flags.Lookup("git-docker-command").Changed ||
+			flags.Lookup("git-docker-args").Changed ||
+			flags.Lookup("git-docker-target").Changed) {
+			return errors.New(`Cannot use --git-docker-* options with --git-builder=buildpack`)
+		}
+
+		if builder == "docker" && (flags.Lookup("git-buildpack-build-command").Changed ||
+			flags.Lookup("git-buildpack-run-command").Changed) {
+			return errors.New(`Cannot use --git-buildpack-* options with --git-builder=docker`)
+		}
+
 		createGitSource := koyeb.NewGitSourceWithDefaults()
 		git, _ := flags.GetString("git")
 		branch, _ := flags.GetString("git-branch")
-		buildCommand, _ := flags.GetString("git-build-command")
-		runCommand, _ := flags.GetString("git-run-command")
 		noDeployOnPush, _ := flags.GetBool("git-no-deploy-on-push")
 		workdir, _ := flags.GetString("git-workdir")
 
@@ -385,17 +413,63 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		if branch != "" {
 			createGitSource.SetBranch(branch)
 		}
-
-		if buildCommand != "" {
-			createGitSource.SetBuildCommand(buildCommand)
-		}
-
-		if runCommand != "" {
-			createGitSource.SetRunCommand(runCommand)
-		}
-
 		createGitSource.SetNoDeployOnPush(noDeployOnPush)
 		createGitSource.SetWorkdir(workdir)
+
+		// Set builder
+		switch builder {
+		case "buildpack":
+			// Legacy options for backward compatibility. We should use
+			// --git-buildpack-build-command and --git-buildpack-run-command instead
+			buildCommand, _ := flags.GetString("git-build-command")
+			buildpackBuildCommand, _ := flags.GetString("git-buildpack-build-command")
+			runCommand, _ := flags.GetString("git-run-command")
+			buildpackRunCommand, _ := flags.GetString("git-buildpack-run-command")
+
+			if buildCommand != "" && buildpackBuildCommand != "" {
+				return errors.New(`Cannot use --git-build-command and --git-buildpack-build-command together. Use --git-buildpack-build-command instead`)
+			}
+			if runCommand != "" && buildpackRunCommand != "" {
+				return errors.New(`Cannot use --git-run-command and --git-buildpack-run-command together. Use --git-buildpack-run-command instead`)
+			}
+
+			builder := koyeb.BuildpackBuilder{}
+			if buildCommand != "" {
+				builder.SetBuildCommand(buildCommand)
+			} else if buildpackBuildCommand != "" {
+				builder.SetBuildCommand(buildpackBuildCommand)
+			}
+			if runCommand != "" {
+				builder.SetRunCommand(runCommand)
+			} else if buildpackRunCommand != "" {
+				builder.SetRunCommand(buildpackRunCommand)
+			}
+			createGitSource.SetBuildpack(builder)
+		case "docker":
+			dockerfile, _ := flags.GetString("git-docker-dockerfile")
+			entrypoint, _ := flags.GetStringSlice("git-docker-entrypoint")
+			command, _ := flags.GetString("git-docker-command")
+			args, _ := flags.GetStringSlice("git-docker-args")
+			target, _ := flags.GetString("git-docker-target")
+
+			docker := koyeb.DockerBuilder{}
+			if dockerfile != "" {
+				docker.SetDockerfile(dockerfile)
+			}
+			if len(entrypoint) > 0 {
+				docker.SetEntrypoint(entrypoint)
+			}
+			if command != "" {
+				docker.SetCommand(command)
+			}
+			if len(args) > 0 {
+				docker.SetArgs(args)
+			}
+			if target != "" {
+				docker.SetTarget(target)
+			}
+			createGitSource.SetDocker(docker)
+		}
 
 		definition.SetGit(*createGitSource)
 		definition.Docker = nil
