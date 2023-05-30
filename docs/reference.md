@@ -229,13 +229,22 @@ koyeb apps init NAME [flags]
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
+      --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Env
       --git string                              Git repository
       --git-branch string                       Git branch
-      --git-build-command string                Buid command
+      --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string      Buid command
+      --git-buildpack-run-command string        Run command
+      --git-docker-args strings                 Arguments for the Docker CMD
+      --git-docker-command string               Docker CMD
+      --git-docker-dockerfile string            Dockerfile path
+      --git-docker-entrypoint strings           Docker entrypoint
+      --git-docker-target string                Docker target
       --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                  Run command
+      --git-run-command string                  Run command (legacy, prefer git-buildpack-run-command)
       --git-workdir string                      Path to the sub-directory containing the code to build and deploy
   -h, --help                                    help for init
       --instance-type string                    Instance type (default "nano")
@@ -905,13 +914,22 @@ koyeb services create NAME [flags]
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
+      --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Env
       --git string                              Git repository
       --git-branch string                       Git branch
-      --git-build-command string                Buid command
+      --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string      Buid command
+      --git-buildpack-run-command string        Run command
+      --git-docker-args strings                 Arguments for the Docker CMD
+      --git-docker-command string               Docker CMD
+      --git-docker-dockerfile string            Dockerfile path
+      --git-docker-entrypoint strings           Docker entrypoint
+      --git-docker-target string                Docker target
       --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                  Run command
+      --git-run-command string                  Run command (legacy, prefer git-buildpack-run-command)
       --git-workdir string                      Path to the sub-directory containing the code to build and deploy
   -h, --help                                    help for create
       --instance-type string                    Instance type (default "nano")
@@ -1190,13 +1208,22 @@ koyeb services update NAME [flags]
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
+      --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Env
       --git string                              Git repository
       --git-branch string                       Git branch
-      --git-build-command string                Buid command
+      --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string      Buid command
+      --git-buildpack-run-command string        Run command
+      --git-docker-args strings                 Arguments for the Docker CMD
+      --git-docker-command string               Docker CMD
+      --git-docker-dockerfile string            Dockerfile path
+      --git-docker-entrypoint strings           Docker entrypoint
+      --git-docker-target string                Docker target
       --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                  Run command
+      --git-run-command string                  Run command (legacy, prefer git-buildpack-run-command)
       --git-workdir string                      Path to the sub-directory containing the code to build and deploy
   -h, --help                                    help for update
       --instance-type string                    Instance type (default "nano")
