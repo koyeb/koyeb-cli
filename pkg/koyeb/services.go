@@ -239,16 +239,18 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		for _, e := range env {
 			newEnv := koyeb.NewDeploymentEnvWithDefaults()
 
-			split := strings.Split(e, "=")
-			if len(split) < 2 {
+			split := strings.SplitN(e, "=", 2)
+			if len(split) != 2 || len(split[0]) == 0 || len(split[1]) == 0 {
 				return errors.New("Unable to parse env")
 			}
+
 			newEnv.Key = koyeb.PtrString(split[0])
 			if split[1][0] == '@' {
 				newEnv.Secret = koyeb.PtrString(split[1][1:])
 			} else {
 				newEnv.Value = koyeb.PtrString(split[1])
 			}
+
 			envs = append(envs, *newEnv)
 		}
 		definition.SetEnv(envs)
