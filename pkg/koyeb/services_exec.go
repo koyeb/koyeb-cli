@@ -8,10 +8,10 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 )
 
-func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
+func (h *ServiceHandler) Exec(cmd *cobra.Command, args []string) error {
 	returnCode, err := exec(ExecId{
-		Id:   h.ResolveInstanceArgs(args[0]),
-		Type: koyeb.EXECCOMMANDREQUESTIDTYPE_INSTANCE_ID,
+		Id:   h.ResolveServiceArgs(args[0]),
+		Type: koyeb.EXECCOMMANDREQUESTIDTYPE_SERVICE_ID,
 	}, args)
 	if err != nil {
 		fatalApiError(err, nil)
