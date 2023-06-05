@@ -82,6 +82,15 @@ func NewServiceCmd() *cobra.Command {
 	}
 	serviceCmd.AddCommand(describeServiceCmd)
 
+	execServiceCmd := &cobra.Command{
+		Use:     "exec NAME CMD -- [args...]",
+		Short:   "Run a command in the context of an instance selected among the service instances",
+		Aliases: []string{"run", "attach"},
+		Args:    cobra.MinimumNArgs(2),
+		RunE:    h.Exec,
+	}
+	serviceCmd.AddCommand(execServiceCmd)
+
 	updateServiceCmd := &cobra.Command{
 		Use:   "update NAME",
 		Short: "Update service",

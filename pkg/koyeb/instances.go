@@ -90,3 +90,13 @@ func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
 
 	return id
 }
+
+func (h *InstanceHandler) ResolveServiceArgs(val string) string {
+	svcMapper := h.mapper.Service()
+	id, err := svcMapper.ResolveID(val)
+	if err != nil {
+		fatalApiError(err, nil)
+	}
+
+	return id
+}
