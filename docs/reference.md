@@ -890,6 +890,7 @@ Services
 * [koyeb services create](#koyeb-services-create)	 - Create service
 * [koyeb services delete](#koyeb-services-delete)	 - Delete service
 * [koyeb services describe](#koyeb-services-describe)	 - Describe service
+* [koyeb services exec](#koyeb-services-exec)	 - Run a command in the context of an instance selected among the service instances
 * [koyeb services get](#koyeb-services-get)	 - Get service
 * [koyeb services list](#koyeb-services-list)	 - List services
 * [koyeb services logs](#koyeb-services-logs)	 - Get the service logs
@@ -997,6 +998,35 @@ koyeb services describe NAME [flags]
 
 ```
   -h, --help   help for describe
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string   config file (default is $HOME/.koyeb.yaml)
+  -d, --debug           debug
+      --full            show full id
+  -o, --output string   output format (yaml,json,table)
+      --token string    API token
+      --url string      url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+
+## koyeb services exec
+
+Run a command in the context of an instance selected among the service instances
+
+```
+koyeb services exec NAME CMD -- [args...] [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for exec
 ```
 
 ### Options inherited from parent commands
