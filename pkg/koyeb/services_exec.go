@@ -12,7 +12,7 @@ func (h *ServiceHandler) Exec(cmd *cobra.Command, args []string) error {
 	returnCode, err := exec(ExecId{
 		Id:   h.ResolveServiceArgs(args[0]),
 		Type: koyeb.EXECCOMMANDREQUESTIDTYPE_SERVICE_ID,
-	}, args)
+	}, args[1:])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
