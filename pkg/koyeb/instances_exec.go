@@ -12,7 +12,7 @@ func (h *InstanceHandler) Exec(cmd *cobra.Command, args []string) error {
 	returnCode, err := exec(ExecId{
 		Id:   h.ResolveInstanceArgs(args[0]),
 		Type: koyeb.EXECCOMMANDREQUESTIDTYPE_INSTANCE_ID,
-	}, args)
+	}, args[1:])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
