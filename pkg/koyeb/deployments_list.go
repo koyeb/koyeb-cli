@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DeploymentHandler) List(cmd *cobra.Command, args []string) error {
+func (h *DeploymentHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	list := []koyeb.DeploymentListItem{}
 
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
+		res, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
@@ -32,7 +32,7 @@ func (h *DeploymentHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listDeploymentsReply := NewListDeploymentsReply(h.mapper, &koyeb.ListDeploymentsReply{Deployments: list}, full)
+	listDeploymentsReply := NewListDeploymentsReply(ctx.mapper, &koyeb.ListDeploymentsReply{Deployments: list}, full)
 
 	return renderer.NewListRenderer(listDeploymentsReply).Render(output)
 }

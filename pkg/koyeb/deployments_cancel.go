@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DeploymentHandler) Cancel(cmd *cobra.Command, args []string) error {
-	_, resp, err := h.client.DeploymentsApi.CancelDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
+func (h *DeploymentHandler) Cancel(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	_, resp, err := ctx.client.DeploymentsApi.CancelDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
