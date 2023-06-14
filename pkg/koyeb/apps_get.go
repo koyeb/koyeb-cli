@@ -10,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *AppHandler) Get(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
+func (h *AppHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.AppsApi.GetApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getAppsReply := NewGetAppReply(h.mapper, res, full)
+	getAppsReply := NewGetAppReply(ctx.mapper, res, full)
 
 	return renderer.NewItemRenderer(getAppsReply).Render(output)
 }

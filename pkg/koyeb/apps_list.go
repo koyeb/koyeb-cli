@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
+func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	list := []koyeb.AppListItem{}
 
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, st, err := h.client.AppsApi.ListApps(h.ctx).
+		res, st, err := ctx.client.AppsApi.ListApps(ctx.context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err, st)
@@ -32,7 +32,7 @@ func (h *AppHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listAppsReply := NewListAppsReply(h.mapper, &koyeb.ListAppsReply{Apps: list}, full)
+	listAppsReply := NewListAppsReply(ctx.mapper, &koyeb.ListAppsReply{Apps: list}, full)
 
 	return renderer.NewListRenderer(listAppsReply).Render(output)
 }

@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *AppHandler) Delete(cmd *cobra.Command, args []string) error {
-	_, resp, err := h.client.AppsApi.DeleteApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
+func (h *AppHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	_, resp, err := ctx.client.AppsApi.DeleteApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

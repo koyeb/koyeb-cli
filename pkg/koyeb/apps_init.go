@@ -7,30 +7,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *AppHandler) Init(cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
+func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
 	uid := uuid.Must(uuid.NewV4())
 	createService.SetAppId(uid.String())
-	_, resp, err := h.client.ServicesApi.CreateService(h.ctx).DryRun(true).Service(*createService).Execute()
+	_, resp, err := ctx.client.ServicesApi.CreateService(ctx.context).DryRun(true).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	createApp.SetName(args[0])
-	res, resp, err := h.client.AppsApi.CreateApp(h.ctx).App(*createApp).Execute()
+	res, resp, err := ctx.client.AppsApi.CreateApp(ctx.context).App(*createApp).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 	createService.SetAppId(res.App.GetId())
 
-	serviceRes, resp, err := h.client.ServicesApi.CreateService(h.ctx).Service(*createService).Execute()
+	serviceRes, resp, err := ctx.client.ServicesApi.CreateService(ctx.context).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getAppsReply := NewGetAppReply(h.mapper, &koyeb.GetAppReply{App: res.App}, full)
-	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: serviceRes.Service}, full)
+	getAppsReply := NewGetAppReply(ctx.mapper, &koyeb.GetAppReply{App: res.App}, full)
+	getServiceReply := NewGetServiceReply(ctx.mapper, &koyeb.GetServiceReply{Service: serviceRes.Service}, full)
 
 	return renderer.NewDescribeRenderer(getAppsReply, getServiceReply).Render(output)
 }
