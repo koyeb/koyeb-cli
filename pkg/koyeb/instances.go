@@ -1,10 +1,6 @@
 package koyeb
 
 import (
-	"context"
-
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/spf13/cobra"
 )
 
@@ -12,16 +8,15 @@ func NewInstanceCmd() *cobra.Command {
 	instanceHandler := NewInstanceHandler()
 
 	instanceCmd := &cobra.Command{
-		Use:               "instances ACTION",
-		Aliases:           []string{"i", "inst", "instance"},
-		Short:             "Instances",
-		PersistentPreRunE: instanceHandler.InitHandler,
+		Use:     "instances ACTION",
+		Aliases: []string{"i", "inst", "instance"},
+		Short:   "Instances",
 	}
 
 	listInstanceCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List instances",
-		RunE:  instanceHandler.List,
+		RunE:  WithCLIContext(instanceHandler.List),
 	}
 	listInstanceCmd.Flags().String("app", "", "Filter on App id or name")
 	listInstanceCmd.Flags().String("service", "", "Filter on Service id or name")
@@ -31,7 +26,7 @@ func NewInstanceCmd() *cobra.Command {
 		Use:   "get NAME",
 		Short: "Get instance",
 		Args:  cobra.ExactArgs(1),
-		RunE:  instanceHandler.Get,
+		RunE:  WithCLIContext(instanceHandler.Get),
 	}
 	instanceCmd.AddCommand(getInstanceCmd)
 
@@ -39,7 +34,7 @@ func NewInstanceCmd() *cobra.Command {
 		Use:   "describe NAME",
 		Short: "Describe instance",
 		Args:  cobra.ExactArgs(1),
-		RunE:  instanceHandler.Describe,
+		RunE:  WithCLIContext(instanceHandler.Describe),
 	}
 	instanceCmd.AddCommand(describeInstanceCmd)
 
@@ -48,7 +43,7 @@ func NewInstanceCmd() *cobra.Command {
 		Short:   "Run a command in the context of an instance",
 		Aliases: []string{"run", "attach"},
 		Args:    cobra.MinimumNArgs(2),
-		RunE:    instanceHandler.Exec,
+		RunE:    WithCLIContext(instanceHandler.Exec),
 	}
 	instanceCmd.AddCommand(execInstanceCmd)
 
@@ -57,7 +52,7 @@ func NewInstanceCmd() *cobra.Command {
 		Aliases: []string{"l", "log"},
 		Short:   "Get instance logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    instanceHandler.Logs,
+		RunE:    WithCLIContext(instanceHandler.Logs),
 	}
 	instanceCmd.AddCommand(logInstanceCmd)
 
@@ -69,20 +64,10 @@ func NewInstanceHandler() *InstanceHandler {
 }
 
 type InstanceHandler struct {
-	ctx    context.Context
-	client *koyeb.APIClient
-	mapper *idmapper.Mapper
 }
 
-func (h *InstanceHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	h.ctx = getAuth(context.Background())
-	h.client = getApiClient()
-	h.mapper = idmapper.NewMapper(h.ctx, h.client)
-	return nil
-}
-
-func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
-	instanceMapper := h.mapper.Instance()
+func (h *InstanceHandler) ResolveInstanceArgs(ctx *CLIContext, val string) string {
+	instanceMapper := ctx.mapper.Instance()
 	id, err := instanceMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)
@@ -91,8 +76,8 @@ func (h *InstanceHandler) ResolveInstanceArgs(val string) string {
 	return id
 }
 
-func (h *InstanceHandler) ResolveServiceArgs(val string) string {
-	svcMapper := h.mapper.Service()
+func (h *InstanceHandler) ResolveServiceArgs(ctx *CLIContext, val string) string {
+	svcMapper := ctx.mapper.Service()
 	id, err := svcMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

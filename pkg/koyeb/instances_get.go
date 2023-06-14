@@ -9,15 +9,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *InstanceHandler) Get(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.InstancesApi.GetInstance(h.ctx, h.ResolveInstanceArgs(args[0])).Execute()
+func (h *InstanceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.InstancesApi.GetInstance(ctx.context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getInstancesReply := NewGetInstanceReply(h.mapper, res, full)
+	getInstancesReply := NewGetInstanceReply(ctx.mapper, res, full)
 
 	return renderer.NewItemRenderer(getInstancesReply).Render(output)
 }
