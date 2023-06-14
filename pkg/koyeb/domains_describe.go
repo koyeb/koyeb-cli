@@ -7,39 +7,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DomainHandler) Describe(cmd *cobra.Command, args []string) error {
+func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 	replies := []renderer.ApiResources{}
 
-	getDomainRes, resp, err := h.client.DomainsApi.GetDomain(h.ctx, h.ResolveDomainArgs(args[0])).Execute()
+	getDomainRes, resp, err := ctx.client.DomainsApi.GetDomain(ctx.context, h.ResolveDomainArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	describeDomainsReply := NewDescribeDomainReply(h.mapper, getDomainRes, full)
+	describeDomainsReply := NewDescribeDomainReply(ctx.mapper, getDomainRes, full)
 	replies = append(replies, describeDomainsReply)
 
 	// Grab attached app
 	appID := getDomainRes.Domain.GetAppId()
 	if appID != "" {
-		getAppRes, resp, err := h.client.AppsApi.GetApp(h.ctx, appID).Execute()
+		getAppRes, resp, err := ctx.client.AppsApi.GetApp(ctx.context, appID).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
 		}
 
-		describeAppsReply := NewDescribeAppReply(h.mapper, getAppRes, full)
+		describeAppsReply := NewDescribeAppReply(ctx.mapper, getAppRes, full)
 		replies = append(replies, describeAppsReply)
 	}
 
 	// Grab app services if any
 	if appID != "" {
-		resListServices, resp, err := h.client.ServicesApi.ListServices(h.ctx).AppId(appID).Limit("100").Execute()
+		resListServices, resp, err := ctx.client.ServicesApi.ListServices(ctx.context).AppId(appID).Limit("100").Execute()
 		if err != nil {
 			fatalApiError(err, resp)
 		}
 
-		listServicesReply := NewListServicesReply(h.mapper, resListServices, full)
+		listServicesReply := NewListServicesReply(ctx.mapper, resListServices, full)
 		replies = append(replies, listServicesReply)
 	}
 

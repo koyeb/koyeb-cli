@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DomainHandler) List(cmd *cobra.Command, args []string) error {
+func (h *DomainHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	list := []koyeb.Domain{}
 
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, st, err := h.client.DomainsApi.ListDomains(h.ctx).
+		res, st, err := ctx.client.DomainsApi.ListDomains(ctx.context).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Types([]string{string(koyeb.DOMAINTYPE_CUSTOM)}).
@@ -35,7 +35,7 @@ func (h *DomainHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listDomainsReply := NewListDomainsReply(h.mapper, &koyeb.ListDomainsReply{Domains: list}, full)
+	listDomainsReply := NewListDomainsReply(ctx.mapper, &koyeb.ListDomainsReply{Domains: list}, full)
 
 	return renderer.NewListRenderer(listDomainsReply).Render(output)
 }

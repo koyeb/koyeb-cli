@@ -6,14 +6,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DomainHandler) Create(cmd *cobra.Command, args []string) error {
+func (h *DomainHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	createDomainReq := koyeb.NewCreateDomainWithDefaults()
 	createDomainReq.SetName(args[0])
 	createDomainReq.SetType(koyeb.DOMAINTYPE_CUSTOM)
 
 	attachToApp := GetStringFlags(cmd, "attach-to")
 	if attachToApp != "" {
-		appID, err := h.mapper.App().ResolveID(attachToApp)
+		appID, err := ctx.mapper.App().ResolveID(attachToApp)
 		if err != nil {
 			fatalApiError(err, nil)
 		}
@@ -21,7 +21,7 @@ func (h *DomainHandler) Create(cmd *cobra.Command, args []string) error {
 		createDomainReq.SetAppId(appID)
 	}
 
-	res, resp, err := h.client.DomainsApi.CreateDomain(h.ctx).Domain(*createDomainReq).Execute()
+	res, resp, err := ctx.client.DomainsApi.CreateDomain(ctx.context).Domain(*createDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -29,6 +29,6 @@ func (h *DomainHandler) Create(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	getDomainsReply := NewGetDomainReply(h.mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
+	getDomainsReply := NewGetDomainReply(ctx.mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
 	return renderer.NewDescribeItemRenderer(getDomainsReply).Render(output)
 }
