@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *koyeb.CreateSecret) error {
+func (h *SecretHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createSecret *koyeb.CreateSecret) error {
 	createSecret.SetName(args[0])
 	if !cmd.LocalFlags().Lookup("value-from-stdin").Changed && !cmd.LocalFlags().Lookup("value").Changed {
 		prompt := promptui.Prompt{
@@ -45,14 +45,14 @@ func (h *SecretHandler) Create(cmd *cobra.Command, args []string, createSecret *
 
 		createSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, resp, err := h.client.SecretsApi.CreateSecret(h.ctx).Secret(*createSecret).Execute()
+	res, resp, err := ctx.client.SecretsApi.CreateSecret(ctx.context).Secret(*createSecret).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getSecretsReply := NewGetSecretReply(h.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
+	getSecretsReply := NewGetSecretReply(ctx.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
 
 	return renderer.NewDescribeItemRenderer(getSecretsReply).Render(output)
 }

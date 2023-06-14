@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -30,6 +31,9 @@ var (
 		Use:               "koyeb RESOURCE ACTION",
 		Short:             "Koyeb CLI",
 		DisableAutoGenTag: true,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			SetupCLIContext(cmd)
+		},
 	}
 	loginCmd = &cobra.Command{
 		Use:   "login",
@@ -66,8 +70,10 @@ func GetRootCmd() *cobra.Command {
 }
 
 func Run() error {
+	ctx := context.Background()
+
 	DetectUpdates()
-	return rootCmd.Execute()
+	return rootCmd.ExecuteContext(ctx)
 }
 
 func er(msg interface{}) {

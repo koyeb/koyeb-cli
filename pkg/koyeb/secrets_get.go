@@ -9,15 +9,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *SecretHandler) Get(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.SecretsApi.GetSecret(h.ctx, h.ResolveSecretArgs(args[0])).Execute()
+func (h *SecretHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.SecretsApi.GetSecret(ctx.context, ResolveSecretArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getSecretsReply := NewGetSecretReply(h.mapper, res, full)
+	getSecretsReply := NewGetSecretReply(ctx.mapper, res, full)
 
 	return renderer.NewItemRenderer(getSecretsReply).Render(output)
 

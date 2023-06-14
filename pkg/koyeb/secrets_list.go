@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
+func (h *SecretHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	list := []koyeb.Secret{}
 
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := h.client.SecretsApi.ListSecrets(h.ctx).
+		res, resp, err := ctx.client.SecretsApi.ListSecrets(ctx.context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
@@ -32,7 +32,7 @@ func (h *SecretHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listSecretsReply := NewListSecretsReply(h.mapper, &koyeb.ListSecretsReply{Secrets: list}, full)
+	listSecretsReply := NewListSecretsReply(ctx.mapper, &koyeb.ListSecretsReply{Secrets: list}, full)
 
 	return renderer.NewListRenderer(listSecretsReply).Render(output)
 }
