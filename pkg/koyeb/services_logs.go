@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Logs(cmd *cobra.Command, args []string) error {
-	serviceDetail, resp, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	serviceDetail, resp, err := ctx.client.ServicesApi.GetService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -22,8 +22,8 @@ func (h *ServiceHandler) Logs(cmd *cobra.Command, args []string) error {
 	query.ServiceID = koyeb.PtrString(serviceID)
 
 	if logType == "build" {
-		latestDeploy, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).
-			Limit("1").ServiceId(h.ResolveServiceArgs(args[0])).Execute()
+		latestDeploy, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).
+			Limit("1").ServiceId(h.ResolveServiceArgs(ctx, args[0])).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
 		}

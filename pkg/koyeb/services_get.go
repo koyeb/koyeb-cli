@@ -7,15 +7,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Get(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+func (h *ServiceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.ServicesApi.GetService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getServiceReply := NewGetServiceReply(h.mapper, res, full)
+	getServiceReply := NewGetServiceReply(ctx.mapper, res, full)
 
 	return renderer.NewItemRenderer(getServiceReply).Render(output)
 }
