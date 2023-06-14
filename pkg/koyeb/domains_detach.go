@@ -6,15 +6,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DomainHandler) Detach(cmd *cobra.Command, args []string) error {
-	domainID, err := h.mapper.Domain().ResolveID(args[0])
+func (h *DomainHandler) Detach(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	domainID, err := ctx.mapper.Domain().ResolveID(args[0])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
 
 	updateDomainReq := koyeb.NewUpdateDomainWithDefaults()
 	updateDomainReq.SetAppId("")
-	res, resp, err := h.client.DomainsApi.UpdateDomain(h.ctx, domainID).Domain(*updateDomainReq).Execute()
+	res, resp, err := ctx.client.DomainsApi.UpdateDomain(ctx.context, domainID).Domain(*updateDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -22,6 +22,6 @@ func (h *DomainHandler) Detach(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	getDomainReply := NewGetDomainReply(h.mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
+	getDomainReply := NewGetDomainReply(ctx.mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
 	return renderer.NewDescribeItemRenderer(getDomainReply).Render(output)
 }

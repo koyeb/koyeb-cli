@@ -6,13 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DomainHandler) Attach(cmd *cobra.Command, args []string) error {
-	domainID, err := h.mapper.Domain().ResolveID(args[0])
+func (h *DomainHandler) Attach(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	domainID, err := ctx.mapper.Domain().ResolveID(args[0])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
 
-	appID, err := h.mapper.App().ResolveID(args[1])
+	appID, err := ctx.mapper.App().ResolveID(args[1])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
@@ -20,12 +20,12 @@ func (h *DomainHandler) Attach(cmd *cobra.Command, args []string) error {
 	updateDomainReq := koyeb.NewUpdateDomainWithDefaults()
 	updateDomainReq.SetAppId(appID)
 
-	_, resp, err := h.client.DomainsApi.UpdateDomain(h.ctx, domainID).Domain(*updateDomainReq).Execute()
+	_, resp, err := ctx.client.DomainsApi.UpdateDomain(ctx.context, domainID).Domain(*updateDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	res, resp, err := h.client.AppsApi.GetApp(h.ctx, appID).Execute()
+	res, resp, err := ctx.client.AppsApi.GetApp(ctx.context, appID).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -33,6 +33,6 @@ func (h *DomainHandler) Attach(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	getAppReply := NewGetAppReply(h.mapper, res, full)
+	getAppReply := NewGetAppReply(ctx.mapper, res, full)
 	return renderer.NewDescribeItemRenderer(getAppReply).Render(output)
 }
