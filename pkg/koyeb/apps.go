@@ -1,10 +1,7 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/spf13/cobra"
 )
 
@@ -12,21 +9,20 @@ func NewAppCmd() *cobra.Command {
 	h := NewAppHandler()
 
 	appCmd := &cobra.Command{
-		Use:               "apps ACTION",
-		Aliases:           []string{"a", "app"},
-		Short:             "Apps",
-		PersistentPreRunE: h.InitHandler,
+		Use:     "apps ACTION",
+		Aliases: []string{"a", "app"},
+		Short:   "Apps",
 	}
 
 	createAppCmd := &cobra.Command{
 		Use:   "create NAME",
 		Short: "Create app",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createApp := koyeb.NewCreateAppWithDefaults()
 			SyncFlags(cmd, args, createApp)
-			return h.Create(cmd, args, createApp)
-		},
+			return h.Create(ctx, cmd, args, createApp)
+		}),
 	}
 	appCmd.AddCommand(createAppCmd)
 
@@ -34,7 +30,7 @@ func NewAppCmd() *cobra.Command {
 		Use:   "init NAME",
 		Short: "Create app and service",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createApp := koyeb.NewCreateAppWithDefaults()
 
 			createService := koyeb.NewCreateServiceWithDefaults()
@@ -48,8 +44,8 @@ func NewAppCmd() *cobra.Command {
 
 			createService.SetDefinition(*createDefinition)
 
-			return h.Init(cmd, args, createApp, createService)
-		},
+			return h.Init(ctx, cmd, args, createApp, createService)
+		}),
 	}
 	appCmd.AddCommand(initAppCmd)
 	addServiceDefinitionFlags(initAppCmd.Flags())
@@ -58,14 +54,14 @@ func NewAppCmd() *cobra.Command {
 		Use:   "get NAME",
 		Short: "Get app",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Get,
+		RunE:  WithCLIContext(h.Get),
 	}
 	appCmd.AddCommand(getAppCmd)
 
 	listAppCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List apps",
-		RunE:  h.List,
+		RunE:  WithCLIContext(h.List),
 	}
 	appCmd.AddCommand(listAppCmd)
 
@@ -73,7 +69,7 @@ func NewAppCmd() *cobra.Command {
 		Use:   "describe NAME",
 		Short: "Describe app",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Describe,
+		RunE:  WithCLIContext(h.Describe),
 	}
 	appCmd.AddCommand(describeAppCmd)
 
@@ -81,11 +77,11 @@ func NewAppCmd() *cobra.Command {
 		Use:   "update NAME",
 		Short: "Update app",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			updateApp := koyeb.NewUpdateAppWithDefaults()
 			SyncFlags(cmd, args, updateApp)
-			return h.Update(cmd, args, updateApp)
-		},
+			return h.Update(ctx, cmd, args, updateApp)
+		}),
 	}
 	appCmd.AddCommand(updateAppCmd)
 	updateAppCmd.Flags().StringP("name", "n", "", "Name of the app")
@@ -94,7 +90,7 @@ func NewAppCmd() *cobra.Command {
 		Use:   "delete NAME",
 		Short: "Delete app",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Delete,
+		RunE:  WithCLIContext(h.Delete),
 	}
 	appCmd.AddCommand(deleteAppCmd)
 
@@ -102,7 +98,7 @@ func NewAppCmd() *cobra.Command {
 		Use:   "pause NAME",
 		Short: "Pause app",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Pause,
+		RunE:  WithCLIContext(h.Pause),
 	}
 	appCmd.AddCommand(pauseServiceCmd)
 
@@ -110,7 +106,7 @@ func NewAppCmd() *cobra.Command {
 		Use:   "resume NAME",
 		Short: "Resume app",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Resume,
+		RunE:  WithCLIContext(h.Resume),
 	}
 	appCmd.AddCommand(resumeServiceCmd)
 
@@ -122,20 +118,10 @@ func NewAppHandler() *AppHandler {
 }
 
 type AppHandler struct {
-	ctx    context.Context
-	client *koyeb.APIClient
-	mapper *idmapper.Mapper
 }
 
-func (h *AppHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	h.ctx = getAuth(context.Background())
-	h.client = getApiClient()
-	h.mapper = idmapper.NewMapper(h.ctx, h.client)
-	return nil
-}
-
-func (h *AppHandler) ResolveAppArgs(val string) string {
-	appMapper := h.mapper.App()
+func (h *AppHandler) ResolveAppArgs(ctx *CLIContext, val string) string {
+	appMapper := ctx.mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

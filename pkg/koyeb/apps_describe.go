@@ -7,20 +7,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *AppHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
+func (h *AppHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.AppsApi.GetApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
-	resListServices, resp, err := h.client.ServicesApi.ListServices(h.ctx).AppId(res.App.GetId()).Limit("100").Execute()
+	resListServices, resp, err := ctx.client.ServicesApi.ListServices(ctx.context).AppId(res.App.GetId()).Limit("100").Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	describeAppsReply := NewDescribeAppReply(h.mapper, res, full)
-	listServicesReply := NewListServicesReply(h.mapper, resListServices, full)
+	describeAppsReply := NewDescribeAppReply(ctx.mapper, res, full)
+	listServicesReply := NewListServicesReply(ctx.mapper, resListServices, full)
 
 	return renderer.NewDescribeRenderer(describeAppsReply, listServicesReply).Render(output)
 }

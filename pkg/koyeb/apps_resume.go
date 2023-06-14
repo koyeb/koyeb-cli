@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *AppHandler) Resume(cmd *cobra.Command, args []string) error {
-	_, resp, err := h.client.AppsApi.ResumeApp(h.ctx, h.ResolveAppArgs(args[0])).Execute()
+func (h *AppHandler) Resume(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	_, resp, err := ctx.client.AppsApi.ResumeApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
