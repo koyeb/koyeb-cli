@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *InstanceHandler) Logs(cmd *cobra.Command, args []string) error {
-	instanceDetail, resp, err := h.client.InstancesApi.GetInstance(h.ctx, h.ResolveInstanceArgs(args[0])).Execute()
+func (h *InstanceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	instanceDetail, resp, err := ctx.client.InstancesApi.GetInstance(ctx.context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
