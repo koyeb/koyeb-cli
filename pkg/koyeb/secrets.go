@@ -1,10 +1,7 @@
 package koyeb
 
 import (
-	"context"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/spf13/cobra"
 )
 
@@ -12,21 +9,20 @@ func NewSecretCmd() *cobra.Command {
 	h := NewSecretHandler()
 
 	secretCmd := &cobra.Command{
-		Use:               "secrets ACTION",
-		Aliases:           []string{"sec", "secret"},
-		Short:             "Secrets",
-		PersistentPreRunE: h.InitHandler,
+		Use:     "secrets ACTION",
+		Aliases: []string{"sec", "secret"},
+		Short:   "Secrets",
 	}
 
 	createSecretCmd := &cobra.Command{
 		Use:   "create NAME",
 		Short: "Create secret",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createSecret := koyeb.NewCreateSecretWithDefaults()
 			SyncFlags(cmd, args, createSecret)
-			return h.Create(cmd, args, createSecret)
-		},
+			return h.Create(ctx, cmd, args, createSecret)
+		}),
 	}
 	createSecretCmd.Flags().StringP("value", "v", "", "Secret Value")
 	createSecretCmd.Flags().Bool("value-from-stdin", false, "Secret Value from stdin")
@@ -36,14 +32,14 @@ func NewSecretCmd() *cobra.Command {
 		Use:   "get NAME",
 		Short: "Get secret",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Get,
+		RunE:  WithCLIContext(h.Get),
 	}
 	secretCmd.AddCommand(getSecretCmd)
 
 	listSecretCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List secrets",
-		RunE:  h.List,
+		RunE:  WithCLIContext(h.List),
 	}
 	secretCmd.AddCommand(listSecretCmd)
 
@@ -51,7 +47,7 @@ func NewSecretCmd() *cobra.Command {
 		Use:   "describe NAME",
 		Short: "Describe secret",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Describe,
+		RunE:  WithCLIContext(h.Describe),
 	}
 	secretCmd.AddCommand(describeSecretCmd)
 
@@ -59,11 +55,11 @@ func NewSecretCmd() *cobra.Command {
 		Use:   "update NAME",
 		Short: "Update secret",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			updateSecret := koyeb.NewSecretWithDefaults()
 			SyncFlags(cmd, args, updateSecret)
-			return h.Update(cmd, args, updateSecret)
-		},
+			return h.Update(ctx, cmd, args, updateSecret)
+		}),
 	}
 	updateSecretCmd.Flags().StringP("value", "v", "", "Secret Value")
 	updateSecretCmd.Flags().Bool("value-from-stdin", false, "Secret Value from stdin")
@@ -73,7 +69,7 @@ func NewSecretCmd() *cobra.Command {
 		Use:   "delete NAME",
 		Short: "Delete secret",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Delete,
+		RunE:  WithCLIContext(h.Delete),
 	}
 	secretCmd.AddCommand(deleteSecretCmd)
 
@@ -85,24 +81,13 @@ func NewSecretHandler() *SecretHandler {
 }
 
 type SecretHandler struct {
-	ctx    context.Context
-	client *koyeb.APIClient
-	mapper *idmapper.Mapper
 }
 
-func (h *SecretHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	h.ctx = getAuth(context.Background())
-	h.client = getApiClient()
-	h.mapper = idmapper.NewMapper(h.ctx, h.client)
-	return nil
-}
-
-func (h *SecretHandler) ResolveSecretArgs(val string) string {
-	secretMapper := h.mapper.Secret()
+func ResolveSecretArgs(ctx *CLIContext, val string) string {
+	secretMapper := ctx.mapper.Secret()
 	id, err := secretMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)
 	}
-
 	return id
 }

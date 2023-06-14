@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *koyeb.Secret) error {
+func (h *SecretHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, updateSecret *koyeb.Secret) error {
 	if cmd.LocalFlags().Lookup("value-from-stdin").Changed && cmd.LocalFlags().Lookup("value").Changed {
 		log.Fatalf("Cannot use value and value-from-stdin at the same time")
 	}
@@ -31,14 +31,14 @@ func (h *SecretHandler) Update(cmd *cobra.Command, args []string, updateSecret *
 
 		updateSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, resp, err := h.client.SecretsApi.UpdateSecret2(h.ctx, h.ResolveSecretArgs(args[0])).Secret(*updateSecret).Execute()
+	res, resp, err := ctx.client.SecretsApi.UpdateSecret2(ctx.context, ResolveSecretArgs(ctx, args[0])).Secret(*updateSecret).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getSecretsReply := NewGetSecretReply(h.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
+	getSecretsReply := NewGetSecretReply(ctx.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
 
 	return renderer.NewDescribeItemRenderer(getSecretsReply).Render(output)
 }
