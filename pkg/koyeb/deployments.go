@@ -1,10 +1,6 @@
 package koyeb
 
 import (
-	"context"
-
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/spf13/cobra"
 )
 
@@ -12,16 +8,15 @@ func NewDeploymentCmd() *cobra.Command {
 	h := NewDeploymentHandler()
 
 	deploymentCmd := &cobra.Command{
-		Use:               "deployments ACTION",
-		Aliases:           []string{"d", "dep", "depl", "deploy", "deployment"},
-		Short:             "Deployments",
-		PersistentPreRunE: h.InitHandler,
+		Use:     "deployments ACTION",
+		Aliases: []string{"d", "dep", "depl", "deploy", "deployment"},
+		Short:   "Deployments",
 	}
 
 	listDeploymentCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List deployments",
-		RunE:  h.List,
+		RunE:  WithCLIContext(h.List),
 	}
 	deploymentCmd.AddCommand(listDeploymentCmd)
 
@@ -29,7 +24,7 @@ func NewDeploymentCmd() *cobra.Command {
 		Use:   "get NAME",
 		Short: "Get deployment",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Get,
+		RunE:  WithCLIContext(h.Get),
 	}
 	deploymentCmd.AddCommand(getDeploymentCmd)
 
@@ -37,7 +32,7 @@ func NewDeploymentCmd() *cobra.Command {
 		Use:   "describe NAME",
 		Short: "Describe deployment",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Describe,
+		RunE:  WithCLIContext(h.Describe),
 	}
 	deploymentCmd.AddCommand(describeDeploymentCmd)
 
@@ -45,7 +40,7 @@ func NewDeploymentCmd() *cobra.Command {
 		Use:   "cancel NAME",
 		Short: "Cancel deployment",
 		Args:  cobra.ExactArgs(1),
-		RunE:  h.Cancel,
+		RunE:  WithCLIContext(h.Cancel),
 	}
 	deploymentCmd.AddCommand(cancelDeploymentCmd)
 
@@ -54,7 +49,7 @@ func NewDeploymentCmd() *cobra.Command {
 		Aliases: []string{"l", "log"},
 		Short:   "Get deployment logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    h.Logs,
+		RunE:    WithCLIContext(h.Logs),
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
 	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime,build)")
@@ -67,20 +62,10 @@ func NewDeploymentHandler() *DeploymentHandler {
 }
 
 type DeploymentHandler struct {
-	ctx    context.Context
-	client *koyeb.APIClient
-	mapper *idmapper.Mapper
 }
 
-func (h *DeploymentHandler) InitHandler(cmd *cobra.Command, args []string) error {
-	h.ctx = getAuth(context.Background())
-	h.client = getApiClient()
-	h.mapper = idmapper.NewMapper(h.ctx, h.client)
-	return nil
-}
-
-func (h *DeploymentHandler) ResolveDeploymentArgs(val string) string {
-	deploymentMapper := h.mapper.Deployment()
+func (h *DeploymentHandler) ResolveDeploymentArgs(ctx *CLIContext, val string) string {
+	deploymentMapper := ctx.mapper.Deployment()
 	id, err := deploymentMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

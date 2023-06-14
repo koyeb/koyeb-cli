@@ -10,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DeploymentHandler) Get(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
+func (h *DeploymentHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.DeploymentsApi.GetDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getDeploymentsReply := NewGetDeploymentReply(h.mapper, res, full)
+	getDeploymentsReply := NewGetDeploymentReply(ctx.mapper, res, full)
 
 	return renderer.NewItemRenderer(getDeploymentsReply).Render(output)
 }

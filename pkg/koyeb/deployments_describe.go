@@ -7,21 +7,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.DeploymentsApi.GetDeployment(h.ctx, h.ResolveDeploymentArgs(args[0])).Execute()
+func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.DeploymentsApi.GetDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	// TODO(tleroux): Experimental for now.
-	regionalRes, resp, err := h.client.RegionalDeploymentsApi.ListRegionalDeployments(h.ctx).
+	regionalRes, resp, err := ctx.client.RegionalDeploymentsApi.ListRegionalDeployments(ctx.context).
 		DeploymentId(res.Deployment.GetId()).
 		Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	instancesRes, resp, err := h.client.InstancesApi.ListInstances(h.ctx).
+	instancesRes, resp, err := ctx.client.InstancesApi.ListInstances(ctx.context).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -38,10 +38,10 @@ func (h *DeploymentHandler) Describe(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	describeDeploymentsReply := NewDescribeDeploymentReply(h.mapper, res, full)
+	describeDeploymentsReply := NewDescribeDeploymentReply(ctx.mapper, res, full)
 	defDeployment := renderer.NewGenericRenderer("Definition", res.Deployment.Definition)
-	listInstancesReply := NewListInstancesReply(h.mapper, instancesRes, full)
-	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(h.mapper, regionalRes, full)
+	listInstancesReply := NewListInstancesReply(ctx.mapper, instancesRes, full)
+	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(ctx.mapper, regionalRes, full)
 
 	return renderer.
 		NewMultiRenderer(
