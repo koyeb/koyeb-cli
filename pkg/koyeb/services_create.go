@@ -7,15 +7,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
+func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
 	app, _ := cmd.Flags().GetString("app")
-	resApp, resp, err := h.client.AppsApi.GetApp(h.ctx, h.ResolveAppArgs(app)).Execute()
+	resApp, resp, err := ctx.client.AppsApi.GetApp(ctx.context, h.ResolveAppArgs(ctx, app)).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	createService.SetAppId(resApp.App.GetId())
-	res, resp, err := h.client.ServicesApi.CreateService(h.ctx).Service(*createService).Execute()
+	res, resp, err := ctx.client.ServicesApi.CreateService(ctx.context).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -24,7 +24,7 @@ func (h *ServiceHandler) Create(cmd *cobra.Command, args []string, createService
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+	getServiceReply := NewGetServiceReply(ctx.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
 
 	return renderer.NewDescribeRenderer(getServiceReply).Render(output)
 }

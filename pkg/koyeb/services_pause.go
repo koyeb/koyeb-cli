@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Pause(cmd *cobra.Command, args []string) error {
-	_, resp, err := h.client.ServicesApi.PauseService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+func (h *ServiceHandler) Pause(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	_, resp, err := ctx.client.ServicesApi.PauseService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

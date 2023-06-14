@@ -7,13 +7,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
-	res, resp, err := h.client.ServicesApi.GetService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	res, resp, err := ctx.client.ServicesApi.GetService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	instancesRes, resp, err := h.client.InstancesApi.ListInstances(h.ctx).
+	instancesRes, resp, err := ctx.client.InstancesApi.ListInstances(ctx.context).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -27,7 +27,7 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 		fatalApiError(err, resp)
 	}
 
-	deploymentsRes, resp, err := h.client.DeploymentsApi.ListDeployments(h.ctx).ServiceId(res.Service.GetId()).Execute()
+	deploymentsRes, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).ServiceId(res.Service.GetId()).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -35,9 +35,9 @@ func (h *ServiceHandler) Describe(cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
 
-	getServiceReply := NewGetServiceReply(h.mapper, res, full)
-	listInstancesReply := NewListInstancesReply(h.mapper, instancesRes, full)
-	listDeploymentsReply := NewListDeploymentsReply(h.mapper, deploymentsRes, full)
+	getServiceReply := NewGetServiceReply(ctx.mapper, res, full)
+	listInstancesReply := NewListInstancesReply(ctx.mapper, instancesRes, full)
+	listDeploymentsReply := NewListDeploymentsReply(ctx.mapper, deploymentsRes, full)
 
 	return renderer.NewDescribeRenderer(getServiceReply, listDeploymentsReply, listInstancesReply).Render(output)
 }

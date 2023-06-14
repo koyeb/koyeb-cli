@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	res, resp, err := h.client.ServicesApi.UpdateService(h.ctx, h.ResolveServiceArgs(args[0])).Service(*updateService).Execute()
+func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
+	res, resp, err := ctx.client.ServicesApi.UpdateService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Service(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -16,7 +16,7 @@ func (h *ServiceHandler) Update(cmd *cobra.Command, args []string, updateService
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	getServiceReply := NewGetServiceReply(h.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+	getServiceReply := NewGetServiceReply(ctx.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
 
 	return renderer.NewDescribeItemRenderer(getServiceReply).Render(output)
 }

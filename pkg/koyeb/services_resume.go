@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Resume(cmd *cobra.Command, args []string) error {
-	_, resp, err := h.client.ServicesApi.ResumeService(h.ctx, h.ResolveServiceArgs(args[0])).Execute()
+func (h *ServiceHandler) Resume(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	_, resp, err := ctx.client.ServicesApi.ResumeService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

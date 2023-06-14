@@ -6,12 +6,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) ReDeploy(cmd *cobra.Command, args []string) error {
+func (h *ServiceHandler) ReDeploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	useCache := GetBoolFlags(cmd, "use-cache")
 
 	redeployBody := *koyeb.NewRedeployRequestInfoWithDefaults()
 	redeployBody.UseCache = &useCache
-	_, resp, err := h.client.ServicesApi.ReDeploy(h.ctx, h.ResolveServiceArgs(args[0])).Info(redeployBody).Execute()
+	_, resp, err := ctx.client.ServicesApi.ReDeploy(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Info(redeployBody).Execute()
 
 	if err != nil {
 		fatalApiError(err, resp)

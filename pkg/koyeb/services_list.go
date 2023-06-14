@@ -9,17 +9,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
+func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	list := []koyeb.ServiceListItem{}
 
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		req := h.client.ServicesApi.ListServices(h.ctx)
+		req := ctx.client.ServicesApi.ListServices(ctx.context)
 		appId := GetStringFlags(cmd, "app")
 		if appId != "" {
-			req = req.AppId(h.ResolveAppArgs(appId))
+			req = req.AppId(h.ResolveAppArgs(ctx, appId))
 		}
 		name := GetStringFlags(cmd, "name")
 		if name != "" {
@@ -41,7 +41,7 @@ func (h *ServiceHandler) List(cmd *cobra.Command, args []string) error {
 
 	full := GetBoolFlags(cmd, "full")
 	output := GetStringFlags(cmd, "output")
-	listServicesReply := NewListServicesReply(h.mapper, &koyeb.ListServicesReply{Services: list}, full)
+	listServicesReply := NewListServicesReply(ctx.mapper, &koyeb.ListServicesReply{Services: list}, full)
 
 	return renderer.NewListRenderer(listServicesReply).Render(output)
 }
