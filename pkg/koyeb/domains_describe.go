@@ -9,7 +9,6 @@ import (
 
 func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	replies := []renderer.ApiResources{}
 
 	getDomainRes, resp, err := ctx.client.DomainsApi.GetDomain(ctx.context, h.ResolveDomainArgs(ctx, args[0])).Execute()
@@ -43,7 +42,11 @@ func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []str
 		replies = append(replies, listServicesReply)
 	}
 
-	return renderer.NewDescribeRenderer(replies...).Render(output)
+	renderer := renderer.NewChainRenderer(ctx.renderer)
+	for _, reply := range replies {
+		renderer.Render(reply)
+	}
+	return renderer.Err()
 }
 
 type DescribeDomainReply struct {

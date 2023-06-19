@@ -40,10 +40,8 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	listServicesReply := NewListServicesReply(ctx.mapper, &koyeb.ListServicesReply{Services: list}, full)
-
-	return renderer.NewListRenderer(listServicesReply).Render(output)
+	return ctx.renderer.Render(listServicesReply)
 }
 
 type ListServicesReply struct {

@@ -14,10 +14,8 @@ func (h *DomainHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) 
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	getDomainsReply := NewGetDomainReply(ctx.mapper, res, full)
-
-	return renderer.NewItemRenderer(getDomainsReply).Render(output)
+	return ctx.renderer.Render(getDomainsReply)
 }
 
 type GetDomainReply struct {

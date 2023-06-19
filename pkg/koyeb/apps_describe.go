@@ -18,11 +18,9 @@ func (h *AppHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	describeAppsReply := NewDescribeAppReply(ctx.mapper, res, full)
 	listServicesReply := NewListServicesReply(ctx.mapper, resListServices, full)
-
-	return renderer.NewDescribeRenderer(describeAppsReply, listServicesReply).Render(output)
+	return renderer.NewChainRenderer(ctx.renderer).Render(describeAppsReply).Render(listServicesReply).Err()
 }
 
 type DescribeAppReply struct {

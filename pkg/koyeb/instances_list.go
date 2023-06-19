@@ -31,10 +31,8 @@ func (h *InstanceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	listInstancesReply := NewListInstancesReply(ctx.mapper, &koyeb.ListInstancesReply{Instances: list}, full)
-
-	return renderer.NewListRenderer(listInstancesReply).Render(output)
+	return ctx.renderer.Render(listInstancesReply)
 }
 
 func (h *InstanceHandler) getListQuery(ctx *CLIContext, cmd *cobra.Command) koyeb.ApiListInstancesRequest {

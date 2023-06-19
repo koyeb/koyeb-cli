@@ -31,10 +31,8 @@ func (h *DeploymentHandler) List(ctx *CLIContext, cmd *cobra.Command, args []str
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	listDeploymentsReply := NewListDeploymentsReply(ctx.mapper, &koyeb.ListDeploymentsReply{Deployments: list}, full)
-
-	return renderer.NewListRenderer(listDeploymentsReply).Render(output)
+	return ctx.renderer.Render(listDeploymentsReply)
 }
 
 type ListDeploymentsReply struct {
