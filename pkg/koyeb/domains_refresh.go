@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
@@ -18,8 +17,6 @@ func (h *DomainHandler) Refresh(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	getDomainsReply := NewGetDomainReply(ctx.mapper, res, full)
-
-	return renderer.NewItemRenderer(getDomainsReply).Render(output)
+	return ctx.renderer.Render(getDomainsReply)
 }

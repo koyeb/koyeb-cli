@@ -28,9 +28,11 @@ func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, cr
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	getAppsReply := NewGetAppReply(ctx.mapper, &koyeb.GetAppReply{App: res.App}, full)
 	getServiceReply := NewGetServiceReply(ctx.mapper, &koyeb.GetServiceReply{Service: serviceRes.Service}, full)
 
-	return renderer.NewDescribeRenderer(getAppsReply, getServiceReply).Render(output)
+	return renderer.NewChainRenderer(ctx.renderer).
+		Render(getAppsReply).
+		Render(getServiceReply).
+		Err()
 }

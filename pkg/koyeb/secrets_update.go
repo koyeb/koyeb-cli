@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,8 +36,6 @@ func (h *SecretHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []strin
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	getSecretsReply := NewGetSecretReply(ctx.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
-
-	return renderer.NewDescribeItemRenderer(getSecretsReply).Render(output)
+	return ctx.renderer.Render(getSecretsReply)
 }

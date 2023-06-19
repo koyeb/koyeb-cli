@@ -14,10 +14,8 @@ func (h *SecretHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []str
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	getSecretsReply := NewDescribeSecretReply(ctx.mapper, res, full)
-
-	return renderer.NewDescribeRenderer(getSecretsReply).Render(output)
+	return ctx.renderer.Render(getSecretsReply)
 
 }
 

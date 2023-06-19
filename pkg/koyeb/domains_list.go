@@ -34,10 +34,8 @@ func (h *DomainHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	listDomainsReply := NewListDomainsReply(ctx.mapper, &koyeb.ListDomainsReply{Domains: list}, full)
-
-	return renderer.NewListRenderer(listDomainsReply).Render(output)
+	return ctx.renderer.Render(listDomainsReply)
 }
 
 type ListDomainsReply struct {

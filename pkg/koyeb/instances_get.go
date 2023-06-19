@@ -16,10 +16,8 @@ func (h *InstanceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 	getInstancesReply := NewGetInstanceReply(ctx.mapper, res, full)
-
-	return renderer.NewItemRenderer(getInstancesReply).Render(output)
+	return ctx.renderer.Render(getInstancesReply)
 }
 
 type GetInstanceReply struct {

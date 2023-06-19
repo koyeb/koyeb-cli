@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
@@ -20,8 +19,7 @@ func (h *DomainHandler) Detach(ctx *CLIContext, cmd *cobra.Command, args []strin
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	output := GetStringFlags(cmd, "output")
 
 	getDomainReply := NewGetDomainReply(ctx.mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
-	return renderer.NewDescribeItemRenderer(getDomainReply).Render(output)
+	return ctx.renderer.Render(getDomainReply)
 }
