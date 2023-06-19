@@ -33,6 +33,7 @@ func NewDomainCmd() *cobra.Command {
 	describeDomainCmd := &cobra.Command{
 		Use:   "describe",
 		Short: "Describe domain",
+		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Describe),
 	}
 	domainCmd.AddCommand(describeDomainCmd)
