@@ -12,3 +12,6 @@ func (r *JSONRenderer) Render(item ApiResources) error {
 	fmt.Println(string(buf))
 	return nil
 }
+
+func (r *JSONRenderer) RenderSeparator() {
+}

@@ -20,3 +20,7 @@ func (r *YAMLRenderer) Render(item ApiResources) error {
 	fmt.Printf("%s", string(y))
 	return nil
 }
+
+func (r *YAMLRenderer) RenderSeparator() {
+	fmt.Println("---")
+}
