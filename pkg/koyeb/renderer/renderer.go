@@ -7,6 +7,10 @@
 // The resource to display must implement the ApiResources interface.
 package renderer
 
+import (
+	"errors"
+)
+
 type ApiResources interface {
 	Headers() []string
 	Fields() []map[string]string
@@ -19,12 +23,37 @@ type Renderer interface {
 	RenderSeparator()
 }
 
-func NewRenderer(format string) Renderer {
-	// XXX jcastets: use an enum instead of a string, requires to parse the flag as an enum
+// OutputFormat implements the flag.Value interface to parse the --output flag.
+type OutputFormat string
+
+const (
+	JSONFormat  OutputFormat = "json"
+	YAMLFormat  OutputFormat = "yaml"
+	TableFormat OutputFormat = "table"
+)
+
+func (f *OutputFormat) String() string {
+	return string(*f)
+}
+
+func (f *OutputFormat) Set(value string) error {
+	switch value {
+	case "json", "yaml", "table":
+		*f = OutputFormat(value)
+		return nil
+	}
+	return errors.New(`invalid output format. Valid values are "json", "yaml" and "table"`)
+}
+
+func (f *OutputFormat) Type() string {
+	return "output"
+}
+
+func NewRenderer(format OutputFormat) Renderer {
 	switch format {
-	case "json":
+	case JSONFormat:
 		return &JSONRenderer{}
-	case "yaml":
+	case YAMLFormat:
 		return &YAMLRenderer{}
 	default:
 		return &TableRenderer{}

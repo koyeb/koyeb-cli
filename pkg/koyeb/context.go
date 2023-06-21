@@ -16,10 +16,7 @@ func SetupCLIContext(cmd *cobra.Command) {
 	ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
 	ctx = context.WithValue(ctx, "client", apiClient)
 	ctx = context.WithValue(ctx, "mapper", idmapper.NewMapper(ctx, apiClient))
-
-	output := GetStringFlags(cmd, "output")
-	ctx = context.WithValue(ctx, "renderer", renderer.NewRenderer(output))
-
+	ctx = context.WithValue(ctx, "renderer", renderer.NewRenderer(outputFormat))
 	cmd.SetContext(ctx)
 }
 

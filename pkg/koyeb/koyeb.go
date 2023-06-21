@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -24,7 +25,7 @@ var (
 	cfgFile      string
 	apiurl       string
 	token        string
-	outputFormat string
+	outputFormat renderer.OutputFormat
 	debug        bool
 
 	rootCmd = &cobra.Command{
@@ -93,7 +94,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format (yaml,json,table)")
+	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
 	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
