@@ -18,7 +18,7 @@ Koyeb CLI
   -d, --debug           debug
       --full            show full id
   -h, --help            help for koyeb
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -55,7 +55,7 @@ koyeb login [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -80,7 +80,7 @@ Apps
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -118,7 +118,7 @@ koyeb apps create NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -147,7 +147,7 @@ koyeb apps delete NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -176,7 +176,7 @@ koyeb apps describe NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -205,7 +205,7 @@ koyeb apps get NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -262,7 +262,7 @@ koyeb apps init NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -291,7 +291,7 @@ koyeb apps list [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -320,7 +320,7 @@ koyeb apps pause NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -349,7 +349,7 @@ koyeb apps resume NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -379,7 +379,7 @@ koyeb apps update NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -404,7 +404,7 @@ Domains
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -441,7 +441,7 @@ koyeb domains attach NAME APP [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -471,7 +471,7 @@ koyeb domains create NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -500,7 +500,7 @@ koyeb domains delete [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -529,7 +529,7 @@ koyeb domains describe [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -558,7 +558,7 @@ koyeb domains detach NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -587,7 +587,7 @@ koyeb domains get NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -616,7 +616,7 @@ koyeb domains list [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -645,7 +645,7 @@ koyeb domains refresh NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -670,7 +670,7 @@ Secrets
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -707,7 +707,7 @@ koyeb secrets create NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -736,7 +736,7 @@ koyeb secrets delete NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -765,7 +765,7 @@ koyeb secrets describe NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -794,7 +794,7 @@ koyeb secrets get NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -823,7 +823,7 @@ koyeb secrets list [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -854,7 +854,7 @@ koyeb secrets update NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -879,7 +879,7 @@ Services
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -948,7 +948,7 @@ koyeb services create NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -977,7 +977,7 @@ koyeb services delete NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1006,7 +1006,7 @@ koyeb services describe NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1035,7 +1035,7 @@ koyeb services exec NAME CMD -- [args...] [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1064,7 +1064,7 @@ koyeb services get NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1095,7 +1095,7 @@ koyeb services list [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1126,7 +1126,7 @@ koyeb services logs NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1155,7 +1155,7 @@ koyeb services pause NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1185,7 +1185,7 @@ koyeb services redeploy NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1214,7 +1214,7 @@ koyeb services resume NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1271,7 +1271,7 @@ koyeb services update NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1296,7 +1296,7 @@ Deployments
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1330,7 +1330,7 @@ koyeb deployments cancel NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1359,7 +1359,7 @@ koyeb deployments describe NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1388,7 +1388,7 @@ koyeb deployments get NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1417,7 +1417,7 @@ koyeb deployments list [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1447,7 +1447,7 @@ koyeb deployments logs NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1472,7 +1472,7 @@ Instances
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1506,7 +1506,7 @@ koyeb instances describe NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1535,7 +1535,7 @@ koyeb instances exec NAME CMD -- [args...] [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1564,7 +1564,7 @@ koyeb instances get NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1595,7 +1595,7 @@ koyeb instances list [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1624,7 +1624,7 @@ koyeb instances logs NAME [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
@@ -1653,7 +1653,7 @@ koyeb version [flags]
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           debug
       --full            show full id
-  -o, --output string   output format (yaml,json,table)
+  -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
 ```
