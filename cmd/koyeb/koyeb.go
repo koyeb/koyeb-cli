@@ -1,7 +1,13 @@
 package main
 
-import "github.com/koyeb/koyeb-cli/pkg/koyeb"
+import (
+	"os"
+
+	"github.com/koyeb/koyeb-cli/pkg/koyeb"
+)
 
 func main() {
-	koyeb.Run()
+	if err := koyeb.Run(); err != nil {
+		os.Exit(1)
+	}
 }
