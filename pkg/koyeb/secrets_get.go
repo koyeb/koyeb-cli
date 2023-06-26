@@ -1,8 +1,6 @@
 package koyeb
 
 import (
-	"fmt"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -62,5 +60,5 @@ func (r *GetSecretReply) Fields() []map[string]string {
 }
 
 func formatSecretType(st koyeb.SecretType) string {
-	return fmt.Sprintf("%s", st)
+	return string(st)
 }
