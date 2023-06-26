@@ -275,7 +275,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			}
 			portNum, err := strconv.Atoi(split[0])
 			if err != nil {
-				errors.Wrap(err, "Invalid port number")
+				return fmt.Errorf("invalid port number: %v", split[0])
 			}
 			newPort.Port = koyeb.PtrInt64(int64(portNum))
 			newPort.Protocol = koyeb.PtrString("http")
@@ -303,7 +303,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			if len(spli) > 1 {
 				portNum, err := strconv.Atoi(spli[1])
 				if err != nil {
-					errors.Wrap(err, "Invalid route number")
+					return fmt.Errorf("invalid route number: %v", spli[1])
 				}
 				newRoute.Port = koyeb.PtrInt64(int64(portNum))
 			}
