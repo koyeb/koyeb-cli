@@ -46,3 +46,6 @@ test-fmt:
 test: tidy cmd pkg test-fmt test-linux ## launch tests
 
 test-all: tidy cmd pkg test-fmt test-linux test-windows ## launch tests
+
+lint:
+	golangci-lint run -v ./...
