@@ -116,7 +116,7 @@ func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, id Exe
 }
 
 func (e *Executor) Run(ctx context.Context) (int, error) {
-	path := fmt.Sprintf("/v1/streams/instances/exec")
+	path := "/v1/streams/instances/exec"
 	c, err := e.dial(apiurl, path)
 	if err != nil {
 		return -1, errors.Wrapf(err, "could not dial %s", path)

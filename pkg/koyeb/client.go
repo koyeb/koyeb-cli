@@ -49,7 +49,7 @@ type genericError struct {
 
 func renderHTTPResponse(resp *http.Response) string {
 	if resp == nil {
-		return fmt.Sprintf("Unhandled error")
+		return "Unhandled error"
 	}
 
 	gError := genericError{}
