@@ -11,9 +11,7 @@ import (
 type TableRenderer struct{}
 
 func (r *TableRenderer) Render(item ApiResources) error {
-	var table *tablewriter.Table
-
-	table = tablewriter.NewWriter(os.Stdout)
+	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(true)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
