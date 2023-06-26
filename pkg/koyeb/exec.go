@@ -24,7 +24,11 @@ func exec(id ExecId, cmd []string) (int, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "could not get standard streams")
 	}
-	defer cleanup()
+	defer func() {
+		if err := cleanup(); err != nil {
+			log.Errorf("could not restore the terminal state: %v", err)
+		}
+	}()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
