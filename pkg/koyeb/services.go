@@ -40,7 +40,7 @@ func NewServiceCmd() *cobra.Command {
 	}
 	addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "App")
-	createServiceCmd.MarkFlagRequired("app")
+	createServiceCmd.MarkFlagRequired("app") //nolint:errcheck
 	serviceCmd.AddCommand(createServiceCmd)
 
 	getServiceCmd := &cobra.Command{

@@ -98,9 +98,11 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
-	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))
-	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
-	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+
+	// viper.BindPFlag returns an error only if the second argument is nil, which is never the case here, so we ignore the error
+	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))     //nolint:errcheck
+	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token")) //nolint:errcheck
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug")) //nolint:errcheck
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(versionCmd)
