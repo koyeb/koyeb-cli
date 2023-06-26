@@ -2,7 +2,6 @@ package koyeb
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -21,7 +20,6 @@ var (
 	GithubRepo = "koyeb/koyeb-cli"
 
 	// Used for flags.
-	file         string
 	cfgFile      string
 	apiurl       string
 	token        string
@@ -49,22 +47,11 @@ var (
 	}
 )
 
-func notImplemented(cmd *cobra.Command, args []string) error {
-	return errors.New("Not implemented")
-}
-
 func Log(cmd *cobra.Command, args []string) {
 	log.Infof("Cmd %v", cmd)
 	log.Infof("Cmd has parent %v", cmd.HasParent())
 	log.Infof("Cmd parent %v", cmd.Parent())
 	log.Infof("Args %v", args)
-}
-
-func genericArgs(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
-		return errors.New("requires a resource argument")
-	}
-	return nil
 }
 
 func GetRootCmd() *cobra.Command {
