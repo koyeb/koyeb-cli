@@ -1,8 +1,9 @@
 package koyeb
 
 import (
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 var completionCmd = &cobra.Command{
@@ -35,14 +36,15 @@ $ koyeb completion zsh > "${fpath[1]}/_koyeb"
 	DisableFlagsInUseLine: true,
 	ValidArgs:             []string{"bash", "zsh", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		switch args[0] {
 		case "bash":
-			cmd.Root().GenBashCompletion(os.Stdout)
+			return cmd.Root().GenBashCompletion(os.Stdout)
 		case "zsh":
-			cmd.Root().GenZshCompletion(os.Stdout)
+			return cmd.Root().GenZshCompletion(os.Stdout)
 		case "powershell":
-			cmd.Root().GenPowerShellCompletion(os.Stdout)
+			return cmd.Root().GenPowerShellCompletion(os.Stdout)
 		}
+		return nil
 	},
 }
