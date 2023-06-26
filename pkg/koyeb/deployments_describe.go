@@ -9,20 +9,20 @@ import (
 )
 
 func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.DeploymentsApi.GetDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	// TODO(tleroux): Experimental for now.
-	regionalRes, resp, err := ctx.client.RegionalDeploymentsApi.ListRegionalDeployments(ctx.context).
+	regionalRes, resp, err := ctx.Client.RegionalDeploymentsApi.ListRegionalDeployments(ctx.Context).
 		DeploymentId(res.Deployment.GetId()).
 		Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	instancesRes, resp, err := ctx.client.InstancesApi.ListInstances(ctx.context).
+	instancesRes, resp, err := ctx.Client.InstancesApi.ListInstances(ctx.Context).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -38,12 +38,12 @@ func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args [
 
 	full := GetBoolFlags(cmd, "full")
 
-	describeDeploymentsReply := NewDescribeDeploymentReply(ctx.mapper, res, full)
-	listInstancesReply := NewListInstancesReply(ctx.mapper, instancesRes, full)
-	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(ctx.mapper, regionalRes, full)
+	describeDeploymentsReply := NewDescribeDeploymentReply(ctx.Mapper, res, full)
+	listInstancesReply := NewListInstancesReply(ctx.Mapper, instancesRes, full)
+	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(ctx.Mapper, regionalRes, full)
 	deploymentDefinitionReply := NewDescribeDeploymentDefinitionReply(res)
 
-	return renderer.NewChainRenderer(ctx.renderer).
+	return renderer.NewChainRenderer(ctx.Renderer).
 		Render(describeDeploymentsReply).
 		Render(deploymentDefinitionReply).
 		Render(listRegionalDeploymentsReply).

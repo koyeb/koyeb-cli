@@ -16,7 +16,7 @@ func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) er
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, st, err := ctx.client.AppsApi.ListApps(ctx.context).
+		res, st, err := ctx.Client.AppsApi.ListApps(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err, st)
@@ -31,8 +31,8 @@ func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) er
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listAppsReply := NewListAppsReply(ctx.mapper, &koyeb.ListAppsReply{Apps: list}, full)
-	return ctx.renderer.Render(listAppsReply)
+	listAppsReply := NewListAppsReply(ctx.Mapper, &koyeb.ListAppsReply{Apps: list}, full)
+	return ctx.Renderer.Render(listAppsReply)
 }
 
 type ListAppsReply struct {

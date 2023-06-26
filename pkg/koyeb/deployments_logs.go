@@ -6,7 +6,7 @@ import (
 )
 
 func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	deploymentDetail, resp, err := ctx.client.DeploymentsApi.GetDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
+	deploymentDetail, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

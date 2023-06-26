@@ -8,14 +8,14 @@ import (
 )
 
 func (h *InstanceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.InstancesApi.GetInstance(ctx.context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.InstancesApi.GetInstance(ctx.Context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	describeInstancesReply := NewDescribeInstanceReply(ctx.mapper, res, full)
-	return ctx.renderer.Render(describeInstancesReply)
+	describeInstancesReply := NewDescribeInstanceReply(ctx.Mapper, res, full)
+	return ctx.Renderer.Render(describeInstancesReply)
 }
 
 type DescribeInstanceReply struct {

@@ -67,7 +67,7 @@ type InstanceHandler struct {
 }
 
 func (h *InstanceHandler) ResolveInstanceArgs(ctx *CLIContext, val string) string {
-	instanceMapper := ctx.mapper.Instance()
+	instanceMapper := ctx.Mapper.Instance()
 	id, err := instanceMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)
@@ -77,7 +77,7 @@ func (h *InstanceHandler) ResolveInstanceArgs(ctx *CLIContext, val string) strin
 }
 
 func (h *InstanceHandler) ResolveServiceArgs(ctx *CLIContext, val string) string {
-	svcMapper := ctx.mapper.Service()
+	svcMapper := ctx.Mapper.Service()
 	id, err := svcMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

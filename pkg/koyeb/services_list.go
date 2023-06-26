@@ -16,7 +16,7 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		req := ctx.client.ServicesApi.ListServices(ctx.context)
+		req := ctx.Client.ServicesApi.ListServices(ctx.Context)
 		appId := GetStringFlags(cmd, "app")
 		if appId != "" {
 			req = req.AppId(h.ResolveAppArgs(ctx, appId))
@@ -40,8 +40,8 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listServicesReply := NewListServicesReply(ctx.mapper, &koyeb.ListServicesReply{Services: list}, full)
-	return ctx.renderer.Render(listServicesReply)
+	listServicesReply := NewListServicesReply(ctx.Mapper, &koyeb.ListServicesReply{Services: list}, full)
+	return ctx.Renderer.Render(listServicesReply)
 }
 
 type ListServicesReply struct {

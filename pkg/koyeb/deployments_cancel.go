@@ -6,7 +6,7 @@ import (
 )
 
 func (h *DeploymentHandler) Cancel(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	_, resp, err := ctx.client.DeploymentsApi.CancelDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
+	_, resp, err := ctx.Client.DeploymentsApi.CancelDeployment(ctx.Context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

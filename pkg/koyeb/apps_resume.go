@@ -6,7 +6,7 @@ import (
 )
 
 func (h *AppHandler) Resume(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	_, resp, err := ctx.client.AppsApi.ResumeApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
+	_, resp, err := ctx.Client.AppsApi.ResumeApp(ctx.Context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

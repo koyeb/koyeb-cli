@@ -7,13 +7,13 @@ import (
 )
 
 func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	res, resp, err := ctx.client.ServicesApi.UpdateService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Service(*updateService).Execute()
+	res, resp, err := ctx.Client.ServicesApi.UpdateService(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Service(*updateService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
 
 	full := GetBoolFlags(cmd, "full")
-	getServiceReply := NewGetServiceReply(ctx.mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
-	return ctx.renderer.Render(getServiceReply)
+	getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+	return ctx.Renderer.Render(getServiceReply)
 }

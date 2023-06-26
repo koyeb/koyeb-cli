@@ -8,19 +8,19 @@ import (
 )
 
 func (h *AppHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.AppsApi.GetApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
-	resListServices, resp, err := ctx.client.ServicesApi.ListServices(ctx.context).AppId(res.App.GetId()).Limit("100").Execute()
+	resListServices, resp, err := ctx.Client.ServicesApi.ListServices(ctx.Context).AppId(res.App.GetId()).Limit("100").Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	describeAppsReply := NewDescribeAppReply(ctx.mapper, res, full)
-	listServicesReply := NewListServicesReply(ctx.mapper, resListServices, full)
-	return renderer.NewChainRenderer(ctx.renderer).Render(describeAppsReply).Render(listServicesReply).Err()
+	describeAppsReply := NewDescribeAppReply(ctx.Mapper, res, full)
+	listServicesReply := NewListServicesReply(ctx.Mapper, resListServices, full)
+	return renderer.NewChainRenderer(ctx.Renderer).Render(describeAppsReply).Render(listServicesReply).Err()
 }
 
 type DescribeAppReply struct {

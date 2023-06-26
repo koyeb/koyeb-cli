@@ -10,28 +10,28 @@ import (
 func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
 	uid := uuid.Must(uuid.NewV4())
 	createService.SetAppId(uid.String())
-	_, resp, err := ctx.client.ServicesApi.CreateService(ctx.context).DryRun(true).Service(*createService).Execute()
+	_, resp, err := ctx.Client.ServicesApi.CreateService(ctx.Context).DryRun(true).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	createApp.SetName(args[0])
-	res, resp, err := ctx.client.AppsApi.CreateApp(ctx.context).App(*createApp).Execute()
+	res, resp, err := ctx.Client.AppsApi.CreateApp(ctx.Context).App(*createApp).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 	createService.SetAppId(res.App.GetId())
 
-	serviceRes, resp, err := ctx.client.ServicesApi.CreateService(ctx.context).Service(*createService).Execute()
+	serviceRes, resp, err := ctx.Client.ServicesApi.CreateService(ctx.Context).Service(*createService).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getAppsReply := NewGetAppReply(ctx.mapper, &koyeb.GetAppReply{App: res.App}, full)
-	getServiceReply := NewGetServiceReply(ctx.mapper, &koyeb.GetServiceReply{Service: serviceRes.Service}, full)
+	getAppsReply := NewGetAppReply(ctx.Mapper, &koyeb.GetAppReply{App: res.App}, full)
+	getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: serviceRes.Service}, full)
 
-	return renderer.NewChainRenderer(ctx.renderer).
+	return renderer.NewChainRenderer(ctx.Renderer).
 		Render(getAppsReply).
 		Render(getServiceReply).
 		Err()

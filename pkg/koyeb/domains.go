@@ -87,7 +87,7 @@ func NewDomainHandler() *DomainHandler {
 }
 
 func (h *DomainHandler) ResolveDomainArgs(ctx *CLIContext, val string) string {
-	domainMapper := ctx.mapper.Domain()
+	domainMapper := ctx.Mapper.Domain()
 	id, err := domainMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

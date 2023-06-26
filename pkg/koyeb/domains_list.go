@@ -16,7 +16,7 @@ func (h *DomainHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, st, err := ctx.client.DomainsApi.ListDomains(ctx.context).
+		res, st, err := ctx.Client.DomainsApi.ListDomains(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Types([]string{string(koyeb.DOMAINTYPE_CUSTOM)}).
@@ -34,8 +34,8 @@ func (h *DomainHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listDomainsReply := NewListDomainsReply(ctx.mapper, &koyeb.ListDomainsReply{Domains: list}, full)
-	return ctx.renderer.Render(listDomainsReply)
+	listDomainsReply := NewListDomainsReply(ctx.Mapper, &koyeb.ListDomainsReply{Domains: list}, full)
+	return ctx.Renderer.Render(listDomainsReply)
 }
 
 type ListDomainsReply struct {

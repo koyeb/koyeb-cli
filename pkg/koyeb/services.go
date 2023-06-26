@@ -95,7 +95,7 @@ func NewServiceCmd() *cobra.Command {
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			updateService := koyeb.NewUpdateServiceWithDefaults()
 
-			latestDeploy, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).
+			latestDeploy, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
 				Limit("1").ServiceId(h.ResolveServiceArgs(ctx, args[0])).Execute()
 			if err != nil {
 				fatalApiError(err, resp)
@@ -159,7 +159,7 @@ type ServiceHandler struct {
 }
 
 func (h *ServiceHandler) ResolveServiceArgs(ctx *CLIContext, val string) string {
-	serviceMapper := ctx.mapper.Service()
+	serviceMapper := ctx.Mapper.Service()
 	id, err := serviceMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)
@@ -169,7 +169,7 @@ func (h *ServiceHandler) ResolveServiceArgs(ctx *CLIContext, val string) string 
 }
 
 func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) string {
-	appMapper := ctx.mapper.App()
+	appMapper := ctx.Mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

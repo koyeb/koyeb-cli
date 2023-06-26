@@ -44,12 +44,12 @@ func (h *SecretHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 
 		createSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, resp, err := ctx.client.SecretsApi.CreateSecret(ctx.context).Secret(*createSecret).Execute()
+	res, resp, err := ctx.Client.SecretsApi.CreateSecret(ctx.Context).Secret(*createSecret).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getSecretsReply := NewGetSecretReply(ctx.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
-	return ctx.renderer.Render(getSecretsReply)
+	getSecretsReply := NewGetSecretReply(ctx.Mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
+	return ctx.Renderer.Render(getSecretsReply)
 }

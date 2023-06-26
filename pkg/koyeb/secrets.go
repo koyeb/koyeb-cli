@@ -84,7 +84,7 @@ type SecretHandler struct {
 }
 
 func ResolveSecretArgs(ctx *CLIContext, val string) string {
-	secretMapper := ctx.mapper.Secret()
+	secretMapper := ctx.Mapper.Secret()
 	id, err := secretMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

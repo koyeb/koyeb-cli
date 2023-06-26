@@ -16,7 +16,7 @@ func (h *SecretHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := ctx.client.SecretsApi.ListSecrets(ctx.context).
+		res, resp, err := ctx.Client.SecretsApi.ListSecrets(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
@@ -31,8 +31,8 @@ func (h *SecretHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listSecretsReply := NewListSecretsReply(ctx.mapper, &koyeb.ListSecretsReply{Secrets: list}, full)
-	return ctx.renderer.Render(listSecretsReply)
+	listSecretsReply := NewListSecretsReply(ctx.Mapper, &koyeb.ListSecretsReply{Secrets: list}, full)
+	return ctx.Renderer.Render(listSecretsReply)
 }
 
 type ListSecretsReply struct {

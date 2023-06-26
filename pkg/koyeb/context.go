@@ -21,11 +21,11 @@ func SetupCLIContext(cmd *cobra.Command) {
 }
 
 type CLIContext struct {
-	context  context.Context
-	client   *koyeb.APIClient
-	mapper   *idmapper.Mapper
-	token    string
-	renderer renderer.Renderer
+	Context  context.Context
+	Client   *koyeb.APIClient
+	Mapper   *idmapper.Mapper
+	Token    string
+	Renderer renderer.Renderer
 }
 
 // WithCLIContext is a decorator that provides a CLIContext to cobra commands.
@@ -33,11 +33,11 @@ func WithCLIContext(fn func(ctx *CLIContext, cmd *cobra.Command, args []string) 
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 		cliContext := CLIContext{
-			context:  ctx,
-			client:   ctx.Value("client").(*koyeb.APIClient),
-			mapper:   ctx.Value("mapper").(*idmapper.Mapper),
-			token:    ctx.Value(koyeb.ContextAccessToken).(string),
-			renderer: ctx.Value("renderer").(renderer.Renderer),
+			Context:  ctx,
+			Client:   ctx.Value("client").(*koyeb.APIClient),
+			Mapper:   ctx.Value("mapper").(*idmapper.Mapper),
+			Token:    ctx.Value(koyeb.ContextAccessToken).(string),
+			Renderer: ctx.Value("renderer").(renderer.Renderer),
 		}
 		return fn(&cliContext, cmd, args)
 	}

@@ -11,7 +11,7 @@ func (h *ServiceHandler) ReDeploy(ctx *CLIContext, cmd *cobra.Command, args []st
 
 	redeployBody := *koyeb.NewRedeployRequestInfoWithDefaults()
 	redeployBody.UseCache = &useCache
-	_, resp, err := ctx.client.ServicesApi.ReDeploy(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Info(redeployBody).Execute()
+	_, resp, err := ctx.Client.ServicesApi.ReDeploy(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Info(redeployBody).Execute()
 
 	if err != nil {
 		fatalApiError(err, resp)

@@ -8,14 +8,14 @@ import (
 )
 
 func (h *DomainHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.DomainsApi.GetDomain(ctx.context, h.ResolveDomainArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.DomainsApi.GetDomain(ctx.Context, h.ResolveDomainArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getDomainsReply := NewGetDomainReply(ctx.mapper, res, full)
-	return ctx.renderer.Render(getDomainsReply)
+	getDomainsReply := NewGetDomainReply(ctx.Mapper, res, full)
+	return ctx.Renderer.Render(getDomainsReply)
 }
 
 type GetDomainReply struct {

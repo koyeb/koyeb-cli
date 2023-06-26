@@ -65,7 +65,7 @@ type DeploymentHandler struct {
 }
 
 func (h *DeploymentHandler) ResolveDeploymentArgs(ctx *CLIContext, val string) string {
-	deploymentMapper := ctx.mapper.Deployment()
+	deploymentMapper := ctx.Mapper.Deployment()
 	id, err := deploymentMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)
