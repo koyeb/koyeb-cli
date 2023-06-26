@@ -8,6 +8,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
+	log "github.com/sirupsen/logrus"
 )
 
 const DevVersion = "develop"
@@ -18,7 +19,7 @@ func DetectUpdates() {
 	}
 	version, err := semver.Parse(Version)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "unable to parse version: %v", err)
+		log.Errorf("unable to parse version: %v", err)
 		return
 	}
 
@@ -44,9 +45,15 @@ func DetectUpdates() {
 		fmt.Fprintf(os.Stderr, "* A new version of the koyeb-cli (%s) is available *\nSee update instructions here: %s\n", latest.Version, latest.URL)
 	}
 	if dFile == nil {
-		os.Create(detectUpdateFile)
+		if _, err := os.Create(detectUpdateFile); err != nil {
+			log.Debugf("Unable to create detect update file: %v", err)
+			return
+		}
 	} else {
 		now := time.Now().Local()
-		os.Chtimes(detectUpdateFile, now, now)
+		if err := os.Chtimes(detectUpdateFile, now, now); err != nil {
+			log.Debugf("Unable to update detect update file: %v", err)
+			return
+		}
 	}
 }
