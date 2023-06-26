@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,17 +32,9 @@ func getApiClient() *koyeb.APIClient {
 	return koyeb.NewAPIClient(config)
 }
 
-func getAuth(ctx context.Context) context.Context {
-	return context.WithValue(ctx, koyeb.ContextAccessToken, token)
-}
-
 type CommonErrorInterface interface {
 }
 type CommonErrorWithFieldInterface interface {
-}
-
-func logApiError(err error, resp *http.Response) {
-	renderApiError(err, resp, log.Errorf)
 }
 
 func fatalApiError(err error, resp *http.Response) {
