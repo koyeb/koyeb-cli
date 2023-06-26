@@ -10,14 +10,14 @@ import (
 )
 
 func (h *SecretHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.SecretsApi.GetSecret(ctx.context, ResolveSecretArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.SecretsApi.GetSecret(ctx.Context, ResolveSecretArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getSecretsReply := NewGetSecretReply(ctx.mapper, res, full)
-	return ctx.renderer.Render(getSecretsReply)
+	getSecretsReply := NewGetSecretReply(ctx.Mapper, res, full)
+	return ctx.Renderer.Render(getSecretsReply)
 
 }
 

@@ -6,7 +6,7 @@ import (
 )
 
 func (h *InstanceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	instanceDetail, resp, err := ctx.client.InstancesApi.GetInstance(ctx.context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
+	instanceDetail, resp, err := ctx.Client.InstancesApi.GetInstance(ctx.Context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

@@ -11,15 +11,15 @@ import (
 )
 
 func (h *AppHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.AppsApi.GetApp(ctx.context, h.ResolveAppArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, h.ResolveAppArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getAppsReply := NewGetAppReply(ctx.mapper, res, full)
+	getAppsReply := NewGetAppReply(ctx.Mapper, res, full)
 
-	return ctx.renderer.Render(getAppsReply)
+	return ctx.Renderer.Render(getAppsReply)
 }
 
 type GetAppReply struct {

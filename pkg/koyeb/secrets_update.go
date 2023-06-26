@@ -30,12 +30,12 @@ func (h *SecretHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []strin
 
 		updateSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, resp, err := ctx.client.SecretsApi.UpdateSecret2(ctx.context, ResolveSecretArgs(ctx, args[0])).Secret(*updateSecret).Execute()
+	res, resp, err := ctx.Client.SecretsApi.UpdateSecret2(ctx.Context, ResolveSecretArgs(ctx, args[0])).Secret(*updateSecret).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getSecretsReply := NewGetSecretReply(ctx.mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
-	return ctx.renderer.Render(getSecretsReply)
+	getSecretsReply := NewGetSecretReply(ctx.Mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
+	return ctx.Renderer.Render(getSecretsReply)
 }

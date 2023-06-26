@@ -8,14 +8,14 @@ import (
 )
 
 func (h *ServiceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.ServicesApi.GetService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getServiceReply := NewGetServiceReply(ctx.mapper, res, full)
-	return ctx.renderer.Render(getServiceReply)
+	getServiceReply := NewGetServiceReply(ctx.Mapper, res, full)
+	return ctx.Renderer.Render(getServiceReply)
 }
 
 type GetServiceReply struct {

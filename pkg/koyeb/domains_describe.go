@@ -11,38 +11,38 @@ func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []str
 	full := GetBoolFlags(cmd, "full")
 	replies := []renderer.ApiResources{}
 
-	getDomainRes, resp, err := ctx.client.DomainsApi.GetDomain(ctx.context, h.ResolveDomainArgs(ctx, args[0])).Execute()
+	getDomainRes, resp, err := ctx.Client.DomainsApi.GetDomain(ctx.Context, h.ResolveDomainArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	describeDomainsReply := NewDescribeDomainReply(ctx.mapper, getDomainRes, full)
+	describeDomainsReply := NewDescribeDomainReply(ctx.Mapper, getDomainRes, full)
 	replies = append(replies, describeDomainsReply)
 
 	// Grab attached app
 	appID := getDomainRes.Domain.GetAppId()
 	if appID != "" {
-		getAppRes, resp, err := ctx.client.AppsApi.GetApp(ctx.context, appID).Execute()
+		getAppRes, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, appID).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
 		}
 
-		describeAppsReply := NewDescribeAppReply(ctx.mapper, getAppRes, full)
+		describeAppsReply := NewDescribeAppReply(ctx.Mapper, getAppRes, full)
 		replies = append(replies, describeAppsReply)
 	}
 
 	// Grab app services if any
 	if appID != "" {
-		resListServices, resp, err := ctx.client.ServicesApi.ListServices(ctx.context).AppId(appID).Limit("100").Execute()
+		resListServices, resp, err := ctx.Client.ServicesApi.ListServices(ctx.Context).AppId(appID).Limit("100").Execute()
 		if err != nil {
 			fatalApiError(err, resp)
 		}
 
-		listServicesReply := NewListServicesReply(ctx.mapper, resListServices, full)
+		listServicesReply := NewListServicesReply(ctx.Mapper, resListServices, full)
 		replies = append(replies, listServicesReply)
 	}
 
-	renderer := renderer.NewChainRenderer(ctx.renderer)
+	renderer := renderer.NewChainRenderer(ctx.Renderer)
 	for _, reply := range replies {
 		renderer.Render(reply)
 	}

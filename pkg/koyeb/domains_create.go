@@ -12,7 +12,7 @@ func (h *DomainHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 
 	attachToApp := GetStringFlags(cmd, "attach-to")
 	if attachToApp != "" {
-		appID, err := ctx.mapper.App().ResolveID(attachToApp)
+		appID, err := ctx.Mapper.App().ResolveID(attachToApp)
 		if err != nil {
 			fatalApiError(err, nil)
 		}
@@ -20,12 +20,12 @@ func (h *DomainHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 		createDomainReq.SetAppId(appID)
 	}
 
-	res, resp, err := ctx.client.DomainsApi.CreateDomain(ctx.context).Domain(*createDomainReq).Execute()
+	res, resp, err := ctx.Client.DomainsApi.CreateDomain(ctx.Context).Domain(*createDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getDomainsReply := NewGetDomainReply(ctx.mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
-	return ctx.renderer.Render(getDomainsReply)
+	getDomainsReply := NewGetDomainReply(ctx.Mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
+	return ctx.Renderer.Render(getDomainsReply)
 }

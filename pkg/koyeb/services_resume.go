@@ -6,7 +6,7 @@ import (
 )
 
 func (h *ServiceHandler) Resume(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	_, resp, err := ctx.client.ServicesApi.ResumeService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
+	_, resp, err := ctx.Client.ServicesApi.ResumeService(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}

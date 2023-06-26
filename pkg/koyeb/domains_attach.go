@@ -6,12 +6,12 @@ import (
 )
 
 func (h *DomainHandler) Attach(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	domainID, err := ctx.mapper.Domain().ResolveID(args[0])
+	domainID, err := ctx.Mapper.Domain().ResolveID(args[0])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
 
-	appID, err := ctx.mapper.App().ResolveID(args[1])
+	appID, err := ctx.Mapper.App().ResolveID(args[1])
 	if err != nil {
 		fatalApiError(err, nil)
 	}
@@ -19,18 +19,18 @@ func (h *DomainHandler) Attach(ctx *CLIContext, cmd *cobra.Command, args []strin
 	updateDomainReq := koyeb.NewUpdateDomainWithDefaults()
 	updateDomainReq.SetAppId(appID)
 
-	_, resp, err := ctx.client.DomainsApi.UpdateDomain(ctx.context, domainID).Domain(*updateDomainReq).Execute()
+	_, resp, err := ctx.Client.DomainsApi.UpdateDomain(ctx.Context, domainID).Domain(*updateDomainReq).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	res, resp, err := ctx.client.AppsApi.GetApp(ctx.context, appID).Execute()
+	res, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, appID).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 
-	getAppReply := NewGetAppReply(ctx.mapper, res, full)
-	return ctx.renderer.Render(getAppReply)
+	getAppReply := NewGetAppReply(ctx.Mapper, res, full)
+	return ctx.Renderer.Render(getAppReply)
 }

@@ -121,7 +121,7 @@ type AppHandler struct {
 }
 
 func (h *AppHandler) ResolveAppArgs(ctx *CLIContext, val string) string {
-	appMapper := ctx.mapper.App()
+	appMapper := ctx.Mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
 		fatalApiError(err, nil)

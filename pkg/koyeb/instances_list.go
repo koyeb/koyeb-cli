@@ -31,12 +31,12 @@ func (h *InstanceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listInstancesReply := NewListInstancesReply(ctx.mapper, &koyeb.ListInstancesReply{Instances: list}, full)
-	return ctx.renderer.Render(listInstancesReply)
+	listInstancesReply := NewListInstancesReply(ctx.Mapper, &koyeb.ListInstancesReply{Instances: list}, full)
+	return ctx.Renderer.Render(listInstancesReply)
 }
 
 func (h *InstanceHandler) getListQuery(ctx *CLIContext, cmd *cobra.Command) koyeb.ApiListInstancesRequest {
-	query := ctx.client.InstancesApi.ListInstances(ctx.context).Statuses([]string{
+	query := ctx.Client.InstancesApi.ListInstances(ctx.Context).Statuses([]string{
 		string(koyeb.INSTANCESTATUS_ALLOCATING),
 		string(koyeb.INSTANCESTATUS_STARTING),
 		string(koyeb.INSTANCESTATUS_HEALTHY),
@@ -55,7 +55,7 @@ func (h *InstanceHandler) getAppIDForListQuery(ctx *CLIContext, query koyeb.ApiL
 		return query
 	}
 
-	id, err := ctx.mapper.App().ResolveID(filter)
+	id, err := ctx.Mapper.App().ResolveID(filter)
 	if err != nil {
 		fatalApiError(err, nil)
 	}
@@ -68,7 +68,7 @@ func (h *InstanceHandler) getServiceIDForListQuery(ctx *CLIContext, query koyeb.
 		return query
 	}
 
-	id, err := ctx.mapper.Service().ResolveID(filter)
+	id, err := ctx.Mapper.Service().ResolveID(filter)
 	if err != nil {
 		fatalApiError(err, nil)
 	}

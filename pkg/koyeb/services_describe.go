@@ -8,12 +8,12 @@ import (
 )
 
 func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.ServicesApi.GetService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
-	instancesRes, resp, err := ctx.client.InstancesApi.ListInstances(ctx.context).
+	instancesRes, resp, err := ctx.Client.InstancesApi.ListInstances(ctx.Context).
 		Statuses([]string{
 			string(koyeb.INSTANCESTATUS_ALLOCATING),
 			string(koyeb.INSTANCESTATUS_STARTING),
@@ -27,17 +27,17 @@ func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []st
 		fatalApiError(err, resp)
 	}
 
-	deploymentsRes, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).ServiceId(res.Service.GetId()).Execute()
+	deploymentsRes, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).ServiceId(res.Service.GetId()).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
 
-	getServiceReply := NewGetServiceReply(ctx.mapper, res, full)
-	listInstancesReply := NewListInstancesReply(ctx.mapper, instancesRes, full)
-	listDeploymentsReply := NewListDeploymentsReply(ctx.mapper, deploymentsRes, full)
-	return renderer.NewChainRenderer(ctx.renderer).
+	getServiceReply := NewGetServiceReply(ctx.Mapper, res, full)
+	listInstancesReply := NewListInstancesReply(ctx.Mapper, instancesRes, full)
+	listDeploymentsReply := NewListDeploymentsReply(ctx.Mapper, deploymentsRes, full)
+	return renderer.NewChainRenderer(ctx.Renderer).
 		Render(getServiceReply).
 		Render(listInstancesReply).
 		Render(listDeploymentsReply).

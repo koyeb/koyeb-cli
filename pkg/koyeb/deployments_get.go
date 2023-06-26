@@ -11,14 +11,14 @@ import (
 )
 
 func (h *DeploymentHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.client.DeploymentsApi.GetDeployment(ctx.context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
+	res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	getDeploymentsReply := NewGetDeploymentReply(ctx.mapper, res, full)
-	return ctx.renderer.Render(getDeploymentsReply)
+	getDeploymentsReply := NewGetDeploymentReply(ctx.Mapper, res, full)
+	return ctx.Renderer.Render(getDeploymentsReply)
 }
 
 type GetDeploymentReply struct {

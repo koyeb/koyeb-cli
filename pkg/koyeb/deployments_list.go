@@ -16,7 +16,7 @@ func (h *DeploymentHandler) List(ctx *CLIContext, cmd *cobra.Command, args []str
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).
+		res, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
@@ -31,8 +31,8 @@ func (h *DeploymentHandler) List(ctx *CLIContext, cmd *cobra.Command, args []str
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listDeploymentsReply := NewListDeploymentsReply(ctx.mapper, &koyeb.ListDeploymentsReply{Deployments: list}, full)
-	return ctx.renderer.Render(listDeploymentsReply)
+	listDeploymentsReply := NewListDeploymentsReply(ctx.Mapper, &koyeb.ListDeploymentsReply{Deployments: list}, full)
+	return ctx.Renderer.Render(listDeploymentsReply)
 }
 
 type ListDeploymentsReply struct {

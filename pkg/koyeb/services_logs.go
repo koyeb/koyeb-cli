@@ -7,7 +7,7 @@ import (
 )
 
 func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	serviceDetail, resp, err := ctx.client.ServicesApi.GetService(ctx.context, h.ResolveServiceArgs(ctx, args[0])).Execute()
+	serviceDetail, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Execute()
 	if err != nil {
 		fatalApiError(err, resp)
 	}
@@ -22,7 +22,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 	query.ServiceID = koyeb.PtrString(serviceID)
 
 	if logType == "build" {
-		latestDeploy, resp, err := ctx.client.DeploymentsApi.ListDeployments(ctx.context).
+		latestDeploy, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
 			Limit("1").ServiceId(h.ResolveServiceArgs(ctx, args[0])).Execute()
 		if err != nil {
 			fatalApiError(err, resp)
