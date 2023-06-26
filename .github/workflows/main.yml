@@ -14,6 +14,8 @@ jobs:
       - name: "Run tests"
         run: |
           make test-all
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
       - name: "Test gen doc"
         run: |
           make gen-doc
