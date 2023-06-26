@@ -33,6 +33,7 @@ var (
 		Short:             "Koyeb CLI",
 		DisableAutoGenTag: true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			DetectUpdates()
 			SetupCLIContext(cmd)
 		},
 	}
@@ -72,8 +73,6 @@ func GetRootCmd() *cobra.Command {
 
 func Run() error {
 	ctx := context.Background()
-
-	DetectUpdates()
 	return rootCmd.ExecuteContext(ctx)
 }
 
