@@ -67,7 +67,7 @@ func renderHTTPResponse(resp *http.Response) string {
 func renderApiError(err error, resp *http.Response, errorFn func(string, ...interface{})) {
 
 	switch er := err.(type) {
-	case koyeb.GenericOpenAPIError:
+	case *koyeb.GenericOpenAPIError:
 		switch mod := er.Model().(type) {
 		case koyeb.ErrorWithFields:
 			for _, f := range mod.GetFields() {
