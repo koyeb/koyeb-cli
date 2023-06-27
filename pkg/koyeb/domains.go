@@ -86,12 +86,11 @@ func NewDomainHandler() *DomainHandler {
 	return &DomainHandler{}
 }
 
-func (h *DomainHandler) ResolveDomainArgs(ctx *CLIContext, val string) string {
+func (h *DomainHandler) ResolveDomainArgs(ctx *CLIContext, val string) (string, error) {
 	domainMapper := ctx.Mapper.Domain()
 	id, err := domainMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-
-	return id
+	return id, nil
 }

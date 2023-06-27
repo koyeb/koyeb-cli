@@ -120,12 +120,11 @@ func NewAppHandler() *AppHandler {
 type AppHandler struct {
 }
 
-func (h *AppHandler) ResolveAppArgs(ctx *CLIContext, val string) string {
+func (h *AppHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, error) {
 	appMapper := ctx.Mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-
-	return id
+	return id, nil
 }

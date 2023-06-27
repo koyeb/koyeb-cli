@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ func (h *SecretHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 		res, resp, err := ctx.Client.SecretsApi.ListSecrets(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err, resp)
+			return errors.NewCLIErrorFromAPIError("Error while listing secrets", err, resp)
 		}
 		list = append(list, res.GetSecrets()...)
 

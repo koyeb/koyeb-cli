@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type ServiceMapper struct {
@@ -50,8 +50,11 @@ func (mapper *ServiceMapper) ResolveID(val string) (string, error) {
 	if ok {
 		return id, nil
 	}
-
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"service",
+		val,
+		[]string{"service full UUID", "service short ID (8 characters)", "the service name prefixed by the application name and a slash (e.g. my-app/my-service)"},
+	)
 }
 
 func (mapper *ServiceMapper) GetShortID(id string) (string, error) {
@@ -64,9 +67,12 @@ func (mapper *ServiceMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("service short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"service",
+			id,
+			[]string{"service full UUID", "service short ID (8 characters)", "the service name prefixed by the application name and a slash (e.g. my-app/my-service)"},
+		)
 	}
-
 	return sid, nil
 }
 
@@ -80,9 +86,12 @@ func (mapper *ServiceMapper) GetSlug(id string) (string, error) {
 
 	slug, ok := mapper.slugMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("service slug not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"service",
+			id,
+			[]string{"service full UUID", "service short ID (8 characters)", "the service name prefixed by the application name and a slash (e.g. my-app/my-service)"},
+		)
 	}
-
 	return slug, nil
 }
 
@@ -94,15 +103,19 @@ func (mapper *ServiceMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.ServicesApi.ListServices(mapper.ctx).
+		res, resp, err := mapper.client.ServicesApi.ListServices(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list services from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing services to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		services := resp.GetServices()
+		services := res.GetServices()
 		for i := range services {
 			service := &services[i]
 			radix.Insert(getKey(service.GetId()), service)
@@ -110,7 +123,7 @@ func (mapper *ServiceMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}

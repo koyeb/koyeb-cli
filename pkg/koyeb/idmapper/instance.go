@@ -2,11 +2,10 @@ package idmapper
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type InstanceMapper struct {
@@ -41,8 +40,11 @@ func (mapper *InstanceMapper) ResolveID(val string) (string, error) {
 	if ok {
 		return id, nil
 	}
-
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"instance",
+		val,
+		[]string{"instance full UUID", "instance short ID (8 characters)"},
+	)
 }
 
 func (mapper *InstanceMapper) GetShortID(id string) (string, error) {
@@ -55,7 +57,11 @@ func (mapper *InstanceMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("instance short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"instance",
+			id,
+			[]string{"instance full UUID", "instance short ID (8 characters)"},
+		)
 	}
 
 	return sid, nil
@@ -69,15 +75,19 @@ func (mapper *InstanceMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.InstancesApi.ListInstances(mapper.ctx).
+		res, resp, err := mapper.client.InstancesApi.ListInstances(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list instances from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing instances to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		instances := resp.GetInstances()
+		instances := res.GetInstances()
 		for i := range instances {
 			instance := &instances[i]
 			radix.Insert(getKey(instance.GetId()), instance)
@@ -85,7 +95,7 @@ func (mapper *InstanceMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}

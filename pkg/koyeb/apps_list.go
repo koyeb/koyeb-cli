@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
@@ -16,10 +17,14 @@ func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) er
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, st, err := ctx.Client.AppsApi.ListApps(ctx.Context).
+		res, resp, err := ctx.Client.AppsApi.ListApps(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err, st)
+			return errors.NewCLIErrorFromAPIError(
+				"Error while listing the applications",
+				err,
+				resp,
+			)
 		}
 		list = append(list, res.GetApps()...)
 
