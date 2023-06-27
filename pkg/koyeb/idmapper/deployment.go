@@ -2,11 +2,10 @@ package idmapper
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type DeploymentMapper struct {
@@ -41,8 +40,11 @@ func (mapper *DeploymentMapper) ResolveID(val string) (string, error) {
 	if ok {
 		return id, nil
 	}
-
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"deployments",
+		val,
+		[]string{"deployment full UUID", "deployment short ID (8 characters)"},
+	)
 }
 
 func (mapper *DeploymentMapper) GetShortID(id string) (string, error) {
@@ -55,7 +57,11 @@ func (mapper *DeploymentMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("deployment short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"deployments",
+			id,
+			[]string{"deployment full UUID", "deployment short ID (8 characters)"},
+		)
 	}
 
 	return sid, nil
@@ -69,15 +75,19 @@ func (mapper *DeploymentMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.DeploymentsApi.ListDeployments(mapper.ctx).
+		res, resp, err := mapper.client.DeploymentsApi.ListDeployments(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list deployments from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing deployments to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		deployments := resp.GetDeployments()
+		deployments := res.GetDeployments()
 		for i := range deployments {
 			deployment := &deployments[i]
 			radix.Insert(getKey(deployment.GetId()), deployment)
@@ -85,7 +95,7 @@ func (mapper *DeploymentMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}

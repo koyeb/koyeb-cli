@@ -2,11 +2,10 @@ package idmapper
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type RegionalDeploymentMapper struct {
@@ -41,8 +40,11 @@ func (mapper *RegionalDeploymentMapper) ResolveID(val string) (string, error) {
 	if ok {
 		return id, nil
 	}
-
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"secret",
+		val,
+		[]string{"regional deployment full UUID", "regional deployment short ID (8 characters)"},
+	)
 }
 
 func (mapper *RegionalDeploymentMapper) GetShortID(id string) (string, error) {
@@ -55,9 +57,12 @@ func (mapper *RegionalDeploymentMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("deployment short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"secret",
+			id,
+			[]string{"regional deployment full UUID", "regional deployment short ID (8 characters)"},
+		)
 	}
-
 	return sid, nil
 }
 
@@ -69,15 +74,19 @@ func (mapper *RegionalDeploymentMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.RegionalDeploymentsApi.ListRegionalDeployments(mapper.ctx).
+		res, resp, err := mapper.client.RegionalDeploymentsApi.ListRegionalDeployments(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list regional deployments from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing the regional deployments to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		deployments := resp.GetRegionalDeployments()
+		deployments := res.GetRegionalDeployments()
 		for i := range deployments {
 			deployment := &deployments[i]
 			radix.Insert(getKey(deployment.GetId()), deployment)
@@ -85,7 +94,7 @@ func (mapper *RegionalDeploymentMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}

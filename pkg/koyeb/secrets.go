@@ -83,11 +83,11 @@ func NewSecretHandler() *SecretHandler {
 type SecretHandler struct {
 }
 
-func ResolveSecretArgs(ctx *CLIContext, val string) string {
+func ResolveSecretArgs(ctx *CLIContext, val string) (string, error) {
 	secretMapper := ctx.Mapper.Secret()
 	id, err := secretMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-	return id
+	return id, nil
 }

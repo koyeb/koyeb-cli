@@ -64,12 +64,11 @@ func NewDeploymentHandler() *DeploymentHandler {
 type DeploymentHandler struct {
 }
 
-func (h *DeploymentHandler) ResolveDeploymentArgs(ctx *CLIContext, val string) string {
+func (h *DeploymentHandler) ResolveDeploymentArgs(ctx *CLIContext, val string) (string, error) {
 	deploymentMapper := ctx.Mapper.Deployment()
 	id, err := deploymentMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-
-	return id
+	return id, nil
 }

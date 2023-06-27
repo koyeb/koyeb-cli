@@ -66,22 +66,11 @@ func NewInstanceHandler() *InstanceHandler {
 type InstanceHandler struct {
 }
 
-func (h *InstanceHandler) ResolveInstanceArgs(ctx *CLIContext, val string) string {
+func (h *InstanceHandler) ResolveInstanceArgs(ctx *CLIContext, val string) (string, error) {
 	instanceMapper := ctx.Mapper.Instance()
 	id, err := instanceMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-
-	return id
-}
-
-func (h *InstanceHandler) ResolveServiceArgs(ctx *CLIContext, val string) string {
-	svcMapper := ctx.Mapper.Service()
-	id, err := svcMapper.ResolveID(val)
-	if err != nil {
-		fatalApiError(err, nil)
-	}
-
-	return id
+	return id, nil
 }

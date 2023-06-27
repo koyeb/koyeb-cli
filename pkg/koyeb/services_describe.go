@@ -1,16 +1,28 @@
 package koyeb
 
 import (
+	"fmt"
+
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, h.ResolveServiceArgs(ctx, args[0])).Execute()
+	service, err := h.ResolveServiceArgs(ctx, args[0])
 	if err != nil {
-		fatalApiError(err, resp)
+		return err
+	}
+
+	res, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, service).Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while retrieving the service `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	instancesRes, resp, err := ctx.Client.InstancesApi.ListInstances(ctx.Context).
@@ -24,12 +36,20 @@ func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []st
 		ServiceId(res.Service.GetId()).
 		Execute()
 	if err != nil {
-		fatalApiError(err, resp)
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while listing the instances of the service `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	deploymentsRes, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).ServiceId(res.Service.GetId()).Execute()
 	if err != nil {
-		fatalApiError(err, resp)
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while listing the deployments of the service `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	full := GetBoolFlags(cmd, "full")

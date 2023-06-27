@@ -1,18 +1,29 @@
 package koyeb
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *InstanceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.Client.InstancesApi.GetInstance(ctx.Context, h.ResolveInstanceArgs(ctx, args[0])).Execute()
+	instance, err := h.ResolveInstanceArgs(ctx, args[0])
 	if err != nil {
-		fatalApiError(err, resp)
+		return err
+	}
+
+	res, resp, err := ctx.Client.InstancesApi.GetInstance(ctx.Context, instance).Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while retrieving the instance `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	full := GetBoolFlags(cmd, "full")

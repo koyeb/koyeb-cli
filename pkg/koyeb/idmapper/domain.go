@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type DomainMapper struct {
@@ -49,7 +49,11 @@ func (mapper *DomainMapper) ResolveID(val string) (string, error) {
 		return id, nil
 	}
 
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"domain",
+		val,
+		[]string{"object full UUID", "object short ID (8 characters)", "domain name"},
+	)
 }
 
 func (mapper *DomainMapper) GetShortID(id string) (string, error) {
@@ -62,7 +66,11 @@ func (mapper *DomainMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("domain short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"domain",
+			id,
+			[]string{"object full UUID", "object short ID (8 characters)", "domain name"},
+		)
 	}
 
 	return sid, nil
@@ -92,15 +100,19 @@ func (mapper *DomainMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.DomainsApi.ListDomains(mapper.ctx).
+		res, resp, err := mapper.client.DomainsApi.ListDomains(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list domains from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing domains to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		domains := resp.GetDomains()
+		domains := res.GetDomains()
 		for i := range domains {
 			domain := &domains[i]
 			radix.Insert(getKey(domain.GetId()), domain)
@@ -108,7 +120,7 @@ func (mapper *DomainMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}

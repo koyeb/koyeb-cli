@@ -2,10 +2,12 @@ package koyeb
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -27,12 +29,21 @@ func (h *SecretHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []strin
 				break
 			}
 		}
-
 		updateSecret.SetValue(strings.Join(input, "\n"))
 	}
-	res, resp, err := ctx.Client.SecretsApi.UpdateSecret2(ctx.Context, ResolveSecretArgs(ctx, args[0])).Secret(*updateSecret).Execute()
+
+	secret, err := ResolveSecretArgs(ctx, args[0])
 	if err != nil {
-		fatalApiError(err, resp)
+		return err
+	}
+
+	res, resp, err := ctx.Client.SecretsApi.UpdateSecret2(ctx.Context, secret).Secret(*updateSecret).Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while updating the secret `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	full := GetBoolFlags(cmd, "full")

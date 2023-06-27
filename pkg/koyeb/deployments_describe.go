@@ -1,17 +1,29 @@
 package koyeb
 
 import (
+	"fmt"
+
 	"github.com/ghodss/yaml"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, h.ResolveDeploymentArgs(ctx, args[0])).Execute()
+	deployment, err := h.ResolveDeploymentArgs(ctx, args[0])
 	if err != nil {
-		fatalApiError(err, resp)
+		return err
+	}
+
+	res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, deployment).Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while retrieving the deployment `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	// TODO(tleroux): Experimental for now.
@@ -19,7 +31,11 @@ func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args [
 		DeploymentId(res.Deployment.GetId()).
 		Execute()
 	if err != nil {
-		fatalApiError(err, resp)
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while listing the regional deployments of the deployment `%s`", res.Deployment.GetId()),
+			err,
+			resp,
+		)
 	}
 
 	instancesRes, resp, err := ctx.Client.InstancesApi.ListInstances(ctx.Context).
@@ -33,7 +49,11 @@ func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args [
 		DeploymentId(res.Deployment.GetId()).
 		Execute()
 	if err != nil {
-		fatalApiError(err, resp)
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while listing the instances of the deployment `%s`", res.Deployment.GetId()),
+			err,
+			resp,
+		)
 	}
 
 	full := GetBoolFlags(cmd, "full")

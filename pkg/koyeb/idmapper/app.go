@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type AppMapper struct {
@@ -48,8 +48,11 @@ func (mapper *AppMapper) ResolveID(val string) (string, error) {
 	if ok {
 		return id, nil
 	}
-
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"application",
+		val,
+		[]string{"application full UUID", "application short ID (8 characters)", "application name"},
+	)
 }
 
 func (mapper *AppMapper) GetShortID(id string) (string, error) {
@@ -62,9 +65,12 @@ func (mapper *AppMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("app short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"application",
+			id,
+			[]string{"application full UUID", "application short ID (8 characters)", "application name"},
+		)
 	}
-
 	return sid, nil
 }
 
@@ -92,15 +98,19 @@ func (mapper *AppMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		resp, _, err := mapper.client.AppsApi.ListApps(mapper.ctx).
+		res, resp, err := mapper.client.AppsApi.ListApps(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list apps from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing applications to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		apps := resp.GetApps()
+		apps := res.GetApps()
 		for i := range apps {
 			app := &apps[i]
 			radix.Insert(getKey(app.GetId()), app)
@@ -108,7 +118,7 @@ func (mapper *AppMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}

@@ -2,10 +2,12 @@ package koyeb
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -46,7 +48,11 @@ func (h *SecretHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 	}
 	res, resp, err := ctx.Client.SecretsApi.CreateSecret(ctx.Context).Secret(*createSecret).Execute()
 	if err != nil {
-		fatalApiError(err, resp)
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while creating the secret `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	full := GetBoolFlags(cmd, "full")

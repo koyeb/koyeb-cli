@@ -30,6 +30,14 @@ var (
 		Use:               "koyeb RESOURCE ACTION",
 		Short:             "Koyeb CLI",
 		DisableAutoGenTag: true,
+		// By default, Cobra prints the error and the command usage when RunE
+		// returns an error. This behavior is desirable in case of a user error
+		// (unexpected flag provided, for example), but not in case of an
+		// runtime errors (API error, for example).
+		// To have more control over the error handling, we set SilenceUsage and
+		// SilenceErrors.
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			DetectUpdates()
 			SetupCLIContext(cmd)
@@ -60,7 +68,11 @@ func GetRootCmd() *cobra.Command {
 
 func Run() error {
 	ctx := context.Background()
-	return rootCmd.ExecuteContext(ctx)
+	err := rootCmd.ExecuteContext(ctx)
+	if err != nil {
+		log.Error(err)
+	}
+	return err
 }
 
 func er(msg interface{}) {

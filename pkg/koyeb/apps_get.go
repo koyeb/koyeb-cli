@@ -2,8 +2,10 @@ package koyeb
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	log "github.com/sirupsen/logrus"
@@ -11,9 +13,18 @@ import (
 )
 
 func (h *AppHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	res, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, h.ResolveAppArgs(ctx, args[0])).Execute()
+	app, err := h.ResolveAppArgs(ctx, args[0])
 	if err != nil {
-		fatalApiError(err, resp)
+		return err
+	}
+
+	res, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, app).Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while retrieving the application `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	full := GetBoolFlags(cmd, "full")

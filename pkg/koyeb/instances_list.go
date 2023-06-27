@@ -4,13 +4,18 @@ import (
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *InstanceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	query := h.getListQuery(ctx, cmd)
+	query, err := h.getListQuery(ctx, cmd)
+	if err != nil {
+		return err
+	}
+
 	list := []koyeb.InstanceListItem{}
 
 	page := int64(0)
@@ -19,7 +24,11 @@ func (h *InstanceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 	for {
 		res, resp, err := query.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err, resp)
+			return errors.NewCLIErrorFromAPIError(
+				"Error while listing the instances",
+				err,
+				resp,
+			)
 		}
 		list = append(list, res.GetInstances()...)
 
@@ -36,7 +45,7 @@ func (h *InstanceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 	return nil
 }
 
-func (h *InstanceHandler) getListQuery(ctx *CLIContext, cmd *cobra.Command) koyeb.ApiListInstancesRequest {
+func (h *InstanceHandler) getListQuery(ctx *CLIContext, cmd *cobra.Command) (koyeb.ApiListInstancesRequest, error) {
 	query := ctx.Client.InstancesApi.ListInstances(ctx.Context).Statuses([]string{
 		string(koyeb.INSTANCESTATUS_ALLOCATING),
 		string(koyeb.INSTANCESTATUS_STARTING),
@@ -45,36 +54,41 @@ func (h *InstanceHandler) getListQuery(ctx *CLIContext, cmd *cobra.Command) koye
 		string(koyeb.INSTANCESTATUS_STOPPING),
 	})
 
-	query = h.getAppIDForListQuery(ctx, query, GetStringFlags(cmd, "app"))
-	query = h.getServiceIDForListQuery(ctx, query, GetStringFlags(cmd, "service"))
+	query, err := h.getAppIDForListQuery(ctx, query, GetStringFlags(cmd, "app"))
+	if err != nil {
+		return query, err
+	}
 
-	return query
+	query, err = h.getServiceIDForListQuery(ctx, query, GetStringFlags(cmd, "service"))
+	if err != nil {
+		return query, err
+	}
+
+	return query, nil
 }
 
-func (h *InstanceHandler) getAppIDForListQuery(ctx *CLIContext, query koyeb.ApiListInstancesRequest, filter string) koyeb.ApiListInstancesRequest {
+func (h *InstanceHandler) getAppIDForListQuery(ctx *CLIContext, query koyeb.ApiListInstancesRequest, filter string) (koyeb.ApiListInstancesRequest, error) {
 	if filter == "" {
-		return query
+		return query, nil
 	}
 
 	id, err := ctx.Mapper.App().ResolveID(filter)
 	if err != nil {
-		fatalApiError(err, nil)
+		return query, err
 	}
-
-	return query.AppId(id)
+	return query.AppId(id), nil
 }
 
-func (h *InstanceHandler) getServiceIDForListQuery(ctx *CLIContext, query koyeb.ApiListInstancesRequest, filter string) koyeb.ApiListInstancesRequest {
+func (h *InstanceHandler) getServiceIDForListQuery(ctx *CLIContext, query koyeb.ApiListInstancesRequest, filter string) (koyeb.ApiListInstancesRequest, error) {
 	if filter == "" {
-		return query
+		return query, nil
 	}
 
 	id, err := ctx.Mapper.Service().ResolveID(filter)
 	if err != nil {
-		fatalApiError(err, nil)
+		return query, err
 	}
-
-	return query.ServiceId(id)
+	return query.ServiceId(id), nil
 }
 
 type ListInstancesReply struct {

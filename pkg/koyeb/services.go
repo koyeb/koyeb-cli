@@ -1,12 +1,13 @@
 package koyeb
 
 import (
+	stderrors "errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -93,15 +94,27 @@ func NewServiceCmd() *cobra.Command {
 		Short: "Update service",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			updateService := koyeb.NewUpdateServiceWithDefaults()
-
-			latestDeploy, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
-				Limit("1").ServiceId(h.ResolveServiceArgs(ctx, args[0])).Execute()
+			service, err := h.ResolveServiceArgs(ctx, args[0])
 			if err != nil {
-				fatalApiError(err, resp)
+				return err
+			}
+
+			updateService := koyeb.NewUpdateServiceWithDefaults()
+			latestDeploy, resp, err := ctx.Client.DeploymentsApi.
+				ListDeployments(ctx.Context).
+				Limit("1").
+				ServiceId(service).
+				Execute()
+
+			if err != nil {
+				return errors.NewCLIErrorFromAPIError(
+					fmt.Sprintf("Error while updating the service `%s`", args[0]),
+					err,
+					resp,
+				)
 			}
 			if len(latestDeploy.GetDeployments()) == 0 {
-				return errors.New("Unable to load latest deployment")
+				return stderrors.New("Unable to load latest deployment")
 			}
 			updateDef := latestDeploy.GetDeployments()[0].Definition
 			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
@@ -158,24 +171,22 @@ func NewServiceHandler() *ServiceHandler {
 type ServiceHandler struct {
 }
 
-func (h *ServiceHandler) ResolveServiceArgs(ctx *CLIContext, val string) string {
+func (h *ServiceHandler) ResolveServiceArgs(ctx *CLIContext, val string) (string, error) {
 	serviceMapper := ctx.Mapper.Service()
 	id, err := serviceMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-
-	return id
+	return id, nil
 }
 
-func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) string {
+func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, error) {
 	appMapper := ctx.Mapper.App()
 	id, err := appMapper.ResolveID(val)
 	if err != nil {
-		fatalApiError(err, nil)
+		return "", err
 	}
-
-	return id
+	return id, nil
 }
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
@@ -218,7 +229,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		deploymentTypeStr, _ := flags.GetString("type")
 		deploymentType, err := koyeb.NewDeploymentDefinitionTypeFromValue(deploymentTypeStr)
 		if err != nil {
-			return errors.Errorf("%s is not a valid deployment type", deploymentTypeStr)
+			return fmt.Errorf("%s is not a valid deployment type", deploymentTypeStr)
 		}
 		definition.SetType(*deploymentType)
 	}
@@ -237,7 +248,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 			split := strings.SplitN(e, "=", 2)
 			if len(split) != 2 || len(split[0]) == 0 || len(split[1]) == 0 {
-				return errors.New("Unable to parse env")
+				return stderrors.New("Unable to parse env")
 			}
 
 			newEnv.Key = koyeb.PtrString(split[0])
@@ -271,7 +282,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 			split := strings.Split(p, ":")
 			if len(split) < 1 {
-				return errors.New("Unable to parse port")
+				return stderrors.New("Unable to parse port")
 			}
 			portNum, err := strconv.Atoi(split[0])
 			if err != nil {
@@ -296,7 +307,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 			spli := strings.Split(p, ":")
 			if len(spli) < 1 {
-				return errors.New("Unable to parse route")
+				return stderrors.New("Unable to parse route")
 			}
 			newRoute.Path = koyeb.PtrString(spli[0])
 			newRoute.Port = koyeb.PtrInt64(80)
@@ -338,13 +349,13 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			portStr := components[0]
 			port, err := strconv.Atoi(portStr)
 			if err != nil {
-				return errors.Errorf(`Invalid port: "%s"`, portStr)
+				return fmt.Errorf(`Invalid port: "%s"`, portStr)
 			}
 
 			switch healthcheckType {
 			case "http":
 				if componentsCount < 3 {
-					return errors.New("Missing path definition for http check")
+					return stderrors.New("Missing path definition for http check")
 				}
 				HTTPHealthCheck := koyeb.NewHTTPHealthCheck()
 				HTTPHealthCheck.Port = koyeb.PtrInt64(int64(port))
@@ -390,7 +401,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	if flags.Lookup("git").Changed && !flags.Lookup("docker").Changed {
 		builder, _ := flags.GetString("git-builder")
 		if builder != "buildpack" && builder != "docker" {
-			return errors.New("Invalid --git-builder, must be either 'buildpack' or 'docker'")
+			return stderrors.New("Invalid --git-builder, must be either 'buildpack' or 'docker'")
 		}
 
 		if builder == "buildpack" && (flags.Lookup("git-docker-dockerfile").Changed ||
@@ -398,12 +409,12 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			flags.Lookup("git-docker-command").Changed ||
 			flags.Lookup("git-docker-args").Changed ||
 			flags.Lookup("git-docker-target").Changed) {
-			return errors.New(`Cannot use --git-docker-* options with --git-builder=buildpack`)
+			return stderrors.New(`Cannot use --git-docker-* options with --git-builder=buildpack`)
 		}
 
 		if builder == "docker" && (flags.Lookup("git-buildpack-build-command").Changed ||
 			flags.Lookup("git-buildpack-run-command").Changed) {
-			return errors.New(`Cannot use --git-buildpack-* options with --git-builder=docker`)
+			return stderrors.New(`Cannot use --git-buildpack-* options with --git-builder=docker`)
 		}
 
 		createGitSource := koyeb.NewGitSourceWithDefaults()
@@ -430,10 +441,10 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			buildpackRunCommand, _ := flags.GetString("git-buildpack-run-command")
 
 			if buildCommand != "" && buildpackBuildCommand != "" {
-				return errors.New(`Cannot use --git-build-command and --git-buildpack-build-command together. Use --git-buildpack-build-command instead`)
+				return stderrors.New(`Cannot use --git-build-command and --git-buildpack-build-command together. Use --git-buildpack-build-command instead`)
 			}
 			if runCommand != "" && buildpackRunCommand != "" {
-				return errors.New(`Cannot use --git-run-command and --git-buildpack-run-command together. Use --git-buildpack-run-command instead`)
+				return stderrors.New(`Cannot use --git-run-command and --git-buildpack-run-command together. Use --git-buildpack-run-command instead`)
 			}
 
 			builder := koyeb.BuildpackBuilder{}

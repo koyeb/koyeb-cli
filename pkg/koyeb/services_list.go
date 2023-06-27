@@ -1,9 +1,11 @@
 package koyeb
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
@@ -18,8 +20,13 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 	for {
 		req := ctx.Client.ServicesApi.ListServices(ctx.Context)
 		appId := GetStringFlags(cmd, "app")
+
 		if appId != "" {
-			req = req.AppId(h.ResolveAppArgs(ctx, appId))
+			app, err := h.ResolveAppArgs(ctx, appId)
+			if err != nil {
+				return err
+			}
+			req = req.AppId(app)
 		}
 		name := GetStringFlags(cmd, "name")
 		if name != "" {
@@ -27,7 +34,11 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 		}
 		res, resp, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			fatalApiError(err, resp)
+			return errors.NewCLIErrorFromAPIError(
+				fmt.Sprintf("Error while listing the services of `%s`", appId),
+				err,
+				resp,
+			)
 		}
 
 		list = append(list, res.GetServices()...)

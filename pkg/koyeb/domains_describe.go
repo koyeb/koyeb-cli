@@ -1,19 +1,31 @@
 package koyeb
 
 import (
+	"fmt"
+
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
 func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	domain, err := h.ResolveDomainArgs(ctx, args[0])
+	if err != nil {
+		return err
+	}
+
 	full := GetBoolFlags(cmd, "full")
 	replies := []renderer.ApiResources{}
 
-	getDomainRes, resp, err := ctx.Client.DomainsApi.GetDomain(ctx.Context, h.ResolveDomainArgs(ctx, args[0])).Execute()
+	getDomainRes, resp, err := ctx.Client.DomainsApi.GetDomain(ctx.Context, domain).Execute()
 	if err != nil {
-		fatalApiError(err, resp)
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while retrieving the domain `%s`", args[0]),
+			err,
+			resp,
+		)
 	}
 
 	describeDomainsReply := NewDescribeDomainReply(ctx.Mapper, getDomainRes, full)
@@ -24,7 +36,11 @@ func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []str
 	if appID != "" {
 		getAppRes, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, appID).Execute()
 		if err != nil {
-			fatalApiError(err, resp)
+			return errors.NewCLIErrorFromAPIError(
+				fmt.Sprintf("Error while retrieving the application `%s`", appID),
+				err,
+				resp,
+			)
 		}
 
 		describeAppsReply := NewDescribeAppReply(ctx.Mapper, getAppRes, full)
@@ -35,7 +51,11 @@ func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []str
 	if appID != "" {
 		resListServices, resp, err := ctx.Client.ServicesApi.ListServices(ctx.Context).AppId(appID).Limit("100").Execute()
 		if err != nil {
-			fatalApiError(err, resp)
+			return errors.NewCLIErrorFromAPIError(
+				fmt.Sprintf("Error while retrieving the services for the application `%s`", appID),
+				err,
+				resp,
+			)
 		}
 
 		listServicesReply := NewListServicesReply(ctx.Mapper, resListServices, full)

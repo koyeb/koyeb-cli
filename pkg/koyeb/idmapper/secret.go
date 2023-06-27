@@ -2,11 +2,10 @@ package idmapper
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/pkg/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
 type SecretMapper struct {
@@ -49,7 +48,11 @@ func (mapper *SecretMapper) ResolveID(val string) (string, error) {
 		return id, nil
 	}
 
-	return "", fmt.Errorf("id not found %q", val)
+	return "", errors.NewCLIErrorForMapperResolve(
+		"secret",
+		val,
+		[]string{"secret full UUID", "secret short ID (8 characters)", "secret name"},
+	)
 }
 
 func (mapper *SecretMapper) GetShortID(id string) (string, error) {
@@ -62,7 +65,11 @@ func (mapper *SecretMapper) GetShortID(id string) (string, error) {
 
 	sid, ok := mapper.sidMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("secret short id not found for %q", id)
+		return "", errors.NewCLIErrorForMapperResolve(
+			"secret",
+			id,
+			[]string{"secret full UUID", "secret short ID (8 characters)", "secret name"},
+		)
 	}
 
 	return sid, nil
@@ -75,16 +82,19 @@ func (mapper *SecretMapper) fetch() error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-
-		resp, _, err := mapper.client.SecretsApi.ListSecrets(mapper.ctx).
+		res, resp, err := mapper.client.SecretsApi.ListSecrets(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.Wrap(err, "cannot list apps from API")
+			return errors.NewCLIErrorFromAPIError(
+				"Error listing secrets to resolve the provided identifier to an object ID",
+				err,
+				resp,
+			)
 		}
 
-		secrets := resp.GetSecrets()
+		secrets := res.GetSecrets()
 		for i := range secrets {
 			secret := &secrets[i]
 			radix.Insert(getKey(secret.GetId()), secret)
@@ -92,7 +102,7 @@ func (mapper *SecretMapper) fetch() error {
 
 		page++
 		offset = page * limit
-		if offset >= resp.GetCount() {
+		if offset >= res.GetCount() {
 			break
 		}
 	}
