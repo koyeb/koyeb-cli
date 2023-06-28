@@ -42,13 +42,12 @@ func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args [
 	listInstancesReply := NewListInstancesReply(ctx.Mapper, instancesRes, full)
 	listRegionalDeploymentsReply := NewListRegionalDeploymentsReply(ctx.Mapper, regionalRes, full)
 	deploymentDefinitionReply := NewDescribeDeploymentDefinitionReply(res)
-
-	return renderer.NewChainRenderer(ctx.Renderer).
+	renderer.NewChainRenderer(ctx.Renderer).
 		Render(describeDeploymentsReply).
 		Render(deploymentDefinitionReply).
 		Render(listRegionalDeploymentsReply).
-		Render(listInstancesReply).
-		Err()
+		Render(listInstancesReply)
+	return nil
 }
 
 type DescribeDeploymentReply struct {

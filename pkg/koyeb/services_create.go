@@ -23,5 +23,6 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 	full := GetBoolFlags(cmd, "full")
 	getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
-	return ctx.Renderer.Render(getServiceReply)
+	ctx.Renderer.Render(getServiceReply)
+	return nil
 }

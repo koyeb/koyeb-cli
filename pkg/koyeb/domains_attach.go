@@ -32,5 +32,6 @@ func (h *DomainHandler) Attach(ctx *CLIContext, cmd *cobra.Command, args []strin
 	full := GetBoolFlags(cmd, "full")
 
 	getAppReply := NewGetAppReply(ctx.Mapper, res, full)
-	return ctx.Renderer.Render(getAppReply)
+	ctx.Renderer.Render(getAppReply)
+	return nil
 }

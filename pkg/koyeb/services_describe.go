@@ -37,11 +37,11 @@ func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []st
 	getServiceReply := NewGetServiceReply(ctx.Mapper, res, full)
 	listInstancesReply := NewListInstancesReply(ctx.Mapper, instancesRes, full)
 	listDeploymentsReply := NewListDeploymentsReply(ctx.Mapper, deploymentsRes, full)
-	return renderer.NewChainRenderer(ctx.Renderer).
+	renderer.NewChainRenderer(ctx.Renderer).
 		Render(getServiceReply).
 		Render(listInstancesReply).
-		Render(listDeploymentsReply).
-		Err()
+		Render(listDeploymentsReply)
+	return nil
 }
 
 type DescribeServiceReply struct {

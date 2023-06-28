@@ -46,7 +46,7 @@ func (h *DomainHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []str
 	for _, reply := range replies {
 		renderer.Render(reply)
 	}
-	return renderer.Err()
+	return nil
 }
 
 type DescribeDomainReply struct {
