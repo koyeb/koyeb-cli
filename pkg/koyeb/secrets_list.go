@@ -32,7 +32,8 @@ func (h *SecretHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 
 	full := GetBoolFlags(cmd, "full")
 	listSecretsReply := NewListSecretsReply(ctx.Mapper, &koyeb.ListSecretsReply{Secrets: list}, full)
-	return ctx.Renderer.Render(listSecretsReply)
+	ctx.Renderer.Render(listSecretsReply)
+	return nil
 }
 
 type ListSecretsReply struct {

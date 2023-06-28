@@ -37,5 +37,6 @@ func (h *SecretHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []strin
 
 	full := GetBoolFlags(cmd, "full")
 	getSecretsReply := NewGetSecretReply(ctx.Mapper, &koyeb.GetSecretReply{Secret: res.Secret}, full)
-	return ctx.Renderer.Render(getSecretsReply)
+	ctx.Renderer.Render(getSecretsReply)
+	return nil
 }

@@ -19,7 +19,7 @@ type ApiResources interface {
 }
 
 type Renderer interface {
-	Render(ApiResources) error
+	Render(ApiResources)
 	RenderSeparator()
 }
 

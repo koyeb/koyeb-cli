@@ -18,8 +18,8 @@ func (h *AppHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) err
 
 	full := GetBoolFlags(cmd, "full")
 	getAppsReply := NewGetAppReply(ctx.Mapper, res, full)
-
-	return ctx.Renderer.Render(getAppsReply)
+	ctx.Renderer.Render(getAppsReply)
+	return nil
 }
 
 type GetAppReply struct {

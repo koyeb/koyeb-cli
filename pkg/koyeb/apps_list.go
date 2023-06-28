@@ -32,7 +32,8 @@ func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) er
 
 	full := GetBoolFlags(cmd, "full")
 	listAppsReply := NewListAppsReply(ctx.Mapper, &koyeb.ListAppsReply{Apps: list}, full)
-	return ctx.Renderer.Render(listAppsReply)
+	ctx.Renderer.Render(listAppsReply)
+	return nil
 }
 
 type ListAppsReply struct {

@@ -15,7 +15,8 @@ func (h *InstanceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []s
 
 	full := GetBoolFlags(cmd, "full")
 	describeInstancesReply := NewDescribeInstanceReply(ctx.Mapper, res, full)
-	return ctx.Renderer.Render(describeInstancesReply)
+	ctx.Renderer.Render(describeInstancesReply)
+	return nil
 }
 
 type DescribeInstanceReply struct {

@@ -18,7 +18,8 @@ func (h *DeploymentHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 	full := GetBoolFlags(cmd, "full")
 	getDeploymentsReply := NewGetDeploymentReply(ctx.Mapper, res, full)
-	return ctx.Renderer.Render(getDeploymentsReply)
+	ctx.Renderer.Render(getDeploymentsReply)
+	return nil
 }
 
 type GetDeploymentReply struct {

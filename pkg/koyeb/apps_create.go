@@ -14,5 +14,6 @@ func (h *AppHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, 
 
 	full := GetBoolFlags(cmd, "full")
 	getAppsReply := NewGetAppReply(ctx.Mapper, &koyeb.GetAppReply{App: res.App}, full)
-	return ctx.Renderer.Render(getAppsReply)
+	ctx.Renderer.Render(getAppsReply)
+	return nil
 }

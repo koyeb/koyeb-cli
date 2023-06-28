@@ -10,7 +10,7 @@ import (
 
 type TableRenderer struct{}
 
-func (r *TableRenderer) Render(item ApiResources) error {
+func (r *TableRenderer) Render(item ApiResources) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(true)
@@ -41,7 +41,6 @@ func (r *TableRenderer) Render(item ApiResources) error {
 
 	table.AppendBulk(fields)
 	table.Render()
-	return nil
 }
 
 func (r *TableRenderer) RenderTitle(item ApiResources) {

@@ -27,5 +27,6 @@ func (h *DomainHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 
 	full := GetBoolFlags(cmd, "full")
 	getDomainsReply := NewGetDomainReply(ctx.Mapper, &koyeb.GetDomainReply{Domain: res.Domain}, full)
-	return ctx.Renderer.Render(getDomainsReply)
+	ctx.Renderer.Render(getDomainsReply)
+	return nil
 }

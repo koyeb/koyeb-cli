@@ -15,7 +15,8 @@ func (h *ServiceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string)
 
 	full := GetBoolFlags(cmd, "full")
 	getServiceReply := NewGetServiceReply(ctx.Mapper, res, full)
-	return ctx.Renderer.Render(getServiceReply)
+	ctx.Renderer.Render(getServiceReply)
+	return nil
 }
 
 type GetServiceReply struct {
