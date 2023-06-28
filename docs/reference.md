@@ -4,6 +4,8 @@ shortTitle: Reference
 description: "Discover all the commands available via the Koyeb CLI and how to use them to interact with the Koyeb serverless platform directly from the terminal."
 ---
 
+# Koyeb CLI Reference"
+
 The Koyeb CLI allows you to interact with Koyeb directly from the terminal. This documentation references all commands and options available in the CLI.
 
 If you have not installed the Koyeb CLI yet, please read the [installation guide](/docs/cli/installation).
