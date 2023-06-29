@@ -8,7 +8,7 @@ description: "Discover all the commands available via the Koyeb CLI and how to u
 
 The Koyeb CLI allows you to interact with Koyeb directly from the terminal. This documentation references all commands and options available in the CLI.
 
-If you have not installed the Koyeb CLI yet, please read the [installation guide](/docs/cli/installation).
+If you have not installed the Koyeb CLI yet, please read the [installation guide](/build-and-deploy/cli/installation).
 ## koyeb
 
 Koyeb CLI
