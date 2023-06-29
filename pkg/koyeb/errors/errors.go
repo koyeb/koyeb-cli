@@ -33,10 +33,13 @@ const TEMPLATE_ERROR = `⚠️  {{.What}}: {{.Why}} ⚠️️
 {{.Orig.Error}}{{end}}
 `
 
+var (
+	tpl = template.Must(template.New("error").Parse(TEMPLATE_ERROR))
+)
+
 func (e *CLIError) Error() string {
 	var buf bytes.Buffer
 
-	tpl := template.Must(template.New("error").Parse(TEMPLATE_ERROR))
 	err := tpl.Execute(&buf, *e)
 	// This should never happen, as the template is hardcoded in the source code.
 	if err != nil {
