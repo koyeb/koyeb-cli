@@ -21,7 +21,7 @@ type CLIError struct {
 	Solution   CLIErrorSolution // How to solve the error. For example: "update the CLI"
 }
 
-const TEMPLATE_ERROR = `⚠️  {{.What}}: {{.Why}} ⚠️️ 
+const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 {{if .Additional}}
 🔎 Additional details
 {{range .Additional}}{{.}}
@@ -34,7 +34,7 @@ const TEMPLATE_ERROR = `⚠️  {{.What}}: {{.Why}} ⚠️️
 `
 
 var (
-	tpl = template.Must(template.New("error").Parse(TEMPLATE_ERROR))
+	tpl = template.Must(template.New("error").Parse(tmplError))
 )
 
 func (e *CLIError) Error() string {
@@ -49,8 +49,8 @@ func (e *CLIError) Error() string {
 }
 
 const (
-	SOLUTION_TRY_AGAIN_OR_UPDATE_OR_ISSUE CLIErrorSolution = "Please try again, and if the problem persists, try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
-	SOLUTION_UPDATE_OR_ISSUE              CLIErrorSolution = "Please try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
-	SOLUTION_FIX_REQUEST                  CLIErrorSolution = "Fix the request, and try again"
-	SOLUTION_FIX_CONFIG                   CLIErrorSolution = "Fix your configuration and try again"
+	solutionTryAgainOrUpdateOrIssue CLIErrorSolution = "Please try again, and if the problem persists, try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
+	solutionUpdateOrIssue           CLIErrorSolution = "Please try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
+	solutionFixRequest              CLIErrorSolution = "Fix the request, and try again"
+	solutionFixConfig               CLIErrorSolution = "Fix your configuration and try again"
 )
