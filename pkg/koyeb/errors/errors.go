@@ -25,12 +25,15 @@ const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 {{if .Additional}}
 🔎 Additional details
 {{range .Additional}}{{.}}
-{{end}}{{end}}
+{{end}}
+{{- end}}
 👨‍⚕️ How to solve the issue?
-{{.Solution}}{{if .Orig}}
+{{.Solution}}
+{{- if .Orig}}
 
 🕦 The original error was:
-{{.Orig.Error}}{{end}}
+{{.Orig.Error}}
+{{- end}}
 `
 
 var (
