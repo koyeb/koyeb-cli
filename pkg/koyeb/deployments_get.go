@@ -61,7 +61,7 @@ func (r *GetDeploymentReply) Headers() []string {
 func (r *GetDeploymentReply) Fields() []map[string]string {
 	item := r.value.GetDeployment()
 	fields := map[string]string{
-		"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
+		"id":         renderer.FormatID(item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 		"type":       formatDeploymentType(item.Definition.GetType()),
 		"status":     formatDeploymentStatus(item.GetStatus()),

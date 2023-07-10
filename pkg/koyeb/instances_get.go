@@ -61,7 +61,7 @@ func (r *GetInstanceReply) Headers() []string {
 func (r *GetInstanceReply) Fields() []map[string]string {
 	item := r.value.GetInstance()
 	fields := map[string]string{
-		"id":         renderer.FormatInstanceID(r.mapper, item.GetId(), r.full),
+		"id":         renderer.FormatID(item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 		"status":     formatInstanceStatus(item.GetStatus()),
 		"region":     item.GetRegion(),

@@ -56,26 +56,6 @@ func (mapper *DomainMapper) ResolveID(val string) (string, error) {
 	)
 }
 
-func (mapper *DomainMapper) GetShortID(id string) (string, error) {
-	if !mapper.fetched {
-		err := mapper.fetch()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	sid, ok := mapper.sidMap.GetValue(id)
-	if !ok {
-		return "", errors.NewCLIErrorForMapperResolve(
-			"domain",
-			id,
-			[]string{"object full UUID", "object short ID (8 characters)", "domain name"},
-		)
-	}
-
-	return sid, nil
-}
-
 func (mapper *DomainMapper) GetName(id string) (string, error) {
 	if !mapper.fetched {
 		err := mapper.fetch()

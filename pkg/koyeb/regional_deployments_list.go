@@ -38,7 +38,7 @@ func (r *ListRegionalDeploymentsReply) Fields() []map[string]string {
 
 	for _, item := range items {
 		fields := map[string]string{
-			"id":         renderer.FormatRegionalDeploymentID(r.mapper, item.GetId(), r.full),
+			"id":         renderer.FormatID(item.GetId(), r.full),
 			"region":     item.GetRegion(),
 			"status":     formatRegionalDeploymentStatus(item.GetStatus()),
 			"messages":   formatMessages(item.GetMessages()),

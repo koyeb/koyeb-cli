@@ -60,7 +60,7 @@ func (r *GetDomainReply) Headers() []string {
 func (r *GetDomainReply) Fields() []map[string]string {
 	item := r.value.GetDomain()
 	fields := map[string]string{
-		"id":         renderer.FormatDomainID(r.mapper, item.GetId(), r.full),
+		"id":         renderer.FormatID(item.GetId(), r.full),
 		"name":       item.GetName(),
 		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"status":     string(item.GetStatus()),

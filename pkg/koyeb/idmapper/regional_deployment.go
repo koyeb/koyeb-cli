@@ -47,25 +47,6 @@ func (mapper *RegionalDeploymentMapper) ResolveID(val string) (string, error) {
 	)
 }
 
-func (mapper *RegionalDeploymentMapper) GetShortID(id string) (string, error) {
-	if !mapper.fetched {
-		err := mapper.fetch()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	sid, ok := mapper.sidMap.GetValue(id)
-	if !ok {
-		return "", errors.NewCLIErrorForMapperResolve(
-			"secret",
-			id,
-			[]string{"regional deployment full UUID", "regional deployment short ID (8 characters)"},
-		)
-	}
-	return sid, nil
-}
-
 func (mapper *RegionalDeploymentMapper) fetch() error {
 	radix := NewRadixTree()
 

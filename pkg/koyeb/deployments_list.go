@@ -73,7 +73,7 @@ func (r *ListDeploymentsReply) Fields() []map[string]string {
 
 	for _, item := range items {
 		fields := map[string]string{
-			"id":         renderer.FormatDeploymentID(r.mapper, item.GetId(), r.full),
+			"id":         renderer.FormatID(item.GetId(), r.full),
 			"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 			"type":       formatDeploymentType(item.Definition.GetType()),
 			"status":     formatDeploymentStatus(item.GetStatus()),

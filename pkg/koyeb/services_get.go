@@ -60,7 +60,7 @@ func (r *GetServiceReply) Headers() []string {
 func (r *GetServiceReply) Fields() []map[string]string {
 	item := r.value.GetService()
 	fields := map[string]string{
-		"id":         renderer.FormatServiceID(r.mapper, item.GetId(), r.full),
+		"id":         renderer.FormatID(item.GetId(), r.full),
 		"app":        renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 		"name":       item.GetName(),
 		"status":     formatServiceStatus(item.GetStatus()),

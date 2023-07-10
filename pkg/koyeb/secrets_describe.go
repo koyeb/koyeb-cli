@@ -60,7 +60,7 @@ func (r *DescribeSecretReply) Headers() []string {
 func (r *DescribeSecretReply) Fields() []map[string]string {
 	item := r.value.GetSecret()
 	fields := map[string]string{
-		"id":         renderer.FormatSecretID(r.mapper, item.GetId(), r.full),
+		"id":         renderer.FormatID(item.GetId(), r.full),
 		"name":       item.GetName(),
 		"type":       formatSecretType(item.GetType()),
 		"value":      "*****",

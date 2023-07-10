@@ -55,26 +55,6 @@ func (mapper *SecretMapper) ResolveID(val string) (string, error) {
 	)
 }
 
-func (mapper *SecretMapper) GetShortID(id string) (string, error) {
-	if !mapper.fetched {
-		err := mapper.fetch()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	sid, ok := mapper.sidMap.GetValue(id)
-	if !ok {
-		return "", errors.NewCLIErrorForMapperResolve(
-			"secret",
-			id,
-			[]string{"secret full UUID", "secret short ID (8 characters)", "secret name"},
-		)
-	}
-
-	return sid, nil
-}
-
 func (mapper *SecretMapper) fetch() error {
 	radix := NewRadixTree()
 

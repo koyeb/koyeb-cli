@@ -57,25 +57,6 @@ func (mapper *ServiceMapper) ResolveID(val string) (string, error) {
 	)
 }
 
-func (mapper *ServiceMapper) GetShortID(id string) (string, error) {
-	if !mapper.fetched {
-		err := mapper.fetch()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	sid, ok := mapper.sidMap.GetValue(id)
-	if !ok {
-		return "", errors.NewCLIErrorForMapperResolve(
-			"service",
-			id,
-			[]string{"service full UUID", "service short ID (8 characters)", "the service name prefixed by the application name and a slash (e.g. my-app/my-service)"},
-		)
-	}
-	return sid, nil
-}
-
 func (mapper *ServiceMapper) GetSlug(id string) (string, error) {
 	if !mapper.fetched {
 		err := mapper.fetch()
