@@ -34,18 +34,9 @@ gen-doc: ## generate markdown documentation
 	cat ./docs/koyeb_version.md >> ./docs/reference.md
 	find ./docs -type f -not -name 'reference.md' -delete
 
-test-linux:
-	go test $(TEST_OPTS) ./...
-
-test-windows:
-	GOOS=windows go test $(TEST_OPTS) ./...
-
-test-fmt:
+test: tidy cmd pkg
 	test -z "`gofmt -d . | tee /dev/stderr`"
-
-test: tidy cmd pkg test-fmt test-linux ## launch tests
-
-test-all: tidy cmd pkg test-fmt test-linux test-windows ## launch tests
+	go test $(TEST_OPTS) ./...
 
 lint:
 	golangci-lint run -v ./...
