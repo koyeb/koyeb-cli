@@ -29,7 +29,7 @@ const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 {{- end}}
 👨‍⚕️ How to solve the issue?
 {{.Solution}}
-{{- if .Orig}}
+{{- if notNil .Orig}}
 
 🕦 The original error was:
 {{.Orig.Error}}
@@ -37,7 +37,10 @@ const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 `
 
 var (
-	tpl = template.Must(template.New("error").Parse(tmplError))
+	tpl = template.Must(template.New("error").Funcs(
+		template.FuncMap{
+			"notNil": func(e error) bool { return e != nil },
+		}).Parse(tmplError))
 )
 
 func (e *CLIError) Error() string {
