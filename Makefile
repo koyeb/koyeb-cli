@@ -35,7 +35,7 @@ gen-doc: ## generate markdown documentation
 	find ./docs -type f -not -name 'reference.md' -delete
 
 test: tidy cmd pkg
-	test -z "`gofmt -d . | tee /dev/stderr`"
+	test -z "`gofmt -d ./cmd ./pkg | tee /dev/stderr`"
 	go test $(TEST_OPTS) ./...
 
 lint:
