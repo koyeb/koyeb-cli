@@ -55,25 +55,6 @@ func (mapper *AppMapper) ResolveID(val string) (string, error) {
 	)
 }
 
-func (mapper *AppMapper) GetShortID(id string) (string, error) {
-	if !mapper.fetched {
-		err := mapper.fetch()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	sid, ok := mapper.sidMap.GetValue(id)
-	if !ok {
-		return "", errors.NewCLIErrorForMapperResolve(
-			"application",
-			id,
-			[]string{"application full UUID", "application short ID (8 characters)", "application name"},
-		)
-	}
-	return sid, nil
-}
-
 func (mapper *AppMapper) GetName(id string) (string, error) {
 	if !mapper.fetched {
 		err := mapper.fetch()

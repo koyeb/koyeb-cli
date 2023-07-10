@@ -76,7 +76,7 @@ func (r *ListDomainsReply) Fields() []map[string]string {
 
 	for _, item := range items {
 		fields := map[string]string{
-			"id":          renderer.FormatDomainID(r.mapper, item.GetId(), r.full),
+			"id":          renderer.FormatID(item.GetId(), r.full),
 			"name":        item.GetName(),
 			"app":         renderer.FormatAppName(r.mapper, item.GetAppId(), r.full),
 			"status":      string(item.GetStatus()),

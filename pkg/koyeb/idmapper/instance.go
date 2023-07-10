@@ -47,26 +47,6 @@ func (mapper *InstanceMapper) ResolveID(val string) (string, error) {
 	)
 }
 
-func (mapper *InstanceMapper) GetShortID(id string) (string, error) {
-	if !mapper.fetched {
-		err := mapper.fetch()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	sid, ok := mapper.sidMap.GetValue(id)
-	if !ok {
-		return "", errors.NewCLIErrorForMapperResolve(
-			"instance",
-			id,
-			[]string{"instance full UUID", "instance short ID (8 characters)"},
-		)
-	}
-
-	return sid, nil
-}
-
 func (mapper *InstanceMapper) fetch() error {
 	radix := NewRadixTree()
 
