@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
@@ -38,9 +39,13 @@ var (
 		// SilenceErrors.
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := initConfig(); err != nil {
+				return err
+			}
 			DetectUpdates()
 			SetupCLIContext(cmd)
+			return nil
 		},
 	}
 	loginCmd = &cobra.Command{
@@ -89,8 +94,6 @@ func PrintVersion(cmd *cobra.Command, args []string) {
 func init() {
 	log.SetFormatter(&log.TextFormatter{})
 
-	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
 	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
@@ -115,8 +118,7 @@ func init() {
 	rootCmd.AddCommand(NewDeploymentCmd())
 }
 
-func initConfig() {
-
+func initConfig() error {
 	if debug {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -128,7 +130,13 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			er(err)
+			return &errors.CLIError{
+				What:       "Error while initializing the CLI",
+				Why:        "we were unable to find your home directory",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Please provide a config file with the --config flag, or set the $HOME environment variable",
+			}
 		}
 
 		viper.AddConfigPath(home)
@@ -139,7 +147,7 @@ func initConfig() {
 	viper.SetEnvPrefix("koyeb")
 
 	if "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() {
-		return
+		return nil
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -161,4 +169,5 @@ func initConfig() {
 	apiurl = viper.GetString("url")
 	token = viper.GetString("token")
 	debug = viper.GetBool("debug")
+	return nil
 }
