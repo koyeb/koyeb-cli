@@ -155,12 +155,42 @@ func initConfig() error {
 			if viper.GetString("token") != "" {
 				log.Debug("Configuration not found, using token from cmdline.")
 			} else {
-				log.Fatal("Configuration not found, use `koyeb login` to create a new one, or use `--config`.")
+				return &errors.CLIError{
+					What: "Error while initializing the CLI",
+					Why:  "we were unable to find your configuration file",
+					Additional: []string{
+						"The configuration file is usually located in $HOME/.koyeb.yaml",
+					},
+					Orig:     err,
+					Solution: "Use `koyeb login` to create a new configuration file, or provide an existing one with the --config flag. If you provided a configuration file, make sure the $HOME environment variable is set correctly. If you don't want to use a configuration file, you can set the --token flag to your API token.",
+				}
 			}
 		} else if _, ok := err.(*fs.PathError); ok {
-			log.Fatal("Configuration not found, use `koyeb login` to create a new one.")
+			return &errors.CLIError{
+				What:       "Error while initializing the CLI",
+				Why:        "we were unable to load your configuration file",
+				Additional: []string{"You provided a configuration file, but we couldn't load it."},
+				Orig:       err,
+				Solution:   "Make sure the configuration file exists and is readable.",
+			}
+		} else if _, ok := err.(viper.UnsupportedConfigError); ok {
+			return &errors.CLIError{
+				What:       "Error while initializing the CLI",
+				Why:        "the configuration file format is not supported",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Change the name of the configuration file to add the .yaml extension. If you don't want to use a configuration file, you can set the --token flag to your API token.",
+			}
 		} else {
-			log.Fatal(err)
+			return &errors.CLIError{
+				What: "Error while initializing the CLI",
+				Why:  "we were unable to load your configuration file",
+				Additional: []string{
+					"The configuration file exists and is readable, but we couldn't load it.",
+				},
+				Orig:     err,
+				Solution: "Make sure the configuration file is a valid YAML file.",
+			}
 		}
 	} else {
 		log.Debugf("Using config file: %s", viper.ConfigFileUsed())
