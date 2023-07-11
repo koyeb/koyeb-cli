@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 
 	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -119,11 +118,6 @@ func Run() error {
 		log.Error(err)
 	}
 	return err
-}
-
-func er(msg interface{}) {
-	log.Errorf("Error: %s", msg)
-	os.Exit(1)
 }
 
 func PrintVersion(cmd *cobra.Command, args []string) {
