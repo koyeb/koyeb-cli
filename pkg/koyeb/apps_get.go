@@ -8,7 +8,6 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -88,9 +87,9 @@ func formatDomains(domains []koyeb.Domain, max int) string {
 	}
 
 	data, err := json.Marshal(domainNames)
+	// Should never happen, as we are marshalling a list of strings
 	if err != nil {
-		// We're supposed to marshal a list of strings. If this fails, we can fairly fatal
-		log.Fatalf("Could not marshal domain names as json: %+v", err)
+		panic("failed to marshal domains")
 	}
 
 	return string(data)
