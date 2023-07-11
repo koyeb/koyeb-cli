@@ -62,8 +62,9 @@ func Login(cmd *cobra.Command, args []string) error {
 	}
 
 	result, err := prompt.Run()
+	// If user cancels (ctrl+d, ctrl+c, enter)
 	if err != nil {
-		er(err)
+		return nil
 	}
 
 	viper.Set("token", result)
