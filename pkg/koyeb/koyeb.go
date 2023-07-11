@@ -96,6 +96,22 @@ func GetRootCommand() *cobra.Command {
 }
 
 func Run() error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error(&koyeb_errors.CLIError{
+				What: "An unexpected error occured",
+				Why:  "it's maybe our fault, or maybe not, we can't tell",
+				Additional: []string{
+					"The CLI should have handled this error gracefully, but it didn't.",
+					"It might be a problem with the CLI itself, with the API, or with your configuration. Unfortuatey, we can't tell.",
+					"In any case, we would love to hear about it so we can handle this error gracefully in a future version of the CLI.",
+				},
+				Orig:     fmt.Errorf("%s", r),
+				Solution: "Please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and provide the command you ran, the error message, and the output of `koyeb version`",
+			})
+		}
+	}()
+
 	rootCmd := GetRootCommand()
 
 	ctx := context.Background()
