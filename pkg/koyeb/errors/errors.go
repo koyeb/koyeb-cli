@@ -39,6 +39,20 @@ const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 var (
 	tpl = template.Must(template.New("error").Funcs(
 		template.FuncMap{
+			// The `notNil` function allows distinguishing between nil and empty errors.
+			//
+			// It serves the purpose of selectively hiding the "original error" section when the original error is nil,
+			// while still displaying it if the original error is an empty string.
+			//
+			// Consider the following scenario:
+			// type customErr string
+			// func (e customErr) Error() string { return "the error was:" + string(e) }
+			// CLIError{..., Orig: customErr("")}
+			//
+			// In this case, if we rely solely on `{{if .Orig}}` without utilizing `notNil`, the section would be hidden
+			// because the standard library would interpret the error as an empty string.
+			//
+			// This distinction is particularly relevant in cases like `viper.UnsupportedConfigError`.
 			"notNil": func(e error) bool { return e != nil },
 		}).Parse(tmplError))
 )
