@@ -21,8 +21,9 @@ func (h *SecretHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 		}
 
 		result, err := prompt.Run()
+		// When user cancels the prompt, we return nil to cancel the command
 		if err != nil {
-			er(err)
+			return nil
 		}
 		createSecret.SetValue(result)
 	}
