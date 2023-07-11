@@ -118,6 +118,21 @@ func init() {
 	rootCmd.AddCommand(NewDeploymentCmd())
 }
 
+// getHomeDir returns the home directory of the user, and a meaningful error in case of failure.
+func getHomeDir() (string, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		return "", &errors.CLIError{
+			What:       "Error finding your home directory",
+			Why:        "we were unable to find your home directory",
+			Additional: nil,
+			Orig:       err,
+			Solution:   "Please provide a config file with the --config flag, or set the $HOME environment variable",
+		}
+	}
+	return home, nil
+}
+
 func initConfig() error {
 	if debug {
 		log.SetLevel(log.DebugLevel)
@@ -127,18 +142,10 @@ func initConfig() error {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
+		home, err := getHomeDir()
 		if err != nil {
-			return &errors.CLIError{
-				What:       "Error while initializing the CLI",
-				Why:        "we were unable to find your home directory",
-				Additional: nil,
-				Orig:       err,
-				Solution:   "Please provide a config file with the --config flag, or set the $HOME environment variable",
-			}
+			return err
 		}
-
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".koyeb")
 	}
