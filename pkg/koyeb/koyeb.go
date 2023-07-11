@@ -28,7 +28,27 @@ var (
 	outputFormat renderer.OutputFormat
 	debug        bool
 
-	rootCmd = &cobra.Command{
+	loginCmd = &cobra.Command{
+		Use:   "login",
+		Short: "Login to your Koyeb account",
+		RunE:  Login,
+	}
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Get version",
+		Run:   PrintVersion,
+	}
+)
+
+func Log(cmd *cobra.Command, args []string) {
+	log.Infof("Cmd %v", cmd)
+	log.Infof("Cmd has parent %v", cmd.HasParent())
+	log.Infof("Cmd parent %v", cmd.Parent())
+	log.Infof("Args %v", args)
+}
+
+func GetRootCommand() *cobra.Command {
+	rootCmd := &cobra.Command{
 		Use:               "koyeb RESOURCE ACTION",
 		Short:             "Koyeb CLI",
 		DisableAutoGenTag: true,
@@ -49,30 +69,37 @@ var (
 			return nil
 		},
 	}
-	loginCmd = &cobra.Command{
-		Use:   "login",
-		Short: "Login to your Koyeb account",
-		RunE:  Login,
-	}
-	versionCmd = &cobra.Command{
-		Use:   "version",
-		Short: "Get version",
-		Run:   PrintVersion,
-	}
-)
 
-func Log(cmd *cobra.Command, args []string) {
-	log.Infof("Cmd %v", cmd)
-	log.Infof("Cmd has parent %v", cmd.HasParent())
-	log.Infof("Cmd parent %v", cmd.Parent())
-	log.Infof("Args %v", args)
-}
+	log.SetFormatter(&log.TextFormatter{})
 
-func GetRootCmd() *cobra.Command {
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
+	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
+	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
+	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
+	rootCmd.PersistentFlags().String("token", "", "API token")
+
+	// viper.BindPFlag returns an error only if the second argument is nil, which is never the case here, so we ignore the error
+	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))     //nolint:errcheck
+	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token")) //nolint:errcheck
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug")) //nolint:errcheck
+
+	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(completionCmd)
+
+	rootCmd.AddCommand(NewSecretCmd())
+	rootCmd.AddCommand(NewAppCmd())
+	rootCmd.AddCommand(NewDomainCmd())
+	rootCmd.AddCommand(NewServiceCmd())
+	rootCmd.AddCommand(NewInstanceCmd())
+	rootCmd.AddCommand(NewDeploymentCmd())
 	return rootCmd
 }
 
 func Run() error {
+	rootCmd := GetRootCommand()
+
 	ctx := context.Background()
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
@@ -104,33 +131,6 @@ func PrintVersion(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", Version)
 	log.Debugf("Date: %s", BuildDate)
 	log.Debugf("Commit: %s", Commit)
-}
-
-func init() {
-	log.SetFormatter(&log.TextFormatter{})
-
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
-	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
-	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
-	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
-	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
-	rootCmd.PersistentFlags().String("token", "", "API token")
-
-	// viper.BindPFlag returns an error only if the second argument is nil, which is never the case here, so we ignore the error
-	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))     //nolint:errcheck
-	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token")) //nolint:errcheck
-	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug")) //nolint:errcheck
-
-	rootCmd.AddCommand(loginCmd)
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(completionCmd)
-
-	rootCmd.AddCommand(NewSecretCmd())
-	rootCmd.AddCommand(NewAppCmd())
-	rootCmd.AddCommand(NewDomainCmd())
-	rootCmd.AddCommand(NewServiceCmd())
-	rootCmd.AddCommand(NewInstanceCmd())
-	rootCmd.AddCommand(NewDeploymentCmd())
 }
 
 // getHomeDir returns the home directory of the user, and a meaningful error in case of failure.

@@ -10,7 +10,7 @@ import (
 )
 
 func genMarkdownDocumentation() {
-	rootCmd := koyeb.GetRootCmd()
+	rootCmd := koyeb.GetRootCommand()
 	linkHandler := func(name string) string {
 		base := strings.TrimSuffix(name, path.Ext(name))
 		return "#" + strings.Replace(strings.ToLower(base), "_", "-", -1)
