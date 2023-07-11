@@ -39,13 +39,6 @@ var (
 	}
 )
 
-func Log(cmd *cobra.Command, args []string) {
-	log.Infof("Cmd %v", cmd)
-	log.Infof("Cmd has parent %v", cmd.HasParent())
-	log.Infof("Cmd parent %v", cmd.Parent())
-	log.Infof("Args %v", args)
-}
-
 func GetRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:               "koyeb RESOURCE ACTION",
