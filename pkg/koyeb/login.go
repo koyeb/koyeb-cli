@@ -46,8 +46,9 @@ func Login(cmd *cobra.Command, args []string) error {
 		IsConfirm: true,
 	}
 	_, err := prompt.Run()
+	// If user press enter (no), ctrl+d (EOF), or ctrl+c, abort the login
 	if err != nil {
-		os.Exit(1)
+		return nil
 	}
 
 	validate := func(input string) error {
