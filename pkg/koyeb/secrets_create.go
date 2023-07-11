@@ -9,7 +9,6 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/manifoldco/promptui"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +27,13 @@ func (h *SecretHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 		createSecret.SetValue(result)
 	}
 	if cmd.LocalFlags().Lookup("value-from-stdin").Changed && cmd.LocalFlags().Lookup("value").Changed {
-		log.Fatalf("Cannot use value and value-from-stdin at the same time")
+		return &errors.CLIError{
+			What:       "Invalid arguments to create a secret",
+			Why:        "you can't provide both --value and --value-from-stdin at the same time",
+			Additional: nil,
+			Orig:       nil,
+			Solution:   "Remove one of the flags",
+		}
 	}
 	if cmd.LocalFlags().Lookup("value-from-stdin").Changed {
 		var input []string
