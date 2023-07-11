@@ -65,8 +65,7 @@ func GetRootCommand() *cobra.Command {
 				return err
 			}
 			DetectUpdates()
-			SetupCLIContext(cmd)
-			return nil
+			return SetupCLIContext(cmd)
 		},
 	}
 

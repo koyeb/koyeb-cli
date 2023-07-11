@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func getApiClient() *koyeb.APIClient {
+func getApiClient() (*koyeb.APIClient, error) {
 	u, err := url.Parse(apiurl)
 	if err != nil {
-		er(err)
+		return nil, err
 	}
 
 	log.Debugf("Using host: %s using %s", u.Host, u.Scheme)
@@ -24,7 +24,7 @@ func getApiClient() *koyeb.APIClient {
 	config.Servers[0].URL = u.String()
 	config.Debug = debug
 
-	return koyeb.NewAPIClient(config)
+	return koyeb.NewAPIClient(config), nil
 }
 
 func SyncFlags(cmd *cobra.Command, args []string, i interface{}) {

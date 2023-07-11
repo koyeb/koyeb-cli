@@ -18,14 +18,19 @@ const (
 )
 
 // SetupCLIContext is called by the root command to setup the context for all subcommands.
-func SetupCLIContext(cmd *cobra.Command) {
-	apiClient := getApiClient()
+func SetupCLIContext(cmd *cobra.Command) error {
+	apiClient, err := getApiClient()
+	if err != nil {
+		return err
+	}
+
 	ctx := cmd.Context()
 	ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
 	ctx = context.WithValue(ctx, ctx_client, apiClient)
 	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
 	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
 	cmd.SetContext(ctx)
+	return nil
 }
 
 type CLIContext struct {
