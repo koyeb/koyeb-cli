@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 
 	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -91,7 +92,7 @@ func GetRootCommand() *cobra.Command {
 func Run() error {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Error(&koyeb_errors.CLIError{
+			fmt.Fprintf(os.Stderr, "%s", &koyeb_errors.CLIError{
 				What: "An unexpected error occured",
 				Why:  "it's maybe our fault, or maybe not, we can't tell",
 				Additional: []string{
@@ -124,7 +125,7 @@ func Run() error {
 				Solution:   "Run `koyeb help` to see the list of available commands, or `koyeb help <command>` to see the help of a specific command",
 			}
 		}
-		log.Error(err)
+		fmt.Fprintf(os.Stderr, "%s", err)
 	}
 	return err
 }
