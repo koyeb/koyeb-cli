@@ -2,11 +2,12 @@ package koyeb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
@@ -75,6 +76,20 @@ func Run() error {
 	ctx := context.Background()
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
+		var cliErr *koyeb_errors.CLIError
+
+		// All the commands should return a CLIError. The only case where we get
+		// a different error is when the command is not found, or when the user
+		// provides an invalid flag.
+		if !errors.As(err, &cliErr) {
+			err = &koyeb_errors.CLIError{
+				What:       "Unable to execute the command",
+				Why:        "likely because it is invalid",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Run `koyeb help` to see the list of available commands, or `koyeb help <command>` to see the help of a specific command",
+			}
+		}
 		log.Error(err)
 	}
 	return err
@@ -122,7 +137,7 @@ func init() {
 func getHomeDir() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
-		return "", &errors.CLIError{
+		return "", &koyeb_errors.CLIError{
 			What:       "Error finding your home directory",
 			Why:        "we were unable to find your home directory",
 			Additional: nil,
@@ -162,7 +177,7 @@ func initConfig() error {
 			if viper.GetString("token") != "" {
 				log.Debug("Configuration not found, using token from cmdline.")
 			} else {
-				return &errors.CLIError{
+				return &koyeb_errors.CLIError{
 					What: "Error while initializing the CLI",
 					Why:  "we were unable to find your configuration file",
 					Additional: []string{
@@ -173,7 +188,7 @@ func initConfig() error {
 				}
 			}
 		} else if _, ok := err.(*fs.PathError); ok {
-			return &errors.CLIError{
+			return &koyeb_errors.CLIError{
 				What:       "Error while initializing the CLI",
 				Why:        "we were unable to load your configuration file",
 				Additional: []string{"You provided a configuration file, but we couldn't load it."},
@@ -181,7 +196,7 @@ func initConfig() error {
 				Solution:   "Make sure the configuration file exists and is readable.",
 			}
 		} else if _, ok := err.(viper.UnsupportedConfigError); ok {
-			return &errors.CLIError{
+			return &koyeb_errors.CLIError{
 				What:       "Error while initializing the CLI",
 				Why:        "the configuration file format is not supported",
 				Additional: nil,
@@ -189,7 +204,7 @@ func initConfig() error {
 				Solution:   "Change the name of the configuration file to add the .yaml extension. If you don't want to use a configuration file, you can set the --token flag to your API token.",
 			}
 		} else {
-			return &errors.CLIError{
+			return &koyeb_errors.CLIError{
 				What: "Error while initializing the CLI",
 				Why:  "we were unable to load your configuration file",
 				Additional: []string{
