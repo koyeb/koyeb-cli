@@ -164,7 +164,7 @@ func (e *Executor) Run(ctx context.Context) (int, error) {
 func (e *Executor) dial(address, path string) (*websocket.Conn, error) {
 	u, err := url.Parse(address)
 	if err != nil {
-		er(err)
+		return nil, err
 	}
 	u.Path = path
 	if u.Scheme == "https" {
