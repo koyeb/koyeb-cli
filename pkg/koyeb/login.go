@@ -73,7 +73,13 @@ func Login(cmd *cobra.Command, args []string) error {
 	viper.SetConfigPermissions(os.FileMode(0o600))
 	err = viper.WriteConfig()
 	if err != nil {
-		er(err)
+		return &koyeb_errors.CLIError{
+			What:       "Error during login",
+			Why:        "unable to write the configuration file",
+			Additional: nil,
+			Orig:       err,
+			Solution:   koyeb_errors.CLIErrorSolution(fmt.Sprintf("Make sure you have the right permissions to write the configuration file %s", configPath)),
+		}
 	}
 
 	log.Infof("Creating new configuration in %s", configPath)
