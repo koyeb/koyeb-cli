@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -13,7 +14,6 @@ import (
 )
 
 func Login(cmd *cobra.Command, args []string) error {
-
 	configPath := ""
 	if cfgFile != "" {
 		configPath = cfgFile
@@ -27,7 +27,13 @@ func Login(cmd *cobra.Command, args []string) error {
 	viper.SetConfigFile(configPath)
 
 	if !term.IsTerminal(int(os.Stdin.Fd())) {
-		log.Fatalf("Unable to read from stdin, please launch the command in interactive mode")
+		return &koyeb_errors.CLIError{
+			What:       "Unable to start interactive mode",
+			Why:        "the command `koyeb login` requires an interactive terminal.",
+			Additional: []string{"Make sure you are not piping the input of the command"},
+			Orig:       nil,
+			Solution:   "Instead of calling `koyeb login`, create a configuration file manually in ~/.koyeb.yaml",
+		}
 	}
 
 	writeFileMessage := fmt.Sprintf("Do you want to create a new configuration file in (%s)", configPath)
