@@ -36,19 +36,16 @@ func Login(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	writeFileMessage := fmt.Sprintf("Do you want to create a new configuration file in (%s)", configPath)
 	if _, err := os.Stat(configPath); !errors.Is(err, os.ErrNotExist) {
-		writeFileMessage = fmt.Sprintf("Do you want to update configuration file (%s)", configPath)
-	}
-
-	prompt := promptui.Prompt{
-		Label:     writeFileMessage,
-		IsConfirm: true,
-	}
-	_, err := prompt.Run()
-	// If user press enter (no), ctrl+d (EOF), or ctrl+c, abort the login
-	if err != nil {
-		return nil
+		prompt := promptui.Prompt{
+			Label:     fmt.Sprintf("Do you want to overwrite your current configuration file (%s)", configPath),
+			IsConfirm: true,
+		}
+		_, err := prompt.Run()
+		// If user cancels (ctrl+d, ctrl+c, enter)
+		if err != nil {
+			return nil
+		}
 	}
 
 	validate := func(input string) error {
@@ -58,7 +55,7 @@ func Login(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	prompt = promptui.Prompt{
+	prompt := promptui.Prompt{
 		Label:    "Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/api )",
 		Validate: validate,
 		Mask:     '*',
