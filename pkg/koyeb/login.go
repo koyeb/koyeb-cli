@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/manifoldco/promptui"
-	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,9 +18,9 @@ func Login(cmd *cobra.Command, args []string) error {
 	if cfgFile != "" {
 		configPath = cfgFile
 	} else {
-		home, err := homedir.Dir()
+		home, err := getHomeDir()
 		if err != nil {
-			er(err)
+			return err
 		}
 		configPath = home + "/.koyeb.yaml"
 	}
