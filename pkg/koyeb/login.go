@@ -50,7 +50,7 @@ func Login(cmd *cobra.Command, args []string) error {
 
 	validate := func(input string) error {
 		if len(input) != 64 {
-			return errors.New("Invalid api credential")
+			return errors.New("Invalid API credential. The token should be 64 characters long.")
 		}
 		return nil
 	}
