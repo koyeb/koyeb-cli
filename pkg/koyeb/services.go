@@ -451,10 +451,30 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			buildpackRunCommand, _ := flags.GetString("git-buildpack-run-command")
 
 			if buildCommand != "" && buildpackBuildCommand != "" {
-				return stderrors.New(`Cannot use --git-build-command and --git-buildpack-build-command together. Use --git-buildpack-build-command instead`)
+				return &koyeb_errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  "can't use --git-build-command and --git-buildpack-build-command together",
+					Additional: []string{
+						"The command --git-build-command has been deprecated in favor of --git-buildpack-build-command.",
+						"For backward compatibility, it is still possible to use --git-build-command, but it will be removed in a future release.",
+						"In any case, the two options cannot be used together.",
+					},
+					Orig:     nil,
+					Solution: "Only specify --git-buildpack-build-command",
+				}
 			}
 			if runCommand != "" && buildpackRunCommand != "" {
-				return stderrors.New(`Cannot use --git-run-command and --git-buildpack-run-command together. Use --git-buildpack-run-command instead`)
+				return &koyeb_errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  "can't use --git-run-command and --git-buildpack-run-command together",
+					Additional: []string{
+						"The command --git-run-command has been deprecated in favor of --git-buildpack-run-command.",
+						"For backward compatibility, it is still possible to use --git-run-command, but it will be removed in a future release.",
+						"In any case, the two options cannot be used together.",
+					},
+					Orig:     nil,
+					Solution: "Only specify --git-buildpack-run-command",
+				}
 			}
 
 			builder := koyeb.BuildpackBuilder{}
