@@ -225,7 +225,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker args")
 	flags.StringSlice("regions", []string{"fra"}, "Regions")
-	flags.StringSlice("env", []string{}, "Env")
+	flags.StringSlice("env", []string{}, "Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar")
 	flags.StringSlice("routes", []string{"/:80"}, `Routes - Available for "WEB" service only`)
 	flags.StringSlice("ports", []string{"80:http"}, `Ports - Available for "WEB" service only`)
 	flags.String("instance-type", "nano", "Instance type")
