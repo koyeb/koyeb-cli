@@ -8,6 +8,7 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -114,7 +115,16 @@ func NewServiceCmd() *cobra.Command {
 				)
 			}
 			if len(latestDeploy.GetDeployments()) == 0 {
-				return stderrors.New("Unable to load latest deployment")
+				return &koyeb_errors.CLIError{
+					What: "Error while updating the service",
+					Why:  "we couldn't find the latest deployment of your service",
+					Additional: []string{
+						"When you create a service for the first time, it can take a few seconds for the first deployment to be created.",
+						"We need to fetch the configuration of this latest deployment to update your service.",
+					},
+					Orig:     nil,
+					Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
+				}
 			}
 			updateDef := latestDeploy.GetDeployments()[0].Definition
 			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
