@@ -27,7 +27,7 @@ const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 {{range .Additional}}{{.}}
 {{end}}
 {{- end}}
-👨‍⚕️ How to solve the issue?
+🏥 How to solve the issue?
 {{.Solution}}
 {{- if notNil .Orig}}
 

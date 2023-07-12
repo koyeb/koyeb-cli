@@ -25,7 +25,7 @@ func TestTemplate(t *testing.T) {
 			},
 			expected: `⚠️  Error title: error message ⚠️️
 
-👨‍⚕️ How to solve the issue?
+🏥 How to solve the issue?
 Solution 1
 `,
 		},
@@ -42,7 +42,7 @@ Solution 1
 additional info 1
 additional info 2
 
-👨‍⚕️ How to solve the issue?
+🏥 How to solve the issue?
 Solution 1
 `,
 		},
@@ -55,7 +55,7 @@ Solution 1
 			},
 			expected: `⚠️  Error title: error message ⚠️️
 
-👨‍⚕️ How to solve the issue?
+🏥 How to solve the issue?
 Solution 1
 
 🕦 The original error was:
@@ -76,7 +76,7 @@ original error
 additional info 1
 additional info 2
 
-👨‍⚕️ How to solve the issue?
+🏥 How to solve the issue?
 Solution 1
 
 🕦 The original error was:
