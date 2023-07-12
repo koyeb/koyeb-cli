@@ -240,7 +240,7 @@ koyeb apps init NAME [flags]
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Env
+      --env strings                             Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -948,7 +948,7 @@ koyeb services create NAME [flags]
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Env
+      --env strings                             Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -1281,7 +1281,7 @@ koyeb services update NAME [flags]
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Env
+      --env strings                             Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
