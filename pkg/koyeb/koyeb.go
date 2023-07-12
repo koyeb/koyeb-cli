@@ -26,6 +26,7 @@ var (
 	apiurl       string
 	token        string
 	outputFormat renderer.OutputFormat
+	debugFull    bool
 	debug        bool
 
 	loginCmd = &cobra.Command{
@@ -66,7 +67,8 @@ func GetRootCommand() *cobra.Command {
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
 	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
-	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "enable the debug output")
+	rootCmd.PersistentFlags().BoolVar(&debugFull, "debug-full", false, "do not hide sensitive information (tokens) in the debug output")
 	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
