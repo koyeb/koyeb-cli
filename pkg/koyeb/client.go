@@ -2,8 +2,11 @@ package koyeb
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"reflect"
+	"regexp"
 
 	"github.com/iancoleman/strcase"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -11,6 +14,34 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
+
+var authorizationHeaderRegexp = regexp.MustCompile("(?m)^Authorization:.*$")
+
+// DebugTransport overrides the default HTTP transport to log the request and the response using our logger.
+type DebugTransport struct {
+	http.RoundTripper
+}
+
+func (t *DebugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if reqData, dumpErr := httputil.DumpRequestOut(req, true); dumpErr == nil {
+		var safeReqData string
+
+		// Hide the token in the Authorization header
+		if !debugFull {
+			safeReqData = authorizationHeaderRegexp.ReplaceAllString(string(reqData), "Authorization: <HIDDEN, add --debug-full to show the token>")
+		} else {
+			safeReqData = string(reqData)
+		}
+		log.Debug(fmt.Sprintf("========== HTTP request ==========\n%s\n========== end of request ==========\n", safeReqData))
+	}
+
+	resp, err := t.RoundTripper.RoundTrip(req)
+
+	if respData, dumpErr := httputil.DumpResponse(resp, true); dumpErr == nil {
+		log.Debug(fmt.Sprintf("========== HTTP response ==========\n%s\n========== end of response ==========\n", respData))
+	}
+	return resp, err
+}
 
 func getApiClient() (*koyeb.APIClient, error) {
 	u, err := url.Parse(apiurl)
@@ -22,7 +53,9 @@ func getApiClient() (*koyeb.APIClient, error) {
 
 	config := koyeb.NewConfiguration()
 	config.Servers[0].URL = u.String()
-	config.Debug = debug
+	config.HTTPClient = &http.Client{
+		Transport: &DebugTransport{http.DefaultTransport},
+	}
 
 	return koyeb.NewAPIClient(config), nil
 }

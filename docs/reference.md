@@ -17,7 +17,8 @@ Koyeb CLI
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -h, --help            help for koyeb
   -o, --output output   output format (yaml,json,table)
@@ -55,7 +56,8 @@ koyeb login [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -80,7 +82,8 @@ Apps
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -118,7 +121,8 @@ koyeb apps create NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -147,7 +151,8 @@ koyeb apps delete NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -176,7 +181,8 @@ koyeb apps describe NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -205,7 +211,8 @@ koyeb apps get NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -262,7 +269,8 @@ koyeb apps init NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -291,7 +299,8 @@ koyeb apps list [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -320,7 +329,8 @@ koyeb apps pause NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -349,7 +359,8 @@ koyeb apps resume NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -379,7 +390,8 @@ koyeb apps update NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -404,7 +416,8 @@ Domains
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -441,7 +454,8 @@ koyeb domains attach NAME APP [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -471,7 +485,8 @@ koyeb domains create NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -500,7 +515,8 @@ koyeb domains delete [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -529,7 +545,8 @@ koyeb domains describe [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -558,7 +575,8 @@ koyeb domains detach NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -587,7 +605,8 @@ koyeb domains get NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -616,7 +635,8 @@ koyeb domains list [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -645,7 +665,8 @@ koyeb domains refresh NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -670,7 +691,8 @@ Secrets
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -707,7 +729,8 @@ koyeb secrets create NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -736,7 +759,8 @@ koyeb secrets delete NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -765,7 +789,8 @@ koyeb secrets describe NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -794,7 +819,8 @@ koyeb secrets get NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -823,7 +849,8 @@ koyeb secrets list [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -854,7 +881,8 @@ koyeb secrets update NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -879,7 +907,8 @@ Services
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -948,7 +977,8 @@ koyeb services create NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -977,7 +1007,8 @@ koyeb services delete NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1006,7 +1037,8 @@ koyeb services describe NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1035,7 +1067,8 @@ koyeb services exec NAME CMD -- [args...] [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1064,7 +1097,8 @@ koyeb services get NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1095,7 +1129,8 @@ koyeb services list [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1126,7 +1161,8 @@ koyeb services logs NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1155,7 +1191,8 @@ koyeb services pause NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1185,7 +1222,8 @@ koyeb services redeploy NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1214,7 +1252,8 @@ koyeb services resume NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1271,7 +1310,8 @@ koyeb services update NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1296,7 +1336,8 @@ Deployments
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1330,7 +1371,8 @@ koyeb deployments cancel NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1359,7 +1401,8 @@ koyeb deployments describe NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1388,7 +1431,8 @@ koyeb deployments get NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1417,7 +1461,8 @@ koyeb deployments list [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1447,7 +1492,8 @@ koyeb deployments logs NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1472,7 +1518,8 @@ Instances
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1506,7 +1553,8 @@ koyeb instances describe NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1535,7 +1583,8 @@ koyeb instances exec NAME CMD -- [args...] [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1564,7 +1613,8 @@ koyeb instances get NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1595,7 +1645,8 @@ koyeb instances list [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1624,7 +1675,8 @@ koyeb instances logs NAME [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1653,7 +1705,8 @@ koyeb version [flags]
 
 ```
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
+  -d, --debug           enable the debug output
+      --debug-full      do not hide sensitive information (tokens) in the debug output
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
