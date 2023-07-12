@@ -16,6 +16,7 @@ Koyeb CLI
 ### Options
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -55,6 +56,7 @@ koyeb login [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -81,6 +83,7 @@ Apps
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -120,6 +123,7 @@ koyeb apps create NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -150,6 +154,7 @@ koyeb apps delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -180,6 +185,7 @@ koyeb apps describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -210,6 +216,7 @@ koyeb apps get NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -268,6 +275,7 @@ koyeb apps init NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -298,6 +306,7 @@ koyeb apps list [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -328,6 +337,7 @@ koyeb apps pause NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -358,6 +368,7 @@ koyeb apps resume NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -389,6 +400,7 @@ koyeb apps update NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -415,6 +427,7 @@ Domains
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -453,6 +466,7 @@ koyeb domains attach NAME APP [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -484,6 +498,7 @@ koyeb domains create NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -514,6 +529,7 @@ koyeb domains delete [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -544,6 +560,7 @@ koyeb domains describe [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -574,6 +591,7 @@ koyeb domains detach NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -604,6 +622,7 @@ koyeb domains get NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -634,6 +653,7 @@ koyeb domains list [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -664,6 +684,7 @@ koyeb domains refresh NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -690,6 +711,7 @@ Secrets
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -728,6 +750,7 @@ koyeb secrets create NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -758,6 +781,7 @@ koyeb secrets delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -788,6 +812,7 @@ koyeb secrets describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -818,6 +843,7 @@ koyeb secrets get NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -848,6 +874,7 @@ koyeb secrets list [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -880,6 +907,7 @@ koyeb secrets update NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -906,6 +934,7 @@ Services
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -976,6 +1005,7 @@ koyeb services create NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1006,6 +1036,7 @@ koyeb services delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1036,6 +1067,7 @@ koyeb services describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1066,6 +1098,7 @@ koyeb services exec NAME CMD -- [args...] [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1096,6 +1129,7 @@ koyeb services get NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1128,6 +1162,7 @@ koyeb services list [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1160,6 +1195,7 @@ koyeb services logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1190,6 +1226,7 @@ koyeb services pause NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1221,6 +1258,7 @@ koyeb services redeploy NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1251,6 +1289,7 @@ koyeb services resume NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1309,6 +1348,7 @@ koyeb services update NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1335,6 +1375,7 @@ Deployments
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1370,6 +1411,7 @@ koyeb deployments cancel NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1400,6 +1442,7 @@ koyeb deployments describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1430,6 +1473,7 @@ koyeb deployments get NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1460,6 +1504,7 @@ koyeb deployments list [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1491,6 +1536,7 @@ koyeb deployments logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1517,6 +1563,7 @@ Instances
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1552,6 +1599,7 @@ koyeb instances describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1582,6 +1630,7 @@ koyeb instances exec NAME CMD -- [args...] [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1612,6 +1661,7 @@ koyeb instances get NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1644,6 +1694,7 @@ koyeb instances list [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1674,6 +1725,7 @@ koyeb instances logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
@@ -1704,6 +1756,7 @@ koyeb version [flags]
 ### Options inherited from parent commands
 
 ```
+      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output

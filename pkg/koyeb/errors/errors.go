@@ -19,9 +19,30 @@ type CLIError struct {
 	Additional []string         // Additional information to display to the user. For example: "the field 'name' is required"
 	Orig       error            // Original error
 	Solution   CLIErrorSolution // How to solve the error. For example: "update the CLI"
+	ASCII      bool             // Whether to use only ASCII characters in the error message
 }
 
-const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
+func (e *CLIError) Error() string {
+	var buf bytes.Buffer
+	var tmplError string
+
+	if e.ASCII {
+		tmplError = `!!! {{.What}}: {{.Why}}
+{{if .Additional}}
+> Additional details
+{{range .Additional}}{{.}}
+{{end}}
+{{- end}}
+> How to solve the issue?
+{{.Solution}}
+{{- if notNil .Orig}}
+
+> The original error was:
+{{.Orig.Error}}
+{{- end}}
+`
+	} else {
+		tmplError = `❌ {{.What}}: {{.Why}}
 {{if .Additional}}
 🔎 Additional details
 {{range .Additional}}{{.}}
@@ -35,9 +56,9 @@ const tmplError = `⚠️  {{.What}}: {{.Why}} ⚠️️
 {{.Orig.Error}}
 {{- end}}
 `
+	}
 
-var (
-	tpl = template.Must(template.New("error").Funcs(
+	tpl := template.Must(template.New("error").Funcs(
 		template.FuncMap{
 			// The `notNil` function allows distinguishing between nil and empty errors.
 			//
@@ -55,10 +76,6 @@ var (
 			// This distinction is particularly relevant in cases like `viper.UnsupportedConfigError`.
 			"notNil": func(e error) bool { return e != nil },
 		}).Parse(tmplError))
-)
-
-func (e *CLIError) Error() string {
-	var buf bytes.Buffer
 
 	err := tpl.Execute(&buf, *e)
 	// This should never happen, as the template is hardcoded in the source code.

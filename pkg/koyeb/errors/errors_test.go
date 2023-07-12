@@ -23,7 +23,7 @@ func TestTemplate(t *testing.T) {
 				Why:      "error message",
 				Solution: testSol1,
 			},
-			expected: `⚠️  Error title: error message ⚠️️
+			expected: `❌ Error title: error message
 
 🏥 How to solve the issue?
 Solution 1
@@ -36,7 +36,7 @@ Solution 1
 				Additional: []string{"additional info 1", "additional info 2"},
 				Solution:   testSol1,
 			},
-			expected: `⚠️  Error title: error message ⚠️️
+			expected: `❌ Error title: error message
 
 🔎 Additional details
 additional info 1
@@ -53,7 +53,7 @@ Solution 1
 				Orig:     fmt.Errorf("original error"),
 				Solution: testSol1,
 			},
-			expected: `⚠️  Error title: error message ⚠️️
+			expected: `❌ Error title: error message
 
 🏥 How to solve the issue?
 Solution 1
@@ -70,7 +70,7 @@ original error
 				Orig:       fmt.Errorf("original error"),
 				Solution:   testSol1,
 			},
-			expected: `⚠️  Error title: error message ⚠️️
+			expected: `❌ Error title: error message
 
 🔎 Additional details
 additional info 1
