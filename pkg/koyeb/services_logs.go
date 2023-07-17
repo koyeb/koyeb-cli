@@ -3,8 +3,6 @@ package koyeb
 import (
 	"fmt"
 
-	stderrors "errors"
-
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
@@ -45,8 +43,15 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 			)
 		}
 		if len(latestDeploy.GetDeployments()) == 0 {
-			//TODO: enrich this error
-			return stderrors.New("unable to load latest deployment")
+			return &errors.CLIError{
+				What: "Error while fetching the logs of your service",
+				Why:  "we couldn't find the latest deployment of your service",
+				Additional: []string{
+					"Your service exists but has not been deployed yet",
+				},
+				Orig:     nil,
+				Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
+			}
 		}
 		query.DeploymentID = latestDeploy.GetDeployments()[0].Id
 		query.LogType = koyeb.PtrString(logType)
