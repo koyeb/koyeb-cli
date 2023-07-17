@@ -7,7 +7,6 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
-	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -114,7 +113,7 @@ func NewServiceCmd() *cobra.Command {
 				)
 			}
 			if len(latestDeploy.GetDeployments()) == 0 {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while updating the service",
 					Why:  "we couldn't find the latest deployment of your service",
 					Additional: []string{
@@ -257,7 +256,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 			split := strings.SplitN(e, "=", 2)
 			if len(split) != 2 || split[0] == "" || split[1] == "" {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  fmt.Sprintf("unable to parse the environment variable \"%s\"", e),
 					Additional: []string{
@@ -302,7 +301,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			split := strings.Split(p, ":")
 			portNum, err := strconv.Atoi(split[0])
 			if err != nil {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
 					Additional: []string{
@@ -319,7 +318,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			newPort.Protocol = koyeb.PtrString("http")
 			if len(split) > 1 {
 				if split[1] != "http" && split[1] != "http2" {
-					return &koyeb_errors.CLIError{
+					return &errors.CLIError{
 						What: "Error while configuring the service",
 						Why:  fmt.Sprintf("unable to parse the port protocol \"%s\"", split[1]),
 						Additional: []string{
@@ -350,7 +349,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 				portNum, err := strconv.Atoi(split[1])
 				if err != nil {
 					// return fmt.Errorf("invalid route number: %v", split[1])
-					return &koyeb_errors.CLIError{
+					return &errors.CLIError{
 						What: "Error while configuring the service",
 						Why:  fmt.Sprintf("unable to parse the route port \"%s\"", split[1]),
 						Additional: []string{
@@ -388,7 +387,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			components := strings.Split(c, ":")
 			componentsCount := len(components)
 			if componentsCount > 3 {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  fmt.Sprintf("unable to parse the check \"%s\"", c),
 					Additional: []string{
@@ -409,7 +408,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 			port, err := strconv.Atoi(components[0])
 			if err != nil {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  fmt.Sprintf("unable to parse the port from the check check \"%s\"", c),
 					Additional: []string{
@@ -436,7 +435,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 				TCPHealthCheck.Port = koyeb.PtrInt64(int64(port))
 				healthcheck.SetTcp(*TCPHealthCheck)
 			default:
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  fmt.Sprintf("unable to parse the protocol from the check \"%s\"", c),
 					Additional: []string{
@@ -480,7 +479,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	if flags.Lookup("git").Changed && !flags.Lookup("docker").Changed {
 		builder, _ := flags.GetString("git-builder")
 		if builder != "buildpack" && builder != "docker" {
-			return &koyeb_errors.CLIError{
+			return &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "the --git-builder is invalid",
 				Additional: []string{
@@ -496,7 +495,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			flags.Lookup("git-docker-command").Changed ||
 			flags.Lookup("git-docker-args").Changed ||
 			flags.Lookup("git-docker-target").Changed) {
-			return &koyeb_errors.CLIError{
+			return &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "invalid flag combination",
 				Additional: []string{
@@ -509,7 +508,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 		if builder == "docker" && (flags.Lookup("git-buildpack-build-command").Changed ||
 			flags.Lookup("git-buildpack-run-command").Changed) {
-			return &koyeb_errors.CLIError{
+			return &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "invalid flag combination",
 				Additional: []string{
@@ -544,7 +543,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			buildpackRunCommand, _ := flags.GetString("git-buildpack-run-command")
 
 			if buildCommand != "" && buildpackBuildCommand != "" {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  "can't use --git-build-command and --git-buildpack-build-command together",
 					Additional: []string{
@@ -557,7 +556,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 				}
 			}
 			if runCommand != "" && buildpackRunCommand != "" {
-				return &koyeb_errors.CLIError{
+				return &errors.CLIError{
 					What: "Error while configuring the service",
 					Why:  "can't use --git-run-command and --git-buildpack-run-command together",
 					Additional: []string{
