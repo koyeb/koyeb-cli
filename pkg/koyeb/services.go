@@ -230,6 +230,24 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
 	flags.StringSlice("checks", []string{""}, `HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only`)
+
+	// Accept aliases: for example, allow user to use --port instead of --ports
+	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		aliases := map[string]string{
+			"port":           "ports",
+			"check":          "checks",
+			"route":          "routes",
+			"region":         "regions",
+			"git-docker-arg": "git-docker-args",
+			"docker-arg":     "docker-args",
+		}
+
+		alias, exists := aliases[name]
+		if exists {
+			name = alias
+		}
+		return pflag.NormalizedName(name)
+	})
 }
 
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
