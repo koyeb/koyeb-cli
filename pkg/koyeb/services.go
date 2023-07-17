@@ -249,34 +249,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if useDefault || flags.Lookup("env").Changed {
-		env, _ := flags.GetStringSlice("env")
-		envs := []koyeb.DeploymentEnv{}
-		for _, e := range env {
-			newEnv := koyeb.NewDeploymentEnvWithDefaults()
-
-			split := strings.SplitN(e, "=", 2)
-			if len(split) != 2 || split[0] == "" || split[1] == "" {
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the environment variable \"%s\"", e),
-					Additional: []string{
-						"Environment variables must be specified as KEY=VALUE",
-						"To use a secret as a value, specify KEY=@SECRET_NAME",
-						"To specify an empty value, specify KEY=",
-					},
-					Orig:     nil,
-					Solution: "Fix the environment variable and try again",
-				}
-			}
-
-			newEnv.Key = koyeb.PtrString(split[0])
-			if split[1][0] == '@' {
-				newEnv.Secret = koyeb.PtrString(split[1][1:])
-			} else {
-				newEnv.Value = koyeb.PtrString(split[1])
-			}
-
-			envs = append(envs, *newEnv)
+		envs, err := parseEnv(flags)
+		if err != nil {
+			return err
 		}
 		definition.SetEnv(envs)
 	}
@@ -293,78 +268,17 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("ports").Changed {
-		port, _ := flags.GetStringSlice("ports")
-		ports := []koyeb.DeploymentPort{}
-		for _, p := range port {
-			newPort := koyeb.NewDeploymentPortWithDefaults()
-
-			split := strings.Split(p, ":")
-			portNum, err := strconv.Atoi(split[0])
-			if err != nil {
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
-					Additional: []string{
-						"Ports must be specified as PORT[:PROTOCOL]",
-						"PORT must be a valid port number (e.g. 80)",
-						"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
-					},
-					Orig:     nil,
-					Solution: "Fix the port and try again",
-				}
-			}
-			newPort.Port = koyeb.PtrInt64(int64(portNum))
-
-			newPort.Protocol = koyeb.PtrString("http")
-			if len(split) > 1 {
-				if split[1] != "http" && split[1] != "http2" {
-					return &errors.CLIError{
-						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the port protocol \"%s\"", split[1]),
-						Additional: []string{
-							"Ports must be specified as PORT[:PROTOCOL]",
-							"PORT must be a valid port number (e.g. 80)",
-							"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
-						},
-						Orig:     nil,
-						Solution: "Fix the protocol and try again",
-					}
-				}
-				newPort.Protocol = koyeb.PtrString(split[1])
-			}
-			ports = append(ports, *newPort)
+		ports, err := parsePorts(flags)
+		if err != nil {
+			return err
 		}
 		definition.SetPorts(ports)
 	}
 
 	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("routes").Changed {
-		route, _ := flags.GetStringSlice("routes")
-		routes := []koyeb.DeploymentRoute{}
-		for _, p := range route {
-			newRoute := koyeb.NewDeploymentRouteWithDefaults()
-			split := strings.Split(p, ":")
-			newRoute.Path = koyeb.PtrString(split[0])
-			newRoute.Port = koyeb.PtrInt64(80)
-			if len(split) > 1 {
-				portNum, err := strconv.Atoi(split[1])
-				if err != nil {
-					// return fmt.Errorf("invalid route number: %v", split[1])
-					return &errors.CLIError{
-						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the route port \"%s\"", split[1]),
-						Additional: []string{
-							"Routes must be specified as PATH[:PORT]",
-							"PATH is the route to expose (e.g. /)",
-							"PROTOCOL must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to \"80\"",
-						},
-						Orig:     nil,
-						Solution: "Fix the route and try again",
-					}
-				}
-				newRoute.Port = koyeb.PtrInt64(int64(portNum))
-			}
-			routes = append(routes, *newRoute)
-
+		routes, err := parseRoutes(flags)
+		if err != nil {
+			return err
 		}
 		definition.SetRoutes(routes)
 	}
@@ -379,74 +293,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if flags.Lookup("checks").Changed {
-		checks, _ := flags.GetStringSlice("checks")
-		healthchecks := []koyeb.DeploymentHealthCheck{}
-
-		for _, c := range checks {
-			healthcheck := koyeb.NewDeploymentHealthCheck()
-			components := strings.Split(c, ":")
-			componentsCount := len(components)
-			if componentsCount > 3 {
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the check \"%s\"", c),
-					Additional: []string{
-						"Healtchecks must be specified as PORT[:TYPE[:PATH]]",
-						"PORT must be a valid port number (e.g. 80)",
-						"TYPE must be either \"http\" or \"tcp\". It can be omitted, in which case it defaults to \"http\"",
-						"PATH is the path to check for http checks. It can be omitted, in which case it defaults to \"/\". For tcp checks, PATH is ignored",
-					},
-					Orig:     nil,
-					Solution: "Fix the healthcheck and try again",
-				}
-			}
-
-			healthcheckType := "http"
-			if len(components) >= 2 {
-				healthcheckType = components[1]
-			}
-
-			port, err := strconv.Atoi(components[0])
-			if err != nil {
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the port from the check check \"%s\"", c),
-					Additional: []string{
-						"PORT must be a valid port number (e.g. 443)",
-						"It can be omitted, in which case it defaults to \"80\"",
-						"For http checks, PORT must be set if you also want to specify the PATH",
-					},
-					Orig:     nil,
-					Solution: "Fix the port and try again",
-				}
-			}
-
-			switch healthcheckType {
-			case "http":
-				HTTPHealthCheck := koyeb.NewHTTPHealthCheck()
-				HTTPHealthCheck.Port = koyeb.PtrInt64(int64(port))
-				HTTPHealthCheck.Path = koyeb.PtrString("/")
-				if len(components) == 3 {
-					HTTPHealthCheck.Path = koyeb.PtrString(components[2])
-				}
-				healthcheck.SetHttp(*HTTPHealthCheck)
-			case "tcp":
-				TCPHealthCheck := koyeb.NewTCPHealthCheck()
-				TCPHealthCheck.Port = koyeb.PtrInt64(int64(port))
-				healthcheck.SetTcp(*TCPHealthCheck)
-			default:
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the protocol from the check \"%s\"", c),
-					Additional: []string{
-						"The healthcheck protocol must be either \"http\" or \"tcp\"",
-						"It can be omitted, in which case it defaults to \"http\"",
-					},
-					Orig:     nil,
-					Solution: "Fix the healthcheck and try again",
-				}
-			}
-			healthchecks = append(healthchecks, *healthcheck)
+		healthchecks, err := parseChecks(flags)
+		if err != nil {
+			return err
 		}
 		definition.SetHealthChecks(healthchecks)
 	}
@@ -611,4 +460,208 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		definition.Docker = nil
 	}
 	return nil
+}
+
+// Parse --env flags
+func parseEnv(flags *pflag.FlagSet) ([]koyeb.DeploymentEnv, error) {
+	ret := []koyeb.DeploymentEnv{}
+
+	values, err := flags.GetStringSlice("env")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, value := range values {
+		newEnv := koyeb.NewDeploymentEnvWithDefaults()
+
+		split := strings.SplitN(value, "=", 2)
+		if len(split) != 2 || split[0] == "" || split[1] == "" {
+			return nil, &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  fmt.Sprintf("unable to parse the environment variable \"%s\"", value),
+				Additional: []string{
+					"Environment variables must be specified as KEY=VALUE",
+					"To use a secret as a value, specify KEY=@SECRET_NAME",
+					"To specify an empty value, specify KEY=",
+				},
+				Orig:     nil,
+				Solution: "Fix the environment variable and try again",
+			}
+		}
+
+		newEnv.Key = koyeb.PtrString(split[0])
+		if split[1][0] == '@' {
+			newEnv.Secret = koyeb.PtrString(split[1][1:])
+		} else {
+			newEnv.Value = koyeb.PtrString(split[1])
+		}
+
+		ret = append(ret, *newEnv)
+	}
+	return ret, nil
+}
+
+// Parse --ports flags
+func parsePorts(flags *pflag.FlagSet) ([]koyeb.DeploymentPort, error) {
+	ret := []koyeb.DeploymentPort{}
+
+	values, err := flags.GetStringSlice("ports")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, value := range values {
+		newPort := koyeb.NewDeploymentPortWithDefaults()
+
+		split := strings.Split(value, ":")
+		portNum, err := strconv.Atoi(split[0])
+		if err != nil {
+			return nil, &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
+				Additional: []string{
+					"Ports must be specified as PORT[:PROTOCOL]",
+					"PORT must be a valid port number (e.g. 80)",
+					"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
+				},
+				Orig:     nil,
+				Solution: "Fix the port and try again",
+			}
+		}
+		newPort.Port = koyeb.PtrInt64(int64(portNum))
+
+		newPort.Protocol = koyeb.PtrString("http")
+		if len(split) > 1 {
+			if split[1] != "http" && split[1] != "http2" {
+				return nil, &errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  fmt.Sprintf("unable to parse the port protocol \"%s\"", split[1]),
+					Additional: []string{
+						"Ports must be specified as PORT[:PROTOCOL]",
+						"PORT must be a valid port number (e.g. 80)",
+						"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
+					},
+					Orig:     nil,
+					Solution: "Fix the protocol and try again",
+				}
+			}
+			newPort.Protocol = koyeb.PtrString(split[1])
+		}
+		ret = append(ret, *newPort)
+	}
+	return ret, nil
+}
+
+// Parse --routes flags
+func parseRoutes(flags *pflag.FlagSet) ([]koyeb.DeploymentRoute, error) {
+	ret := []koyeb.DeploymentRoute{}
+
+	values, err := flags.GetStringSlice("routes")
+	if err != nil {
+		return nil, err
+	}
+	for _, value := range values {
+		newRoute := koyeb.NewDeploymentRouteWithDefaults()
+		split := strings.Split(value, ":")
+		newRoute.Path = koyeb.PtrString(split[0])
+		newRoute.Port = koyeb.PtrInt64(80)
+		if len(split) > 1 {
+			portNum, err := strconv.Atoi(split[1])
+			if err != nil {
+				return nil, &errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  fmt.Sprintf("unable to parse the route port \"%s\"", split[1]),
+					Additional: []string{
+						"Routes must be specified as PATH[:PORT]",
+						"PATH is the route to expose (e.g. /)",
+						"PROTOCOL must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to \"80\"",
+					},
+					Orig:     nil,
+					Solution: "Fix the route and try again",
+				}
+			}
+			newRoute.Port = koyeb.PtrInt64(int64(portNum))
+		}
+		ret = append(ret, *newRoute)
+
+	}
+	return ret, nil
+}
+
+// Parse --checks flags
+func parseChecks(flags *pflag.FlagSet) ([]koyeb.DeploymentHealthCheck, error) {
+	ret := []koyeb.DeploymentHealthCheck{}
+
+	values, err := flags.GetStringSlice("checks")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, value := range values {
+		healthcheck := koyeb.NewDeploymentHealthCheck()
+		components := strings.Split(value, ":")
+		componentsCount := len(components)
+		if componentsCount > 3 {
+			return nil, &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  fmt.Sprintf("unable to parse the check \"%s\"", value),
+				Additional: []string{
+					"Healtchecks must be specified as PORT[:TYPE[:PATH]]",
+					"PORT must be a valid port number (e.g. 80)",
+					"TYPE must be either \"http\" or \"tcp\". It can be omitted, in which case it defaults to \"http\"",
+					"PATH is the path to check for http checks. It can be omitted, in which case it defaults to \"/\". For tcp checks, PATH is ignored",
+				},
+				Orig:     nil,
+				Solution: "Fix the healthcheck and try again",
+			}
+		}
+
+		healthcheckType := "http"
+		if len(components) >= 2 {
+			healthcheckType = components[1]
+		}
+
+		port, err := strconv.Atoi(components[0])
+		if err != nil {
+			return nil, &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  fmt.Sprintf("unable to parse the port from the check check \"%s\"", value),
+				Additional: []string{
+					"PORT must be a valid port number (e.g. 443)",
+					"It can be omitted, in which case it defaults to \"80\"",
+					"For http checks, PORT must be set if you also want to specify the PATH",
+				},
+				Orig:     nil,
+				Solution: "Fix the port and try again",
+			}
+		}
+
+		switch healthcheckType {
+		case "http":
+			HTTPHealthCheck := koyeb.NewHTTPHealthCheck()
+			HTTPHealthCheck.Port = koyeb.PtrInt64(int64(port))
+			HTTPHealthCheck.Path = koyeb.PtrString("/")
+			if len(components) == 3 {
+				HTTPHealthCheck.Path = koyeb.PtrString(components[2])
+			}
+			healthcheck.SetHttp(*HTTPHealthCheck)
+		case "tcp":
+			TCPHealthCheck := koyeb.NewTCPHealthCheck()
+			TCPHealthCheck.Port = koyeb.PtrInt64(int64(port))
+			healthcheck.SetTcp(*TCPHealthCheck)
+		default:
+			return nil, &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  fmt.Sprintf("unable to parse the protocol from the check \"%s\"", value),
+				Additional: []string{
+					"The healthcheck protocol must be either \"http\" or \"tcp\"",
+					"It can be omitted, in which case it defaults to \"http\"",
+				},
+				Orig:     nil,
+				Solution: "Fix the healthcheck and try again",
+			}
+		}
+		ret = append(ret, *healthcheck)
+	}
+	return ret, nil
 }
