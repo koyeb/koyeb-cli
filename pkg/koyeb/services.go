@@ -301,20 +301,40 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			newPort := koyeb.NewDeploymentPortWithDefaults()
 
 			split := strings.Split(p, ":")
-			if len(split) < 1 {
-				return stderrors.New("Unable to parse port")
-			}
 			portNum, err := strconv.Atoi(split[0])
 			if err != nil {
-				return fmt.Errorf("invalid port number: %v", split[0])
+				return &koyeb_errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
+					Additional: []string{
+						"Ports must be specified as PORT[:PROTOCOL]",
+						"PORT must be a valid port number (e.g. 80)",
+						"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
+					},
+					Orig:     nil,
+					Solution: "Fix the port and try again",
+				}
 			}
 			newPort.Port = koyeb.PtrInt64(int64(portNum))
+
 			newPort.Protocol = koyeb.PtrString("http")
 			if len(split) > 1 {
+				if split[1] != "http" && split[1] != "http2" {
+					return &koyeb_errors.CLIError{
+						What: "Error while configuring the service",
+						Why:  fmt.Sprintf("unable to parse the port protocol \"%s\"", split[1]),
+						Additional: []string{
+							"Ports must be specified as PORT[:PROTOCOL]",
+							"PORT must be a valid port number (e.g. 80)",
+							"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
+						},
+						Orig:     nil,
+						Solution: "Fix the protocol and try again",
+					}
+				}
 				newPort.Protocol = koyeb.PtrString(split[1])
 			}
 			ports = append(ports, *newPort)
-
 		}
 		definition.SetPorts(ports)
 	}
