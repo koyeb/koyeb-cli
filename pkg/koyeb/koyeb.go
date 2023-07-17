@@ -26,7 +26,7 @@ var (
 	apiurl       string
 	token        string
 	outputFormat renderer.OutputFormat
-	ascii        bool
+	forceASCII   bool
 	debugFull    bool
 	debug        bool
 
@@ -70,7 +70,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "enable the debug output")
 	rootCmd.PersistentFlags().BoolVar(&debugFull, "debug-full", false, "do not hide sensitive information (tokens) in the debug output")
-	rootCmd.PersistentFlags().BoolVar(&ascii, "ascii", false, "only output ascii characters (no unicode emojis)")
+	rootCmd.PersistentFlags().BoolVar(&forceASCII, "force-ascii", false, "only output ascii characters (no unicode emojis)")
 	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
@@ -127,10 +127,10 @@ func Run() error {
 				Additional: nil,
 				Orig:       err,
 				Solution:   "Run `koyeb help` to see the list of available commands, or `koyeb help <command>` to see the help of a specific command",
-				ASCII:      ascii,
+				ASCII:      forceASCII,
 			}
 		} else {
-			cliErr.ASCII = ascii
+			cliErr.ASCII = forceASCII
 		}
 
 		fmt.Fprintf(os.Stderr, "%s", err)
