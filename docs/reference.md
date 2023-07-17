@@ -16,10 +16,10 @@ Koyeb CLI
 ### Options
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -h, --help            help for koyeb
   -o, --output output   output format (yaml,json,table)
@@ -56,10 +56,10 @@ koyeb login [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -83,10 +83,10 @@ Apps
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -123,10 +123,10 @@ koyeb apps create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -154,10 +154,10 @@ koyeb apps delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -185,10 +185,10 @@ koyeb apps describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -216,10 +216,10 @@ koyeb apps get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -275,10 +275,10 @@ koyeb apps init NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -306,10 +306,10 @@ koyeb apps list [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -337,10 +337,10 @@ koyeb apps pause NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -368,10 +368,10 @@ koyeb apps resume NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -400,10 +400,10 @@ koyeb apps update NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -427,10 +427,10 @@ Domains
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -466,10 +466,10 @@ koyeb domains attach NAME APP [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -498,10 +498,10 @@ koyeb domains create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -529,10 +529,10 @@ koyeb domains delete [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -560,10 +560,10 @@ koyeb domains describe [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -591,10 +591,10 @@ koyeb domains detach NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -622,10 +622,10 @@ koyeb domains get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -653,10 +653,10 @@ koyeb domains list [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -684,10 +684,10 @@ koyeb domains refresh NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -711,10 +711,10 @@ Secrets
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -750,10 +750,10 @@ koyeb secrets create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -781,10 +781,10 @@ koyeb secrets delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -812,10 +812,10 @@ koyeb secrets describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -843,10 +843,10 @@ koyeb secrets get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -874,10 +874,10 @@ koyeb secrets list [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -907,10 +907,10 @@ koyeb secrets update NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -934,10 +934,10 @@ Services
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1005,10 +1005,10 @@ koyeb services create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1036,10 +1036,10 @@ koyeb services delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1067,10 +1067,10 @@ koyeb services describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1098,10 +1098,10 @@ koyeb services exec NAME CMD -- [args...] [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1129,10 +1129,10 @@ koyeb services get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1162,10 +1162,10 @@ koyeb services list [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1195,10 +1195,10 @@ koyeb services logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1226,10 +1226,10 @@ koyeb services pause NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1258,10 +1258,10 @@ koyeb services redeploy NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1289,10 +1289,10 @@ koyeb services resume NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1348,10 +1348,10 @@ koyeb services update NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1375,10 +1375,10 @@ Deployments
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1411,10 +1411,10 @@ koyeb deployments cancel NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1442,10 +1442,10 @@ koyeb deployments describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1473,10 +1473,10 @@ koyeb deployments get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1504,10 +1504,10 @@ koyeb deployments list [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1536,10 +1536,10 @@ koyeb deployments logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1563,10 +1563,10 @@ Instances
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1599,10 +1599,10 @@ koyeb instances describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1630,10 +1630,10 @@ koyeb instances exec NAME CMD -- [args...] [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1661,10 +1661,10 @@ koyeb instances get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1694,10 +1694,10 @@ koyeb instances list [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1725,10 +1725,10 @@ koyeb instances logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -1756,10 +1756,10 @@ koyeb version [flags]
 ### Options inherited from parent commands
 
 ```
-      --ascii           only output ascii characters (no unicode emojis)
   -c, --config string   config file (default is $HOME/.koyeb.yaml)
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
+      --force-ascii     only output ascii characters (no unicode emojis)
       --full            show full id
   -o, --output output   output format (yaml,json,table)
       --token string    API token
