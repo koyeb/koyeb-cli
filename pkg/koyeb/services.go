@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	stderrors "errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -481,7 +480,15 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	if flags.Lookup("git").Changed && !flags.Lookup("docker").Changed {
 		builder, _ := flags.GetString("git-builder")
 		if builder != "buildpack" && builder != "docker" {
-			return stderrors.New("Invalid --git-builder, must be either 'buildpack' or 'docker'")
+			return &koyeb_errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "the --git-builder is invalid",
+				Additional: []string{
+					"The --git-builder must be either 'buildpack' or 'docker'",
+				},
+				Orig:     nil,
+				Solution: "Fix the --git-builder and try again",
+			}
 		}
 
 		if builder == "buildpack" && (flags.Lookup("git-docker-dockerfile").Changed ||
@@ -489,12 +496,28 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			flags.Lookup("git-docker-command").Changed ||
 			flags.Lookup("git-docker-args").Changed ||
 			flags.Lookup("git-docker-target").Changed) {
-			return stderrors.New(`Cannot use --git-docker-* options with --git-builder=buildpack`)
+			return &koyeb_errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"The arguments --git-docker-* are used to configure the docker builder, and cannot be used with --git-builder=buildpack",
+				},
+				Orig:     nil,
+				Solution: "Remove the --git-docker-* flags and try again, or use --git-builder=docker",
+			}
 		}
 
 		if builder == "docker" && (flags.Lookup("git-buildpack-build-command").Changed ||
 			flags.Lookup("git-buildpack-run-command").Changed) {
-			return stderrors.New(`Cannot use --git-buildpack-* options with --git-builder=docker`)
+			return &koyeb_errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"The arguments --git-buildpack-* are used to configure the buildpack builder, and cannot be used with --git-builder=docker",
+				},
+				Orig:     nil,
+				Solution: "Remove the --git-buildpack-* flags and try again, or use --git-builder=buildpack",
+			}
 		}
 
 		createGitSource := koyeb.NewGitSourceWithDefaults()
