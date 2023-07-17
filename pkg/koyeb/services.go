@@ -257,8 +257,18 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 			newEnv := koyeb.NewDeploymentEnvWithDefaults()
 
 			split := strings.SplitN(e, "=", 2)
-			if len(split) != 2 || len(split[0]) == 0 || len(split[1]) == 0 {
-				return stderrors.New("Unable to parse env")
+			if len(split) != 2 || split[0] == "" || split[1] == "" {
+				return &koyeb_errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  fmt.Sprintf("unable to parse the environment variable \"%s\"", e),
+					Additional: []string{
+						"Environment variables must be specified as KEY=VALUE",
+						"To use a secret as a value, specify KEY=@SECRET_NAME",
+						"To specify an empty value, specify KEY=",
+					},
+					Orig:     nil,
+					Solution: "Fix the environment variable and try again",
+				}
 			}
 
 			newEnv.Key = koyeb.PtrString(split[0])
