@@ -344,17 +344,24 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		routes := []koyeb.DeploymentRoute{}
 		for _, p := range route {
 			newRoute := koyeb.NewDeploymentRouteWithDefaults()
-
 			split := strings.Split(p, ":")
-			if len(split) < 1 {
-				return stderrors.New("Unable to parse route")
-			}
 			newRoute.Path = koyeb.PtrString(split[0])
 			newRoute.Port = koyeb.PtrInt64(80)
 			if len(split) > 1 {
 				portNum, err := strconv.Atoi(split[1])
 				if err != nil {
-					return fmt.Errorf("invalid route number: %v", split[1])
+					// return fmt.Errorf("invalid route number: %v", split[1])
+					return &koyeb_errors.CLIError{
+						What: "Error while configuring the service",
+						Why:  fmt.Sprintf("unable to parse the route port \"%s\"", split[1]),
+						Additional: []string{
+							"Routes must be specified as PATH[:PORT]",
+							"PATH is the route to expose (e.g. /)",
+							"PROTOCOL must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to \"80\"",
+						},
+						Orig:     nil,
+						Solution: "Fix the route and try again",
+					}
 				}
 				newRoute.Port = koyeb.PtrInt64(int64(portNum))
 			}
