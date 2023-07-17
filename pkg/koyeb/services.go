@@ -7,6 +7,7 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/flags_list"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -267,7 +268,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if useDefault || flags.Lookup("env").Changed {
-		envs, err := parseEnv(flags)
+		envs, err := parseEnv(flags, definition.Env)
 		if err != nil {
 			return err
 		}
@@ -481,42 +482,18 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 }
 
 // Parse --env flags
-func parseEnv(flags *pflag.FlagSet) ([]koyeb.DeploymentEnv, error) {
-	ret := []koyeb.DeploymentEnv{}
-
+func parseEnv(flags *pflag.FlagSet, existingEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
 	values, err := flags.GetStringSlice("env")
 	if err != nil {
 		return nil, err
 	}
 
-	for _, value := range values {
-		newEnv := koyeb.NewDeploymentEnvWithDefaults()
-
-		split := strings.SplitN(value, "=", 2)
-		if len(split) != 2 || split[0] == "" || split[1] == "" {
-			return nil, &errors.CLIError{
-				What: "Error while configuring the service",
-				Why:  fmt.Sprintf("unable to parse the environment variable \"%s\"", value),
-				Additional: []string{
-					"Environment variables must be specified as KEY=VALUE",
-					"To use a secret as a value, specify KEY=@SECRET_NAME",
-					"To specify an empty value, specify KEY=",
-				},
-				Orig:     nil,
-				Solution: "Fix the environment variable and try again",
-			}
-		}
-
-		newEnv.Key = koyeb.PtrString(split[0])
-		if split[1][0] == '@' {
-			newEnv.Secret = koyeb.PtrString(split[1][1:])
-		} else {
-			newEnv.Value = koyeb.PtrString(split[1])
-		}
-
-		ret = append(ret, *newEnv)
+	listFlags, err := flags_list.NewEnvListFromFlags(values)
+	if err != nil {
+		return nil, err
 	}
-	return ret, nil
+	newEnv := flags_list.ParseListFlags[koyeb.DeploymentEnv](listFlags, existingEnv)
+	return newEnv, nil
 }
 
 // Parse --ports flags
