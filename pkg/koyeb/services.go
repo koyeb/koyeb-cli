@@ -345,16 +345,16 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		for _, p := range route {
 			newRoute := koyeb.NewDeploymentRouteWithDefaults()
 
-			spli := strings.Split(p, ":")
-			if len(spli) < 1 {
+			split := strings.Split(p, ":")
+			if len(split) < 1 {
 				return stderrors.New("Unable to parse route")
 			}
-			newRoute.Path = koyeb.PtrString(spli[0])
+			newRoute.Path = koyeb.PtrString(split[0])
 			newRoute.Port = koyeb.PtrInt64(80)
-			if len(spli) > 1 {
-				portNum, err := strconv.Atoi(spli[1])
+			if len(split) > 1 {
+				portNum, err := strconv.Atoi(split[1])
 				if err != nil {
-					return fmt.Errorf("invalid route number: %v", spli[1])
+					return fmt.Errorf("invalid route number: %v", split[1])
 				}
 				newRoute.Port = koyeb.PtrInt64(int64(portNum))
 			}
