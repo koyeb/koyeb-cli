@@ -295,7 +295,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("routes").Changed {
-		routes, err := parseRoutes(flags)
+		routes, err := parseRoutes(flags, definition.Routes)
 		if err != nil {
 			return err
 		}
@@ -512,39 +512,18 @@ func parsePorts(flags *pflag.FlagSet, existingPorts []koyeb.DeploymentPort) ([]k
 }
 
 // Parse --routes flags
-func parseRoutes(flags *pflag.FlagSet) ([]koyeb.DeploymentRoute, error) {
-	ret := []koyeb.DeploymentRoute{}
-
+func parseRoutes(flags *pflag.FlagSet, existingRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
 	values, err := flags.GetStringSlice("routes")
 	if err != nil {
 		return nil, err
 	}
-	for _, value := range values {
-		newRoute := koyeb.NewDeploymentRouteWithDefaults()
-		split := strings.Split(value, ":")
-		newRoute.Path = koyeb.PtrString(split[0])
-		newRoute.Port = koyeb.PtrInt64(80)
-		if len(split) > 1 {
-			portNum, err := strconv.Atoi(split[1])
-			if err != nil {
-				return nil, &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the route port \"%s\"", split[1]),
-					Additional: []string{
-						"Routes must be specified as PATH[:PORT]",
-						"PATH is the route to expose (e.g. /)",
-						"PROTOCOL must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to \"80\"",
-					},
-					Orig:     nil,
-					Solution: "Fix the route and try again",
-				}
-			}
-			newRoute.Port = koyeb.PtrInt64(int64(portNum))
-		}
-		ret = append(ret, *newRoute)
 
+	listFlags, err := flags_list.NewRouteListFromFlags(values)
+	if err != nil {
+		return nil, err
 	}
-	return ret, nil
+	newRoutes := flags_list.ParseListFlags[koyeb.DeploymentRoute](listFlags, existingRoutes)
+	return newRoutes, nil
 }
 
 // Parse --checks flags
