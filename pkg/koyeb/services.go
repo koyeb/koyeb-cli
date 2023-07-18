@@ -236,6 +236,10 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 		aliases := map[string]string{
 			"port":           "ports",
 			"check":          "checks",
+			"healthcheck":    "checks",
+			"health-check":   "checks",
+			"healthchecks":   "checks",
+			"health-checks":  "checks",
 			"route":          "routes",
 			"region":         "regions",
 			"git-docker-arg": "git-docker-args",
