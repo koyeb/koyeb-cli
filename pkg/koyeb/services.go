@@ -35,6 +35,16 @@ func NewServiceCmd() *cobra.Command {
 		Use:   "create NAME",
 		Short: "Create service",
 		Args:  cobra.ExactArgs(1),
+		Example: `
+# Deploy a nginx docker image, with default port (80:http), default route (/:80)
+$> koyeb service create myservice --app myapp --docker nginx
+
+# Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 8000 to the root route
+$> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=8000 --port 8000:http --route /:8000
+
+# Build and deploy a GitHub repository using docker
+$> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
+`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
@@ -48,7 +58,6 @@ func NewServiceCmd() *cobra.Command {
 			createService.SetDefinition(*createDefinition)
 			return h.Create(ctx, cmd, args, createService)
 		}),
-		Example: ServiceExamples,
 	}
 	addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
