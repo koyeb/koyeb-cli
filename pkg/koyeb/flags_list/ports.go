@@ -31,7 +31,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 		if err != nil {
 			return nil, &errors.CLIError{
 				What: "Error while configuring the service",
-				Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
+				Why:  fmt.Sprintf("unable to parse the port \"%s\"", port.cliValue),
 				Additional: []string{
 					"Ports must be specified as PORT[:PROTOCOL]",
 					"PORT must be a valid port number (e.g. 80)",
@@ -48,7 +48,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 			if len(split) > 1 {
 				return nil, &errors.CLIError{
 					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
+					Why:  fmt.Sprintf("unable to parse the port \"%s\"", port.cliValue),
 					Additional: []string{
 						"To remove a port from the service, prefix it with '!', e.g. '!80'",
 						"The protocol should not be specified when removing a port from the service",
@@ -63,7 +63,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 				if split[1] != "http" && split[1] != "http2" {
 					return nil, &errors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the port protocol \"%s\"", split[1]),
+						Why:  fmt.Sprintf("unable to parse the protocol from the port \"%s\"", port.cliValue),
 						Additional: []string{
 							"Ports must be specified as PORT[:PROTOCOL]",
 							"PORT must be a valid port number (e.g. 80)",
