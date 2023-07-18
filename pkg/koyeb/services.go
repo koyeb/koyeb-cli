@@ -255,7 +255,15 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		deploymentTypeStr, _ := flags.GetString("type")
 		deploymentType, err := koyeb.NewDeploymentDefinitionTypeFromValue(strings.ToUpper(deploymentTypeStr))
 		if err != nil {
-			return fmt.Errorf("%s is not a valid deployment type", deploymentTypeStr)
+			return &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "the --type flag is not valid",
+				Additional: []string{
+					"The --type flag must be either WEB or WORKER",
+				},
+				Orig:     nil,
+				Solution: "Fix the --type flag and try again",
+			}
 		}
 		definition.SetType(*deploymentType)
 	}
