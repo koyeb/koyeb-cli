@@ -65,3 +65,17 @@ func deleteFromList[ItemType any](flag Flag[ItemType], existingItems []ItemType)
 	}
 	return existingItems, false
 }
+
+// BaseFlag is a struct which implements the Flag interface. It is used as a base for all the flags
+type BaseFlag struct {
+	cliValue          string
+	markedForDeletion bool
+}
+
+func (f *BaseFlag) String() string {
+	return f.cliValue
+}
+
+func (f *BaseFlag) IsDeletionFlag() bool {
+	return f.markedForDeletion
+}

@@ -10,22 +10,17 @@ import (
 )
 
 type FlagEnv struct {
-	cliValue          string
-	markedForDeletion bool
-	key               string
-	isSecret          bool
-	value             string
-}
-
-func (f *FlagEnv) String() string {
-	return f.cliValue
+	BaseFlag
+	key      string
+	isSecret bool
+	value    string
 }
 
 func NewEnvListFromFlags(values []string) ([]Flag[koyeb.DeploymentEnv], error) {
 	ret := make([]Flag[koyeb.DeploymentEnv], 0, len(values))
 
 	for _, value := range values {
-		env := &FlagEnv{cliValue: value}
+		env := &FlagEnv{BaseFlag: BaseFlag{cliValue: value}}
 
 		if value[0] == '!' {
 			env.markedForDeletion = true
@@ -73,10 +68,6 @@ func NewEnvListFromFlags(values []string) ([]Flag[koyeb.DeploymentEnv], error) {
 		ret = append(ret, env)
 	}
 	return ret, nil
-}
-
-func (f *FlagEnv) IsDeletionFlag() bool {
-	return f.markedForDeletion
 }
 
 func (f *FlagEnv) IsEqualTo(env koyeb.DeploymentEnv) bool {
