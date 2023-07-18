@@ -287,7 +287,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("ports").Changed {
-		ports, err := parsePorts(flags)
+		ports, err := parsePorts(flags, definition.Ports)
 		if err != nil {
 			return err
 		}
@@ -497,54 +497,18 @@ func parseEnv(flags *pflag.FlagSet, existingEnv []koyeb.DeploymentEnv) ([]koyeb.
 }
 
 // Parse --ports flags
-func parsePorts(flags *pflag.FlagSet) ([]koyeb.DeploymentPort, error) {
-	ret := []koyeb.DeploymentPort{}
-
+func parsePorts(flags *pflag.FlagSet, existingPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
 	values, err := flags.GetStringSlice("ports")
 	if err != nil {
 		return nil, err
 	}
 
-	for _, value := range values {
-		newPort := koyeb.NewDeploymentPortWithDefaults()
-
-		split := strings.Split(value, ":")
-		portNum, err := strconv.Atoi(split[0])
-		if err != nil {
-			return nil, &errors.CLIError{
-				What: "Error while configuring the service",
-				Why:  fmt.Sprintf("unable to parse the port \"%s\"", split[0]),
-				Additional: []string{
-					"Ports must be specified as PORT[:PROTOCOL]",
-					"PORT must be a valid port number (e.g. 80)",
-					"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
-				},
-				Orig:     nil,
-				Solution: "Fix the port and try again",
-			}
-		}
-		newPort.Port = koyeb.PtrInt64(int64(portNum))
-
-		newPort.Protocol = koyeb.PtrString("http")
-		if len(split) > 1 {
-			if split[1] != "http" && split[1] != "http2" {
-				return nil, &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the port protocol \"%s\"", split[1]),
-					Additional: []string{
-						"Ports must be specified as PORT[:PROTOCOL]",
-						"PORT must be a valid port number (e.g. 80)",
-						"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
-					},
-					Orig:     nil,
-					Solution: "Fix the protocol and try again",
-				}
-			}
-			newPort.Protocol = koyeb.PtrString(split[1])
-		}
-		ret = append(ret, *newPort)
+	listFlags, err := flags_list.NewPortListFromFlags(values)
+	if err != nil {
+		return nil, err
 	}
-	return ret, nil
+	newPorts := flags_list.ParseListFlags[koyeb.DeploymentPort](listFlags, existingPorts)
+	return newPorts, nil
 }
 
 // Parse --routes flags
