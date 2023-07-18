@@ -53,7 +53,7 @@ func NewRouteListFromFlags(values []string) ([]Flag[koyeb.DeploymentRoute], erro
 						Additional: []string{
 							"Routes must be specified as PATH[:PORT]",
 							"PATH is the route to expose (e.g. / or /foo)",
-							"PROTOCOL must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to \"80\"",
+							"PORT must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to \"80\"",
 						},
 						Orig:     nil,
 						Solution: "Fix the route and try again",

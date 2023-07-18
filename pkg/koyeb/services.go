@@ -39,7 +39,7 @@ func NewServiceCmd() *cobra.Command {
 		}),
 	}
 	addServiceDefinitionFlags(createServiceCmd.Flags())
-	createServiceCmd.Flags().StringP("app", "a", "", "App")
+	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	createServiceCmd.MarkFlagRequired("app") //nolint:errcheck
 	serviceCmd.AddCommand(createServiceCmd)
 
@@ -223,13 +223,38 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker args")
 	flags.StringSlice("regions", []string{"fra"}, "Regions")
-	flags.StringSlice("env", []string{}, "Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar")
-	flags.StringSlice("routes", []string{"/:80"}, `Routes - Available for "WEB" service only`)
-	flags.StringSlice("ports", []string{"80:http"}, `Ports - Available for "WEB" service only`)
+	flags.StringSlice(
+		"env",
+		[]string{},
+		"Update service environment variables using the format KEY=VALUE, for example --env FOO=bar\n"+
+			"To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar\n"+
+			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'",
+	)
+	flags.StringSlice(
+		"routes",
+		[]string{"/:80"},
+		"Update service routes (available for services of type \"web\" only) using the format PATH[:PORT], for example '/foo:8080'\n"+
+			"If no port is specified, it defaults to 80\n"+
+			"To delete a route, use '!PATH', for example --route '!/foo'\n",
+	)
+	flags.StringSlice(
+		"ports",
+		[]string{"80:http"},
+		"Update service ports (available for services of type \"web\" only) using the format PORT[:PROTOCOL], for example --port 80:http\n"+
+			"If no protocol is specified, it defaults to \"http\". Supported protocols are \"http\" and \"http2\"\n"+
+			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
+	)
 	flags.String("instance-type", "nano", "Instance type")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
-	flags.StringSlice("checks", []string{""}, `HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only`)
+	flags.StringSlice(
+		"checks",
+		[]string{""},
+		"Update service healthchecks (available for services of type \"web\" only)\n"+
+			"For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health\n"+
+			"For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp\n"+
+			"To delete a healthcheck, use !PORT, for example --checks '!8080'",
+	)
 
 	// Accept aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
