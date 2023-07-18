@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -197,7 +198,7 @@ func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, er
 }
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
-	flags.String("type", "WEB", `Service type, either "WEB" or "WORKER"`)
+	flags.String("type", "WEB", `Service type, either "web" or "worker"`)
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "", "Git branch")
 	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
@@ -252,7 +253,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
 	if useDefault || flags.Lookup("type").Changed {
 		deploymentTypeStr, _ := flags.GetString("type")
-		deploymentType, err := koyeb.NewDeploymentDefinitionTypeFromValue(deploymentTypeStr)
+		deploymentType, err := koyeb.NewDeploymentDefinitionTypeFromValue(strings.ToUpper(deploymentTypeStr))
 		if err != nil {
 			return fmt.Errorf("%s is not a valid deployment type", deploymentTypeStr)
 		}

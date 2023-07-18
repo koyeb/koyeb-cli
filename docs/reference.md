@@ -269,7 +269,7 @@ koyeb apps init NAME [flags]
       --ports strings                           Ports - Available for "WEB" service only (default [80:http])
       --regions strings                         Regions (default [fra])
       --routes strings                          Routes - Available for "WEB" service only (default [/:80])
-      --type string                             Service type, either "WEB" or "WORKER" (default "WEB")
+      --type string                             Service type, either "web" or "worker" (default "WEB")
 ```
 
 ### Options inherited from parent commands
@@ -999,7 +999,7 @@ koyeb services create NAME [flags]
       --ports strings                           Ports - Available for "WEB" service only (default [80:http])
       --regions strings                         Regions (default [fra])
       --routes strings                          Routes - Available for "WEB" service only (default [/:80])
-      --type string                             Service type, either "WEB" or "WORKER" (default "WEB")
+      --type string                             Service type, either "web" or "worker" (default "WEB")
 ```
 
 ### Options inherited from parent commands
@@ -1342,7 +1342,7 @@ koyeb services update NAME [flags]
       --ports strings                           Ports - Available for "WEB" service only (default [80:http])
       --regions strings                         Regions (default [fra])
       --routes strings                          Routes - Available for "WEB" service only (default [/:80])
-      --type string                             Service type, either "WEB" or "WORKER" (default "WEB")
+      --type string                             Service type, either "web" or "worker" (default "WEB")
 ```
 
 ### Options inherited from parent commands
