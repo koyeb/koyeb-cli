@@ -10,21 +10,16 @@ import (
 )
 
 type FlagPort struct {
-	cliValue          string
-	markedForDeletion bool
-	port              int64
-	protocol          string
-}
-
-func (f *FlagPort) String() string {
-	return f.cliValue
+	BaseFlag
+	port     int64
+	protocol string
 }
 
 func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error) {
 	ret := make([]Flag[koyeb.DeploymentPort], 0, len(values))
 
 	for _, value := range values {
-		port := &FlagPort{cliValue: value}
+		port := &FlagPort{BaseFlag: BaseFlag{cliValue: value}}
 
 		if value[0] == '!' {
 			port.markedForDeletion = true
@@ -84,10 +79,6 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 		ret = append(ret, port)
 	}
 	return ret, nil
-}
-
-func (f *FlagPort) IsDeletionFlag() bool {
-	return f.markedForDeletion
 }
 
 func (f *FlagPort) IsEqualTo(port koyeb.DeploymentPort) bool {
