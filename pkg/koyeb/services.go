@@ -479,62 +479,45 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	return nil
 }
 
-// Parse --env flags
-func parseEnv(flags *pflag.FlagSet, existingEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
-	values, err := flags.GetStringSlice("env")
+// parseListFlags is the generic function parsing --env, --port, --routes and --checks.
+// It gets the arguments given from the command line for the given flag, then
+// builds a list of flags_list.Flag entries, and update the service
+// configuration (given in existingItems) with the new values.
+func parseListFlags[T any](
+	flagName string,
+	buildListFlags func([]string) ([]flags_list.Flag[T], error),
+	flags *pflag.FlagSet,
+	existingItems []T,
+) ([]T, error) {
+	values, err := flags.GetStringSlice(flagName)
 	if err != nil {
 		return nil, err
 	}
 
-	listFlags, err := flags_list.NewEnvListFromFlags(values)
+	listFlags, err := buildListFlags(values)
 	if err != nil {
 		return nil, err
 	}
-	newEnv := flags_list.ParseListFlags[koyeb.DeploymentEnv](listFlags, existingEnv)
-	return newEnv, nil
+	newItems := flags_list.ParseListFlags[T](listFlags, existingItems)
+	return newItems, nil
+}
+
+// Parse --env flags
+func parseEnv(flags *pflag.FlagSet, existingEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
+	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, existingEnv)
 }
 
 // Parse --ports flags
 func parsePorts(flags *pflag.FlagSet, existingPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
-	values, err := flags.GetStringSlice("ports")
-	if err != nil {
-		return nil, err
-	}
-
-	listFlags, err := flags_list.NewPortListFromFlags(values)
-	if err != nil {
-		return nil, err
-	}
-	newPorts := flags_list.ParseListFlags[koyeb.DeploymentPort](listFlags, existingPorts)
-	return newPorts, nil
+	return parseListFlags("ports", flags_list.NewPortListFromFlags, flags, existingPorts)
 }
 
 // Parse --routes flags
 func parseRoutes(flags *pflag.FlagSet, existingRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
-	values, err := flags.GetStringSlice("routes")
-	if err != nil {
-		return nil, err
-	}
-
-	listFlags, err := flags_list.NewRouteListFromFlags(values)
-	if err != nil {
-		return nil, err
-	}
-	newRoutes := flags_list.ParseListFlags[koyeb.DeploymentRoute](listFlags, existingRoutes)
-	return newRoutes, nil
+	return parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, existingRoutes)
 }
 
 // Parse --checks flags
 func parseChecks(flags *pflag.FlagSet, existingHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
-	values, err := flags.GetStringSlice("checks")
-	if err != nil {
-		return nil, err
-	}
-
-	listFlags, err := flags_list.NewHealthcheckListFromFlags(values)
-	if err != nil {
-		return nil, err
-	}
-	newHealthChecks := flags_list.ParseListFlags[koyeb.DeploymentHealthCheck](listFlags, existingHealthChecks)
-	return newHealthChecks, nil
+	return parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, existingHealthChecks)
 }
