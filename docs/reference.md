@@ -241,13 +241,18 @@ koyeb apps init NAME [flags]
 ### Options
 
 ```
-      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only
+      --checks strings                          Update service healthchecks (available for services of type "web" only)
+                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar
+      --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                To delete an environment variable, prefix its name with '!', for example --env '!FOO'
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -266,9 +271,15 @@ koyeb apps init NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Ports - Available for "WEB" service only (default [80:http])
+      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
+                                                If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
+                                                To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 (default [80:http])
       --regions strings                         Regions (default [fra])
-      --routes strings                          Routes - Available for "WEB" service only (default [/:80])
+      --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                If no port is specified, it defaults to 80
+                                                To delete a route, use '!PATH', for example --route '!/foo'
+                                                 (default [/:80])
       --type string                             Service type, either "web" or "worker" (default "WEB")
 ```
 
@@ -970,14 +981,19 @@ koyeb services create NAME [flags]
 ### Options
 
 ```
-  -a, --app string                              App
-      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only
+  -a, --app string                              Service application
+      --checks strings                          Update service healthchecks (available for services of type "web" only)
+                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar
+      --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                To delete an environment variable, prefix its name with '!', for example --env '!FOO'
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -996,9 +1012,15 @@ koyeb services create NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Ports - Available for "WEB" service only (default [80:http])
+      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
+                                                If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
+                                                To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 (default [80:http])
       --regions strings                         Regions (default [fra])
-      --routes strings                          Routes - Available for "WEB" service only (default [/:80])
+      --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                If no port is specified, it defaults to 80
+                                                To delete a route, use '!PATH', for example --route '!/foo'
+                                                 (default [/:80])
       --type string                             Service type, either "web" or "worker" (default "WEB")
 ```
 
@@ -1314,13 +1336,18 @@ koyeb services update NAME [flags]
 ### Options
 
 ```
-      --checks strings                          HTTP healthcheck (<port>:http:<path>) and TCP healthcheck (<port>:tcp) - Available for "WEB" service only
+      --checks strings                          Update service healthchecks (available for services of type "web" only)
+                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Environment variables, e.g. --env FOO=bar, or --env FOO=@bar to use the value of the secret bar
+      --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                To delete an environment variable, prefix its name with '!', for example --env '!FOO'
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -1339,9 +1366,15 @@ koyeb services update NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Ports - Available for "WEB" service only (default [80:http])
+      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
+                                                If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
+                                                To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 (default [80:http])
       --regions strings                         Regions (default [fra])
-      --routes strings                          Routes - Available for "WEB" service only (default [/:80])
+      --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                If no port is specified, it defaults to 80
+                                                To delete a route, use '!PATH', for example --route '!/foo'
+                                                 (default [/:80])
       --type string                             Service type, either "web" or "worker" (default "WEB")
 ```
 
