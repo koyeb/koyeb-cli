@@ -122,11 +122,11 @@ func Run() error {
 		// provides an invalid flag.
 		if !errors.As(err, &cliErr) {
 			err = &koyeb_errors.CLIError{
-				What:       "Unable to execute the command",
-				Why:        "likely because it is invalid",
+				What:       "Invalid command",
+				Why:        "the parameters you provided are invalid",
 				Additional: nil,
 				Orig:       err,
-				Solution:   "Run `koyeb help` to see the list of available commands, or `koyeb help <command>` to see the help of a specific command",
+				Solution:   "Run `koyeb --help` to see the list of available commands, or `koyeb <command> --help` to see the help of a specific command",
 				ASCII:      forceASCII,
 			}
 		} else {
