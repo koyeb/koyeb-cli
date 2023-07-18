@@ -2,8 +2,6 @@ package koyeb
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -312,7 +310,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 
 	if flags.Lookup("checks").Changed {
-		healthchecks, err := parseChecks(flags)
+		healthchecks, err := parseChecks(flags, definition.HealthChecks)
 		if err != nil {
 			return err
 		}
@@ -527,79 +525,16 @@ func parseRoutes(flags *pflag.FlagSet, existingRoutes []koyeb.DeploymentRoute) (
 }
 
 // Parse --checks flags
-func parseChecks(flags *pflag.FlagSet) ([]koyeb.DeploymentHealthCheck, error) {
-	ret := []koyeb.DeploymentHealthCheck{}
-
+func parseChecks(flags *pflag.FlagSet, existingHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
 	values, err := flags.GetStringSlice("checks")
 	if err != nil {
 		return nil, err
 	}
 
-	for _, value := range values {
-		healthcheck := koyeb.NewDeploymentHealthCheck()
-		components := strings.Split(value, ":")
-		componentsCount := len(components)
-		if componentsCount > 3 {
-			return nil, &errors.CLIError{
-				What: "Error while configuring the service",
-				Why:  fmt.Sprintf("unable to parse the check \"%s\"", value),
-				Additional: []string{
-					"Healtchecks must be specified as PORT[:TYPE[:PATH]]",
-					"PORT must be a valid port number (e.g. 80)",
-					"TYPE must be either \"http\" or \"tcp\". It can be omitted, in which case it defaults to \"http\"",
-					"PATH is the path to check for http checks. It can be omitted, in which case it defaults to \"/\". For tcp checks, PATH is ignored",
-				},
-				Orig:     nil,
-				Solution: "Fix the healthcheck and try again",
-			}
-		}
-
-		healthcheckType := "http"
-		if len(components) >= 2 {
-			healthcheckType = components[1]
-		}
-
-		port, err := strconv.Atoi(components[0])
-		if err != nil {
-			return nil, &errors.CLIError{
-				What: "Error while configuring the service",
-				Why:  fmt.Sprintf("unable to parse the port from the check check \"%s\"", value),
-				Additional: []string{
-					"PORT must be a valid port number (e.g. 443)",
-					"It can be omitted, in which case it defaults to \"80\"",
-					"For http checks, PORT must be set if you also want to specify the PATH",
-				},
-				Orig:     nil,
-				Solution: "Fix the port and try again",
-			}
-		}
-
-		switch healthcheckType {
-		case "http":
-			HTTPHealthCheck := koyeb.NewHTTPHealthCheck()
-			HTTPHealthCheck.Port = koyeb.PtrInt64(int64(port))
-			HTTPHealthCheck.Path = koyeb.PtrString("/")
-			if len(components) == 3 {
-				HTTPHealthCheck.Path = koyeb.PtrString(components[2])
-			}
-			healthcheck.SetHttp(*HTTPHealthCheck)
-		case "tcp":
-			TCPHealthCheck := koyeb.NewTCPHealthCheck()
-			TCPHealthCheck.Port = koyeb.PtrInt64(int64(port))
-			healthcheck.SetTcp(*TCPHealthCheck)
-		default:
-			return nil, &errors.CLIError{
-				What: "Error while configuring the service",
-				Why:  fmt.Sprintf("unable to parse the protocol from the check \"%s\"", value),
-				Additional: []string{
-					"The healthcheck protocol must be either \"http\" or \"tcp\"",
-					"It can be omitted, in which case it defaults to \"http\"",
-				},
-				Orig:     nil,
-				Solution: "Fix the healthcheck and try again",
-			}
-		}
-		ret = append(ret, *healthcheck)
+	listFlags, err := flags_list.NewHealthcheckListFromFlags(values)
+	if err != nil {
+		return nil, err
 	}
-	return ret, nil
+	newHealthChecks := flags_list.ParseListFlags[koyeb.DeploymentHealthCheck](listFlags, existingHealthChecks)
+	return newHealthChecks, nil
 }
