@@ -21,7 +21,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 	for _, value := range values {
 		port := &FlagPort{BaseFlag: BaseFlag{cliValue: value}}
 
-		if value[0] == '!' {
+		if strings.HasPrefix(value, "!") {
 			port.markedForDeletion = true
 			value = value[1:]
 		}

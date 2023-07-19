@@ -21,7 +21,7 @@ func NewRouteListFromFlags(values []string) ([]Flag[koyeb.DeploymentRoute], erro
 	for _, value := range values {
 		route := &FlagRoute{BaseFlag: BaseFlag{cliValue: value}}
 
-		if value[0] == '!' {
+		if strings.HasPrefix(value, "!") {
 			route.markedForDeletion = true
 			value = value[1:]
 		}
