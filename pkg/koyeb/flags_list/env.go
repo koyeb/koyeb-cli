@@ -22,7 +22,7 @@ func NewEnvListFromFlags(values []string) ([]Flag[koyeb.DeploymentEnv], error) {
 	for _, value := range values {
 		env := &FlagEnv{BaseFlag: BaseFlag{cliValue: value}}
 
-		if value[0] == '!' {
+		if strings.HasPrefix(value, "!") {
 			env.markedForDeletion = true
 			split := strings.Split(value, "=")
 			if len(split) != 1 {
@@ -41,7 +41,7 @@ func NewEnvListFromFlags(values []string) ([]Flag[koyeb.DeploymentEnv], error) {
 			env.key = split[0][1:] // Skip the ! character
 		} else {
 			split := strings.SplitN(value, "=", 2)
-			// If there is no =, or the key is empty, is the value refers to a secret without a name
+			// If there is no =, or the key is empty, or the value refers to a secret without a name
 			if len(split) != 2 || split[0] == "" || split[1] == "@" {
 				return nil, &errors.CLIError{
 					What: "Error while configuring the service",
@@ -58,7 +58,7 @@ func NewEnvListFromFlags(values []string) ([]Flag[koyeb.DeploymentEnv], error) {
 				}
 			}
 			env.key = split[0]
-			if split[1] != "" && split[1][0] == '@' {
+			if strings.HasPrefix(split[1], "@") {
 				env.isSecret = true
 				env.value = split[1][1:]
 			} else {

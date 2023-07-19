@@ -47,7 +47,7 @@ func NewHealthcheckListFromFlags(values []string) ([]Flag[koyeb.DeploymentHealth
 			}
 		}
 
-		if components[0][0] == '!' {
+		if strings.HasPrefix(components[0], "!") {
 			if len(components) > 1 {
 				return nil, &errors.CLIError{
 					What: "Error while configuring the service",
