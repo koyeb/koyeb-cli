@@ -978,6 +978,21 @@ Create service
 koyeb services create NAME [flags]
 ```
 
+### Examples
+
+```
+
+# Deploy a nginx docker image, with default port (80:http), default route (/:80)
+$> koyeb service create myservice --app myapp --docker nginx
+
+# Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 8000 to the root route
+$> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=8000 --port 8000:http --route /:8000
+
+# Build and deploy a GitHub repository using docker
+$> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
+
+```
+
 ### Options
 
 ```
@@ -1331,6 +1346,15 @@ Update service
 
 ```
 koyeb services update NAME [flags]
+```
+
+### Examples
+
+```
+
+# Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
+$> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
+
 ```
 
 ### Options
