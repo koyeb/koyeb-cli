@@ -990,7 +990,6 @@ $> koyeb service create myservice --app myapp --git github.com/koyeb/example-fla
 
 # Build and deploy a GitHub repository using docker
 $> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
-
 ```
 
 ### Options
@@ -1354,7 +1353,6 @@ koyeb services update NAME [flags]
 
 # Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
-
 ```
 
 ### Options
