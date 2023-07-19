@@ -210,30 +210,8 @@ func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, er
 }
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
+	// Global flags
 	flags.String("type", "web", `Service type, either "web" or "worker"`)
-	flags.String("git", "", "Git repository")
-	flags.String("git-branch", "", "Git branch")
-	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
-	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
-	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
-	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
-
-	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
-
-	flags.String("git-buildpack-build-command", "", "Buid command")
-	flags.String("git-buildpack-run-command", "", "Run command")
-
-	flags.String("git-docker-dockerfile", "", "Dockerfile path")
-	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("git-docker-command", "", "Docker CMD")
-	flags.StringSlice("git-docker-args", []string{}, "Arguments for the Docker CMD")
-	flags.String("git-docker-target", "", "Docker target")
-
-	flags.String("docker", "", "Docker image")
-	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("docker-command", "", "Docker command")
-	flags.StringSlice("docker-args", []string{}, "Docker args")
 	flags.StringSlice("regions", []string{"fra"}, "Regions")
 	flags.StringSlice(
 		"env",
@@ -242,6 +220,11 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 			"To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar\n"+
 			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'",
 	)
+	flags.String("instance-type", "nano", "Instance type")
+	flags.Int64("min-scale", 1, "Min scale")
+	flags.Int64("max-scale", 1, "Max scale")
+
+	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
 		"routes",
 		[]string{"/:80"},
@@ -256,9 +239,6 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 			"If no protocol is specified, it defaults to \"http\". Supported protocols are \"http\" and \"http2\"\n"+
 			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
 	)
-	flags.String("instance-type", "nano", "Instance type")
-	flags.Int64("min-scale", 1, "Min scale")
-	flags.Int64("max-scale", 1, "Max scale")
 	flags.StringSlice(
 		"checks",
 		[]string{""},
@@ -268,7 +248,34 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 			"To delete a healthcheck, use !PORT, for example --checks '!8080'",
 	)
 
-	// Accept aliases: for example, allow user to use --port instead of --ports
+	// Git service
+	flags.String("git", "", "Git repository")
+	flags.String("git-branch", "", "Git branch")
+	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
+	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
+	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	// Git service: buildpack builder
+	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
+	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
+	flags.String("git-buildpack-build-command", "", "Buid command")
+	flags.String("git-buildpack-run-command", "", "Run command")
+
+	// Git service: docker builder
+	flags.String("git-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("git-docker-command", "", "Docker CMD")
+	flags.StringSlice("git-docker-args", []string{}, "Arguments for the Docker CMD")
+	flags.String("git-docker-target", "", "Docker target")
+
+	// Docker service
+	flags.String("docker", "", "Docker image")
+	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
+	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("docker-command", "", "Docker command")
+	flags.StringSlice("docker-args", []string{}, "Docker args")
+
+	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		aliases := map[string]string{
 			"port":           "ports",
@@ -282,7 +289,6 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 			"git-docker-arg": "git-docker-args",
 			"docker-arg":     "docker-args",
 		}
-
 		alias, exists := aliases[name]
 		if exists {
 			name = alias
