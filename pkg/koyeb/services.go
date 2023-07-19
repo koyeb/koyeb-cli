@@ -43,8 +43,7 @@ $> koyeb service create myservice --app myapp --docker nginx
 $> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=8000 --port 8000:http --route /:8000
 
 # Build and deploy a GitHub repository using docker
-$> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
-`,
+$> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
@@ -115,8 +114,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 		Args:  cobra.ExactArgs(1),
 		Example: `
 # Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
-$> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
-`,
+$> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			service, err := h.ResolveServiceArgs(ctx, args[0])
 			if err != nil {
