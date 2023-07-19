@@ -280,7 +280,7 @@ koyeb apps init NAME [flags]
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                  (default [/:80])
-      --type string                             Service type, either "web" or "worker" (default "WEB")
+      --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
@@ -1035,7 +1035,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                  (default [/:80])
-      --type string                             Service type, either "web" or "worker" (default "WEB")
+      --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
@@ -1397,7 +1397,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                  (default [/:80])
-      --type string                             Service type, either "web" or "worker" (default "WEB")
+      --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands

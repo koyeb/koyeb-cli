@@ -210,7 +210,7 @@ func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, er
 }
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
-	flags.String("type", "WEB", `Service type, either "web" or "worker"`)
+	flags.String("type", "web", `Service type, either "web" or "worker"`)
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "", "Git branch")
 	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
@@ -300,7 +300,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 				What: "Error while updating the service",
 				Why:  "the --type flag is not valid",
 				Additional: []string{
-					"The --type flag must be either WEB or WORKER",
+					"The --type flag must be either \"web\" or \"worker\"",
 				},
 				Orig:     nil,
 				Solution: "Fix the --type flag and try again",
