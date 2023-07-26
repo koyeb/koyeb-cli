@@ -317,12 +317,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetEnv(envs)
 
-	if useDefault || flags.Lookup("instance-type").Changed {
-		instanceType := koyeb.NewDeploymentInstanceTypeWithDefaults()
-		val, _ := flags.GetString("instance-type")
-		instanceType.SetType(val)
-		definition.SetInstanceTypes([]koyeb.DeploymentInstanceType{*instanceType})
-	}
+	instanceType := parseInstanceType(flags, definition.GetInstanceTypes())
+	definition.SetInstanceTypes(instanceType)
+
 	if useDefault || flags.Lookup("regions").Changed {
 		regions, _ := flags.GetStringSlice("regions")
 		definition.SetRegions(regions)
@@ -553,6 +550,23 @@ func parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType)
 		}
 	}
 	return *ret, nil
+}
+
+func parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.DeploymentInstanceType) []koyeb.DeploymentInstanceType {
+	if !flags.Lookup("instance-type").Changed {
+		// New service: return the default value
+		if len(currentInstanceTypes) == 0 {
+			ret := koyeb.NewDeploymentInstanceTypeWithDefaults()
+			ret.SetType(flags.Lookup("instance-type").DefValue)
+			return []koyeb.DeploymentInstanceType{*ret}
+		}
+		// Existing service
+		return currentInstanceTypes
+	}
+	ret := koyeb.NewDeploymentInstanceTypeWithDefaults()
+	value, _ := flags.GetString("instance-type")
+	ret.SetType(value)
+	return []koyeb.DeploymentInstanceType{*ret}
 }
 
 // parseListFlags is the generic function parsing --env, --port, --routes and --checks.
