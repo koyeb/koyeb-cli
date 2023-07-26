@@ -320,10 +320,8 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	instanceType := parseInstanceType(flags, definition.GetInstanceTypes())
 	definition.SetInstanceTypes(instanceType)
 
-	if useDefault || flags.Lookup("regions").Changed {
-		regions, _ := flags.GetStringSlice("regions")
-		definition.SetRegions(regions)
-	}
+	regions := parseRegions(flags, definition.GetRegions())
+	definition.SetRegions(regions)
 
 	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("ports").Changed {
 		ports, err := parsePorts(flags, definition.Ports)
@@ -567,6 +565,17 @@ func parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.Deploy
 	value, _ := flags.GetString("instance-type")
 	ret.SetType(value)
 	return []koyeb.DeploymentInstanceType{*ret}
+}
+
+func parseRegions(flags *pflag.FlagSet, currentRegions []string) []string {
+	regions, _ := flags.GetStringSlice("regions")
+	if !flags.Lookup("regions").Changed {
+		if len(currentRegions) == 0 {
+			return regions
+		}
+		return currentRegions
+	}
+	return regions
 }
 
 // parseListFlags is the generic function parsing --env, --port, --routes and --checks.
