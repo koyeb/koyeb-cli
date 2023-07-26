@@ -274,12 +274,12 @@ koyeb apps init NAME [flags]
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                 (default [80:http])
+                                                
       --regions strings                         Regions (default [fra])
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
-                                                 (default [/:80])
+                                                
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
@@ -1029,12 +1029,12 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                 (default [80:http])
+                                                
       --regions strings                         Regions (default [fra])
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
-                                                 (default [/:80])
+                                                
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
@@ -1391,12 +1391,12 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                 (default [80:http])
+                                                
       --regions strings                         Regions (default [fra])
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
-                                                 (default [/:80])
+                                                
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 

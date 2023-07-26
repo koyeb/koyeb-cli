@@ -228,21 +228,21 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
 		"routes",
-		[]string{"/:80"},
+		nil,
 		"Update service routes (available for services of type \"web\" only) using the format PATH[:PORT], for example '/foo:8080'\n"+
 			"If no port is specified, it defaults to 80\n"+
 			"To delete a route, use '!PATH', for example --route '!/foo'\n",
 	)
 	flags.StringSlice(
 		"ports",
-		[]string{"80:http"},
+		nil,
 		"Update service ports (available for services of type \"web\" only) using the format PORT[:PROTOCOL], for example --port 80:http\n"+
 			"If no protocol is specified, it defaults to \"http\". Supported protocols are \"http\" and \"http2\"\n"+
 			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
 	)
 	flags.StringSlice(
 		"checks",
-		[]string{""},
+		nil,
 		"Update service healthchecks (available for services of type \"web\" only)\n"+
 			"For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health\n"+
 			"For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp\n"+
@@ -305,12 +305,6 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetType(type_)
 
-	if type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WORKER {
-		definition.Ports = nil
-		definition.Routes = nil
-		definition.HealthChecks = nil
-	}
-
 	envs, err := parseEnv(flags, definition.Env)
 	if err != nil {
 		return err
@@ -323,21 +317,17 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	regions := parseRegions(flags, definition.GetRegions())
 	definition.SetRegions(regions)
 
-	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("ports").Changed {
-		ports, err := parsePorts(flags, definition.Ports)
-		if err != nil {
-			return err
-		}
-		definition.SetPorts(ports)
+	ports, err := parsePorts(definition.GetType(), flags, definition.Ports)
+	if err != nil {
+		return err
 	}
+	definition.SetPorts(ports)
 
-	if useDefault && definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB || flags.Lookup("routes").Changed {
-		routes, err := parseRoutes(flags, definition.Routes)
-		if err != nil {
-			return err
-		}
-		definition.SetRoutes(routes)
+	routes, err := parseRoutes(definition.GetType(), flags, definition.Routes)
+	if err != nil {
+		return err
 	}
+	definition.SetRoutes(routes)
 
 	if useDefault || flags.Lookup("min-scale").Changed || flags.Lookup("max-scale").Changed {
 		scaling := koyeb.NewDeploymentScalingWithDefaults()
@@ -348,13 +338,11 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		definition.SetScalings([]koyeb.DeploymentScaling{*scaling})
 	}
 
-	if flags.Lookup("checks").Changed {
-		healthchecks, err := parseChecks(flags, definition.HealthChecks)
-		if err != nil {
-			return err
-		}
-		definition.SetHealthChecks(healthchecks)
+	healthchecks, err := parseChecks(definition.GetType(), flags, definition.HealthChecks)
+	if err != nil {
+		return err
 	}
+	definition.SetHealthChecks(healthchecks)
 
 	// Docker
 	if useDefault && !flags.Lookup("git").Changed || flags.Lookup("docker").Changed && !flags.Lookup("git").Changed {
@@ -607,16 +595,97 @@ func parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.D
 }
 
 // Parse --ports flags
-func parsePorts(flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
-	return parseListFlags("ports", flags_list.NewPortListFromFlags, flags, currentPorts)
+func parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
+	newPorts, err := parseListFlags("ports", flags_list.NewPortListFromFlags, flags, currentPorts)
+	if err != nil {
+		return nil, err
+	}
+	if len(newPorts) > 0 && type_ != koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		errmsg := ""
+		for _, port := range newPorts {
+			errmsg = fmt.Sprintf("%s --port '!%d'", errmsg, port.GetPort())
+		}
+		return nil, &errors.CLIError{
+			What: "Error while configuring the service",
+			Why:  `your service has ports configured, which is only possible for services of type "web"`,
+			Additional: []string{
+				`To change the type of your service, set --type to "web".`,
+				"To remove all the ports from your service, add the following flags:",
+				errmsg,
+			},
+			Orig:     nil,
+			Solution: "Fix the service type or remove the ports from your service, and try again",
+		}
+	}
+	// For new "web" services, if no port is specified, add the default port
+	if len(newPorts) == 0 && type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		port := koyeb.NewDeploymentPortWithDefaults()
+		port.SetPort(80)
+		port.SetProtocol("http")
+		return []koyeb.DeploymentPort{*port}, nil
+	}
+	return newPorts, nil
 }
 
 // Parse --routes flags
-func parseRoutes(flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
-	return parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
+func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
+	newRoutes, err := parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
+	if err != nil {
+		return nil, err
+	}
+	if len(newRoutes) > 0 && type_ != koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		errmsg := ""
+		for _, route := range newRoutes {
+			errmsg = fmt.Sprintf("%s --route '!%s'", errmsg, route.GetPath())
+		}
+		return nil, &errors.CLIError{
+			What: "Error while configuring the service",
+			Why:  `your service has routes configured, which is only possible for services of type "web"`,
+			Additional: []string{
+				`To change the type of your service, set --type to "web".`,
+				"To remove all the routes from your service, add the following flags:",
+				errmsg,
+			},
+			Orig:     nil,
+			Solution: "Fix the service type or remove the routes from your service, and try again",
+		}
+	}
+	// For new "web" services, if no route is specified, add the default route
+	if len(newRoutes) == 0 && type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		route := koyeb.NewDeploymentRouteWithDefaults()
+		route.SetPath("/")
+		route.SetPort(80)
+		return []koyeb.DeploymentRoute{*route}, nil
+	}
+	return newRoutes, nil
 }
 
 // Parse --checks flags
-func parseChecks(flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
-	return parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, currentHealthChecks)
+func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
+	newChecks, err := parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, currentHealthChecks)
+	if err != nil {
+		return nil, err
+	}
+	if len(newChecks) > 0 && type_ != koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		errmsg := ""
+		for _, check := range newChecks {
+			if check.HasHttp() {
+				errmsg = fmt.Sprintf("%s --check '!%d'", errmsg, *check.GetHttp().Port)
+			} else {
+				errmsg = fmt.Sprintf("%s --check '!%d'", errmsg, *check.GetTcp().Port)
+			}
+		}
+		return nil, &errors.CLIError{
+			What: "Error while configuring the service",
+			Why:  `--checks can only be specified for "web" services`,
+			Additional: []string{
+				`To change the type of your service, set --type to "web".`,
+				"To remove all the healthchecks from your service, add the following flags:",
+				errmsg,
+			},
+			Orig:     nil,
+			Solution: "Fix the service type or remove the healthchecks from your service, and try again",
+		}
+	}
+	return newChecks, nil
 }
