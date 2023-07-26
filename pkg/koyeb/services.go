@@ -565,7 +565,7 @@ func parseListFlags[T any](
 	flagName string,
 	buildListFlags func([]string) ([]flags_list.Flag[T], error),
 	flags *pflag.FlagSet,
-	existingItems []T,
+	currentItems []T,
 ) ([]T, error) {
 	values, err := flags.GetStringSlice(flagName)
 	if err != nil {
@@ -576,26 +576,26 @@ func parseListFlags[T any](
 	if err != nil {
 		return nil, err
 	}
-	newItems := flags_list.ParseListFlags[T](listFlags, existingItems)
+	newItems := flags_list.ParseListFlags[T](listFlags, currentItems)
 	return newItems, nil
 }
 
 // Parse --env flags
-func parseEnv(flags *pflag.FlagSet, existingEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
-	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, existingEnv)
+func parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
+	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, currentEnv)
 }
 
 // Parse --ports flags
-func parsePorts(flags *pflag.FlagSet, existingPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
-	return parseListFlags("ports", flags_list.NewPortListFromFlags, flags, existingPorts)
+func parsePorts(flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
+	return parseListFlags("ports", flags_list.NewPortListFromFlags, flags, currentPorts)
 }
 
 // Parse --routes flags
-func parseRoutes(flags *pflag.FlagSet, existingRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
-	return parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, existingRoutes)
+func parseRoutes(flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
+	return parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
 }
 
 // Parse --checks flags
-func parseChecks(flags *pflag.FlagSet, existingHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
-	return parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, existingHealthChecks)
+func parseChecks(flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
+	return parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, currentHealthChecks)
 }
