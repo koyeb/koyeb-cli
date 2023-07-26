@@ -212,6 +212,7 @@ func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, er
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	// Global flags
 	flags.String("type", "web", `Service type, either "web" or "worker"`)
+
 	flags.StringSlice("regions", []string{"fra"}, "Regions")
 	flags.StringSlice(
 		"env",
@@ -298,24 +299,13 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 }
 
 func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
-	if useDefault || flags.Lookup("type").Changed {
-		deploymentTypeStr, _ := flags.GetString("type")
-		deploymentType, err := koyeb.NewDeploymentDefinitionTypeFromValue(strings.ToUpper(deploymentTypeStr))
-		if err != nil {
-			return &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "the --type flag is not valid",
-				Additional: []string{
-					"The --type flag must be either \"web\" or \"worker\"",
-				},
-				Orig:     nil,
-				Solution: "Fix the --type flag and try again",
-			}
-		}
-		definition.SetType(*deploymentType)
+	type_, err := parseType(flags, definition.GetType())
+	if err != nil {
+		return err
 	}
+	definition.SetType(type_)
 
-	if definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WORKER {
+	if type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WORKER {
 		definition.Ports = nil
 		definition.Routes = nil
 		definition.HealthChecks = nil
@@ -533,6 +523,38 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		definition.Docker = nil
 	}
 	return nil
+}
+
+// Parse --type flag
+func parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType) (koyeb.DeploymentDefinitionType, error) {
+	if !flags.Lookup("type").Changed {
+		// New service: return the default value
+		if currentType == koyeb.DEPLOYMENTDEFINITIONTYPE_INVALID {
+			def := strings.ToUpper(flags.Lookup("type").DefValue)
+			ret, err := koyeb.NewDeploymentDefinitionTypeFromValue(def)
+			if err != nil {
+				panic(err)
+			}
+			return *ret, nil
+		}
+		// Existing service: return the type currently configured
+		return currentType, nil
+	}
+
+	value, _ := flags.GetString("type")
+	ret, err := koyeb.NewDeploymentDefinitionTypeFromValue(strings.ToUpper(value))
+	if err != nil {
+		return "", &errors.CLIError{
+			What: "Error while updating the service",
+			Why:  "the --type flag is not valid",
+			Additional: []string{
+				"The --type flag must be either \"web\" or \"worker\"",
+			},
+			Orig:     nil,
+			Solution: "Fix the --type flag and try again",
+		}
+	}
+	return *ret, nil
 }
 
 // parseListFlags is the generic function parsing --env, --port, --routes and --checks.
