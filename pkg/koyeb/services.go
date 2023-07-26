@@ -311,13 +311,11 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		definition.HealthChecks = nil
 	}
 
-	if useDefault || flags.Lookup("env").Changed {
-		envs, err := parseEnv(flags, definition.Env)
-		if err != nil {
-			return err
-		}
-		definition.SetEnv(envs)
+	envs, err := parseEnv(flags, definition.Env)
+	if err != nil {
+		return err
 	}
+	definition.SetEnv(envs)
 
 	if useDefault || flags.Lookup("instance-type").Changed {
 		instanceType := koyeb.NewDeploymentInstanceTypeWithDefaults()
