@@ -329,14 +329,8 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetRoutes(routes)
 
-	if useDefault || flags.Lookup("min-scale").Changed || flags.Lookup("max-scale").Changed {
-		scaling := koyeb.NewDeploymentScalingWithDefaults()
-		minScale, _ := flags.GetInt64("min-scale")
-		maxScale, _ := flags.GetInt64("max-scale")
-		scaling.SetMin(minScale)
-		scaling.SetMax(maxScale)
-		definition.SetScalings([]koyeb.DeploymentScaling{*scaling})
-	}
+	scalings := parseScalings(flags, definition.Scalings)
+	definition.SetScalings(scalings)
 
 	healthchecks, err := parseChecks(definition.GetType(), flags, definition.HealthChecks)
 	if err != nil {
@@ -688,4 +682,26 @@ func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 		}
 	}
 	return newChecks, nil
+}
+
+func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
+	minScale, _ := flags.GetInt64("min-scale")
+	maxScale, _ := flags.GetInt64("max-scale")
+
+	if len(currentScalings) == 0 {
+		scaling := koyeb.NewDeploymentScalingWithDefaults()
+		scaling.SetMin(minScale)
+		scaling.SetMax(maxScale)
+		return []koyeb.DeploymentScaling{*scaling}
+	}
+
+	for _, s := range currentScalings {
+		if flags.Lookup("min-scale").Changed {
+			s.SetMin(minScale)
+		}
+		if flags.Lookup("max-scale").Changed {
+			s.SetMax(maxScale)
+		}
+	}
+	return currentScalings
 }
