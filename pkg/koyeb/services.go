@@ -311,11 +311,8 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetEnv(envs)
 
-	instanceType := parseInstanceType(flags, definition.GetInstanceTypes())
-	definition.SetInstanceTypes(instanceType)
-
-	regions := parseRegions(flags, definition.GetRegions())
-	definition.SetRegions(regions)
+	definition.SetInstanceTypes(parseInstanceType(flags, definition.GetInstanceTypes()))
+	definition.SetRegions(parseRegions(flags, definition.GetRegions()))
 
 	ports, err := parsePorts(definition.GetType(), flags, definition.Ports)
 	if err != nil {
@@ -329,8 +326,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetRoutes(routes)
 
-	scalings := parseScalings(flags, definition.Scalings)
-	definition.SetScalings(scalings)
+	definition.SetScalings(parseScalings(flags, definition.Scalings))
 
 	healthchecks, err := parseChecks(definition.GetType(), flags, definition.HealthChecks)
 	if err != nil {
