@@ -334,164 +334,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetHealthChecks(healthchecks)
 
-	// Docker
-	if useDefault && !flags.Lookup("git").Changed || flags.Lookup("docker").Changed && !flags.Lookup("git").Changed {
-		createDockerSource := koyeb.NewDockerSourceWithDefaults()
-		image, _ := flags.GetString("docker")
-		args, _ := flags.GetStringSlice("docker-args")
-		command, _ := flags.GetString("docker-command")
-		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
-		image_registry_secret, _ := flags.GetString("docker-private-registry-secret")
-		createDockerSource.SetImage(image)
-		if command != "" {
-			createDockerSource.SetCommand(command)
-		}
-		if image_registry_secret != "" {
-			createDockerSource.SetImageRegistrySecret(image_registry_secret)
-		}
-		if len(args) > 0 {
-			createDockerSource.SetArgs(args)
-		}
-		if len(entrypoint) > 0 {
-			createDockerSource.SetEntrypoint(entrypoint)
-		}
-		definition.SetDocker(*createDockerSource)
-		definition.Git = nil
-	}
-	// Git
-	if flags.Lookup("git").Changed && !flags.Lookup("docker").Changed {
-		builder, _ := flags.GetString("git-builder")
-		if builder != "buildpack" && builder != "docker" {
-			return &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "the --git-builder is invalid",
-				Additional: []string{
-					"The --git-builder must be either 'buildpack' or 'docker'",
-				},
-				Orig:     nil,
-				Solution: "Fix the --git-builder and try again",
-			}
-		}
-
-		if builder == "buildpack" && (flags.Lookup("git-docker-dockerfile").Changed ||
-			flags.Lookup("git-docker-entrypoint").Changed ||
-			flags.Lookup("git-docker-command").Changed ||
-			flags.Lookup("git-docker-args").Changed ||
-			flags.Lookup("git-docker-target").Changed) {
-			return &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "invalid flag combination",
-				Additional: []string{
-					"The arguments --git-docker-* are used to configure the docker builder, and cannot be used with --git-builder=buildpack",
-				},
-				Orig:     nil,
-				Solution: "Remove the --git-docker-* flags and try again, or use --git-builder=docker",
-			}
-		}
-
-		if builder == "docker" && (flags.Lookup("git-buildpack-build-command").Changed ||
-			flags.Lookup("git-buildpack-run-command").Changed) {
-			return &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "invalid flag combination",
-				Additional: []string{
-					"The arguments --git-buildpack-* are used to configure the buildpack builder, and cannot be used with --git-builder=docker",
-				},
-				Orig:     nil,
-				Solution: "Remove the --git-buildpack-* flags and try again, or use --git-builder=buildpack",
-			}
-		}
-
-		createGitSource := koyeb.NewGitSourceWithDefaults()
-		git, _ := flags.GetString("git")
-		branch, _ := flags.GetString("git-branch")
-		noDeployOnPush, _ := flags.GetBool("git-no-deploy-on-push")
-		workdir, _ := flags.GetString("git-workdir")
-
-		createGitSource.SetRepository(git)
-		if branch != "" {
-			createGitSource.SetBranch(branch)
-		}
-		createGitSource.SetNoDeployOnPush(noDeployOnPush)
-		createGitSource.SetWorkdir(workdir)
-
-		// Set builder
-		switch builder {
-		case "buildpack":
-			// Legacy options for backward compatibility. We should use
-			// --git-buildpack-build-command and --git-buildpack-run-command instead
-			buildCommand, _ := flags.GetString("git-build-command")
-			buildpackBuildCommand, _ := flags.GetString("git-buildpack-build-command")
-			runCommand, _ := flags.GetString("git-run-command")
-			buildpackRunCommand, _ := flags.GetString("git-buildpack-run-command")
-
-			if buildCommand != "" && buildpackBuildCommand != "" {
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  "can't use --git-build-command and --git-buildpack-build-command together",
-					Additional: []string{
-						"The command --git-build-command has been deprecated in favor of --git-buildpack-build-command.",
-						"For backward compatibility, it is still possible to use --git-build-command, but it will be removed in a future release.",
-						"In any case, the two options cannot be used together.",
-					},
-					Orig:     nil,
-					Solution: "Only specify --git-buildpack-build-command",
-				}
-			}
-			if runCommand != "" && buildpackRunCommand != "" {
-				return &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  "can't use --git-run-command and --git-buildpack-run-command together",
-					Additional: []string{
-						"The command --git-run-command has been deprecated in favor of --git-buildpack-run-command.",
-						"For backward compatibility, it is still possible to use --git-run-command, but it will be removed in a future release.",
-						"In any case, the two options cannot be used together.",
-					},
-					Orig:     nil,
-					Solution: "Only specify --git-buildpack-run-command",
-				}
-			}
-
-			builder := koyeb.BuildpackBuilder{}
-			if buildCommand != "" {
-				builder.SetBuildCommand(buildCommand)
-			} else if buildpackBuildCommand != "" {
-				builder.SetBuildCommand(buildpackBuildCommand)
-			}
-			if runCommand != "" {
-				builder.SetRunCommand(runCommand)
-			} else if buildpackRunCommand != "" {
-				builder.SetRunCommand(buildpackRunCommand)
-			}
-			createGitSource.SetBuildpack(builder)
-		case "docker":
-			dockerfile, _ := flags.GetString("git-docker-dockerfile")
-			entrypoint, _ := flags.GetStringSlice("git-docker-entrypoint")
-			command, _ := flags.GetString("git-docker-command")
-			args, _ := flags.GetStringSlice("git-docker-args")
-			target, _ := flags.GetString("git-docker-target")
-
-			docker := koyeb.DockerBuilder{}
-			if dockerfile != "" {
-				docker.SetDockerfile(dockerfile)
-			}
-			if len(entrypoint) > 0 {
-				docker.SetEntrypoint(entrypoint)
-			}
-			if command != "" {
-				docker.SetCommand(command)
-			}
-			if len(args) > 0 {
-				docker.SetArgs(args)
-			}
-			if target != "" {
-				docker.SetTarget(target)
-			}
-			createGitSource.SetDocker(docker)
-		}
-
-		definition.SetGit(*createGitSource)
-		definition.Docker = nil
+	err = setSource(definition, flags)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -700,4 +545,248 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 		}
 	}
 	return currentScalings
+}
+
+func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
+	hasGitFlags := false
+	hasDockerFlags := false
+	flags.VisitAll(func(flag *pflag.Flag) {
+		if flag.Changed {
+			if strings.HasPrefix(flag.Name, "git") {
+				hasGitFlags = true
+			} else if strings.HasPrefix(flag.Name, "docker") {
+				hasDockerFlags = true
+			}
+		}
+	})
+	if hasGitFlags && hasDockerFlags {
+		return &errors.CLIError{
+			What: "Error while updating the service",
+			Why:  "invalid flag combination",
+			Additional: []string{
+				"Your service has both --git-* and --docker-* flags, which is not allowed.",
+				"To build a GitHub repository, specify --git-*",
+				"To deploy a Docker image hosted on the Docker Hub or a private registry, specify --docker-*",
+			},
+			Orig:     nil,
+			Solution: "Fix the flags and try again",
+		}
+	}
+	if hasDockerFlags {
+		docker := definition.GetDocker()
+		source := parseDockerSource(flags, &docker)
+		definition.SetDocker(*source)
+		definition.Git = nil
+	} else if hasGitFlags {
+		git := definition.GetGit()
+		source, err := parseGitSource(flags, &git)
+		if err != nil {
+			return err
+		}
+		definition.Docker = nil
+		definition.SetGit(*source)
+	}
+	return nil
+}
+
+func parseDockerSource(flags *pflag.FlagSet, source *koyeb.DockerSource) *koyeb.DockerSource {
+	if flags.Lookup("docker").Changed {
+		image, _ := flags.GetString("docker")
+		source.SetImage(image)
+	}
+	if flags.Lookup("docker-args").Changed {
+		args, _ := flags.GetStringSlice("docker-args")
+		source.SetArgs(args)
+	}
+	if flags.Lookup("docker-command").Changed {
+		command, _ := flags.GetString("docker-command")
+		source.SetCommand(command)
+	}
+	if flags.Lookup("docker-entrypoint").Changed {
+		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
+		source.SetEntrypoint(entrypoint)
+	}
+	if flags.Lookup("docker-private-registry-secret").Changed {
+		secret, _ := flags.GetString("docker-private-registry-secret")
+		source.SetImageRegistrySecret(secret)
+	}
+	return source
+}
+
+func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
+	if flags.Lookup("git").Changed {
+		repository, _ := flags.GetString("git")
+		source.SetRepository(repository)
+	}
+	if flags.Lookup("git-branch").Changed {
+		branch, _ := flags.GetString("git-branch")
+		source.SetBranch(branch)
+	}
+	if flags.Lookup("git-no-deploy-on-push").Changed {
+		noDeployOnPush, _ := flags.GetBool("git-no-deploy-on-push")
+		source.SetNoDeployOnPush(noDeployOnPush)
+	}
+	if flags.Lookup("git-workdir").Changed {
+		workdir, _ := flags.GetString("git-workdir")
+		source.SetWorkdir(workdir)
+	}
+	return setGitSourceBuilder(flags, source)
+}
+
+func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
+	builder, _ := flags.GetString("git-builder")
+	if builder != "buildpack" && builder != "docker" {
+		return nil, &errors.CLIError{
+			What: "Error while updating the service",
+			Why:  "the --git-builder is invalid",
+			Additional: []string{
+				"The --git-builder must be either 'buildpack' or 'docker'",
+			},
+			Orig:     nil,
+			Solution: "Fix the --git-builder and try again",
+		}
+	}
+	// If docker builder arguments are specified with --git-builder=buildpack,
+	// or if --git-builder is not specified but the current source is a docker
+	// builder, return an error
+	if flags.Lookup("git-docker-dockerfile").Changed ||
+		flags.Lookup("git-docker-entrypoint").Changed ||
+		flags.Lookup("git-docker-command").Changed ||
+		flags.Lookup("git-docker-args").Changed ||
+		flags.Lookup("git-docker-target").Changed {
+
+		if flags.Lookup("git-builder").Changed && builder == "buildpack" {
+			return nil, &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"The arguments --git-docker-* are used to configure the docker builder, and cannot be used with --git-builder=buildpack",
+				},
+				Orig:     nil,
+				Solution: "Remove the --git-docker-* flags and try again, or use --git-builder=docker",
+			}
+		} else if source.HasBuildpack() {
+			return nil, &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"You are trying to configure a docker builder, but the current builder is a buildpack builder",
+				},
+				Orig:     nil,
+				Solution: "Remove the --git-docker-* flags, or also change the builder type with --git-builder=docker",
+			}
+		}
+		builder, err := parseGitSourceDockerBuilder(flags, source.GetDocker())
+		if err != nil {
+			return nil, err
+		}
+		source.Buildpack = nil
+		source.SetDocker(*builder)
+	}
+	if flags.Lookup("git-buildpack-build-command").Changed ||
+		flags.Lookup("git-build-command").Changed ||
+		flags.Lookup("git-buildpack-run-command").Changed ||
+		flags.Lookup("git-run-command").Changed {
+
+		if flags.Lookup("git-builder").Changed && builder == "docker" {
+			return nil, &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"The arguments --git-buildpack-* are used to configure the buildpack builder, and cannot be used with --git-builder=docker",
+				},
+				Orig:     nil,
+				Solution: "Remove the --git-buildpack-* flags and try again, or use --git-builder=buildpack",
+			}
+		} else if source.HasDocker() {
+			return nil, &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"You are trying to configure a buildpack builder, but the current builder is a docker builder",
+				},
+				Orig:     nil,
+				Solution: "Remove the --git-buildpack-* flags, or change the builder type with --git-builder=buildpack",
+			}
+		}
+		builder, err := parseGitSourceBuildpackBuilder(flags, source.GetBuildpack())
+		if err != nil {
+			return nil, err
+		}
+		source.SetBuildpack(*builder)
+		source.Docker = nil
+	}
+	return source, nil
+}
+
+func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.BuildpackBuilder) (*koyeb.BuildpackBuilder, error) {
+	// Legacy options for backward compatibility. We prefer
+	// --git-buildpack-build-command and --git-buildpack-run-command over --git-build-command and --git-run-command
+	buildCommand, _ := flags.GetString("git-build-command")
+	buildpackBuildCommand, _ := flags.GetString("git-buildpack-build-command")
+	runCommand, _ := flags.GetString("git-run-command")
+	buildpackRunCommand, _ := flags.GetString("git-buildpack-run-command")
+
+	if flags.Lookup("git-build-command").Changed && flags.Lookup("git-buildpack-build-command").Changed {
+		return nil, &errors.CLIError{
+			What: "Error while configuring the service",
+			Why:  "can't use --git-build-command and --git-buildpack-build-command together",
+			Additional: []string{
+				"The command --git-build-command has been deprecated in favor of --git-buildpack-build-command.",
+				"For backward compatibility, it is still possible to use --git-build-command, but it will be removed in a future release.",
+				"In any case, the two options cannot be used together.",
+			},
+			Orig:     nil,
+			Solution: "Only specify --git-buildpack-build-command",
+		}
+	}
+	if flags.Lookup("git-run-command").Changed && flags.Lookup("git-buildpack-run-command").Changed {
+		return nil, &errors.CLIError{
+			What: "Error while configuring the service",
+			Why:  "can't use --git-run-command and --git-buildpack-run-command together",
+			Additional: []string{
+				"The command --git-run-command has been deprecated in favor of --git-buildpack-run-command.",
+				"For backward compatibility, it is still possible to use --git-run-command, but it will be removed in a future release.",
+				"In any case, the two options cannot be used together.",
+			},
+			Orig:     nil,
+			Solution: "Only specify --git-buildpack-run-command",
+		}
+	}
+
+	if flags.Lookup("git-build-command").Changed {
+		builder.SetBuildCommand(buildCommand)
+	} else if flags.Lookup("git-buildpack-build-command").Changed {
+		builder.SetBuildCommand(buildpackBuildCommand)
+	}
+	if flags.Lookup("git-run-command").Changed {
+		builder.SetRunCommand(runCommand)
+	} else if flags.Lookup("git-buildpack-run-command").Changed {
+		builder.SetRunCommand(buildpackRunCommand)
+	}
+	return &builder, nil
+}
+
+func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
+	if flags.Lookup("git-docker-dockerfile").Changed {
+		dockerfile, _ := flags.GetString("git-docker-dockerfile")
+		builder.SetDockerfile(dockerfile)
+	}
+	if flags.Lookup("git-docker-entrypoint").Changed {
+		entrypoint, _ := flags.GetStringSlice("git-docker-entrypoint")
+		builder.SetEntrypoint(entrypoint)
+	}
+	if flags.Lookup("git-docker-command").Changed {
+		command, _ := flags.GetString("git-docker-command")
+		builder.SetCommand(command)
+	}
+	if flags.Lookup("git-docker-args").Changed {
+		args, _ := flags.GetStringSlice("git-docker-args")
+		builder.SetArgs(args)
+	}
+	if flags.Lookup("git-docker-target").Changed {
+		target, _ := flags.GetString("git-docker-target")
+		builder.SetTarget(target)
+	}
+	return &builder, nil
 }
