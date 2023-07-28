@@ -37,7 +37,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-			err := parseServiceDefinitionFlags(cmd.Flags(), createDefinition, true)
+			err := parseServiceDefinitionFlags(cmd.Flags(), createDefinition)
 			if err != nil {
 				return err
 			}
@@ -137,7 +137,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 				}
 			}
 			updateDef := latestDeploy.GetDeployments()[0].Definition
-			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef, false)
+			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef)
 			if err != nil {
 				return err
 			}
@@ -298,7 +298,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	})
 }
 
-func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, useDefault bool) error {
+func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
 	type_, err := parseType(flags, definition.GetType())
 	if err != nil {
 		return err
