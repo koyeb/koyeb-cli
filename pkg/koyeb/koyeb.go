@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"runtime"
 
 	koyeb_errors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
@@ -96,6 +97,8 @@ func GetRootCommand() *cobra.Command {
 func Run() error {
 	defer func() {
 		if r := recover(); r != nil {
+			stacktrace := make([]byte, 4096)
+			size := runtime.Stack(stacktrace, false)
 			fmt.Fprintf(os.Stderr, "%s", &koyeb_errors.CLIError{
 				What: "An unexpected error occured",
 				Why:  "it's maybe our fault, or maybe not, we can't tell",
@@ -103,6 +106,7 @@ func Run() error {
 					"The CLI should have handled this error gracefully, but it didn't.",
 					"It might be a problem with the CLI itself, with the API, or with your configuration. Unfortuatey, we can't tell.",
 					"In any case, we would love to hear about it so we can handle this error gracefully in a future version of the CLI.",
+					fmt.Sprintf("\nStacktrace:\n-----------\n%s-----------", stacktrace[:size]),
 				},
 				Orig:     fmt.Errorf("%s", r),
 				Solution: "Please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and provide the command you ran, the error message, and the output of `koyeb version`",
