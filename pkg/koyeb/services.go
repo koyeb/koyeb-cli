@@ -341,7 +341,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	return nil
 }
 
-// Parse --type flag
+// Parse --type
 func parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType) (koyeb.DeploymentDefinitionType, error) {
 	if !flags.Lookup("type").Changed {
 		// New service: return the default value
@@ -373,6 +373,7 @@ func parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType)
 	return *ret, nil
 }
 
+// Parse --instance-type
 func parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.DeploymentInstanceType) []koyeb.DeploymentInstanceType {
 	if !flags.Lookup("instance-type").Changed {
 		// New service: return the default value
@@ -390,6 +391,7 @@ func parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.Deploy
 	return []koyeb.DeploymentInstanceType{*ret}
 }
 
+// Parse --regions
 func parseRegions(flags *pflag.FlagSet, currentRegions []string) []string {
 	regions, _ := flags.GetStringSlice("regions")
 	if !flags.Lookup("regions").Changed {
@@ -424,12 +426,12 @@ func parseListFlags[T any](
 	return newItems, nil
 }
 
-// Parse --env flags
+// Parse --env
 func parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
 	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, currentEnv)
 }
 
-// Parse --ports flags
+// Parse --ports
 func parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
 	newPorts, err := parseListFlags("ports", flags_list.NewPortListFromFlags, flags, currentPorts)
 	if err != nil {
@@ -462,7 +464,7 @@ func parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, curr
 	return newPorts, nil
 }
 
-// Parse --routes flags
+// Parse --routes
 func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
 	newRoutes, err := parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
 	if err != nil {
@@ -495,7 +497,7 @@ func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 	return newRoutes, nil
 }
 
-// Parse --checks flags
+// Parse --checks
 func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
 	newChecks, err := parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, currentHealthChecks)
 	if err != nil {
@@ -525,6 +527,7 @@ func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 	return newChecks, nil
 }
 
+// Parse --min-scale and --max-scale
 func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
 	minScale, _ := flags.GetInt64("min-scale")
 	maxScale, _ := flags.GetInt64("max-scale")
@@ -547,6 +550,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 	return currentScalings
 }
 
+// Parse --git-* and --docker-* flags to set deployment.Git or deployment.Docker
 func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
 	hasGitFlags := false
 	hasDockerFlags := false
@@ -589,6 +593,7 @@ func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) err
 	return nil
 }
 
+// Parse --docker-* flags
 func parseDockerSource(flags *pflag.FlagSet, source *koyeb.DockerSource) *koyeb.DockerSource {
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
@@ -613,6 +618,7 @@ func parseDockerSource(flags *pflag.FlagSet, source *koyeb.DockerSource) *koyeb.
 	return source
 }
 
+// Parse --git-* flags
 func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
 	if flags.Lookup("git").Changed {
 		repository, _ := flags.GetString("git")
@@ -633,6 +639,7 @@ func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSo
 	return setGitSourceBuilder(flags, source)
 }
 
+// Parse --git-builder and --git-docker-*
 func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
 	builder, _ := flags.GetString("git-builder")
 	if builder != "buildpack" && builder != "docker" {
@@ -719,6 +726,7 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 	return source, nil
 }
 
+// Parse --git-buildpack-* flags
 func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.BuildpackBuilder) (*koyeb.BuildpackBuilder, error) {
 	// Legacy options for backward compatibility. We prefer
 	// --git-buildpack-build-command and --git-buildpack-run-command over --git-build-command and --git-run-command
@@ -753,7 +761,6 @@ func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.Buildpac
 			Solution: "Only specify --git-buildpack-run-command",
 		}
 	}
-
 	if flags.Lookup("git-build-command").Changed {
 		builder.SetBuildCommand(buildCommand)
 	} else if flags.Lookup("git-buildpack-build-command").Changed {
@@ -767,6 +774,7 @@ func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.Buildpac
 	return &builder, nil
 }
 
+// Parse --git-docker-* flags
 func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
 	if flags.Lookup("git-docker-dockerfile").Changed {
 		dockerfile, _ := flags.GetString("git-docker-dockerfile")
