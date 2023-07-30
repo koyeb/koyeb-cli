@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"path"
 	"strings"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-func genMarkdownDocumentation() {
+func genMarkdownDocumentation(outputDir string) {
 	rootCmd := koyeb.GetRootCommand()
 	linkHandler := func(name string) string {
 		base := strings.TrimSuffix(name, path.Ext(name))
@@ -17,7 +18,7 @@ func genMarkdownDocumentation() {
 	}
 
 	filePrepender := func(filename string) string {
-		if filename == "docs/koyeb.md" {
+		if filename == outputDir+"/koyeb.md" {
 			return `---
 title: "Koyeb CLI Reference"
 shortTitle: Reference
@@ -34,12 +35,17 @@ If you have not installed the Koyeb CLI yet, please read the [installation guide
 		return ""
 	}
 
-	err := doc.GenMarkdownTreeCustom(rootCmd, "./docs", filePrepender, linkHandler)
+	err := doc.GenMarkdownTreeCustom(rootCmd, outputDir, filePrepender, linkHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
-	genMarkdownDocumentation()
+	outputDir := "./docs"
+	if len(os.Args) > 1 {
+		outputDir = os.Args[1]
+	}
+
+	genMarkdownDocumentation(outputDir)
 }

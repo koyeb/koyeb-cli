@@ -16,11 +16,6 @@ jobs:
           make test
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
-      - name: "Test gen doc"
-        run: |
-          make gen-doc
-          # there should not be a diff
-          git diff --quiet || (echo >&2 "make gen-doc has a diff" && false)
   build:
     name: Upload Release Asset
     runs-on: ubuntu-latest

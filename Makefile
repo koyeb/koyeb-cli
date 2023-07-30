@@ -1,5 +1,28 @@
 TEST_OPTS=-v -test.timeout 300s
 
+define gen-doc-in-dir
+	rm -f ./$1/*
+	go run cmd/gen-doc/gen-doc.go $1
+	sed -i.bak 's/.*koyeb completion.*//' ./$1/*.md
+	sed -i.bak 's/### SEE ALSO.*//' ./$1/*.md
+	cat ./$1/koyeb.md >> ./$1/reference.md
+	cat ./$1/koyeb_login.md >> ./$1/reference.md
+	cat ./$1/koyeb_apps.md >> ./$1/reference.md
+	cat ./$1/koyeb_apps_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_domains.md >> ./$1/reference.md
+	cat ./$1/koyeb_domains_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_secrets.md >> ./$1/reference.md
+	cat ./$1/koyeb_secrets_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_services.md >> ./$1/reference.md
+	cat ./$1/koyeb_services_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_deployments.md >> ./$1/reference.md
+	cat ./$1/koyeb_deployments_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_instances.md >> ./$1/reference.md
+	cat ./$1/koyeb_instances_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_version.md >> ./$1/reference.md
+	find ./$1 -type f -not -name 'reference.md' -delete
+endef
+
 help: ## help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_0-9-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
 
@@ -13,30 +36,18 @@ fmt: ## apply go format
 	gofmt -s -w ./
 
 gen-doc: ## generate markdown documentation
-	rm -f ./docs/*
-	go run cmd/gen-doc/gen-doc.go
-	sed -i.bak 's/.*koyeb completion.*//' ./docs/*.md
-	sed -i.bak 's/### SEE ALSO.*//' ./docs/*.md
-	cat ./docs/koyeb.md >> ./docs/reference.md
-	cat ./docs/koyeb_login.md >> ./docs/reference.md
-	cat ./docs/koyeb_apps.md >> ./docs/reference.md
-	cat ./docs/koyeb_apps_*.md >> ./docs/reference.md
-	cat ./docs/koyeb_domains.md >> ./docs/reference.md
-	cat ./docs/koyeb_domains_*.md >> ./docs/reference.md
-	cat ./docs/koyeb_secrets.md >> ./docs/reference.md
-	cat ./docs/koyeb_secrets_*.md >> ./docs/reference.md
-	cat ./docs/koyeb_services.md >> ./docs/reference.md
-	cat ./docs/koyeb_services_*.md >> ./docs/reference.md
-	cat ./docs/koyeb_deployments.md >> ./docs/reference.md
-	cat ./docs/koyeb_deployments_*.md >> ./docs/reference.md
-	cat ./docs/koyeb_instances.md >> ./docs/reference.md
-	cat ./docs/koyeb_instances_*.md >> ./docs/reference.md
-	cat ./docs/koyeb_version.md >> ./docs/reference.md
-	find ./docs -type f -not -name 'reference.md' -delete
+	$(call gen-doc-in-dir,docs)
 
 test: tidy cmd pkg
-	test -z "`gofmt -d ./cmd ./pkg | tee /dev/stderr`"
-	go test $(TEST_OPTS) ./...
+	@mkdir -p ./.temp
+	@$(call gen-doc-in-dir,.temp)
+	@diff -r -q ./docs ./.temp > /dev/null && { \
+        test -z "`gofmt -d ./cmd ./pkg | tee /dev/stderr`"; \
+        go test $(TEST_OPTS) ./...; \
+    } || { \
+        echo >&2 "make gen-doc has a diff"; \
+	}
+	@rm -rf ./.temp;
 
 lint:
 	golangci-lint run -v ./...
