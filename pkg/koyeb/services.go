@@ -69,7 +69,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
 	logsServiceCmd.Flags().String("instance", "", "Instance")
-	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
+	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
 
 	listServiceCmd := &cobra.Command{
 		Use:   "list",

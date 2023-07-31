@@ -26,6 +26,17 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []str
 	done := make(chan struct{})
 
 	logType := GetStringFlags(cmd, "type")
+	if logType != "" && logType != "build" && logType != "runtime" {
+		return &errors.CLIError{
+			What: "Error while fetching the logs",
+			Why:  "the log type you provided is invalid",
+			Additional: []string{
+				fmt.Sprintf("The log type should be either `build` or `runtime`, not `%s`", logType),
+			},
+			Orig:     nil,
+			Solution: "Fix the log type and try again",
+		}
+	}
 
 	query := &WatchLogQuery{}
 	query.DeploymentID = koyeb.PtrString(deploymentDetail.Deployment.GetId())

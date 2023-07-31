@@ -1225,7 +1225,7 @@ koyeb services logs NAME [flags]
 ```
   -h, --help              help for logs
       --instance string   Instance
-  -t, --type string       Type (runtime,build)
+  -t, --type string       Type (runtime, build)
 ```
 
 ### Options inherited from parent commands
@@ -1585,7 +1585,7 @@ koyeb deployments logs NAME [flags]
 
 ```
   -h, --help          help for logs
-  -t, --type string   Type of log (runtime,build)
+  -t, --type string   Type of log (runtime, build)
 ```
 
 ### Options inherited from parent commands

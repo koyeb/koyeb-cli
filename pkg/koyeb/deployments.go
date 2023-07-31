@@ -52,8 +52,7 @@ func NewDeploymentCmd() *cobra.Command {
 		RunE:    WithCLIContext(h.Logs),
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
-	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime,build)")
-
+	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime, build)")
 	return deploymentCmd
 }
 
