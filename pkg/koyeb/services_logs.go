@@ -3,7 +3,6 @@ package koyeb
 import (
 	"fmt"
 
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 )
@@ -23,28 +22,16 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 		)
 	}
 
-	done := make(chan struct{})
+	var logsQuery *WatchLogsQuery
 
-	serviceID := serviceDetail.Service.GetId()
-	logType := GetStringFlags(cmd, "type")
-	if logType != "" && logType != "build" && logType != "runtime" {
-		return &errors.CLIError{
-			What: "Error while fetching the logs",
-			Why:  "the log type you provided is invalid",
-			Additional: []string{
-				fmt.Sprintf("The log type should be either `build` or `runtime`, not `%s`", logType),
-			},
-			Orig:     nil,
-			Solution: "Fix the log type and try again",
-		}
-	}
-
-	instanceID := GetStringFlags(cmd, "instance")
-
-	query := &WatchLogQuery{}
-	query.ServiceID = koyeb.PtrString(serviceID)
-
-	if logType == "build" {
+	if GetStringFlags(cmd, "type") != "build" {
+		logsQuery, err = ctx.LogsClient.NewWatchLogsQuery(
+			"runtime",
+			serviceDetail.Service.GetId(),
+			"",
+			GetStringFlags(cmd, "instance"),
+		)
+	} else {
 		latestDeploy, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
 			Limit("1").ServiceId(service).Execute()
 		if err != nil {
@@ -65,13 +52,27 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 				Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
 			}
 		}
-		query.DeploymentID = latestDeploy.GetDeployments()[0].Id
-		query.LogType = koyeb.PtrString(logType)
+		logsQuery, err = ctx.LogsClient.NewWatchLogsQuery(
+			"build",
+			serviceDetail.Service.GetId(),
+			*latestDeploy.GetDeployments()[0].Id,
+			GetStringFlags(cmd, "instance"),
+		)
 	}
-
-	if instanceID != "" {
-		query.InstanceID = koyeb.PtrString(instanceID)
+	if err != nil {
+		return err
 	}
+	defer logsQuery.Close()
 
-	return WatchLog(query, done)
+	logs, err := logsQuery.Execute()
+	if err != nil {
+		return err
+	}
+	for log := range logs {
+		if log.Err != nil {
+			return log.Err
+		}
+		fmt.Println(log.Msg)
+	}
+	return nil
 }
