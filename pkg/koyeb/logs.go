@@ -4,97 +4,175 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
-type LogMessage struct {
-	Result LogMessageResult `json:"result"`
+type LogsAPIClient struct {
+	url    *url.URL
+	header http.Header
 }
 
-func (l LogMessage) String() string {
-	return l.Result.Msg
+func NewLogsAPIClient(apiUrl string, token string) (*LogsAPIClient, error) {
+	endpoint, err := url.JoinPath(apiUrl, "/v1/streams/logs/tail")
+	if err != nil {
+		return nil, err
+	}
+	url, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	switch url.Scheme {
+	case "https":
+		url.Scheme = "wss"
+	case "http":
+		url.Scheme = "ws"
+	default:
+		return nil, fmt.Errorf("unsupported schema: %s", url.Scheme)
+	}
+	return &LogsAPIClient{
+		url: url,
+		header: http.Header{
+			"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)},
+		},
+	}, nil
 }
 
-type LogMessageResult struct {
+type WatchLogsQuery struct {
+	client       *LogsAPIClient
+	logType      string
+	serviceId    string
+	deploymentId string
+	instanceId   string
+	conn         *websocket.Conn
+	ticker       *time.Ticker
+}
+
+func (client *LogsAPIClient) NewWatchLogsQuery(
+	logType string, serviceId string, deploymentId string, instanceId string,
+) (*WatchLogsQuery, error) {
+	query := &WatchLogsQuery{
+		client:       client,
+		serviceId:    serviceId,
+		deploymentId: deploymentId,
+		instanceId:   instanceId,
+	}
+	switch logType {
+	case "build", "runtime", "":
+		query.logType = logType
+	default:
+		return nil, &errors.CLIError{
+			What: "Error while fetching the logs",
+			Why:  "the log type you provided is invalid",
+			Additional: []string{
+				fmt.Sprintf("The log type should be either `build` or `runtime`, not `%s`", logType),
+			},
+			Orig:     nil,
+			Solution: "Fix the log type and try again",
+		}
+	}
+	return query, nil
+}
+
+// LogLine represents a line returned by /v1/streams/logs/tail
+type LogLine struct {
+	Result LogLineResult `json:"result"`
+}
+
+type LogLineResult struct {
 	Msg string `json:"msg"`
 }
 
-type WatchLogQuery struct {
-	LogType      *string
-	ServiceID    *string
-	InstanceID   *string
-	DeploymentID *string
+// WatchLogsEntry is an entry returned by WatchLogsQuery.Execute()
+type WatchLogsEntry struct {
+	Msg string
+	Err error
 }
 
-func WatchLog(q *WatchLogQuery, done chan struct{}) error {
-	path := "/v1/streams/logs/tail?"
-	if q.LogType != nil {
-		path = fmt.Sprintf("%s&type=%s", path, *q.LogType)
+func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
+	queryParams := url.Values{}
+	if query.logType != "" {
+		queryParams.Add("type", query.logType)
 	}
-	if q.DeploymentID != nil {
-		path = fmt.Sprintf("%s&deployment_id=%s", path, *q.DeploymentID)
+	if query.serviceId != "" {
+		queryParams.Add("service_id", query.serviceId)
 	}
-	if q.ServiceID != nil {
-		path = fmt.Sprintf("%s&service_id=%s", path, *q.ServiceID)
+	if query.deploymentId != "" {
+		queryParams.Add("deployment_id", query.deploymentId)
 	}
-	if q.InstanceID != nil {
-		path = fmt.Sprintf("%s&instance_id=%s", path, *q.InstanceID)
+	if query.instanceId != "" {
+		queryParams.Add("instance_id", query.instanceId)
 	}
+	query.client.url.RawQuery = queryParams.Encode()
 
-	dest, err := url.Parse(fmt.Sprint(apiurl, path))
+	conn, _, err := websocket.DefaultDialer.Dial(query.client.url.String(), query.client.header)
 	if err != nil {
-		return fmt.Errorf("cannot parse url for websocket: %w", err)
+		return nil, &errors.CLIError{
+			What: "Error while fetching the logs",
+			Why:  "unable to create the websocket connection",
+			Additional: []string{
+				"It usually happens because the API URL in your configuration is incorrect",
+			},
+			Orig:     err,
+			Solution: "Fix the error and try again",
+		}
 	}
-	switch dest.Scheme {
-	case "https":
-		dest.Scheme = "wss"
-	case "http":
-		dest.Scheme = "ws"
-	default:
-		return fmt.Errorf("unsupported schema: %s", dest.Scheme)
-	}
+	query.conn = conn
 
-	h := http.Header{"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)}}
-	c, _, err := websocket.DefaultDialer.Dial(dest.String(), h)
-	if err != nil {
-		return fmt.Errorf("cannot create websocket: %w", err)
-	}
-	defer c.Close()
-
-	readDone := make(chan struct{})
-
+	// Read logs from the websocket connection
+	logs := make(chan WatchLogsEntry)
 	go func() {
-		defer close(done)
 		for {
-			msg := LogMessage{}
-			err := c.ReadJSON(&msg)
+			msg := LogLine{}
+			err := conn.ReadJSON(&msg)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				return
+				logs <- WatchLogsEntry{Err: &errors.CLIError{
+					What: "Error while fetching the logs",
+					Why:  "unable to read the logs from the websocket connection",
+					Additional: []string{
+						"Unfortunately, we couldn't read the logs from the websocket connection",
+						"If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
+					},
+					Orig:     err,
+					Solution: "Try again in a few seconds",
+				}}
+			} else {
+				logs <- WatchLogsEntry{Msg: msg.Result.Msg}
 			}
-			fmt.Println(msg.String())
 		}
 	}()
-
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-done:
-			return nil
-		case <-readDone:
-			return nil
-		case t := <-ticker.C:
-			err := c.WriteMessage(websocket.PingMessage, []byte(t.String()))
-			if err != nil {
-				log.Println("write:", err)
-				return err
+	// Consume the logs channel, forward them to the caller. Also send a ping every 10 seconds to keep the connection alive.
+	ret := make(chan WatchLogsEntry)
+	query.ticker = time.NewTicker(10 * time.Second)
+	go func() {
+		for {
+			select {
+			case line := <-logs:
+				ret <- line
+				if line.Err != nil {
+					close(ret)
+					return
+				}
+			case tick := <-query.ticker.C:
+				err := conn.WriteMessage(websocket.PingMessage, []byte(tick.String()))
+				if err != nil {
+					ret <- WatchLogsEntry{Err: err}
+					close(ret)
+					return
+				}
 			}
 		}
+	}()
+	return ret, nil
+}
+
+func (query *WatchLogsQuery) Close() {
+	if query.conn != nil {
+		query.conn.Close()
+	}
+	if query.ticker != nil {
+		query.ticker.Stop()
 	}
 }

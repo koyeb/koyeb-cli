@@ -3,7 +3,6 @@ package koyeb
 import (
 	"fmt"
 
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 )
@@ -23,26 +22,27 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []str
 		)
 	}
 
-	done := make(chan struct{})
+	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
+		GetStringFlags(cmd, "type"),
+		"",
+		deploymentDetail.Deployment.GetId(),
+		"",
+	)
+	if err != nil {
+		return err
+	}
+	defer logsQuery.Close()
 
-	logType := GetStringFlags(cmd, "type")
-	if logType != "" && logType != "build" && logType != "runtime" {
-		return &errors.CLIError{
-			What: "Error while fetching the logs",
-			Why:  "the log type you provided is invalid",
-			Additional: []string{
-				fmt.Sprintf("The log type should be either `build` or `runtime`, not `%s`", logType),
-			},
-			Orig:     nil,
-			Solution: "Fix the log type and try again",
+	logs, err := logsQuery.Execute()
+	if err != nil {
+		return err
+	}
+
+	for log := range logs {
+		if log.Err != nil {
+			return log.Err
 		}
+		fmt.Println(log.Msg)
 	}
-
-	query := &WatchLogQuery{}
-	query.DeploymentID = koyeb.PtrString(deploymentDetail.Deployment.GetId())
-	if logType != "" {
-		query.LogType = koyeb.PtrString(logType)
-	}
-
-	return WatchLog(query, done)
+	return err
 }
