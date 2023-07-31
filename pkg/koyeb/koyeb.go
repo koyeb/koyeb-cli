@@ -43,19 +43,18 @@ var (
 	}
 )
 
-func isHelpCalled(cmd *cobra.Command) bool {
-	for _, subcmd := range cmd.Commands() {
+func isHelpCalled(rootCmd *cobra.Command) bool {
+	for _, subcmd := range rootCmd.Commands() {
 		if subcmd.Name() == "help" {
 			return subcmd.CalledAs() != ""
 		}
 	}
-
 	return false
 }
 
-func skipConfigLoading(cmd *cobra.Command) bool {
-	return "" != loginCmd.CalledAs() || "" != versionCmd.CalledAs() ||
-		"" != completionCmd.CalledAs() || isHelpCalled(cmd)
+func skipConfigLoading(rootCmd *cobra.Command) bool {
+	return loginCmd.CalledAs() != "" || versionCmd.CalledAs() != "" ||
+		completionCmd.CalledAs() != "" || isHelpCalled(rootCmd)
 }
 
 func GetRootCommand() *cobra.Command {
