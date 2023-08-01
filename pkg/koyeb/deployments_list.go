@@ -70,6 +70,10 @@ func (r *ListDeploymentsReply) Headers() []string {
 func (r *ListDeploymentsReply) Fields() []map[string]string {
 	items := r.value.GetDeployments()
 	resp := make([]map[string]string, 0, len(items))
+	maxMessagesLength := 80
+	if r.full {
+		maxMessagesLength = 0
+	}
 
 	for _, item := range items {
 		fields := map[string]string{
@@ -77,7 +81,7 @@ func (r *ListDeploymentsReply) Fields() []map[string]string {
 			"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
 			"type":       formatDeploymentType(item.Definition.GetType()),
 			"status":     formatDeploymentStatus(item.GetStatus()),
-			"messages":   formatDeploymentMessages(item.GetMessages(), 80),
+			"messages":   formatDeploymentMessages(item.GetMessages(), maxMessagesLength),
 			"regions":    renderRegions(item.Definition.Regions),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
