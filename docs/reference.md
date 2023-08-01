@@ -1351,7 +1351,7 @@ koyeb services update NAME [flags]
 
 ```
 
-# Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
+# Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 ```
 

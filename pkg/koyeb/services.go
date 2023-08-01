@@ -102,7 +102,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 		Short: "Update service",
 		Args:  cobra.ExactArgs(1),
 		Example: `
-# Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
+# Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			service, err := h.ResolveServiceArgs(ctx, args[0])
