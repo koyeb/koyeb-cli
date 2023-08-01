@@ -71,12 +71,17 @@ func (r *ListAppsReply) Fields() []map[string]string {
 	items := r.value.GetApps()
 	resp := make([]map[string]string, 0, len(items))
 
+	maxDomainsLength := 80
+	if r.full {
+		maxDomainsLength = 0
+	}
+
 	for _, item := range items {
 		fields := map[string]string{
 			"id":         renderer.FormatID(item.GetId(), r.full),
 			"name":       item.GetName(),
 			"status":     formatAppStatus(item.GetStatus()),
-			"domains":    formatDomains(item.GetDomains(), 80),
+			"domains":    formatDomains(item.GetDomains(), maxDomainsLength),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
