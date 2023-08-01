@@ -22,16 +22,12 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 		)
 	}
 
-	var logsQuery *WatchLogsQuery
+	logsType := GetStringFlags(cmd, "type")
+	serviceId := serviceDetail.Service.GetId()
+	deploymentId := ""
+	instanceId := GetStringFlags(cmd, "instance")
 
-	if GetStringFlags(cmd, "type") != "build" {
-		logsQuery, err = ctx.LogsClient.NewWatchLogsQuery(
-			"runtime",
-			serviceDetail.Service.GetId(),
-			"",
-			GetStringFlags(cmd, "instance"),
-		)
-	} else {
+	if logsType == "build" {
 		latestDeploy, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
 			Limit("1").ServiceId(service).Execute()
 		if err != nil {
@@ -52,13 +48,14 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 				Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
 			}
 		}
-		logsQuery, err = ctx.LogsClient.NewWatchLogsQuery(
-			"build",
-			serviceDetail.Service.GetId(),
-			*latestDeploy.GetDeployments()[0].Id,
-			GetStringFlags(cmd, "instance"),
-		)
+		deploymentId = *latestDeploy.GetDeployments()[0].Id
 	}
+	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
+		logsType,
+		serviceId,
+		deploymentId,
+		instanceId,
+	)
 	if err != nil {
 		return err
 	}
