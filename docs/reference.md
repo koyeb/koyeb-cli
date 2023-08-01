@@ -20,7 +20,7 @@ Koyeb CLI
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -h, --help            help for koyeb
   -o, --output output   output format (yaml,json,table)
       --token string    API token
@@ -60,7 +60,7 @@ koyeb login [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -87,7 +87,7 @@ Apps
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -127,7 +127,7 @@ koyeb apps create NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -158,7 +158,7 @@ koyeb apps delete NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -189,7 +189,7 @@ koyeb apps describe NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -220,7 +220,7 @@ koyeb apps get NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -290,7 +290,7 @@ koyeb apps init NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -321,7 +321,7 @@ koyeb apps list [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -352,7 +352,7 @@ koyeb apps pause NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -383,7 +383,7 @@ koyeb apps resume NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -415,7 +415,7 @@ koyeb apps update NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -442,7 +442,7 @@ Domains
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -481,7 +481,7 @@ koyeb domains attach NAME APP [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -513,7 +513,7 @@ koyeb domains create NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -544,7 +544,7 @@ koyeb domains delete [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -575,7 +575,7 @@ koyeb domains describe [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -606,7 +606,7 @@ koyeb domains detach NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -637,7 +637,7 @@ koyeb domains get NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -668,7 +668,7 @@ koyeb domains list [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -699,7 +699,7 @@ koyeb domains refresh NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -726,7 +726,7 @@ Secrets
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -765,7 +765,7 @@ koyeb secrets create NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -796,7 +796,7 @@ koyeb secrets delete NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -827,7 +827,7 @@ koyeb secrets describe NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -858,7 +858,7 @@ koyeb secrets get NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -889,7 +889,7 @@ koyeb secrets list [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -922,7 +922,7 @@ koyeb secrets update NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -949,7 +949,7 @@ Services
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1045,7 +1045,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1076,7 +1076,7 @@ koyeb services delete NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1107,7 +1107,7 @@ koyeb services describe NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1138,7 +1138,7 @@ koyeb services exec NAME CMD -- [args...] [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1169,7 +1169,7 @@ koyeb services get NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1202,7 +1202,7 @@ koyeb services list [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1235,7 +1235,7 @@ koyeb services logs NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1266,7 +1266,7 @@ koyeb services pause NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1298,7 +1298,7 @@ koyeb services redeploy NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1329,7 +1329,7 @@ koyeb services resume NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1407,7 +1407,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1434,7 +1434,7 @@ Deployments
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1470,7 +1470,7 @@ koyeb deployments cancel NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1501,7 +1501,7 @@ koyeb deployments describe NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1532,7 +1532,7 @@ koyeb deployments get NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1563,7 +1563,7 @@ koyeb deployments list [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1595,7 +1595,7 @@ koyeb deployments logs NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1622,7 +1622,7 @@ Instances
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1658,7 +1658,7 @@ koyeb instances describe NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1689,7 +1689,7 @@ koyeb instances exec NAME CMD -- [args...] [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1720,7 +1720,7 @@ koyeb instances get NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1753,7 +1753,7 @@ koyeb instances list [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1784,7 +1784,7 @@ koyeb instances logs NAME [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")
@@ -1815,7 +1815,7 @@ koyeb version [flags]
   -d, --debug           enable the debug output
       --debug-full      do not hide sensitive information (tokens) in the debug output
       --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
+      --full            do not truncate output
   -o, --output output   output format (yaml,json,table)
       --token string    API token
       --url string      url of the api (default "https://app.koyeb.com")

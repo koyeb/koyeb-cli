@@ -86,7 +86,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "enable the debug output")
 	rootCmd.PersistentFlags().BoolVar(&debugFull, "debug-full", false, "do not hide sensitive information (tokens) in the debug output")
 	rootCmd.PersistentFlags().BoolVar(&forceASCII, "force-ascii", false, "only output ascii characters (no unicode emojis)")
-	rootCmd.PersistentFlags().BoolP("full", "", false, "show full id")
+	rootCmd.PersistentFlags().BoolP("full", "", false, "do not truncate output")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
 
