@@ -38,7 +38,7 @@ fmt: ## apply go format
 gen-doc: ## generate markdown documentation
 	$(call gen-doc-in-dir,docs)
 
-test: tidy cmd pkg
+test: tidy lint
 	@mkdir -p ./.temp
 	@$(call gen-doc-in-dir,.temp)
 	@diff -r -q ./docs ./.temp > /dev/null && { \
