@@ -31,18 +31,5 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []str
 	if err != nil {
 		return err
 	}
-	defer logsQuery.Close()
-
-	logs, err := logsQuery.Execute()
-	if err != nil {
-		return err
-	}
-
-	for log := range logs {
-		if log.Err != nil {
-			return log.Err
-		}
-		fmt.Println(log.Msg)
-	}
-	return err
+	return logsQuery.PrintAll()
 }

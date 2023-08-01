@@ -176,3 +176,21 @@ func (query *WatchLogsQuery) Close() {
 		query.ticker.Stop()
 	}
 }
+
+// PrintAll prints all the logs returned by WatchLogsQuery.Execute(). It returns
+// an error if the query failed, or if there was an error while printing the
+// logs.
+func (query *WatchLogsQuery) PrintAll() error {
+	logs, err := query.Execute()
+	if err != nil {
+		return err
+	}
+	defer query.Close()
+	for log := range logs {
+		if log.Err != nil {
+			return log.Err
+		}
+		fmt.Println(log.Msg)
+	}
+	return nil
+}
