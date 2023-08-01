@@ -233,40 +233,6 @@ func (an *artNode) minimum() *leaf {
 	return nil // that should never happen in normal case
 }
 
-// nolint: unused
-func (an *artNode) maximum() *leaf {
-	switch an.kind {
-	case radixLeaf:
-		return an.leaf()
-
-	case radixNode4:
-		node := an.node4()
-		return node.children[node.numChildren-1].maximum()
-
-	case radixNode16:
-		node := an.node16()
-		return node.children[node.numChildren-1].maximum()
-
-	case radixNode48:
-		idx := uint8(node256Max - 1)
-		node := an.node48()
-		for node.present[idx>>n48s]&(1<<(idx%n48m)) == 0 {
-			idx--
-		}
-		return node.children[node.keys[idx]].maximum()
-
-	case radixNode256:
-		idx := node256Max - 1
-		node := an.node256()
-		for node.children[idx] == nil {
-			idx--
-		}
-		return node.children[idx].maximum()
-	}
-
-	return nil // that should never happen in normal case
-}
-
 func (an *artNode) index(c byte) int {
 	switch an.kind {
 	case radixNode4:
@@ -532,97 +498,6 @@ func (an *artNode) grow() *artNode {
 		}
 
 		return node
-	}
-
-	return nil
-}
-
-// nolint: unused
-func (an *artNode) shrink() *artNode {
-	switch an.kind {
-	case radixNode4:
-		node4 := an.node4()
-		child := node4.children[0]
-		if child.isLeaf() {
-			return child
-		}
-
-		curPrefixLen := node4.prefixLen
-		if curPrefixLen < maxPrefixLen {
-			node4.prefix[curPrefixLen] = node4.keys[0]
-			curPrefixLen++
-		}
-
-		childNode := child.node()
-		if curPrefixLen < maxPrefixLen {
-			childPrefixLen := min(childNode.prefixLen, maxPrefixLen-curPrefixLen)
-			for i := uint32(0); i < childPrefixLen; i++ {
-				node4.prefix[curPrefixLen+i] = childNode.prefix[i]
-			}
-			curPrefixLen += childPrefixLen
-		}
-
-		for i := uint32(0); i < min(curPrefixLen, maxPrefixLen); i++ {
-			childNode.prefix[i] = node4.prefix[i]
-		}
-		childNode.prefixLen += node4.prefixLen + 1
-
-		return child
-
-	case radixNode16:
-		node16 := an.node16()
-
-		newNode := newNode4().copyMeta(an)
-		node4 := newNode.node4()
-		node4.numChildren = 0
-		for i := uint16(0); i < node4Max; i++ {
-			node4.keys[i] = node16.keys[i]
-			if node16.present&(1<<i) != 0 {
-				node4.present[i] = 1
-			}
-			node4.children[i] = node16.children[i]
-			node4.numChildren++
-		}
-
-		return newNode
-
-	case radixNode48:
-		node48 := an.node48()
-
-		newNode := newNode16().copyMeta(an)
-		node16 := newNode.node16()
-		node16.numChildren = 0
-		for i, idx := range node48.keys {
-			if node48.present[uint16(i)>>n48s]&(1<<(uint16(i)%n48m)) == 0 {
-				continue
-			}
-
-			if child := node48.children[idx]; child != nil {
-				node16.children[node16.numChildren] = child
-				node16.keys[node16.numChildren] = byte(i)
-				node16.present |= (1 << node16.numChildren)
-				node16.numChildren++
-			}
-		}
-
-		return newNode
-
-	case radixNode256:
-		node256 := an.node256()
-
-		newNode := newNode48().copyMeta(an)
-		node48 := newNode.node48()
-		node48.numChildren = 0
-		for i, child := range node256.children {
-			if child != nil {
-				node48.children[node48.numChildren] = child
-				node48.keys[byte(i)] = byte(node48.numChildren)
-				node48.present[uint16(i)>>n48s] |= (1 << (uint16(i) % n48m))
-				node48.numChildren++
-			}
-		}
-
-		return newNode
 	}
 
 	return nil
