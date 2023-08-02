@@ -75,7 +75,8 @@ func GetRootCommand() *cobra.Command {
 				return err
 			}
 			DetectUpdates()
-			return SetupCLIContext(cmd)
+			organization := viper.GetString("organization")
+			return SetupCLIContext(cmd, organization)
 		},
 	}
 
@@ -99,6 +100,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(completionCmd)
 
+	rootCmd.AddCommand(NewOrganizationCmd())
 	rootCmd.AddCommand(NewSecretCmd())
 	rootCmd.AddCommand(NewAppCmd())
 	rootCmd.AddCommand(NewDomainCmd())
