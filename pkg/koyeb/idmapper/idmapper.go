@@ -7,13 +7,14 @@ import (
 )
 
 type Mapper struct {
-	app        *AppMapper
-	domain     *DomainMapper
-	service    *ServiceMapper
-	deployment *DeploymentMapper
-	regional   *RegionalDeploymentMapper
-	instance   *InstanceMapper
-	secret     *SecretMapper
+	app          *AppMapper
+	domain       *DomainMapper
+	service      *ServiceMapper
+	deployment   *DeploymentMapper
+	regional     *RegionalDeploymentMapper
+	instance     *InstanceMapper
+	secret       *SecretMapper
+	organization *OrganizationMapper
 }
 
 func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
@@ -24,15 +25,17 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 	regionalMapper := NewRegionalDeploymentMapper(ctx, client)
 	instanceMapper := NewInstanceMapper(ctx, client)
 	secretMapper := NewSecretMapper(ctx, client)
+	organizationMapper := NewOrganizationMapper(ctx, client)
 
 	return &Mapper{
-		app:        appMapper,
-		domain:     domainMapper,
-		service:    serviceMapper,
-		deployment: deploymentMapper,
-		regional:   regionalMapper,
-		instance:   instanceMapper,
-		secret:     secretMapper,
+		app:          appMapper,
+		domain:       domainMapper,
+		service:      serviceMapper,
+		deployment:   deploymentMapper,
+		regional:     regionalMapper,
+		instance:     instanceMapper,
+		secret:       secretMapper,
+		organization: organizationMapper,
 	}
 }
 
@@ -62,4 +65,8 @@ func (mapper *Mapper) Instance() *InstanceMapper {
 
 func (mapper *Mapper) Secret() *SecretMapper {
 	return mapper.secret
+}
+
+func (mapper *Mapper) Organization() *OrganizationMapper {
+	return mapper.organization
 }

@@ -19,7 +19,8 @@ const (
 )
 
 // SetupCLIContext is called by the root command to setup the context for all subcommands.
-func SetupCLIContext(cmd *cobra.Command) error {
+// When `organization` is not empty, it should contain the ID of the organization to switch the context to.
+func SetupCLIContext(cmd *cobra.Command, organization string) error {
 	apiClient, err := getApiClient()
 	if err != nil {
 		return err
@@ -37,6 +38,15 @@ func SetupCLIContext(cmd *cobra.Command) error {
 	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
 	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
 	cmd.SetContext(ctx)
+
+	if organization != "" {
+		token, err := GetOrganizationToken(apiClient.OrganizationApi, ctx, organization)
+		if err != nil {
+			return err
+		}
+		ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
+		cmd.SetContext(ctx)
+	}
 	return nil
 }
 
@@ -49,18 +59,21 @@ type CLIContext struct {
 	Renderer   renderer.Renderer
 }
 
+// GetCLIContext transforms the untyped context passed to cobra commands into a CLIContext.
+func GetCLIContext(ctx context.Context) *CLIContext {
+	return &CLIContext{
+		Context:    ctx,
+		Client:     ctx.Value(ctx_client).(*koyeb.APIClient),
+		LogsClient: ctx.Value(ctx_logs_client).(*LogsAPIClient),
+		Mapper:     ctx.Value(ctx_mapper).(*idmapper.Mapper),
+		Token:      ctx.Value(koyeb.ContextAccessToken).(string),
+		Renderer:   ctx.Value(ctx_renderer).(renderer.Renderer),
+	}
+}
+
 // WithCLIContext is a decorator that provides a CLIContext to cobra commands.
 func WithCLIContext(fn func(ctx *CLIContext, cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		ctx := cmd.Context()
-		cliContext := CLIContext{
-			Context:    ctx,
-			Client:     ctx.Value(ctx_client).(*koyeb.APIClient),
-			LogsClient: ctx.Value(ctx_logs_client).(*LogsAPIClient),
-			Mapper:     ctx.Value(ctx_mapper).(*idmapper.Mapper),
-			Token:      ctx.Value(koyeb.ContextAccessToken).(string),
-			Renderer:   ctx.Value(ctx_renderer).(renderer.Renderer),
-		}
-		return fn(&cliContext, cmd, args)
+		return fn(GetCLIContext(cmd.Context()), cmd, args)
 	}
 }
