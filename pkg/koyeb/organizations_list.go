@@ -48,22 +48,24 @@ func (h *OrganizationHandler) List(ctx *CLIContext, cmd *cobra.Command, args []s
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	reply := NewListOragnizationsReply(ctx.Mapper, &koyeb.ListOrganizationMembersReply{Members: list}, full)
+	reply := NewListOragnizationsReply(ctx.Mapper, &koyeb.ListOrganizationMembersReply{Members: list}, full, ctx.Organization)
 	ctx.Renderer.Render(reply)
 	return nil
 }
 
 type ListOrganizationsReply struct {
-	mapper *idmapper.Mapper
-	value  *koyeb.ListOrganizationMembersReply
-	full   bool
+	mapper              *idmapper.Mapper
+	value               *koyeb.ListOrganizationMembersReply
+	full                bool
+	currentOrganization string
 }
 
-func NewListOragnizationsReply(mapper *idmapper.Mapper, value *koyeb.ListOrganizationMembersReply, full bool) *ListOrganizationsReply {
+func NewListOragnizationsReply(mapper *idmapper.Mapper, value *koyeb.ListOrganizationMembersReply, full bool, currentOrganization string) *ListOrganizationsReply {
 	return &ListOrganizationsReply{
-		mapper: mapper,
-		value:  value,
-		full:   full,
+		mapper:              mapper,
+		value:               value,
+		full:                full,
+		currentOrganization: currentOrganization,
 	}
 }
 
@@ -76,7 +78,7 @@ func (r *ListOrganizationsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListOrganizationsReply) Headers() []string {
-	return []string{"id", "name", "plan"}
+	return []string{"id", "name", "plan", "current"}
 }
 
 func (r *ListOrganizationsReply) Fields() []map[string]string {
@@ -84,10 +86,15 @@ func (r *ListOrganizationsReply) Fields() []map[string]string {
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, member := range items {
+		current := ""
+		if member.Organization.GetId() == r.currentOrganization {
+			current = "✓"
+		}
 		fields := map[string]string{
-			"id":   renderer.FormatID(member.Organization.GetId(), r.full),
-			"name": member.Organization.GetName(),
-			"plan": string(member.Organization.GetPlan()),
+			"id":      renderer.FormatID(member.Organization.GetId(), r.full),
+			"name":    member.Organization.GetName(),
+			"plan":    string(member.Organization.GetPlan()),
+			"current": current,
 		}
 		resp = append(resp, fields)
 	}
