@@ -47,8 +47,19 @@ func (h *OrganizationHandler) List(ctx *CLIContext, cmd *cobra.Command, args []s
 		}
 	}
 
+	// ctx.Organization is empty when the field "organization" is not set in the
+	// configuration file, and is not provided with the --organization flag.
+	currentOrganization := ctx.Organization
+	if currentOrganization == "" {
+		res, resp, err := ctx.Client.ProfileApi.GetCurrentOrganization(ctx.Context).Execute()
+		if err != nil {
+			return errors.NewCLIErrorFromAPIError("Unable to fetch the current organization", err, resp)
+		}
+		currentOrganization = *res.Organization.Id
+	}
+
 	full := GetBoolFlags(cmd, "full")
-	reply := NewListOragnizationsReply(ctx.Mapper, &koyeb.ListOrganizationMembersReply{Members: list}, full, ctx.Organization)
+	reply := NewListOragnizationsReply(ctx.Mapper, &koyeb.ListOrganizationMembersReply{Members: list}, full, currentOrganization)
 	ctx.Renderer.Render(reply)
 	return nil
 }
