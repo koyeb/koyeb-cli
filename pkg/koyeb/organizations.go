@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -53,7 +54,19 @@ func GetOrganizationToken(api koyeb.OrganizationApi, ctx context.Context, organi
 	body := make(map[string]interface{})
 	res, resp, err := api.SwitchOrganization(ctx, organizationId).Body(body).Execute()
 	if err != nil {
-		return "", errors.NewCLIErrorFromAPIError("unable to switch the current organization", err, resp)
+		errBuf := make([]byte, 1024)
+		//  if the body can't be read, it won't be displayed in the error below
+		resp.Body.Read(errBuf) // nolint:errcheck
+		return "", &errors.CLIError{
+			What: "Error while switching the current organization",
+			Why:  fmt.Sprintf("the API endpoint which switches the current organization returned an error %d", resp.StatusCode),
+			Additional: []string{
+				"You provided an organization id with the --organization flag, or the `organization` field is set in your configuration file.",
+				"The value provided is likely incorrect, or you don't have access to this organization.",
+			},
+			Orig:     fmt.Errorf("HTTP/%d\n\n%s", resp.StatusCode, errBuf),
+			Solution: "List your organizations with `koyeb --organization=\"\" organization list`, then switch to the organization you want to use with `koyeb --organization=\"\" organization switch <id>`. Finally you can run your commands again, without the --organization flag.",
+		}
 	}
 	return *res.Token.Id, nil
 }
