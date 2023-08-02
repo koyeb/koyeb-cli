@@ -12,9 +12,7 @@ func (h *OrganizationHandler) Switch(ctx *CLIContext, cmd *cobra.Command, args [
 		return err
 	}
 	viper.Set("organization", organization)
-
-	err = viper.WriteConfig()
-	if err != nil {
+	if err := viper.WriteConfig(); err != nil {
 		return &errors.CLIError{
 			What: "Unable to switch the current organization",
 			Why:  "we were unable to write the configuration file",
