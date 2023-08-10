@@ -23,8 +23,8 @@ var (
 	GithubRepo = "koyeb/koyeb-cli"
 
 	// Used for flags.
+	apiurl       = "https://app.koyeb.com"
 	cfgFile      string
-	apiurl       string
 	token        string
 	outputFormat renderer.OutputFormat
 	forceASCII   bool
