@@ -103,6 +103,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(completionCmd)
 
 	rootCmd.AddCommand(NewOrganizationCmd())
+	rootCmd.AddCommand(NewDeployCmd())
 	rootCmd.AddCommand(NewSecretCmd())
 	rootCmd.AddCommand(NewAppCmd())
 	rootCmd.AddCommand(NewDomainCmd())
