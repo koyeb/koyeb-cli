@@ -30,7 +30,6 @@ var (
 	forceASCII   bool
 	debugFull    bool
 	debug        bool
-	organization string
 
 	loginCmd = &cobra.Command{
 		Use:   "login",
@@ -76,6 +75,7 @@ func GetRootCommand() *cobra.Command {
 				return err
 			}
 			DetectUpdates()
+			organization := viper.GetString("organization")
 			return SetupCLIContext(cmd, organization)
 		},
 	}
@@ -90,13 +90,11 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP("full", "", false, "do not truncate output")
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
-	rootCmd.PersistentFlags().StringVar(&organization, "organization", "", "organization ID")
 
 	// viper.BindPFlag returns an error only if the second argument is nil, which is never the case here, so we ignore the error
-	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))                   //nolint:errcheck
-	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))               //nolint:errcheck
-	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))               //nolint:errcheck
-	viper.BindPFlag("organization", rootCmd.PersistentFlags().Lookup("organization")) //nolint:errcheck
+	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))     //nolint:errcheck
+	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token")) //nolint:errcheck
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug")) //nolint:errcheck
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -254,6 +252,5 @@ func initConfig(rootCmd *cobra.Command) error {
 	apiurl = viper.GetString("url")
 	token = viper.GetString("token")
 	debug = viper.GetBool("debug")
-	organization = viper.GetString("organization")
 	return nil
 }
