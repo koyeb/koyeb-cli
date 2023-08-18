@@ -48,24 +48,22 @@ func (h *OrganizationHandler) List(ctx *CLIContext, cmd *cobra.Command, args []s
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	reply := NewListOragnizationsReply(ctx.Mapper, &koyeb.ListOrganizationMembersReply{Members: list}, full, ctx.Organization)
+	reply := NewListOragnizationsReply(ctx.Mapper, &koyeb.ListOrganizationMembersReply{Members: list}, full)
 	ctx.Renderer.Render(reply)
 	return nil
 }
 
 type ListOrganizationsReply struct {
-	mapper              *idmapper.Mapper
-	value               *koyeb.ListOrganizationMembersReply
-	full                bool
-	currentOrganization string
+	mapper *idmapper.Mapper
+	value  *koyeb.ListOrganizationMembersReply
+	full   bool
 }
 
-func NewListOragnizationsReply(mapper *idmapper.Mapper, value *koyeb.ListOrganizationMembersReply, full bool, currentOrganization string) *ListOrganizationsReply {
+func NewListOragnizationsReply(mapper *idmapper.Mapper, value *koyeb.ListOrganizationMembersReply, full bool) *ListOrganizationsReply {
 	return &ListOrganizationsReply{
-		mapper:              mapper,
-		value:               value,
-		full:                full,
-		currentOrganization: currentOrganization,
+		mapper: mapper,
+		value:  value,
+		full:   full,
 	}
 }
 
@@ -78,7 +76,7 @@ func (r *ListOrganizationsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListOrganizationsReply) Headers() []string {
-	return []string{"id", "name", "plan", "current"}
+	return []string{"id", "name", "plan"}
 }
 
 func (r *ListOrganizationsReply) Fields() []map[string]string {
@@ -86,15 +84,10 @@ func (r *ListOrganizationsReply) Fields() []map[string]string {
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, member := range items {
-		current := ""
-		if member.Organization.GetId() == r.currentOrganization {
-			current = "✓"
-		}
 		fields := map[string]string{
-			"id":      renderer.FormatID(member.Organization.GetId(), r.full),
-			"name":    member.Organization.GetName(),
-			"plan":    string(member.Organization.GetPlan()),
-			"current": current,
+			"id":   renderer.FormatID(member.Organization.GetId(), r.full),
+			"name": member.Organization.GetName(),
+			"plan": string(member.Organization.GetPlan()),
 		}
 		resp = append(resp, fields)
 	}
