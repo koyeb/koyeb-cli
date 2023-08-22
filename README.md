@@ -84,7 +84,7 @@ Use "koyeb [command] --help" for more information about a command.
 
 ### Enabling shell auto-completion
 
-`koyeb` has auto-completion support for `bash` and `zsh`. 
+`koyeb` has auto-completion support for `bash`, `zsh` and `fish`.
 
 #### Bash
 
@@ -121,6 +121,16 @@ koyeb completion zsh > "${fpath[1]}/_koyeb"
 ```
 
 You will need to start a new shell for this setup to take effect.
+
+#### Fish
+
+You can easily run `koyeb completion fish | source` to add completions to your current Fish session.
+
+To automatically load completions for all your shell session, execute once:
+
+```shell
+koyeb completion fish > ~/.config/fish/completions/koyeb.fish
+```
 
 ## Contribute
 
