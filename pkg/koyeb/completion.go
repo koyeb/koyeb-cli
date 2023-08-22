@@ -7,7 +7,7 @@ import (
 )
 
 var completionCmd = &cobra.Command{
-	Use:   "completion [bash|zsh|powershell]",
+	Use:   "completion [bash|zsh|fish|powershell]",
 	Short: "Generate completion script",
 	Long: `To load completions:
 
@@ -32,16 +32,25 @@ $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 $ koyeb completion zsh > "${fpath[1]}/_koyeb"
 
 # You will need to start a new shell for this setup to take effect.
+
+Fish:
+
+$ koyeb completion fish | source
+
+# To load completions for each session, execute once:
+$ koyeb completion fish > ~/.config/fish/completions/koyeb.fish
 `,
 	DisableFlagsInUseLine: true,
-	ValidArgs:             []string{"bash", "zsh", "powershell"},
+	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		switch args[0] {
 		case "bash":
-			return cmd.Root().GenBashCompletion(os.Stdout)
+			return cmd.Root().GenBashCompletionV2(os.Stdout, true)
 		case "zsh":
 			return cmd.Root().GenZshCompletion(os.Stdout)
+		case "fish":
+			return cmd.Root().GenFishCompletion(os.Stdout, true)
 		case "powershell":
 			return cmd.Root().GenPowerShellCompletion(os.Stdout)
 		}
