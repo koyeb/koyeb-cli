@@ -660,27 +660,19 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 		flags.Lookup("git-docker-entrypoint").Changed ||
 		flags.Lookup("git-docker-command").Changed ||
 		flags.Lookup("git-docker-args").Changed ||
-		flags.Lookup("git-docker-target").Changed {
+		flags.Lookup("git-docker-target").Changed ||
+		(flags.Lookup("git-builder").Changed && builder == "docker") {
 
-		if flags.Lookup("git-builder").Changed && builder == "buildpack" {
+		// If --git-builder has not been provided, but the current source is a buildpack builder.
+		if !flags.Lookup("git-builder").Changed && source.HasBuildpack() {
 			return nil, &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "invalid flag combination",
 				Additional: []string{
-					"The arguments --git-docker-* are used to configure the docker builder, and cannot be used with --git-builder=buildpack",
+					"The arguments --git-docker-* are used to configure the docker builder, but the current builder is a buildpack builder",
 				},
 				Orig:     nil,
-				Solution: "Remove the --git-docker-* flags and try again, or use --git-builder=docker",
-			}
-		} else if source.HasBuildpack() {
-			return nil, &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "invalid flag combination",
-				Additional: []string{
-					"You are trying to configure a docker builder, but the current builder is a buildpack builder",
-				},
-				Orig:     nil,
-				Solution: "Remove the --git-docker-* flags, or also change the builder type with --git-builder=docker",
+				Solution: "Add --git-builder=docker to the arguments to configure the docker builder",
 			}
 		}
 		builder, err := parseGitSourceDockerBuilder(flags, source.GetDocker())
@@ -693,27 +685,19 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 	if flags.Lookup("git-buildpack-build-command").Changed ||
 		flags.Lookup("git-build-command").Changed ||
 		flags.Lookup("git-buildpack-run-command").Changed ||
-		flags.Lookup("git-run-command").Changed {
+		flags.Lookup("git-run-command").Changed ||
+		(flags.Lookup("git-builder").Changed && builder == "buildpack") {
 
-		if flags.Lookup("git-builder").Changed && builder == "docker" {
+		// If --git-builder has not been provided, but the current source is a buildpack builder.
+		if !flags.Lookup("git-builder").Changed && source.HasDocker() {
 			return nil, &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "invalid flag combination",
 				Additional: []string{
-					"The arguments --git-buildpack-* are used to configure the buildpack builder, and cannot be used with --git-builder=docker",
+					"The arguments --git-buildpack-* are used to configure the buildpack builder, but the current builder is a docker builder",
 				},
 				Orig:     nil,
-				Solution: "Remove the --git-buildpack-* flags and try again, or use --git-builder=buildpack",
-			}
-		} else if source.HasDocker() {
-			return nil, &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "invalid flag combination",
-				Additional: []string{
-					"You are trying to configure a buildpack builder, but the current builder is a docker builder",
-				},
-				Orig:     nil,
-				Solution: "Remove the --git-buildpack-* flags, or change the builder type with --git-builder=buildpack",
+				Solution: "Add --git-builder=buildpack to the arguments to configure the buildpack builder",
 			}
 		}
 		builder, err := parseGitSourceBuildpackBuilder(flags, source.GetBuildpack())
