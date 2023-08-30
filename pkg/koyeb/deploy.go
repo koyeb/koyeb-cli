@@ -29,7 +29,7 @@ func deploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 
 	var app koyeb.App
 	appInput := input.New()
-	appInput.SetPrompt("Choose an app name (leave blank to generate one)")
+	appInput.SetPrompt("Choose an app name (leave blank to generate one):")
 	appInput.SetSubmitHandler(func(value string) tea.Msg {
 		// XXX: remove me, testing purpose to avoid creating apps
 		if value == "" || strings.HasPrefix(value, "err") {
@@ -129,10 +129,9 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 		return false, err
 	}
 
-	fmt.Printf("%s\n", body)
-
 	fileInput := input.New()
 	fileInput.SetPrompt("Create the service with this definition?")
+	fileInput.SetText(string(body))
 
 	if abort, err := fileInput.Execute(); abort || err != nil {
 		return abort, err
@@ -146,7 +145,7 @@ func deployDocker(ctx *CLIContext, app koyeb.App, args []string) ([]string, erro
 	var tag string
 
 	imageInput := input.New()
-	imageInput.SetPrompt("Enter the Docker image to deploy (e.g. nginx:latest, or private.registry.com/nginx:latest)")
+	imageInput.SetPrompt("Enter the Docker image to deploy (e.g. nginx:latest, or private.registry.com/nginx:latest):")
 	imageInput.SetSubmitHandler(func(value string) tea.Msg {
 		parts := strings.Split(value, ":")
 		if (len(parts) == 1 && parts[0] == "") ||

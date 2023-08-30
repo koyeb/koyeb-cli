@@ -29,6 +29,8 @@ type Input struct {
 	submitError error
 	// Set to true when the submit handler returns a SubmitOkMsg.
 	submitSuccess bool
+	// Text displayed under the prompt
+	Text string
 }
 
 func New() Input {
@@ -42,8 +44,11 @@ func New() Input {
 
 func (model *Input) SetPrompt(prompt string) {
 	prefix := prefixStyle.Render(">>")
-	prompt = fmt.Sprintf("%s:", prompt)
 	model.input.Prompt = fmt.Sprintf("%s %s ", prefix, promptStyle.Render(prompt))
+}
+
+func (model *Input) SetText(text string) {
+	model.Text = text
 }
 
 func (model *Input) SetSubmitHandler(handler func(string) tea.Msg) {
@@ -76,6 +81,8 @@ func (model *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return model, QuitCmd()
 		case tea.KeyEnter:
 			return model, model.SubmitCmd(model.input.Value())
+		// case tea.KeyRunes:
+		// 	fmt.Printf("\nyes [%v - %v %v]\n", msg, msg.Type, len(msg.Runes) == 1 && msg.Runes[0] == 'e')
 		// Reset the error when the user starts typing again
 		default:
 			model.submitError = nil
@@ -97,8 +104,9 @@ func (model Input) View() string {
 	} else if model.abort {
 		out.WriteString(abortStyle.Render("woops, abort\n"))
 	} else if model.submitSuccess {
-		out.WriteString(successStyle.Render("✔\n"))
+		out.WriteString(successStyle.Render("xxxxxxxxxxxxxxxxxxx✔\n"))
 	}
+	// out.WriteString(model.Text)
 	return out.String()
 }
 
