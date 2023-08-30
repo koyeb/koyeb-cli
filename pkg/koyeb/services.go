@@ -222,6 +222,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'",
 	)
 	flags.String("instance-type", "nano", "Instance type")
+	flags.Int64("scale", 1, "Set both min-scale and max-scale")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
 
@@ -529,22 +530,34 @@ func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 
 // Parse --min-scale and --max-scale
 func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
-	minScale, _ := flags.GetInt64("min-scale")
-	maxScale, _ := flags.GetInt64("max-scale")
+	var minScale, maxScale int64
 
+	if flags.Lookup("scale").Changed {
+		minScale, _ = flags.GetInt64("scale")
+		maxScale, _ = flags.GetInt64("scale")
+	}
+	if flags.Lookup("min-scale").Changed {
+		minScale, _ = flags.GetInt64("min-scale")
+	}
+	if flags.Lookup("max-scale").Changed {
+		maxScale, _ = flags.GetInt64("max-scale")
+	}
+
+	// If there is no scaling configured, return the default values
 	if len(currentScalings) == 0 {
 		scaling := koyeb.NewDeploymentScalingWithDefaults()
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
 		return []koyeb.DeploymentScaling{*scaling}
-	}
-
-	for _, s := range currentScalings {
-		if flags.Lookup("min-scale").Changed {
-			s.SetMin(minScale)
-		}
-		if flags.Lookup("max-scale").Changed {
-			s.SetMax(maxScale)
+	} else {
+		// Otherwise, update the current scaling configuration
+		for idx := range currentScalings {
+			if flags.Lookup("scale").Changed || flags.Lookup("min-scale").Changed {
+				currentScalings[idx].SetMin(minScale)
+			}
+			if flags.Lookup("scale").Changed || flags.Lookup("max-scale").Changed {
+				currentScalings[idx].SetMax(maxScale)
+			}
 		}
 	}
 	return currentScalings
