@@ -131,6 +131,15 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 
 	fileInput := input.New()
 	fileInput.SetPrompt("Leave empty to use the following definition, or \"e\" to edit it:")
+	fileInput.SetSubmitHandler(func(value string) tea.Msg {
+		switch value {
+		case "":
+			return input.SubmitOkMsg{}
+		case "e", "edit":
+			return input.SubmitOkMsg{}
+		}
+		return input.SubmitErrorMsg{Error: fmt.Errorf("Enter \"e\" to edit the definition, or leave empty to continue with the current definition")}
+	})
 	fileInput.SetText(string(body))
 
 	if abort, err := fileInput.Execute(); abort || err != nil {

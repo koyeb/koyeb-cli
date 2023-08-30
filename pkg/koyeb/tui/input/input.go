@@ -78,8 +78,6 @@ func (model *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return model, QuitCmd()
 		case tea.KeyEnter:
 			return model, model.SubmitCmd(model.input.Value())
-		// case tea.KeyRunes:
-		// 	fmt.Printf("\nyes [%v - %v %v]\n", msg, msg.Type, len(msg.Runes) == 1 && msg.Runes[0] == 'e')
 		// Reset the error when the user starts typing again
 		default:
 			model.submitError = nil
@@ -96,7 +94,7 @@ func (model Input) View() string {
 	out.WriteString(model.input.View())
 
 	if model.submitError != nil {
-		out.WriteString("\n\n")
+		out.WriteString("\n")
 		out.WriteString(errorStyle.Render(model.submitError.Error()))
 	} else if model.abort {
 		out.WriteString(abortStyle.Render("woops, abort\n"))
@@ -104,6 +102,7 @@ func (model Input) View() string {
 		out.WriteString(successStyle.Render("✔\n"))
 	}
 	if model.Text != "" {
+		out.WriteString("-----")
 		out.WriteString("\n")
 		out.WriteString(model.Text)
 	}
