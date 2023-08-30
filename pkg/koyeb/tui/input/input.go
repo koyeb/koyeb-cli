@@ -65,6 +65,9 @@ func (model *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SubmitErrorMsg:
 		model.submitError = msg.Error
 		return model, nil
+	case tea.WindowSizeMsg:
+		model.input.Width = msg.Width
+		return model, nil
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC:
@@ -116,4 +119,9 @@ func (model Input) Execute() (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+// Returns true if the user aborted the input (Ctrl+C).
+func (model Input) IsAborted() bool {
+	return model.abort
 }

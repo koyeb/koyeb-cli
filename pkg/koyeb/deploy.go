@@ -46,21 +46,21 @@ func deploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 		app = koyeb.App{Name: &value, Id: koyeb.PtrString("00000000-0000-0000-0000-000000000000")}
 		return input.SubmitOkMsg{}
 
-		createParams := koyeb.NewCreateAppWithDefaults()
-		createParams.SetName(value)
-		res, resp, err := ctx.Client.AppsApi.CreateApp(ctx.Context).App(*createParams).Execute()
-		if err != nil {
-			return input.SubmitErrorMsg{Error: errors.NewCLIErrorFromAPIError(
-				"Error while creating the app",
-				err,
-				resp,
-			)}
-		}
-		app = res.GetApp()
-		return input.SubmitOkMsg{}
+		// createParams := koyeb.NewCreateAppWithDefaults()
+		// createParams.SetName(value)
+		// res, resp, err := ctx.Client.AppsApi.CreateApp(ctx.Context).App(*createParams).Execute()
+		// if err != nil {
+		// 	return input.SubmitErrorMsg{Error: errors.NewCLIErrorFromAPIError(
+		// 		"Error while creating the app",
+		// 		err,
+		// 		resp,
+		// 	)}
+		// }
+		// app = res.GetApp()
+		// return input.SubmitOkMsg{}
 	})
 
-	if stop, err := appInput.Execute(); stop || err != nil {
+	if abort, err := appInput.Execute(); abort || err != nil {
 		return err
 	}
 	log.Infof("Application %s created", app.GetName())
@@ -76,7 +76,7 @@ func deploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 		return simple_list.SubmitOkMsg{}
 	})
 	appTypeInput.SetPrompt("Select your deployment method")
-	if stop, err := appTypeInput.Execute(); stop || err != nil {
+	if abort, err := appTypeInput.Execute(); abort || err != nil {
 		return err
 	}
 
@@ -85,18 +85,24 @@ func deploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	switch appType {
 	case "docker":
 		createArgs, err = deployDocker(ctx, app, createArgs)
+		if err != nil {
+			return err
+		}
 	case "git":
 		createArgs, err = deployGit(ctx, app, createArgs)
+		if err != nil {
+			return err
+		}
 	}
-	if err != nil {
+
+	if abort, err := createService(ctx, app, createArgs); abort || err != nil {
 		return err
 	}
 
-	createService(ctx, app, createArgs)
 	return nil
 }
 
-func createService(ctx *CLIContext, app koyeb.App, args []string) error {
+func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) {
 	cmd := &cobra.Command{}
 
 	// Add all the service flags to the dummy command
@@ -114,20 +120,25 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) error {
 
 	err := parseServiceDefinitionFlags(cmd.Flags(), createDefinition)
 	if err != nil {
-		return err
+		return false, err
 	}
-
 	createService.SetDefinition(*createDefinition)
 
-	// Display the YAML in a editor, allowing the user to change it. On submission, create the service.
-	b, err := yaml.Marshal(createService)
+	body, err := yaml.Marshal(createService)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	fmt.Printf("%s\n", b)
+	fmt.Printf("%s\n", body)
 
-	return nil
+	fileInput := input.New()
+	fileInput.SetPrompt("Create the service with this definition?")
+
+	if abort, err := fileInput.Execute(); abort || err != nil {
+		return abort, err
+	}
+
+	return false, nil
 }
 
 func deployDocker(ctx *CLIContext, app koyeb.App, args []string) ([]string, error) {
@@ -154,7 +165,7 @@ func deployDocker(ctx *CLIContext, app koyeb.App, args []string) ([]string, erro
 		return input.SubmitOkMsg{}
 	})
 
-	if stop, err := imageInput.Execute(); stop || err != nil {
+	if abort, err := imageInput.Execute(); abort || err != nil {
 		return args, err
 	}
 	args = append(args, "--docker", fmt.Sprintf("%s:%s", image, tag))
