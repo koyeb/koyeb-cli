@@ -12,4 +12,4 @@
 
 (v3.0.2 and before)
 
-Unfortunatly, we didn't keep a changelog before v3.0.2. We will try to do better in the future.
+Unfortunately, we didn't keep a changelog before v3.0.2. We will try to do better in the future.
