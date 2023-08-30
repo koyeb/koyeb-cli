@@ -70,9 +70,6 @@ func (model *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SubmitErrorMsg:
 		model.submitError = msg.Error
 		return model, nil
-	case tea.WindowSizeMsg:
-		model.input.Width = msg.Width
-		return model, nil
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC:
