@@ -34,12 +34,6 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 
 	ctx := cmd.Context()
 	ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
-	ctx = context.WithValue(ctx, ctx_client, apiClient)
-	ctx = context.WithValue(ctx, ctx_logs_client, logsApiClient)
-	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
-	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
-	ctx = context.WithValue(ctx, ctx_organization, organization)
-	cmd.SetContext(ctx)
 
 	if organization != "" {
 		token, err := GetOrganizationToken(apiClient.OrganizationApi, ctx, organization)
@@ -49,6 +43,14 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 		ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
 		cmd.SetContext(ctx)
 	}
+
+	ctx = context.WithValue(ctx, ctx_client, apiClient)
+	ctx = context.WithValue(ctx, ctx_logs_client, logsApiClient)
+	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
+	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
+	ctx = context.WithValue(ctx, ctx_organization, organization)
+	cmd.SetContext(ctx)
+
 	return nil
 }
 
