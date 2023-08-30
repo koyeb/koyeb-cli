@@ -7,6 +7,8 @@
   - https://github.com/koyeb/koyeb-cli/pull/118
 * The option `--git-builder` of `koyeb service update` was ignored when we wanted to update the git builder. This is now fixed.
   - https://github.com/koyeb/koyeb-cli/issues/119
+* Add support for organizations. Use command `koyeb organization list` to list the organizations you are a member of, and `koyeb organization use` to switch to another organization.
+  - https://github.com/koyeb/koyeb-cli/pull/113
 
 (v3.0.2 and before)
 
