@@ -6,6 +6,8 @@ import (
 	stdexec "os/exec"
 	"strings"
 
+	stdlog "log"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -26,7 +28,19 @@ func NewDeployCmd() *cobra.Command {
 	return deployCmd
 }
 
+// XXX: remove me
+func setupLogging() {
+	_, err := tea.LogToFile("/tmp/debug.log", "debug")
+	if err != nil {
+		fmt.Println("fatal:", err)
+		os.Exit(1)
+	}
+	stdlog.Printf("==========================\n")
+}
+
 func deploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	setupLogging()
+
 	createArgs := []string{"service", "create"}
 
 	var app koyeb.App
@@ -188,6 +202,8 @@ func deployGit(ctx *CLIContext, app koyeb.App, args []string) ([]string, error) 
 }
 
 func openInEditor(content []byte) error {
+	stdlog.Printf("opening editor")
+
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		editor = "vi"
@@ -199,12 +215,10 @@ func openInEditor(content []byte) error {
 	tmp.Write(content)
 
 	cmd := stdexec.Command(editor, tmp.Name())
-	// cmd.Stdin = os.Stdin
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-
-	fmt.Printf("OK\n")
 
 	return err
 }
