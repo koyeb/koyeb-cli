@@ -97,12 +97,11 @@ func (model Input) View() string {
 		out.WriteString("\n")
 		out.WriteString(errorStyle.Render(model.submitError.Error()))
 	} else if model.abort {
-		out.WriteString(abortStyle.Render("woops, abort\n"))
+		out.WriteString(abortStyle.Render("woops, abort"))
 	} else if model.submitSuccess {
-		out.WriteString(successStyle.Render("✔\n"))
+		out.WriteString(successStyle.Render("✔"))
 	}
 	if model.Text != "" {
-		out.WriteString("-----")
 		out.WriteString("\n")
 		out.WriteString(model.Text)
 	}
