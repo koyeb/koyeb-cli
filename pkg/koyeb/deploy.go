@@ -2,6 +2,8 @@ package koyeb
 
 import (
 	"fmt"
+	"os"
+	stdexec "os/exec"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -131,16 +133,17 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 
 	fileInput := input.New()
 	fileInput.SetPrompt("Leave empty to use the following definition, or \"e\" to edit it:")
+	fileInput.SetText(string(body))
 	fileInput.SetSubmitHandler(func(value string) tea.Msg {
 		switch value {
 		case "":
 			return input.SubmitOkMsg{}
 		case "e", "edit":
+			openInEditor(body)
 			return input.SubmitOkMsg{}
 		}
 		return input.SubmitErrorMsg{Error: fmt.Errorf("Enter \"e\" to edit the definition, or leave empty to continue with the current definition")}
 	})
-	fileInput.SetText(string(body))
 
 	if abort, err := fileInput.Execute(); abort || err != nil {
 		return abort, err
@@ -182,4 +185,26 @@ func deployDocker(ctx *CLIContext, app koyeb.App, args []string) ([]string, erro
 
 func deployGit(ctx *CLIContext, app koyeb.App, args []string) ([]string, error) {
 	return args, nil
+}
+
+func openInEditor(content []byte) error {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vi"
+	}
+	tmp, err := os.CreateTemp("", "koyeb-cli-*")
+	if err != nil {
+		return err
+	}
+	tmp.Write(content)
+
+	cmd := stdexec.Command(editor, tmp.Name())
+	// cmd.Stdin = os.Stdin
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	err = cmd.Run()
+
+	fmt.Printf("OK\n")
+
+	return err
 }
