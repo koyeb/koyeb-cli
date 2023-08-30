@@ -103,7 +103,10 @@ func (model Input) View() string {
 	} else if model.submitSuccess {
 		out.WriteString(successStyle.Render("✔\n"))
 	}
-	// out.WriteString(model.Text)
+	if model.Text != "" {
+		out.WriteString("\n")
+		out.WriteString(model.Text)
+	}
 	return out.String()
 }
 

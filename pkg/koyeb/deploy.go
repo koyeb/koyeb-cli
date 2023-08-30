@@ -130,7 +130,7 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 	}
 
 	fileInput := input.New()
-	fileInput.SetPrompt("Create the service with this definition?")
+	fileInput.SetPrompt("Leave empty to use the following definition, or \"e\" to edit it:")
 	fileInput.SetText(string(body))
 
 	if abort, err := fileInput.Execute(); abort || err != nil {
