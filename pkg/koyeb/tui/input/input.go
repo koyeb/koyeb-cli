@@ -101,7 +101,7 @@ func (model Input) View() string {
 	} else if model.abort {
 		out.WriteString(abortStyle.Render("woops, abort\n"))
 	} else if model.submitSuccess {
-		out.WriteString(successStyle.Render("xxxxxxxxxxxxxxxxxxx✔\n"))
+		out.WriteString(successStyle.Render("✔\n"))
 	}
 	// out.WriteString(model.Text)
 	return out.String()
