@@ -56,7 +56,7 @@ func Login(cmd *cobra.Command, args []string) error {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/api )",
+		Label:    "Enter your personal access token. You can create a new token here (https://app.koyeb.com/user/settings/api)",
 		Validate: validate,
 		Mask:     '*',
 	}
