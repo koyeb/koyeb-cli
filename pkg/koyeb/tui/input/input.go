@@ -2,7 +2,6 @@ package input
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -61,7 +60,6 @@ func (model Input) Init() tea.Cmd {
 }
 
 func (model *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	log.Printf("receive msg: %v\n", msg)
 	switch msg := msg.(type) {
 	case QuitMsg:
 		return model, tea.Quit

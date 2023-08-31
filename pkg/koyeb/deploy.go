@@ -6,8 +6,6 @@ import (
 	stdexec "os/exec"
 	"strings"
 
-	stdlog "log"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -28,19 +26,7 @@ func NewDeployCmd() *cobra.Command {
 	return deployCmd
 }
 
-// XXX: remove me
-func setupLogging() {
-	_, err := tea.LogToFile("/tmp/debug.log", "debug")
-	if err != nil {
-		fmt.Println("fatal:", err)
-		os.Exit(1)
-	}
-	stdlog.Printf("==========================\n")
-}
-
 func deploy(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	setupLogging()
-
 	createArgs := []string{"service", "create"}
 
 	var app koyeb.App
@@ -145,6 +131,8 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 		return false, err
 	}
 
+	requireEdit := false
+
 	fileInput := input.New()
 	fileInput.SetPrompt("Leave empty to use the following definition, or \"e\" to edit it:")
 	fileInput.SetText(string(body))
@@ -153,7 +141,7 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 		case "":
 			return input.SubmitOkMsg{}
 		case "e", "edit":
-			openInEditor(body)
+			requireEdit = true
 			return input.SubmitOkMsg{}
 		}
 		return input.SubmitErrorMsg{Error: fmt.Errorf("Enter \"e\" to edit the definition, or leave empty to continue with the current definition")}
@@ -161,6 +149,14 @@ func createService(ctx *CLIContext, app koyeb.App, args []string) (bool, error) 
 
 	if abort, err := fileInput.Execute(); abort || err != nil {
 		return abort, err
+	}
+
+	if requireEdit {
+		_, err := openInEditor(body)
+		if err != nil {
+			// XXX: handle error and while true
+			return false, err
+		}
 	}
 
 	return false, nil
@@ -201,17 +197,17 @@ func deployGit(ctx *CLIContext, app koyeb.App, args []string) ([]string, error) 
 	return args, nil
 }
 
-func openInEditor(content []byte) error {
-	stdlog.Printf("opening editor")
-
+func openInEditor(content []byte) (string, error) {
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		editor = "vi"
 	}
 	tmp, err := os.CreateTemp("", "koyeb-cli-*")
 	if err != nil {
-		return err
+		return "", err
 	}
+	defer os.Remove(tmp.Name())
+
 	tmp.Write(content)
 
 	cmd := stdexec.Command(editor, tmp.Name())
@@ -220,5 +216,13 @@ func openInEditor(content []byte) error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 
-	return err
+	newContent, err := os.ReadFile(tmp.Name())
+	if err != nil {
+		return "", err
+	}
+
+	// XXX: why the content doesn't have modifications?
+	fmt.Printf("NEW CONTENT========>%s\n", content)
+	return string(newContent), err
+
 }
