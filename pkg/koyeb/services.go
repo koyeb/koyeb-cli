@@ -530,17 +530,19 @@ func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 
 // Parse --min-scale and --max-scale
 func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
-	var minScale, maxScale int64
+	var minScale int64
+	var maxScale int64
 
-	if flags.Lookup("scale").Changed {
-		minScale, _ = flags.GetInt64("scale")
-		maxScale, _ = flags.GetInt64("scale")
-	}
 	if flags.Lookup("min-scale").Changed {
 		minScale, _ = flags.GetInt64("min-scale")
+	} else {
+		minScale, _ = flags.GetInt64("scale")
 	}
+
 	if flags.Lookup("max-scale").Changed {
 		maxScale, _ = flags.GetInt64("max-scale")
+	} else {
+		maxScale, _ = flags.GetInt64("scale")
 	}
 
 	// If there is no scaling configured, return the default values
@@ -550,7 +552,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 		scaling.SetMax(maxScale)
 		return []koyeb.DeploymentScaling{*scaling}
 	} else {
-		// Otherwise, update the current scaling configuration
+		// Otherwise, update the current scaling configuration only if one of the scale flags has been provided
 		for idx := range currentScalings {
 			if flags.Lookup("scale").Changed || flags.Lookup("min-scale").Changed {
 				currentScalings[idx].SetMin(minScale)
