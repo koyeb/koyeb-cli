@@ -16,8 +16,16 @@ import (
 func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIError {
 	ret := &CLIError{
 		What: what,
-		Orig: err,
 	}
+
+	if resp.StatusCode == 429 {
+		ret.Why = "the Koyeb API returned an error HTTP/429: Too Many Requests because you have exceeded the rate limit"
+		ret.Solution = "Please try again in a few seconds."
+		return ret
+	}
+
+	ret.Orig = err
+
 	var genericErr *koyeb.GenericOpenAPIError
 	var unmarshalErr *json.UnmarshalTypeError
 	var urlError *url.Error
