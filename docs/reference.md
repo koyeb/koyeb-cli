@@ -253,6 +253,7 @@ koyeb apps init NAME [flags]
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -261,6 +262,7 @@ koyeb apps init NAME [flags]
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -283,7 +285,10 @@ koyeb apps init NAME [flags]
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
-      --regions strings                         Regions (default [fra])
+      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                If the region is not specified on service creation, the service is deployed in fra
+                                                
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
@@ -1031,6 +1036,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -1039,6 +1045,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -1061,7 +1068,10 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
-      --regions strings                         Regions (default [fra])
+      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                If the region is not specified on service creation, the service is deployed in fra
+                                                
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
@@ -1404,6 +1414,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -1412,6 +1423,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -1434,7 +1446,10 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
-      --regions strings                         Regions (default [fra])
+      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                If the region is not specified on service creation, the service is deployed in fra
+                                                
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
