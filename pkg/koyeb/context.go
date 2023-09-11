@@ -27,11 +27,6 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 		return err
 	}
 
-	logsApiClient, err := NewLogsAPIClient(apiurl, token)
-	if err != nil {
-		return err
-	}
-
 	ctx := cmd.Context()
 	ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
 
@@ -41,10 +36,18 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 			return err
 		}
 		ctx = context.WithValue(ctx, koyeb.ContextAccessToken, token)
+		// Update command context with the organization token. This is required
+		// because the idmapper initialization below will use the token from the
+		// context.
 		cmd.SetContext(ctx)
 	}
 
 	ctx = context.WithValue(ctx, ctx_client, apiClient)
+
+	logsApiClient, err := NewLogsAPIClient(apiurl, ctx.Value(koyeb.ContextAccessToken).(string))
+	if err != nil {
+		return err
+	}
 	ctx = context.WithValue(ctx, ctx_logs_client, logsApiClient)
 	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
 	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
