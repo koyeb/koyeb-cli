@@ -9,6 +9,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/119
 * Add support for organizations. Use command `koyeb organization list` to list the organizations you are a member of, and `koyeb organization use` to switch to another organization.
   - https://github.com/koyeb/koyeb-cli/pull/113
+* Fix `koyeb service logs` when using the non-default organization
+  - https://github.com/koyeb/koyeb-cli/issues/120
 
 (v3.0.2 and before)
 
