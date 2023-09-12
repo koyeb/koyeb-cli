@@ -354,7 +354,6 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	// Scalings and environment variables refer to regions, so we must call setRegions after definition.SetScalings and definition.SetEnv.
 	setRegions(definition, regions)
-	// definition.SetRegions(parseRegions(flags, definition.GetRegions()))
 
 	err = setSource(definition, flags)
 	if err != nil {
