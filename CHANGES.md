@@ -1,4 +1,4 @@
-(unreleased)
+**v3.2.0**
 
 * The option `--min-scale` and `--max-scale` of `koyeb service update` where ignored, and the service was always scaled to 1. This is now fixed. Also, add the option `--scale` which sets both `--min-scale` and `--max-scale` to the same value. If `--min-scale` or `--max-scale` is set, it overrides `--scale`.
   - https://github.com/koyeb/koyeb-cli/issues/122
@@ -14,6 +14,6 @@
 * Fix `--regions` options of `koyeb service create` and `koyeb service update`. To deploy an existing service to a new region, use `koyeb service update <app>/<service> --region <region>`. To remove a region from a service, use `koyeb service update <app>/<service> --region '!<region>'`. On service creation, the service is still deployed to `fra` if no region is specified. If more than two regions are specified, a warning message is displayed to avoid billing surprises.
   - https://github.com/koyeb/koyeb-cli/issues/123
 
-(v3.0.2 and before)
+**Prior v3.2.0**
 
 Unfortunately, we didn't keep a changelog before v3.0.2. We will try to do better in the future.
