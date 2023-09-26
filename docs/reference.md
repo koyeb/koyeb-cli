@@ -16,15 +16,16 @@ Koyeb CLI
 ### Options
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -h, --help            help for koyeb
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+  -h, --help                  help for koyeb
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -35,6 +36,7 @@ Koyeb CLI
 * [koyeb domains](#koyeb-domains)	 - Domains
 * [koyeb instances](#koyeb-instances)	 - Instances
 * [koyeb login](#koyeb-login)	 - Login to your Koyeb account
+* [koyeb organizations](#koyeb-organizations)	 - Organization
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb version](#koyeb-version)	 - Get version
@@ -56,14 +58,15 @@ koyeb login [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -83,14 +86,15 @@ Apps
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -123,14 +127,15 @@ koyeb apps create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -154,14 +159,15 @@ koyeb apps delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -185,14 +191,15 @@ koyeb apps describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -216,14 +223,15 @@ koyeb apps get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -245,6 +253,7 @@ koyeb apps init NAME [flags]
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -253,6 +262,7 @@ koyeb apps init NAME [flags]
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -275,25 +285,30 @@ koyeb apps init NAME [flags]
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
-      --regions strings                         Regions (default [fra])
+      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                If the region is not specified on service creation, the service is deployed in fra
+                                                
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
+      --scale int                               Set both min-scale and max-scale (default 1)
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -317,14 +332,15 @@ koyeb apps list [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -348,14 +364,15 @@ koyeb apps pause NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -379,14 +396,15 @@ koyeb apps resume NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -411,14 +429,15 @@ koyeb apps update NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -438,14 +457,15 @@ Domains
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -477,14 +497,15 @@ koyeb domains attach NAME APP [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -509,14 +530,15 @@ koyeb domains create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -540,14 +562,15 @@ koyeb domains delete [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -571,14 +594,15 @@ koyeb domains describe [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -602,14 +626,15 @@ koyeb domains detach NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -633,14 +658,15 @@ koyeb domains get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -664,14 +690,15 @@ koyeb domains list [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -695,14 +722,15 @@ koyeb domains refresh NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -722,14 +750,15 @@ Secrets
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -761,14 +790,15 @@ koyeb secrets create NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -792,14 +822,15 @@ koyeb secrets delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -823,14 +854,15 @@ koyeb secrets describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -854,14 +886,15 @@ koyeb secrets get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -885,14 +918,15 @@ koyeb secrets list [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -918,14 +952,15 @@ koyeb secrets update NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -945,14 +980,15 @@ Services
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1000,6 +1036,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -1008,6 +1045,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -1030,25 +1068,30 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
-      --regions strings                         Regions (default [fra])
+      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                If the region is not specified on service creation, the service is deployed in fra
+                                                
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
+      --scale int                               Set both min-scale and max-scale (default 1)
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1072,14 +1115,15 @@ koyeb services delete NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1103,14 +1147,15 @@ koyeb services describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1134,14 +1179,15 @@ koyeb services exec NAME CMD -- [args...] [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1165,14 +1211,15 @@ koyeb services get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1198,14 +1245,15 @@ koyeb services list [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1225,20 +1273,21 @@ koyeb services logs NAME [flags]
 ```
   -h, --help              help for logs
       --instance string   Instance
-  -t, --type string       Type (runtime,build)
+  -t, --type string       Type (runtime, build)
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1262,14 +1311,15 @@ koyeb services pause NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1294,14 +1344,15 @@ koyeb services redeploy NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1325,14 +1376,15 @@ koyeb services resume NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1351,7 +1403,7 @@ koyeb services update NAME [flags]
 
 ```
 
-# Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
+# Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 ```
 
@@ -1362,6 +1414,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
       --docker string                           Docker image
       --docker-args strings                     Docker args
       --docker-command string                   Docker command
@@ -1370,6 +1423,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                
       --git string                              Git repository
       --git-branch string                       Git branch
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
@@ -1392,25 +1446,30 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
-      --regions strings                         Regions (default [fra])
+      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                If the region is not specified on service creation, the service is deployed in fra
+                                                
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
                                                 If no port is specified, it defaults to 80
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
+      --scale int                               Set both min-scale and max-scale (default 1)
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1430,14 +1489,15 @@ Deployments
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1466,14 +1526,15 @@ koyeb deployments cancel NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1497,14 +1558,15 @@ koyeb deployments describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1528,14 +1590,15 @@ koyeb deployments get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1559,14 +1622,15 @@ koyeb deployments list [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1585,20 +1649,21 @@ koyeb deployments logs NAME [flags]
 
 ```
   -h, --help          help for logs
-  -t, --type string   Type of log (runtime,build)
+  -t, --type string   Type of log (runtime, build)
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1618,14 +1683,15 @@ Instances
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1654,14 +1720,15 @@ koyeb instances describe NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1685,14 +1752,15 @@ koyeb instances exec NAME CMD -- [args...] [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1716,14 +1784,15 @@ koyeb instances get NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1749,14 +1818,15 @@ koyeb instances list [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1780,14 +1850,15 @@ koyeb instances logs NAME [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 
@@ -1811,14 +1882,15 @@ koyeb version [flags]
 ### Options inherited from parent commands
 
 ```
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           enable the debug output
-      --debug-full      do not hide sensitive information (tokens) in the debug output
-      --force-ascii     only output ascii characters (no unicode emojis)
-      --full            show full id
-  -o, --output output   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 ```
 
 

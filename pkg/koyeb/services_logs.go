@@ -3,7 +3,6 @@ package koyeb
 import (
 	"fmt"
 
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 )
@@ -23,16 +22,12 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 		)
 	}
 
-	done := make(chan struct{})
+	logsType := GetStringFlags(cmd, "type")
+	serviceId := serviceDetail.Service.GetId()
+	deploymentId := ""
+	instanceId := GetStringFlags(cmd, "instance")
 
-	serviceID := serviceDetail.Service.GetId()
-	logType := GetStringFlags(cmd, "type")
-	instanceID := GetStringFlags(cmd, "instance")
-
-	query := &WatchLogQuery{}
-	query.ServiceID = koyeb.PtrString(serviceID)
-
-	if logType == "build" {
+	if logsType == "build" {
 		latestDeploy, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
 			Limit("1").ServiceId(service).Execute()
 		if err != nil {
@@ -53,13 +48,16 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 				Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
 			}
 		}
-		query.DeploymentID = latestDeploy.GetDeployments()[0].Id
-		query.LogType = koyeb.PtrString(logType)
+		deploymentId = *latestDeploy.GetDeployments()[0].Id
 	}
-
-	if instanceID != "" {
-		query.InstanceID = koyeb.PtrString(instanceID)
+	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
+		logsType,
+		serviceId,
+		deploymentId,
+		instanceId,
+	)
+	if err != nil {
+		return err
 	}
-
-	return WatchLog(query, done)
+	return logsQuery.PrintAll()
 }

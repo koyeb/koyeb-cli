@@ -3,7 +3,6 @@ package koyeb
 import (
 	"fmt"
 
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 )
@@ -23,15 +22,14 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []str
 		)
 	}
 
-	done := make(chan struct{})
-
-	logType := GetStringFlags(cmd, "type")
-
-	query := &WatchLogQuery{}
-	query.DeploymentID = koyeb.PtrString(deploymentDetail.Deployment.GetId())
-	if logType != "" {
-		query.LogType = koyeb.PtrString(logType)
+	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
+		GetStringFlags(cmd, "type"),
+		"",
+		deploymentDetail.Deployment.GetId(),
+		"",
+	)
+	if err != nil {
+		return err
 	}
-
-	return WatchLog(query, done)
+	return logsQuery.PrintAll()
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/flags_list"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -69,7 +70,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 	}
 	serviceCmd.AddCommand(logsServiceCmd)
 	logsServiceCmd.Flags().String("instance", "", "Instance")
-	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime,build)")
+	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
 
 	listServiceCmd := &cobra.Command{
 		Use:   "list",
@@ -102,7 +103,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 		Short: "Update service",
 		Args:  cobra.ExactArgs(1),
 		Example: `
-# Update the service "myservice" in the app "myapp", create or update the environment variable PORT and delete the environment variable DEBUG
+# Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			service, err := h.ResolveServiceArgs(ctx, args[0])
@@ -213,15 +214,22 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	// Global flags
 	flags.String("type", "web", `Service type, either "web" or "worker"`)
 
-	flags.StringSlice("regions", []string{"fra"}, "Regions")
+	flags.StringSlice(
+		"regions",
+		[]string{},
+		"Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.\n"+
+			"To update a service and remove a region, prefix the region name with '!', for example --region '!par'\n"+
+			"If the region is not specified on service creation, the service is deployed in fra\n",
+	)
 	flags.StringSlice(
 		"env",
 		[]string{},
 		"Update service environment variables using the format KEY=VALUE, for example --env FOO=bar\n"+
 			"To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar\n"+
-			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'",
+			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'\n",
 	)
 	flags.String("instance-type", "nano", "Instance type")
+	flags.Int64("scale", 1, "Set both min-scale and max-scale")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
 
@@ -246,7 +254,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 		"Update service healthchecks (available for services of type \"web\" only)\n"+
 			"For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health\n"+
 			"For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp\n"+
-			"To delete a healthcheck, use !PORT, for example --checks '!8080'",
+			"To delete a healthcheck, use !PORT, for example --checks '!8080'\n",
 	)
 
 	// Git service
@@ -312,7 +320,6 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	definition.SetEnv(envs)
 
 	definition.SetInstanceTypes(parseInstanceType(flags, definition.GetInstanceTypes()))
-	definition.SetRegions(parseRegions(flags, definition.GetRegions()))
 
 	ports, err := parsePorts(definition.GetType(), flags, definition.Ports)
 	if err != nil {
@@ -333,6 +340,20 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		return err
 	}
 	definition.SetHealthChecks(healthchecks)
+
+	regions, err := parseRegions(flags, definition.GetRegions())
+	if err != nil {
+		return err
+	}
+	if flags.Lookup("regions").Changed && len(regions) >= 2 {
+		logrus.Warnf(
+			"Attention: you are deploying your service in %d regions (%s) which may impact your billing. If you intended to deploy your service in only one region, remove the regions you don't want to deploy to with `koyeb service update <app>/<service> --region '!<region>'`.",
+			len(regions),
+			strings.Join(regions, ", "),
+		)
+	}
+	// Scalings and environment variables refer to regions, so we must call setRegions after definition.SetScalings and definition.SetEnv.
+	setRegions(definition, regions)
 
 	err = setSource(definition, flags)
 	if err != nil {
@@ -391,19 +412,7 @@ func parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.Deploy
 	return []koyeb.DeploymentInstanceType{*ret}
 }
 
-// Parse --regions
-func parseRegions(flags *pflag.FlagSet, currentRegions []string) []string {
-	regions, _ := flags.GetStringSlice("regions")
-	if !flags.Lookup("regions").Changed {
-		if len(currentRegions) == 0 {
-			return regions
-		}
-		return currentRegions
-	}
-	return regions
-}
-
-// parseListFlags is the generic function parsing --env, --port, --routes and --checks.
+// parseListFlags is the generic function parsing --env, --port, --routes, --checks and --regions.
 // It gets the arguments given from the command line for the given flag, then
 // builds a list of flags_list.Flag entries, and update the service
 // configuration (given in existingItems) with the new values.
@@ -527,24 +536,51 @@ func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 	return newChecks, nil
 }
 
+// Parse --regions
+func parseRegions(flags *pflag.FlagSet, currentRegions []string) ([]string, error) {
+	newRegions, err := parseListFlags("regions", flags_list.NewRegionsListFromFlags, flags, currentRegions)
+	if err != nil {
+		return nil, err
+	}
+	// For new services, if no region is specified, add the default region
+	if !flags.Lookup("regions").Changed && len(currentRegions) == 0 {
+		newRegions = []string{"fra"}
+	}
+	return newRegions, nil
+}
+
 // Parse --min-scale and --max-scale
 func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
-	minScale, _ := flags.GetInt64("min-scale")
-	maxScale, _ := flags.GetInt64("max-scale")
+	var minScale int64
+	var maxScale int64
 
+	if flags.Lookup("min-scale").Changed {
+		minScale, _ = flags.GetInt64("min-scale")
+	} else {
+		minScale, _ = flags.GetInt64("scale")
+	}
+
+	if flags.Lookup("max-scale").Changed {
+		maxScale, _ = flags.GetInt64("max-scale")
+	} else {
+		maxScale, _ = flags.GetInt64("scale")
+	}
+
+	// If there is no scaling configured, return the default values
 	if len(currentScalings) == 0 {
 		scaling := koyeb.NewDeploymentScalingWithDefaults()
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
 		return []koyeb.DeploymentScaling{*scaling}
-	}
-
-	for _, s := range currentScalings {
-		if flags.Lookup("min-scale").Changed {
-			s.SetMin(minScale)
-		}
-		if flags.Lookup("max-scale").Changed {
-			s.SetMax(maxScale)
+	} else {
+		// Otherwise, update the current scaling configuration only if one of the scale flags has been provided
+		for idx := range currentScalings {
+			if flags.Lookup("scale").Changed || flags.Lookup("min-scale").Changed {
+				currentScalings[idx].SetMin(minScale)
+			}
+			if flags.Lookup("scale").Changed || flags.Lookup("max-scale").Changed {
+				currentScalings[idx].SetMax(maxScale)
+			}
 		}
 	}
 	return currentScalings
@@ -660,27 +696,19 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 		flags.Lookup("git-docker-entrypoint").Changed ||
 		flags.Lookup("git-docker-command").Changed ||
 		flags.Lookup("git-docker-args").Changed ||
-		flags.Lookup("git-docker-target").Changed {
+		flags.Lookup("git-docker-target").Changed ||
+		(flags.Lookup("git-builder").Changed && builder == "docker") {
 
-		if flags.Lookup("git-builder").Changed && builder == "buildpack" {
+		// If --git-builder has not been provided, but the current source is a buildpack builder.
+		if !flags.Lookup("git-builder").Changed && source.HasBuildpack() {
 			return nil, &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "invalid flag combination",
 				Additional: []string{
-					"The arguments --git-docker-* are used to configure the docker builder, and cannot be used with --git-builder=buildpack",
+					"The arguments --git-docker-* are used to configure the docker builder, but the current builder is a buildpack builder",
 				},
 				Orig:     nil,
-				Solution: "Remove the --git-docker-* flags and try again, or use --git-builder=docker",
-			}
-		} else if source.HasBuildpack() {
-			return nil, &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "invalid flag combination",
-				Additional: []string{
-					"You are trying to configure a docker builder, but the current builder is a buildpack builder",
-				},
-				Orig:     nil,
-				Solution: "Remove the --git-docker-* flags, or also change the builder type with --git-builder=docker",
+				Solution: "Add --git-builder=docker to the arguments to configure the docker builder",
 			}
 		}
 		builder, err := parseGitSourceDockerBuilder(flags, source.GetDocker())
@@ -693,27 +721,19 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 	if flags.Lookup("git-buildpack-build-command").Changed ||
 		flags.Lookup("git-build-command").Changed ||
 		flags.Lookup("git-buildpack-run-command").Changed ||
-		flags.Lookup("git-run-command").Changed {
+		flags.Lookup("git-run-command").Changed ||
+		(flags.Lookup("git-builder").Changed && builder == "buildpack") {
 
-		if flags.Lookup("git-builder").Changed && builder == "docker" {
+		// If --git-builder has not been provided, but the current source is a buildpack builder.
+		if !flags.Lookup("git-builder").Changed && source.HasDocker() {
 			return nil, &errors.CLIError{
 				What: "Error while updating the service",
 				Why:  "invalid flag combination",
 				Additional: []string{
-					"The arguments --git-buildpack-* are used to configure the buildpack builder, and cannot be used with --git-builder=docker",
+					"The arguments --git-buildpack-* are used to configure the buildpack builder, but the current builder is a docker builder",
 				},
 				Orig:     nil,
-				Solution: "Remove the --git-buildpack-* flags and try again, or use --git-builder=buildpack",
-			}
-		} else if source.HasDocker() {
-			return nil, &errors.CLIError{
-				What: "Error while updating the service",
-				Why:  "invalid flag combination",
-				Additional: []string{
-					"You are trying to configure a buildpack builder, but the current builder is a docker builder",
-				},
-				Orig:     nil,
-				Solution: "Remove the --git-buildpack-* flags, or change the builder type with --git-builder=buildpack",
+				Solution: "Add --git-builder=buildpack to the arguments to configure the buildpack builder",
 			}
 		}
 		builder, err := parseGitSourceBuildpackBuilder(flags, source.GetBuildpack())
@@ -797,4 +817,76 @@ func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuild
 		builder.SetTarget(target)
 	}
 	return &builder, nil
+}
+
+// DeploymentDefinition contains the keys "env", "scalings" and "instance_types"
+// which are lists of objects with the key "scopes" containing the names of the
+// regions where the ressource should be deployed, such as:
+//
+//	"definition": {
+//		"env": [{
+//			"key": "DATABASE_URL",
+//			"scopes": ["region:fra"],
+//			"secret": "<secret value>"
+//		}],
+//		"scalings": [{
+//			"max": 1,
+//			"min": 1,
+//			"scopes": ["region:fra"]
+//		}],
+//		"instance_types": [{
+//			"scopes": ["region:fra"],
+//			"type": "nano"
+//		}],
+//	}
+//
+// setRegions updates these list of "scopes":
+// - removes the scope that are not in the list of regions (if region has been removed)
+// - add the scope that are in the list of regions but not in the list of scopes (if region has been added)
+//
+// For now, this is dumb as we do not have a feature fine grained update of what
+// is exposed for a given region. For example, while the API allows to update an
+// environment variable to have a specific value for a given region and another
+// value for another region, the CLI and the console do not allow to do that.
+func setRegions(definition *koyeb.DeploymentDefinition, regions []string) {
+	definition.SetRegions(regions)
+
+	updateScopes := func(regions []string, currentScopes []string) []string {
+		regionsMap := make(map[string]bool)
+		for _, region := range regions {
+			regionsMap[region] = false
+		}
+
+		newScopes := []string{}
+		for _, scope := range currentScopes {
+			// Append scope if it is not a region scope (even if we don't support other scopes for now)
+			if !strings.HasPrefix(scope, "region:") {
+				newScopes = append(newScopes, scope)
+			} else {
+				region := strings.TrimPrefix(scope, "region:")
+				if _, exists := regionsMap[region]; exists {
+					newScopes = append(newScopes, scope)
+					regionsMap[region] = true
+				}
+			}
+		}
+
+		// Add new regions
+		for region, exists := range regionsMap {
+			if !exists {
+				newScopes = append(newScopes, fmt.Sprintf("region:%s", region))
+			}
+		}
+		return newScopes
+	}
+
+	for idx, env := range definition.Env {
+		definition.Env[idx].Scopes = updateScopes(regions, env.Scopes)
+	}
+	for idx, scalings := range definition.Scalings {
+		definition.Scalings[idx].Scopes = updateScopes(regions, scalings.Scopes)
+	}
+	for idx, instanceTypes := range definition.InstanceTypes {
+		definition.InstanceTypes[idx].Scopes = updateScopes(regions, instanceTypes.Scopes)
+	}
 }

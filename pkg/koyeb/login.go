@@ -50,13 +50,13 @@ func Login(cmd *cobra.Command, args []string) error {
 
 	validate := func(input string) error {
 		if len(input) != 64 {
-			return errors.New("Invalid API credential. The token should be 64 characters long.")
+			return errors.New("invalid API credential. The token should be 64 characters long")
 		}
 		return nil
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Enter your api access token, you can create a new token here ( https://app.koyeb.com/account/api )",
+		Label:    "Enter your personal access token. You can create a new token here (https://app.koyeb.com/user/settings/api)",
 		Validate: validate,
 		Mask:     '*',
 	}

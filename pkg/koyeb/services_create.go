@@ -34,8 +34,11 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 			resp,
 		)
 	}
-
-	log.Infof("Service deployment in progress. Access deployment logs running: koyeb service logs %s.", res.Service.GetId()[:8])
+	log.Infof(
+		"Service deployment in progress. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
+		res.Service.GetId()[:8],
+		res.Service.GetId()[:8],
+	)
 
 	full := GetBoolFlags(cmd, "full")
 	getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)

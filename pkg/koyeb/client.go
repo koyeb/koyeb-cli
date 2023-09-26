@@ -36,11 +36,14 @@ func (t *DebugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	resp, err := t.RoundTripper.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
 
 	if respData, dumpErr := httputil.DumpResponse(resp, true); dumpErr == nil {
 		log.Debug(fmt.Sprintf("========== HTTP response ==========\n%s\n========== end of response ==========\n", respData))
 	}
-	return resp, err
+	return resp, nil
 }
 
 func getApiClient() (*koyeb.APIClient, error) {
