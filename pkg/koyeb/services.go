@@ -232,6 +232,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.Int64("scale", 1, "Set both min-scale and max-scale")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
+	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 
 	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
@@ -612,12 +613,12 @@ func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) err
 			Solution: "Fix the flags and try again",
 		}
 	}
-	if hasDockerFlags {
+	if hasDockerFlags || definition.HasDocker() {
 		docker := definition.GetDocker()
 		source := parseDockerSource(flags, &docker)
 		definition.SetDocker(*source)
 		definition.Git = nil
-	} else if hasGitFlags {
+	} else if hasGitFlags || definition.HasGit() {
 		git := definition.GetGit()
 		source, err := parseGitSource(flags, &git)
 		if err != nil {
@@ -650,6 +651,10 @@ func parseDockerSource(flags *pflag.FlagSet, source *koyeb.DockerSource) *koyeb.
 	if flags.Lookup("docker-private-registry-secret").Changed {
 		secret, _ := flags.GetString("docker-private-registry-secret")
 		source.SetImageRegistrySecret(secret)
+	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		source.SetPrivileged(privileged)
 	}
 	return source
 }
@@ -697,7 +702,8 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 		flags.Lookup("git-docker-command").Changed ||
 		flags.Lookup("git-docker-args").Changed ||
 		flags.Lookup("git-docker-target").Changed ||
-		(flags.Lookup("git-builder").Changed && builder == "docker") {
+		(flags.Lookup("git-builder").Changed && builder == "docker") ||
+		source.HasDocker() {
 
 		// If --git-builder has not been provided, but the current source is a buildpack builder.
 		if !flags.Lookup("git-builder").Changed && source.HasBuildpack() {
@@ -722,7 +728,8 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 		flags.Lookup("git-build-command").Changed ||
 		flags.Lookup("git-buildpack-run-command").Changed ||
 		flags.Lookup("git-run-command").Changed ||
-		(flags.Lookup("git-builder").Changed && builder == "buildpack") {
+		(flags.Lookup("git-builder").Changed && builder == "buildpack") ||
+		source.HasBuildpack() {
 
 		// If --git-builder has not been provided, but the current source is a buildpack builder.
 		if !flags.Lookup("git-builder").Changed && source.HasDocker() {
@@ -791,6 +798,10 @@ func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.Buildpac
 	} else if flags.Lookup("git-buildpack-run-command").Changed {
 		builder.SetRunCommand(buildpackRunCommand)
 	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		builder.SetPrivileged(privileged)
+	}
 	return &builder, nil
 }
 
@@ -815,6 +826,10 @@ func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuild
 	if flags.Lookup("git-docker-target").Changed {
 		target, _ := flags.GetString("git-docker-target")
 		builder.SetTarget(target)
+	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		builder.SetPrivileged(privileged)
 	}
 	return &builder, nil
 }
