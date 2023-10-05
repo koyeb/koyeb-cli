@@ -336,3 +336,84 @@ func TestSetRegions(t *testing.T) {
 		})
 	}
 }
+
+func TestDynamicDefaults(t *testing.T) {
+	tests := map[string]struct {
+		cliFlags       []string
+		expectedRoutes []string
+		expectedPorts  []string
+		expectedErr    bool
+	}{
+		"One port set, one route set": {
+			cliFlags:       []string{"--ports", "80", "--routes", "/:80"},
+			expectedRoutes: []string{"/:80"},
+			expectedPorts:  []string{"80"},
+			expectedErr:    false,
+		},
+		"Two routes set, no port": {
+			cliFlags:       []string{"--routes", "/:9999,/api:5555"},
+			expectedRoutes: []string{""},
+			expectedPorts:  []string{""},
+			expectedErr:    true,
+		},
+		"Two ports set, no routes": {
+			cliFlags:       []string{"--ports", "9999,5555"},
+			expectedRoutes: []string{""},
+			expectedPorts:  []string{""},
+			expectedErr:    true,
+		},
+		"One route set, no port": {
+			cliFlags:       []string{"--routes", "/:90"},
+			expectedRoutes: []string{"/:90"},
+			expectedPorts:  []string{"90"},
+			expectedErr:    false,
+		},
+		"One port set, no route": {
+			cliFlags:       []string{"--ports", "90:http"},
+			expectedRoutes: []string{"/:90"},
+			expectedPorts:  []string{"90:http"},
+			expectedErr:    false,
+		},
+		"One port set (no protocol), no route": {
+			cliFlags:       []string{"--ports", "90"},
+			expectedRoutes: []string{"/:90"},
+			expectedPorts:  []string{"90"},
+			expectedErr:    false,
+		},
+		"No port, no route": {
+			cliFlags:       []string{},
+			expectedRoutes: []string{},
+			expectedPorts:  []string{},
+			expectedErr:    false,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			cmd := &cobra.Command{}
+			addServiceDefinitionFlags(cmd.Flags())
+
+			err := cmd.ParseFlags(test.cliFlags)
+			assert.NoError(t, err)
+
+			err = dynamicDefaults(koyeb.DEPLOYMENTDEFINITIONTYPE_WEB, cmd.Flags())
+
+			if test.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+
+				actualRoutes, err := cmd.Flags().GetStringSlice("routes")
+				if err != nil {
+					t.Fatalf("Failed to get 'routes': %v", err)
+				}
+				assert.Equal(t, test.expectedRoutes, actualRoutes)
+
+				actualPorts, err := cmd.Flags().GetStringSlice("ports")
+				if err != nil {
+					t.Fatalf("Failed to get 'ports': %v", err)
+				}
+				assert.Equal(t, test.expectedPorts, actualPorts)
+			}
+		})
+	}
+}
