@@ -334,6 +334,13 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	}
 	definition.SetRoutes(routes)
 
+	if definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		err = setDefaultPortsAndRoutes(definition, definition.Ports, definition.Routes)
+		if err != nil {
+			return err
+		}
+	}
+
 	definition.SetScalings(parseScalings(flags, definition.Scalings))
 
 	healthchecks, err := parseChecks(definition.GetType(), flags, definition.HealthChecks)
@@ -464,13 +471,6 @@ func parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, curr
 			Solution: "Fix the service type or remove the ports from your service, and try again",
 		}
 	}
-	// For new "web" services, if no port is specified, add the default port
-	if len(newPorts) == 0 && type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
-		port := koyeb.NewDeploymentPortWithDefaults()
-		port.SetPort(80)
-		port.SetProtocol("http")
-		return []koyeb.DeploymentPort{*port}, nil
-	}
 	return newPorts, nil
 }
 
@@ -497,14 +497,77 @@ func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 			Solution: "Fix the service type or remove the routes from your service, and try again",
 		}
 	}
-	// For new "web" services, if no route is specified, add the default route
-	if len(newRoutes) == 0 && type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
-		route := koyeb.NewDeploymentRouteWithDefaults()
-		route.SetPath("/")
-		route.SetPort(80)
-		return []koyeb.DeploymentRoute{*route}, nil
-	}
 	return newRoutes, nil
+}
+
+// Set default port to `portNumber` and `http`
+func setDefaultPort(portNumber int64) []koyeb.DeploymentPort {
+	newPort := koyeb.NewDeploymentPortWithDefaults()
+	newPort.SetPort(portNumber)
+	newPort.SetProtocol("http")
+	return []koyeb.DeploymentPort{*newPort}
+}
+
+// Set default route to `portNumber` and `/`
+func setDefaultRoute(portNumber int64) []koyeb.DeploymentRoute {
+	newRoute := koyeb.NewDeploymentRouteWithDefaults()
+	newRoute.SetPath("/")
+	newRoute.SetPort(portNumber)
+	return []koyeb.DeploymentRoute{*newRoute}
+}
+
+// Dynamically sets the defaults ports and routes for new "web" services
+func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPorts []koyeb.DeploymentPort, currentRoutes []koyeb.DeploymentRoute) error {
+
+	switch {
+
+	// If no route and no port is specified, add the default route and port
+	case len(currentPorts) == 0 && len(currentRoutes) == 0:
+		definition.SetPorts(setDefaultPort(80))
+		definition.SetRoutes(setDefaultRoute(80))
+
+	// One or more port set, no route set
+	case len(currentPorts) > 0 && len(currentRoutes) == 0:
+		// Two or more ports are set
+		if len(currentPorts) > 1 {
+			return &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  `your service has two or more ports set but no matching routes`,
+				Additional: []string{
+					`Routes must be specified as PATH[:PORT]`,
+					`PATH is the route to expose (e.g. / or /foo)`,
+					`PORT must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to "80"`,
+				},
+				Orig:     nil,
+				Solution: "Set the routes and try again",
+			}
+		}
+		// One port set
+		portNumber := currentPorts[0].GetPort()
+		definition.SetRoutes(setDefaultRoute(portNumber))
+
+	// One or more route set, no port set
+	case len(currentRoutes) > 0 && len(currentPorts) == 0:
+		// Two or more routes are set
+		if len(currentRoutes) > 1 {
+			return &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  `your service has two or more routes set but no matching ports`,
+				Additional: []string{
+					`Ports must be specified as PORT[:PROTOCOL]`,
+					`PORT must be a valid port number (e.g. 80)`,
+					`PROTOCOL must be either "http" or "http2". It can be omitted, in which case it defaults to "http"`,
+					`To remove a port from the service, prefix it with '!', e.g. '!80'`,
+				},
+				Orig:     nil,
+				Solution: "Set the ports and try again",
+			}
+		}
+		// One route set
+		portNumber := currentRoutes[0].GetPort()
+		definition.SetPorts(setDefaultPort(portNumber))
+	}
+	return nil
 }
 
 // Parse --checks
