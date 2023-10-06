@@ -322,6 +322,11 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 
 	definition.SetInstanceTypes(parseInstanceType(flags, definition.GetInstanceTypes()))
 
+	err = dynamicDefaults(definition.GetType(), flags)
+	if err != nil {
+		return err
+	}
+
 	ports, err := parsePorts(definition.GetType(), flags, definition.Ports)
 	if err != nil {
 		return err
@@ -439,6 +444,71 @@ func parseListFlags[T any](
 // Parse --env
 func parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
 	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, currentEnv)
+}
+
+// Checks for --routes and --ports flags.
+// If only one of the flags is set, it dynamically sets the missing flag using the value of the set flag.
+func dynamicDefaults(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet) error {
+	if type_ == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		routesValue, err := flags.GetStringSlice("routes")
+		if err != nil {
+			return err
+		}
+		portsValue, err := flags.GetStringSlice("ports")
+		if err != nil {
+			return err
+		}
+		// --routes is set but not --ports
+		if len(routesValue) > 0 && len(portsValue) == 0 {
+			// Two or more routes are set
+			if len(routesValue) > 1 {
+				return &errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  `your service has two or more routes set but no matching ports`,
+					Additional: []string{
+						`Ports must be specified as PORT[:PROTOCOL]`,
+						`PORT must be a valid port number (e.g. 80)`,
+						`PROTOCOL must be either "http" or "http2". It can be omitted, in which case it defaults to "http"`,
+						`To remove a port from the service, prefix it with '!', e.g. '!80'`,
+					},
+					Orig:     nil,
+					Solution: "Set the ports and try again",
+				}
+			}
+			// Sets --ports to the port value of --routes
+			split := strings.Split(routesValue[0], ":")
+			if len(split) > 1 {
+				err = flags.Set("ports", split[1])
+				if err != nil {
+					return err
+				}
+			}
+		}
+		// --ports is set but not --routes
+		if len(portsValue) > 0 && len(routesValue) == 0 {
+			// Two or more ports are set
+			if len(portsValue) > 1 {
+				return &errors.CLIError{
+					What: "Error while configuring the service",
+					Why:  `your service has two or more ports set but no matching routes`,
+					Additional: []string{
+						`Routes must be specified as PATH[:PORT]`,
+						`PATH is the route to expose (e.g. / or /foo)`,
+						`PORT must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to "80"`,
+					},
+					Orig:     nil,
+					Solution: "Set the routes and try again",
+				}
+			}
+			// Sets --routes to default path `/` and its port to the --ports value
+			split := strings.Split(portsValue[0], ":")
+			err = flags.Set("routes", "/:"+split[0])
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Parse --ports
