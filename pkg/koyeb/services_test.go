@@ -336,3 +336,109 @@ func TestSetRegions(t *testing.T) {
 		})
 	}
 }
+
+func TestSetDefaultPortsAndRoutes(t *testing.T) {
+	tests := map[string]struct {
+		definition  koyeb.DeploymentDefinition
+		expected    koyeb.DeploymentDefinition
+		expectedErr bool
+	}{
+		"No port set, no route set": {
+			definition: koyeb.DeploymentDefinition{},
+			expected: koyeb.DeploymentDefinition{
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(80), Protocol: koyeb.PtrString("http")},
+				},
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(80), Path: koyeb.PtrString("/")},
+				},
+			},
+			expectedErr: false,
+		},
+		"Two routes set, no port": {
+			definition: koyeb.DeploymentDefinition{
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(5555), Path: koyeb.PtrString("/")},
+					{Port: koyeb.PtrInt64(9999), Path: koyeb.PtrString("/api")},
+				},
+			},
+			expected:    koyeb.DeploymentDefinition{},
+			expectedErr: true,
+		},
+		"Two ports set, no route": {
+			definition: koyeb.DeploymentDefinition{
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(5555), Protocol: koyeb.PtrString("http")},
+					{Port: koyeb.PtrInt64(9999), Protocol: koyeb.PtrString("http")},
+				},
+			},
+			expected:    koyeb.DeploymentDefinition{},
+			expectedErr: true,
+		},
+		"One port set, no route": {
+			definition: koyeb.DeploymentDefinition{
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(90), Protocol: koyeb.PtrString("http")},
+				},
+			},
+			expected: koyeb.DeploymentDefinition{
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(90), Protocol: koyeb.PtrString("http")},
+				},
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(90), Path: koyeb.PtrString("/")},
+				},
+			},
+			expectedErr: false,
+		},
+		"One route set, no port": {
+			definition: koyeb.DeploymentDefinition{
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(90), Path: koyeb.PtrString("/")},
+				},
+			},
+			expected: koyeb.DeploymentDefinition{
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(90), Protocol: koyeb.PtrString("http")},
+				},
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(90), Path: koyeb.PtrString("/")},
+				},
+			},
+			expectedErr: false,
+		},
+		"Two routes set, one port set": {
+			definition: koyeb.DeploymentDefinition{
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(90), Path: koyeb.PtrString("/")},
+					{Port: koyeb.PtrInt64(5555), Path: koyeb.PtrString("/api")},
+				},
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(90), Protocol: koyeb.PtrString("http")},
+				},
+			},
+			expected: koyeb.DeploymentDefinition{
+				Routes: []koyeb.DeploymentRoute{
+					{Port: koyeb.PtrInt64(90), Path: koyeb.PtrString("/")},
+					{Port: koyeb.PtrInt64(5555), Path: koyeb.PtrString("/api")},
+				},
+				Ports: []koyeb.DeploymentPort{
+					{Port: koyeb.PtrInt64(90), Protocol: koyeb.PtrString("http")},
+				},
+			},
+			expectedErr: false,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := setDefaultPortsAndRoutes(&test.definition, test.definition.Ports, test.definition.Routes)
+
+			if test.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected, test.definition)
+			}
+		})
+	}
+}
