@@ -285,6 +285,7 @@ koyeb apps init NAME [flags]
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
+      --privileged                              Whether the service container should run in privileged mode
       --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                 If the region is not specified on service creation, the service is deployed in fra
@@ -1068,6 +1069,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
+      --privileged                              Whether the service container should run in privileged mode
       --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                 If the region is not specified on service creation, the service is deployed in fra
@@ -1446,6 +1448,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
+      --privileged                              Whether the service container should run in privileged mode
       --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                 If the region is not specified on service creation, the service is deployed in fra
