@@ -11,6 +11,8 @@ define gen-doc-in-dir
 	cat ./$1/koyeb_apps_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_domains.md >> ./$1/reference.md
 	cat ./$1/koyeb_domains_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_organizations.md >> ./$1/reference.md
+	cat ./$1/koyeb_organizations_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_secrets.md >> ./$1/reference.md
 	cat ./$1/koyeb_secrets_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_services.md >> ./$1/reference.md
