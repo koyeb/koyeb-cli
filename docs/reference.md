@@ -738,6 +738,100 @@ koyeb domains refresh NAME [flags]
 
 * [koyeb domains](#koyeb-domains)	 - Domains
 
+## koyeb organizations
+
+Organization
+
+### Options
+
+```
+  -h, --help   help for organizations
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb organizations list](#koyeb-organizations-list)	 - List organizations
+* [koyeb organizations switch](#koyeb-organizations-switch)	 - Switch the CLI context to another organization
+
+## koyeb organizations list
+
+List organizations
+
+```
+koyeb organizations list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb organizations](#koyeb-organizations)	 - Organization
+
+## koyeb organizations switch
+
+Switch the CLI context to another organization
+
+```
+koyeb organizations switch [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for switch
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb organizations](#koyeb-organizations)	 - Organization
+
 ## koyeb secrets
 
 Secrets
