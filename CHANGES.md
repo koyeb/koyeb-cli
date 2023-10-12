@@ -1,3 +1,8 @@
+**v3.3.0**
+
+* Add the flag `--privileged` to `koyeb service create` and `koyeb service update`
+  - https://github.com/koyeb/koyeb-cli/issues/137
+
 **v3.2.0**
 
 * The option `--min-scale` and `--max-scale` of `koyeb service update` where ignored, and the service was always scaled to 1. This is now fixed. Also, add the option `--scale` which sets both `--min-scale` and `--max-scale` to the same value. If `--min-scale` or `--max-scale` is set, it overrides `--scale`.
