@@ -60,11 +60,27 @@ func (client *ExecAPIClient) Exec(ctx context.Context, id ExecId, cmd []string) 
 		}
 	}()
 
+	return client.ExecWithStreams(ctx, stdStreams, id, cmd)
+}
+
+func isTty(stdin io.Reader, stdout io.Writer) bool {
+	_, isStdinTerminal := term.GetFdInfo(stdin)
+	_, isStdoutTerminal := term.GetFdInfo(stdout)
+	return isStdinTerminal && isStdoutTerminal
+}
+
+func (client *ExecAPIClient) ExecWithStreams(
+	ctx context.Context,
+	stdStreams *StdStreams,
+	id ExecId, cmd []string,
+) (int, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	termResizeCh := watchTermSize(ctx, stdStreams)
 
-	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, cmd, id, termResizeCh)
+	termResizeCh := watchTermSize(ctx, stdStreams.Stdout)
+	tty := isTty(stdStreams.Stdin, stdStreams.Stdout)
+
+	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, cmd, tty, id, termResizeCh)
 	return e.Run(ctx, client.url, client.header)
 }
 
@@ -128,18 +144,20 @@ type Executor struct {
 	stdin        io.Reader
 	stderr       io.Writer
 	stdout       io.Writer
+	tty          bool
 	termResizeCh <-chan *TerminalSize
 
 	cmd []string
 	id  ExecId
 }
 
-func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, id ExecId, termResizeCh <-chan *TerminalSize) *Executor {
+func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, tty bool, id ExecId, termResizeCh <-chan *TerminalSize) *Executor {
 	return &Executor{
 		stdin:        stdin,
 		stdout:       stdout,
 		stderr:       stderr,
 		cmd:          cmd,
+		tty:          tty,
 		id:           id,
 		termResizeCh: termResizeCh,
 	}
@@ -159,6 +177,7 @@ func (e *Executor) Run(ctx context.Context, url *url.URL, header http.Header) (i
 		Body:   koyeb.NewExecCommandRequestBody(),
 	}
 	r.Body.SetCommand(e.cmd)
+	r.Body.SetDisableTty(!e.tty)
 	err = e.pushOne(ctx, c, r)
 	if err != nil {
 		return -1, errors.Wrap(err, "could not intialize RPC with server")
@@ -281,6 +300,24 @@ func (e *Executor) pushMany(ctx context.Context, c *websocket.Conn, from io.Read
 				}
 			}
 			if errors.Is(err, io.EOF) {
+				// We're done reading from the input. Let's send a close message
+				io := koyeb.NewExecCommandIO()
+				io.SetClose(true)
+
+				body := koyeb.NewExecCommandRequestBody()
+				body.SetCommand(e.cmd)
+				body.SetStdin(*io)
+
+				writeErr := c.WriteJSON(&ApiExecCommandRequest{
+					Id:     &e.id.Id,
+					IdType: &e.id.Type,
+					Body:   body,
+				})
+
+				if writeErr != nil {
+					errChan <- errors.Wrap(writeErr, "failed sending close message")
+				}
+
 				return
 			}
 
