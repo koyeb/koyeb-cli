@@ -47,6 +47,15 @@ func NewInstanceCmd() *cobra.Command {
 	}
 	instanceCmd.AddCommand(execInstanceCmd)
 
+	cpInstanceCmd := &cobra.Command{
+		Use:     "cp SRC DST",
+		Short:   "Copy files and directories to and from instances.",
+		Aliases: []string{"copy"},
+		Args:    cobra.ExactArgs(2),
+		RunE:    WithCLIContext(instanceHandler.Cp),
+	}
+	instanceCmd.AddCommand(cpInstanceCmd)
+
 	logInstanceCmd := &cobra.Command{
 		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},

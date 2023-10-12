@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
+func watchTermSize(ctx context.Context, stdout io.Writer) <-chan *TerminalSize {
 	out := make(chan *TerminalSize)
 	go func() {
 		defer close(out)
@@ -26,7 +26,7 @@ func watchTermSize(ctx context.Context, s *StdStreams) <-chan *TerminalSize {
 			case <-ctx.Done():
 				return
 			case <-sigCh:
-				termSize, err := getTermSize(s.Stdout)
+				termSize, err := getTermSize(stdout)
 				if err != nil {
 					continue
 				}
