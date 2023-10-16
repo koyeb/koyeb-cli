@@ -1,3 +1,8 @@
+**v3.3.1**
+
+* Fix a bug where `koyeb services exec` / `koyeb instances exec` would not work for users being members of multiple organizations
+  - https://github.com/koyeb/koyeb-cli/pull/146
+
 **v3.3.0**
 
 * Add the flag `--privileged` to `koyeb service create` and `koyeb service update`
