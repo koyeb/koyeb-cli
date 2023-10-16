@@ -19,7 +19,37 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func exec(id ExecId, cmd []string) (int, error) {
+type ExecAPIClient struct {
+	url    *url.URL
+	header http.Header
+}
+
+func NewExecAPIClient(apiUrl string, token string) (*ExecAPIClient, error) {
+	endpoint, err := url.JoinPath(apiUrl, "/v1/streams/instances/exec")
+	if err != nil {
+		return nil, err
+	}
+	url, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	switch url.Scheme {
+	case "https":
+		url.Scheme = "wss"
+	case "http":
+		url.Scheme = "ws"
+	default:
+		return nil, fmt.Errorf("unsupported schema: %s", url.Scheme)
+	}
+	return &ExecAPIClient{
+		url: url,
+		header: http.Header{
+			"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)},
+		},
+	}, nil
+}
+
+func (client *ExecAPIClient) Exec(ctx context.Context, id ExecId, cmd []string) (int, error) {
 	stdStreams, cleanup, err := GetStdStreams()
 	if err != nil {
 		return 0, errors.Wrap(err, "could not get standard streams")
@@ -30,12 +60,12 @@ func exec(id ExecId, cmd []string) (int, error) {
 		}
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	termResizeCh := watchTermSize(ctx, stdStreams)
 
 	e := NewExecutor(stdStreams.Stdin, stdStreams.Stdout, stdStreams.Stderr, cmd, id, termResizeCh)
-	return e.Run(ctx)
+	return e.Run(ctx, client.url, client.header)
 }
 
 // Disclaimer: parts of this file are either taken or largey inspired from Nomad's CLI
@@ -115,12 +145,12 @@ func NewExecutor(stdin io.Reader, stdout, stderr io.Writer, cmd []string, id Exe
 	}
 }
 
-func (e *Executor) Run(ctx context.Context) (int, error) {
-	path := "/v1/streams/instances/exec"
-	c, err := e.dial(apiurl, path)
+func (e *Executor) Run(ctx context.Context, url *url.URL, header http.Header) (int, error) {
+	c, _, err := websocket.DefaultDialer.Dial(url.String(), header)
 	if err != nil {
-		return -1, errors.Wrapf(err, "could not dial %s", path)
+		return -1, errors.Wrapf(err, "could not dial %s", url)
 	}
+
 	go closeOn(c, syscall.SIGINT, syscall.SIGTERM)
 
 	r := &ApiExecCommandRequest{
@@ -159,26 +189,6 @@ func (e *Executor) Run(ctx context.Context) (int, error) {
 			return 0, err
 		}
 	}
-}
-
-func (e *Executor) dial(address, path string) (*websocket.Conn, error) {
-	u, err := url.Parse(address)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = path
-	if u.Scheme == "https" {
-		u.Scheme = "wss"
-	} else {
-		u.Scheme = "ws"
-	}
-	headers := http.Header{
-		"Sec-Websocket-Protocol": []string{
-			fmt.Sprintf("Bearer, %s", token),
-		},
-	}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), headers)
-	return c, err
 }
 
 func (e *Executor) pushOne(ctx context.Context, c *websocket.Conn, r *ApiExecCommandRequest) error {

@@ -15,7 +15,7 @@ func (h *ServiceHandler) Exec(ctx *CLIContext, cmd *cobra.Command, args []string
 		return err
 	}
 
-	returnCode, err := exec(ExecId{
+	returnCode, err := ctx.ExecClient.Exec(ctx.Context, ExecId{
 		Id:   service,
 		Type: koyeb.EXECCOMMANDREQUESTIDTYPE_SERVICE_ID,
 	}, args[1:])
