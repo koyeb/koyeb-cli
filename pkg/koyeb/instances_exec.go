@@ -15,7 +15,7 @@ func (h *InstanceHandler) Exec(ctx *CLIContext, cmd *cobra.Command, args []strin
 		return err
 	}
 
-	returnCode, err := exec(ExecId{
+	returnCode, err := ctx.ExecClient.Exec(ctx.Context, ExecId{
 		Id:   instance,
 		Type: koyeb.EXECCOMMANDREQUESTIDTYPE_INSTANCE_ID,
 	}, args[1:])
