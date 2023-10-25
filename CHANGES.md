@@ -1,3 +1,8 @@
+**Unreleased**
+
+* Dynamically set `--port` and `--route`. Now, `koyeb service create xxx --app yyy --port 8000` automatically creates the route `/:8000`. Similarly, `koyeb service create xxx --app yyy --route /:9999` automatically creates the port `9999:http`. If `--port` and `--route` are both omitted, as before, the default port `80:http` and route `/:80` are created.
+  - https://github.com/koyeb/koyeb-cli/issues/101
+
 **v3.3.1**
 
 * Fix a bug where `koyeb services exec` / `koyeb instances exec` would not work for users being members of multiple organizations
