@@ -501,7 +501,7 @@ func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 }
 
 // Set default port to `portNumber` and `http`
-func setDefaultPort(portNumber int64) []koyeb.DeploymentPort {
+func getDeploymentPort(portNumber int64) []koyeb.DeploymentPort {
 	newPort := koyeb.NewDeploymentPortWithDefaults()
 	newPort.SetPort(portNumber)
 	newPort.SetProtocol("http")
@@ -509,22 +509,20 @@ func setDefaultPort(portNumber int64) []koyeb.DeploymentPort {
 }
 
 // Set default route to `portNumber` and `/`
-func setDefaultRoute(portNumber int64) []koyeb.DeploymentRoute {
+func getDeploymentRoute(portNumber int64) []koyeb.DeploymentRoute {
 	newRoute := koyeb.NewDeploymentRouteWithDefaults()
 	newRoute.SetPath("/")
 	newRoute.SetPort(portNumber)
 	return []koyeb.DeploymentRoute{*newRoute}
 }
 
-// Dynamically sets the defaults ports and routes for new "web" services
+// Dynamically sets the defaults ports and routes for "web" services
 func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPorts []koyeb.DeploymentPort, currentRoutes []koyeb.DeploymentRoute) error {
-
 	switch {
-
 	// If no route and no port is specified, add the default route and port
 	case len(currentPorts) == 0 && len(currentRoutes) == 0:
-		definition.SetPorts(setDefaultPort(80))
-		definition.SetRoutes(setDefaultRoute(80))
+		definition.SetPorts(getDeploymentPort(80))
+		definition.SetRoutes(getDeploymentRoute(80))
 
 	// One or more port set, no route set
 	case len(currentPorts) > 0 && len(currentRoutes) == 0:
@@ -534,9 +532,7 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 				What: "Error while configuring the service",
 				Why:  `your service has two or more ports set but no matching routes`,
 				Additional: []string{
-					`Routes must be specified as PATH[:PORT]`,
-					`PATH is the route to expose (e.g. / or /foo)`,
-					`PORT must be a valid port number configured with the --ports flag. It can be omitted, in which case it defaults to "80"`,
+					"For each port, you must specify a matching route with the --routes flag",
 				},
 				Orig:     nil,
 				Solution: "Set the routes and try again",
@@ -544,7 +540,7 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 		}
 		// One port set
 		portNumber := currentPorts[0].GetPort()
-		definition.SetRoutes(setDefaultRoute(portNumber))
+		definition.SetRoutes(getDeploymentRoute(portNumber))
 
 	// One or more route set, no port set
 	case len(currentRoutes) > 0 && len(currentPorts) == 0:
@@ -554,10 +550,7 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 				What: "Error while configuring the service",
 				Why:  `your service has two or more routes set but no matching ports`,
 				Additional: []string{
-					`Ports must be specified as PORT[:PROTOCOL]`,
-					`PORT must be a valid port number (e.g. 80)`,
-					`PROTOCOL must be either "http" or "http2". It can be omitted, in which case it defaults to "http"`,
-					`To remove a port from the service, prefix it with '!', e.g. '!80'`,
+					"For each route, you must specify a matching port with the --ports flag",
 				},
 				Orig:     nil,
 				Solution: "Set the ports and try again",
@@ -565,7 +558,7 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 		}
 		// One route set
 		portNumber := currentRoutes[0].GetPort()
-		definition.SetPorts(setDefaultPort(portNumber))
+		definition.SetPorts(getDeploymentPort(portNumber))
 	}
 	return nil
 }
