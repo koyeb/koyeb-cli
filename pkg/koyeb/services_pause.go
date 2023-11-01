@@ -9,7 +9,12 @@ import (
 )
 
 func (h *ServiceHandler) Pause(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	service, err := h.ResolveServiceArgs(ctx, args[0])
+	serviceName, err := parseServiceName(cmd, args[0])
+	if err != nil {
+		return err
+	}
+
+	service, err := h.ResolveServiceArgs(ctx, serviceName)
 	if err != nil {
 		return err
 	}
@@ -17,11 +22,11 @@ func (h *ServiceHandler) Pause(ctx *CLIContext, cmd *cobra.Command, args []strin
 	_, resp, err := ctx.Client.ServicesApi.PauseService(ctx.Context, service).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while pausing the service `%s`", args[0]),
+			fmt.Sprintf("Error while pausing the service `%s`", serviceName),
 			err,
 			resp,
 		)
 	}
-	log.Infof("Service %s pausing.", args[0])
+	log.Infof("Service %s pausing.", serviceName)
 	return nil
 }
