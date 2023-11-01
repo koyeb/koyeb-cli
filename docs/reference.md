@@ -1301,7 +1301,8 @@ koyeb services get NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for get
+  -a, --app string   Service application
+  -h, --help         help for get
 ```
 
 ### Options inherited from parent commands
