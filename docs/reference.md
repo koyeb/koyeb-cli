@@ -1270,7 +1270,8 @@ koyeb services exec NAME CMD -- [args...] [flags]
 ### Options
 
 ```
-  -h, --help   help for exec
+  -a, --app string   Service application
+  -h, --help         help for exec
 ```
 
 ### Options inherited from parent commands
