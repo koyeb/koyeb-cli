@@ -1406,7 +1406,8 @@ koyeb services pause NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for pause
+  -a, --app string   Service application
+  -h, --help         help for pause
 ```
 
 ### Options inherited from parent commands
