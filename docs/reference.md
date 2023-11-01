@@ -1473,7 +1473,8 @@ koyeb services resume NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for resume
+  -a, --app string   Service application
+  -h, --help         help for resume
 ```
 
 ### Options inherited from parent commands
