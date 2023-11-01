@@ -108,7 +108,11 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 # Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			service, err := h.ResolveServiceArgs(ctx, args[0])
+			serviceName, err := parseServiceName(cmd, args[0])
+			if err != nil {
+				return err
+			}
+			service, err := h.ResolveServiceArgs(ctx, serviceName)
 			if err != nil {
 				return err
 			}
@@ -149,6 +153,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		}),
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
+	updateServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{

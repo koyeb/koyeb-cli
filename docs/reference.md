@@ -1507,6 +1507,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 ### Options
 
 ```
+  -a, --app string                              Service application
       --checks strings                          Update service healthchecks (available for services of type "web" only)
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
