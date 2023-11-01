@@ -9,7 +9,12 @@ import (
 )
 
 func (h *ServiceHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	service, err := h.ResolveServiceArgs(ctx, args[0])
+	serviceName, err := parseServiceName(cmd, args[0])
+	if err != nil {
+		return err
+	}
+
+	service, err := h.ResolveServiceArgs(ctx, serviceName)
 	if err != nil {
 		return err
 	}
@@ -17,11 +22,11 @@ func (h *ServiceHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []stri
 	_, resp, err := ctx.Client.ServicesApi.DeleteService(ctx.Context, service).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while deleting the service `%s`", args[0]),
+			fmt.Sprintf("Error while deleting the service `%s`", serviceName),
 			err,
 			resp,
 		)
 	}
-	log.Infof("Service %s deleted.", args[0])
+	log.Infof("Service %s deleted.", serviceName)
 	return nil
 }

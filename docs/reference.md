@@ -1205,7 +1205,8 @@ koyeb services delete NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for delete
+  -a, --app string   Service application
+  -h, --help         help for delete
 ```
 
 ### Options inherited from parent commands

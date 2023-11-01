@@ -175,6 +175,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Delete),
 	}
+	deleteServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(deleteServiceCmd)
 
 	pauseServiceCmd := &cobra.Command{
