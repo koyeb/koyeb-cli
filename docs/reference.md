@@ -1368,6 +1368,7 @@ koyeb services logs NAME [flags]
 ### Options
 
 ```
+  -a, --app string        Service application
   -h, --help              help for logs
       --instance string   Instance
   -t, --type string       Type (runtime, build)

@@ -70,9 +70,10 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 		Args:    cobra.ExactArgs(1),
 		RunE:    WithCLIContext(h.Logs),
 	}
-	serviceCmd.AddCommand(logsServiceCmd)
+	logsServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
+	serviceCmd.AddCommand(logsServiceCmd)
 
 	listServiceCmd := &cobra.Command{
 		Use:   "list",
