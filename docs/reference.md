@@ -1437,8 +1437,9 @@ koyeb services redeploy NAME [flags]
 ### Options
 
 ```
-  -h, --help        help for redeploy
-      --use-cache   Use cache to redeploy
+  -a, --app string   Service application
+  -h, --help         help for redeploy
+      --use-cache    Use cache to redeploy
 ```
 
 ### Options inherited from parent commands
