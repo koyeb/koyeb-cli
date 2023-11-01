@@ -115,6 +115,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 			if err != nil {
 				return err
 			}
+
 			service, err := h.ResolveServiceArgs(ctx, serviceName)
 			if err != nil {
 				return err
@@ -979,15 +980,18 @@ func setRegions(definition *koyeb.DeploymentDefinition, regions []string) {
 // The service name must be in the form <app>/<service> or <service>.
 var ServiceNameRegexp = regexp.MustCompile(`^(?:(?P<app_name>[^/]+)/)?(?P<service_name>[^/]+)$`)
 
-// parseServiceName returns the service name in the form <app>/<service>.
+// parseServiceName returns the service name in the form <app>/<service>, or
+// <service> if the application name is not specified.
 //
-// Service commands accept two syntaxes to specify the service name:
+// For context, all the "koyeb service" commands accept two syntaxes to specify
+// the service name:
 // - <app>/<service>
-// - <service> in which case the application must be specified with the --app flag
+// - <service> in which case the application can be specified with the --app flag
 //
-// This function returns the service name in the form <app>/<service>, and
-// returns an error if the service name is invalid, or if both --app and
-// <app>/<service> are specified but the application names do not match.
+// This function returns the service name in the form <app>/<service> or
+// <service>, and returns an error if the service name is invalid, or if both
+// --app and <app>/<service> are specified but the application names do not
+// match.
 func parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
 	match := ServiceNameRegexp.FindStringSubmatch(serviceName)
 
@@ -1019,13 +1023,7 @@ func parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
 		), nil
 	}
 	if match[ServiceNameRegexp.SubexpIndex("app_name")] == "" {
-		return "", &errors.CLIError{
-			What:       "Missing application name",
-			Why:        "the application name is missing from the service name and the --app flag is not set",
-			Additional: nil,
-			Orig:       nil,
-			Solution:   "Provide the application name with the --app flag, or use the form <app>/<service> for the service name",
-		}
+		return match[ServiceNameRegexp.SubexpIndex("service_name")], nil
 	}
 	return fmt.Sprintf(
 		"%s/%s",

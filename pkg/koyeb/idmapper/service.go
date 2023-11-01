@@ -46,7 +46,7 @@ func (mapper *ServiceMapper) ResolveID(val string) (string, error) {
 		return id, nil
 	}
 
-	id, ok = mapper.slugMap.GetID(val)
+	id, ok = mapper.slugMap.GetValue(val)
 	if ok {
 		return id, nil
 	}
@@ -118,14 +118,35 @@ func (mapper *ServiceMapper) fetch() error {
 			return err
 		}
 
-		serviceID := service.GetId()
-		serviceSID := getShortID(serviceID, minLength)
-		serviceName := service.GetName()
-		serviceSlug := fmt.Sprint(appName, "/", serviceName)
+		mapper.sidMap.Set(service.GetId(), getShortID(service.GetId(), minLength))
 
-		mapper.sidMap.Set(serviceID, serviceSID)
-		mapper.slugMap.Set(serviceID, serviceSlug)
+		// Possible values:
+		// <app_name>/<service_id>
+		// <app_id>/<service_id>
+		// <app_short_id>/<service_id>
+		//
+		// <app_name>/<short_service_id>
+		// <app_id>/<short_service_id>
+		// <app_short_id>/<short_service_id>
+		//
+		// <app_name>/<service_name>
+		// <app_id>/<service_name>
+		// <app_short_id>/<service_name>
+		for _, key := range []string{
+			fmt.Sprint(appName, "/", service.GetId()),
+			fmt.Sprint(service.GetAppId(), "/", service.GetId()),
+			fmt.Sprint(service.GetAppId()[:8], "/", service.GetId()),
 
+			fmt.Sprint(appName, "/", getShortID(service.GetId(), minLength)),
+			fmt.Sprint(service.GetAppId(), "/", getShortID(service.GetId(), minLength)),
+			fmt.Sprint(service.GetAppId()[:8], "/", getShortID(service.GetId(), minLength)),
+
+			fmt.Sprint(appName, "/", service.GetName()),
+			fmt.Sprint(service.GetAppId(), "/", service.GetName()),
+			fmt.Sprint(service.GetAppId()[:8], "/", service.GetName()),
+		} {
+			mapper.slugMap.Set(key, service.GetId())
+		}
 		return nil
 	})
 	if err != nil {
