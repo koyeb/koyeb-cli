@@ -165,6 +165,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.ReDeploy),
 	}
+	redeployServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(redeployServiceCmd)
 	redeployServiceCmd.Flags().Bool("use-cache", false, "Use cache to redeploy")
 
