@@ -10,7 +10,12 @@ import (
 )
 
 func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	service, err := h.ResolveServiceArgs(ctx, args[0])
+	serviceName, err := parseServiceName(cmd, args[0])
+	if err != nil {
+		return err
+	}
+
+	service, err := h.ResolveServiceArgs(ctx, serviceName)
 	if err != nil {
 		return err
 	}
@@ -18,7 +23,7 @@ func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []st
 	res, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, service).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while retrieving the service `%s`", args[0]),
+			fmt.Sprintf("Error while retrieving the service `%s`", serviceName),
 			err,
 			resp,
 		)
@@ -36,7 +41,7 @@ func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []st
 		Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while listing the instances of the service `%s`", args[0]),
+			fmt.Sprintf("Error while listing the instances of the service `%s`", serviceName),
 			err,
 			resp,
 		)
@@ -45,7 +50,7 @@ func (h *ServiceHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []st
 	deploymentsRes, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).ServiceId(res.Service.GetId()).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while listing the deployments of the service `%s`", args[0]),
+			fmt.Sprintf("Error while listing the deployments of the service `%s`", serviceName),
 			err,
 			resp,
 		)
