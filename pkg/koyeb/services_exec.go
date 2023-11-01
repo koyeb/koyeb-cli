@@ -10,7 +10,12 @@ import (
 )
 
 func (h *ServiceHandler) Exec(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	service, err := h.ResolveServiceArgs(ctx, args[0])
+	serviceName, err := parseServiceName(cmd, args[0])
+	if err != nil {
+		return err
+	}
+
+	service, err := h.ResolveServiceArgs(ctx, serviceName)
 	if err != nil {
 		return err
 	}
