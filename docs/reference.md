@@ -1237,7 +1237,8 @@ koyeb services describe NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for describe
+  -a, --app string   Service application
+  -h, --help         help for describe
 ```
 
 ### Options inherited from parent commands
