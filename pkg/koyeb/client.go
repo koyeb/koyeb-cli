@@ -55,6 +55,7 @@ func getApiClient() (*koyeb.APIClient, error) {
 	log.Debugf("Using host: %s using %s", u.Host, u.Scheme)
 
 	config := koyeb.NewConfiguration()
+	config.UserAgent = "koyeb-cli/" + Version
 	config.Servers[0].URL = u.String()
 	config.HTTPClient = &http.Client{
 		Transport: &DebugTransport{http.DefaultTransport},
