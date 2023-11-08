@@ -4,6 +4,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/121
 * Update the user agent from 'OpenAPI-Generator/1.0.0/go' to 'koyeb-cli/version'
   - https://github.com/koyeb/koyeb-cli/pull/149
+* The new flag `--override` of `koyeb service update` allows to override the service configuration instead of merging the other options provided with the existing configuration.
+  - https://github.com/koyeb/koyeb-cli/issues/147
 
 **v3.3.2**
 

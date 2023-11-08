@@ -150,7 +150,20 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 					Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
 				}
 			}
-			updateDef := latestDeploy.GetDeployments()[0].Definition
+
+			var updateDef *koyeb.DeploymentDefinition
+
+			// If the --override flag is set, we start from a new deployment
+			// definition with default values. Otherwise, we start from the
+			// latest deployment definition.
+			override, _ := cmd.Flags().GetBool("override")
+			if override {
+				updateDef = koyeb.NewDeploymentDefinitionWithDefaults()
+				updateDef.Name = latestDeploy.GetDeployments()[0].Definition.Name
+			} else {
+				updateDef = latestDeploy.GetDeployments()[0].Definition
+			}
+
 			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef)
 			if err != nil {
 				return err
@@ -161,6 +174,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
 	updateServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	updateServiceCmd.Flags().Bool("override", false, "Override the service configuration with the new configuration instead of merging them")
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{
