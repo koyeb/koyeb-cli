@@ -90,7 +90,7 @@ func (r *ListDatabasesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListDatabasesReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "created_at"}
+	return []string{"id", "name", "region", "engine", "status", "used_storage", "created_at"}
 }
 
 func (r *ListDatabasesReply) Fields() []map[string]string {
@@ -100,19 +100,28 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 	for _, item := range items {
 		var region string
 		var engine string
+		var usedStorage string
 
 		if item.Deployment.DatabaseInfo.HasNeonPostgres() {
 			region = item.Deployment.Definition.GetDatabase().NeonPostgres.GetRegion()
 			engine = fmt.Sprintf("Postgres %d", item.Deployment.Definition.GetDatabase().NeonPostgres.GetPgVersion())
+
+			size, _ := strconv.Atoi(item.Deployment.DatabaseInfo.NeonPostgres.GetDefaultBranchLogicalSize())
+			// Convert to MB
+			size = size / 1024 / 1024
+			// The maximum size is 3GB and is not configurable yet.
+			maxSize := 3 * 1024
+			usedStorage = fmt.Sprintf("%dMB/%dMB (%d%%)", size, maxSize, size*100/maxSize)
 		}
 
 		fields := map[string]string{
-			"id":         renderer.FormatID(item.Service.GetId(), r.full),
-			"name":       item.Service.GetName(),
-			"region":     region,
-			"engine":     engine,
-			"status":     formatServiceStatus(item.Service.GetStatus()),
-			"created_at": renderer.FormatTime(item.Service.GetCreatedAt()),
+			"id":           renderer.FormatID(item.Service.GetId(), r.full),
+			"name":         item.Service.GetName(),
+			"region":       region,
+			"engine":       engine,
+			"status":       formatServiceStatus(item.Service.GetStatus()),
+			"used_storage": usedStorage,
+			"created_at":   renderer.FormatTime(item.Service.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
 	}
