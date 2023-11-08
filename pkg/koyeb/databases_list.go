@@ -90,7 +90,7 @@ func (r *ListDatabasesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListDatabasesReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "used_storage", "created_at"}
+	return []string{"id", "name", "region", "engine", "status", "active_time", "used_storage", "created_at"}
 }
 
 func (r *ListDatabasesReply) Fields() []map[string]string {
@@ -98,10 +98,11 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {
-		var region string
-		var engine string
-		var usedStorage string
+		var region, engine, activeTime, usedStorage string
 
+		// At the moment, we only support neon postgres so the if statement is
+		// always true. If we add support for other providers in the future, the statement
+		// will prevent a nil pointer dereference.
 		if item.Deployment.DatabaseInfo.HasNeonPostgres() {
 			region = item.Deployment.Definition.GetDatabase().NeonPostgres.GetRegion()
 			engine = fmt.Sprintf("Postgres %d", item.Deployment.Definition.GetDatabase().NeonPostgres.GetPgVersion())
@@ -111,6 +112,9 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 			size = size / 1024 / 1024
 			// The maximum size is 3GB and is not configurable yet.
 			maxSize := 3 * 1024
+			activeTimeValue, _ := strconv.ParseFloat(item.Deployment.DatabaseInfo.NeonPostgres.GetActiveTimeSeconds(), 32)
+			// The maximum active time is 100h and is not configurable yet.
+			activeTime = fmt.Sprintf("%.1fh/100h", activeTimeValue/60/60)
 			usedStorage = fmt.Sprintf("%dMB/%dMB (%d%%)", size, maxSize, size*100/maxSize)
 		}
 
@@ -120,6 +124,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 			"region":       region,
 			"engine":       engine,
 			"status":       formatServiceStatus(item.Service.GetStatus()),
+			"active_time":  activeTime,
 			"used_storage": usedStorage,
 			"created_at":   renderer.FormatTime(item.Service.GetCreatedAt()),
 		}
