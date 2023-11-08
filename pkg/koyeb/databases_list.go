@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -11,8 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// DatabaseInfo wraps a service returned by the services API and it's latest deployment.
+type DatabaseInfo struct {
+	Service    koyeb.ServiceListItem `json:"service"`
+	Deployment koyeb.Deployment      `json:"deployment"`
+}
+
 func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	list := []koyeb.ServiceListItem{}
+	list := []DatabaseInfo{}
 
 	page := int64(0)
 	offset := int64(0)
@@ -31,7 +38,21 @@ func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 			)
 		}
 
-		list = append(list, res.GetServices()...)
+		for _, svc := range res.GetServices() {
+			res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, svc.GetLatestDeploymentId()).Execute()
+			if err != nil {
+				return errors.NewCLIErrorFromAPIError(
+					fmt.Sprintf("Error while fetching the deployment for the database service `%s`", svc.GetId()),
+					err,
+					resp,
+				)
+			}
+
+			list = append(list, DatabaseInfo{
+				Service:    svc,
+				Deployment: *res.Deployment,
+			})
+		}
 
 		page++
 		offset = page * limit
@@ -41,47 +62,57 @@ func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 	}
 
 	full := GetBoolFlags(cmd, "full")
-	listDatabasesReply := NewListDatabasesReply(ctx.Mapper, &koyeb.ListServicesReply{Services: list}, full)
+	listDatabasesReply := NewListDatabasesReply(ctx.Mapper, list, full)
 	ctx.Renderer.Render(listDatabasesReply)
 	return nil
 }
 
 type ListDatabasesReply struct {
-	mapper *idmapper.Mapper
-	value  *koyeb.ListServicesReply
-	full   bool
+	mapper    *idmapper.Mapper
+	databases []DatabaseInfo
+	full      bool
 }
 
-func NewListDatabasesReply(mapper *idmapper.Mapper, value *koyeb.ListServicesReply, full bool) *ListDatabasesReply {
+func NewListDatabasesReply(mapper *idmapper.Mapper, databases []DatabaseInfo, full bool) *ListDatabasesReply {
 	return &ListDatabasesReply{
-		mapper: mapper,
-		value:  value,
-		full:   full,
+		mapper:    mapper,
+		databases: databases,
+		full:      full,
 	}
 }
 
 func (ListDatabasesReply) Title() string {
-	return "Services"
+	return "Databases"
 }
 
 func (r *ListDatabasesReply) MarshalBinary() ([]byte, error) {
-	return r.value.MarshalJSON()
+	return json.Marshal(r.databases)
 }
 
 func (r *ListDatabasesReply) Headers() []string {
-	return []string{"id", "name", "status", "created_at"}
+	return []string{"id", "name", "region", "engine", "status", "created_at"}
 }
 
 func (r *ListDatabasesReply) Fields() []map[string]string {
-	items := r.value.GetServices()
+	items := r.databases
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {
+		var region string
+		var engine string
+
+		if item.Deployment.DatabaseInfo.HasNeonPostgres() {
+			region = item.Deployment.Definition.GetDatabase().NeonPostgres.GetRegion()
+			engine = fmt.Sprintf("Postgres %d", item.Deployment.Definition.GetDatabase().NeonPostgres.GetPgVersion())
+		}
+
 		fields := map[string]string{
-			"id":         renderer.FormatID(item.GetId(), r.full),
-			"name":       item.GetName(),
-			"status":     formatServiceStatus(item.GetStatus()),
-			"created_at": renderer.FormatTime(item.GetCreatedAt()),
+			"id":         renderer.FormatID(item.Service.GetId(), r.full),
+			"name":       item.Service.GetName(),
+			"region":     region,
+			"engine":     engine,
+			"status":     formatServiceStatus(item.Service.GetStatus()),
+			"created_at": renderer.FormatTime(item.Service.GetCreatedAt()),
 		}
 		resp = append(resp, fields)
 	}
