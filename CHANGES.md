@@ -1,12 +1,9 @@
 **Unreleased**
 
-Update the user agent from 'OpenAPI-Generator/1.0.0/go' to 'koyeb-cli/version'
-  https://github.com/koyeb/koyeb-cli/pull/149
-
-**v3.3.3**
-
 * Accept the two syntaxes `--app xxx` and `<app>/<service_name>` for koyeb service commands
   - https://github.com/koyeb/koyeb-cli/issues/121
+* Update the user agent from 'OpenAPI-Generator/1.0.0/go' to 'koyeb-cli/version'
+  - https://github.com/koyeb/koyeb-cli/pull/149
 
 **v3.3.2**
 
