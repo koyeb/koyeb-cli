@@ -34,11 +34,11 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 		}
 		res, resp, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
-			return errors.NewCLIErrorFromAPIError(
-				fmt.Sprintf("Error while listing the services of `%s`", appId),
-				err,
-				resp,
-			)
+			errTitle := "Error while listing services"
+			if appId != "" {
+				errTitle = fmt.Sprintf("Error while listing the services of the application `%s`", appId)
+			}
+			return errors.NewCLIErrorFromAPIError(errTitle, err, resp)
 		}
 
 		list = append(list, res.GetServices()...)
