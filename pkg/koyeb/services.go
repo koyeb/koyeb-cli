@@ -43,15 +43,18 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 			if err != nil {
 				return err
 			}
-			createDefinition.Name = koyeb.PtrString(args[0])
 
-			createService.SetDefinition(*createDefinition)
+			serviceName, err := parseServiceNameWithoutApp(cmd, args[0])
+			if err != nil {
+				return err
+			}
+
+			createDefinition.Name = koyeb.PtrString(serviceName)
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
 	addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
-	createServiceCmd.MarkFlagRequired("app") //nolint:errcheck
 	serviceCmd.AddCommand(createServiceCmd)
 
 	getServiceCmd := &cobra.Command{
@@ -1030,4 +1033,36 @@ func parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
 		match[ServiceNameRegexp.SubexpIndex("app_name")],
 		match[ServiceNameRegexp.SubexpIndex("service_name")],
 	), nil
+}
+
+// parseServiceNameWithoutApp is similar to parseServiceName, but does not return the application name.
+func parseServiceNameWithoutApp(cmd *cobra.Command, serviceName string) (string, error) {
+	name, err := parseServiceName(cmd, serviceName)
+	if err != nil {
+		return "", err
+	}
+	split := strings.SplitN(name, "/", 2)
+	if len(split) == 1 {
+		return split[0], nil
+	}
+	return split[1], nil
+}
+
+// parseAppName is similar to parseServiceName, but returns the application name. If the application name is not specified, an error is returned.
+func parseAppName(cmd *cobra.Command, serviceName string) (string, error) {
+	name, err := parseServiceName(cmd, serviceName)
+	if err != nil {
+		return "", err
+	}
+	split := strings.SplitN(name, "/", 2)
+	if len(split) == 1 {
+		return "", &errors.CLIError{
+			What:       "Missing application name",
+			Why:        "the application name has not been provided",
+			Additional: nil,
+			Orig:       nil,
+			Solution:   "Set the flag --app, or specify the application name in the service name with the form <app>/<service>",
+		}
+	}
+	return split[0], nil
 }
