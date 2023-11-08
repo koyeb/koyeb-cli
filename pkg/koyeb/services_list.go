@@ -41,7 +41,13 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 			return errors.NewCLIErrorFromAPIError(errTitle, err, resp)
 		}
 
-		list = append(list, res.GetServices()...)
+		for _, svc := range res.GetServices() {
+			// Database services are displayed in the database command
+			if svc.GetType() == koyeb.SERVICETYPE_DATABASE {
+				continue
+			}
+			list = append(list, svc)
+		}
 
 		page++
 		offset = page * limit
