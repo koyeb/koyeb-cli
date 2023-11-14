@@ -32,6 +32,7 @@ Koyeb CLI
 
 * [koyeb apps](#koyeb-apps)	 - Apps
 
+* [koyeb databases](#koyeb-databases)	 - Databases
 * [koyeb deployments](#koyeb-deployments)	 - Deployments
 * [koyeb domains](#koyeb-domains)	 - Domains
 * [koyeb instances](#koyeb-instances)	 - Instances
