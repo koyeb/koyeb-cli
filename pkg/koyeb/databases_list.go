@@ -12,14 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// DatabaseInfo wraps a service returned by the services API and it's latest deployment.
-type DatabaseInfo struct {
+// DatabaseListItemInfo wraps a service returned by the services API and it's latest deployment.
+type DatabaseListItemInfo struct {
 	Service    koyeb.ServiceListItem `json:"service"`
 	Deployment koyeb.Deployment      `json:"deployment"`
 }
 
 func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	list := []DatabaseInfo{}
+	list := []DatabaseListItemInfo{}
 
 	page := int64(0)
 	offset := int64(0)
@@ -48,7 +48,7 @@ func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 				)
 			}
 
-			list = append(list, DatabaseInfo{
+			list = append(list, DatabaseListItemInfo{
 				Service:    svc,
 				Deployment: *res.Deployment,
 			})
@@ -69,11 +69,11 @@ func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 
 type ListDatabasesReply struct {
 	mapper    *idmapper.Mapper
-	databases []DatabaseInfo
+	databases []DatabaseListItemInfo
 	full      bool
 }
 
-func NewListDatabasesReply(mapper *idmapper.Mapper, databases []DatabaseInfo, full bool) *ListDatabasesReply {
+func NewListDatabasesReply(mapper *idmapper.Mapper, databases []DatabaseListItemInfo, full bool) *ListDatabasesReply {
 	return &ListDatabasesReply{
 		mapper:    mapper,
 		databases: databases,

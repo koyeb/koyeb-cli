@@ -15,6 +15,7 @@ type Mapper struct {
 	instance     *InstanceMapper
 	secret       *SecretMapper
 	organization *OrganizationMapper
+	database     *DatabaseMapper
 }
 
 func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
@@ -26,6 +27,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 	instanceMapper := NewInstanceMapper(ctx, client)
 	secretMapper := NewSecretMapper(ctx, client)
 	organizationMapper := NewOrganizationMapper(ctx, client)
+	databaseMapper := NewDatabaseMapper(ctx, client)
 
 	return &Mapper{
 		app:          appMapper,
@@ -36,6 +38,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 		instance:     instanceMapper,
 		secret:       secretMapper,
 		organization: organizationMapper,
+		database:     databaseMapper,
 	}
 }
 
@@ -69,4 +72,8 @@ func (mapper *Mapper) Secret() *SecretMapper {
 
 func (mapper *Mapper) Organization() *OrganizationMapper {
 	return mapper.organization
+}
+
+func (mapper *Mapper) Database() *DatabaseMapper {
+	return mapper.database
 }

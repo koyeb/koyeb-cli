@@ -18,6 +18,14 @@ func NewDatabaseCmd() *cobra.Command {
 	}
 	databaseCmd.AddCommand(listDbCmd)
 
+	getDbCmd := &cobra.Command{
+		Use:   "get NAME",
+		Short: "Get database",
+		Args:  cobra.ExactArgs(1),
+		RunE:  WithCLIContext(h.Get),
+	}
+	databaseCmd.AddCommand(getDbCmd)
+
 	return databaseCmd
 }
 
@@ -29,5 +37,10 @@ type DatabaseHandler struct {
 }
 
 func (h *DatabaseHandler) ResolveDatabaseArgs(ctx *CLIContext, val string) (string, error) {
-	return "", nil
+	databaseMapper := ctx.Mapper.Database()
+	id, err := databaseMapper.ResolveID(val)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
