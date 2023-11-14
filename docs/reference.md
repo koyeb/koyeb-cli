@@ -1547,6 +1547,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
+      --override                                Override the service configuration with the new configuration instead of merging them
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
                                                 If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
