@@ -864,6 +864,7 @@ Secrets
 * [koyeb secrets describe](#koyeb-secrets-describe)	 - Describe secret
 * [koyeb secrets get](#koyeb-secrets-get)	 - Get secret
 * [koyeb secrets list](#koyeb-secrets-list)	 - List secrets
+* [koyeb secrets show](#koyeb-secrets-show)	 - Show secret value
 * [koyeb secrets update](#koyeb-secrets-update)	 - Update secret
 
 ## koyeb secrets create
@@ -1008,6 +1009,38 @@ koyeb secrets list [flags]
 
 ```
   -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb secrets](#koyeb-secrets)	 - Secrets
+
+## koyeb secrets show
+
+Show secret value
+
+```
+koyeb secrets show NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for show
 ```
 
 ### Options inherited from parent commands

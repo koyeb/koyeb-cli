@@ -73,6 +73,14 @@ func NewSecretCmd() *cobra.Command {
 	}
 	secretCmd.AddCommand(deleteSecretCmd)
 
+	showSecretCmd := &cobra.Command{
+		Use:   "show NAME",
+		Short: "Show secret value",
+		Args:  cobra.ExactArgs(1),
+		RunE:  WithCLIContext(h.Show),
+	}
+	secretCmd.AddCommand(showSecretCmd)
+
 	return secretCmd
 }
 
