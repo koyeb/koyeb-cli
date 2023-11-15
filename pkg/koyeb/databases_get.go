@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -14,8 +15,60 @@ import (
 
 // DatabaseListItemInfo wraps a service returned by the services API and it's latest deployment.
 type DatabaseInfo struct {
-	Service    koyeb.Service    `json:"service"`
-	Deployment koyeb.Deployment `json:"deployment"`
+	Service           koyeb.Service    `json:"service"`
+	Deployment        koyeb.Deployment `json:"deployment"`
+	ConnectionStrings []string
+}
+
+// Given a koyeb.DatabaseSource (stored in a koyeb.DeploymentDefinition object), return the list of roles.
+func getConnectionStrings(ctx *CLIContext, dbSource koyeb.DatabaseSource, dbInfo koyeb.DeploymentDatabaseInfo) ([]string, error) {
+	// At the moment, we only support neon postgres so the if statement is always true.
+	neon, hasNeon := dbInfo.GetNeonPostgresOk()
+	if !hasNeon {
+		return nil, nil
+	}
+
+	connectionStrings := []string{}
+	for _, role := range neon.Roles {
+		body := make(map[string]interface{})
+		res, resp, err := ctx.Client.SecretsApi.RevealSecret(ctx.Context, role.GetSecretId()).Body(body).Execute()
+		if err != nil {
+			return nil, errors.NewCLIErrorFromAPIError(
+				fmt.Sprintf("Error while revealing the secret `%s` for the database role `%s`", role.GetSecretId(), role.GetName()),
+				err,
+				resp,
+			)
+		}
+
+		formatError := &errors.CLIError{
+			What:     fmt.Sprintf("Unable to get the password for the database role %s", role.GetName()),
+			Why:      "the response format cannot be understood by the CLI",
+			Orig:     nil,
+			Solution: "Try to update the CLI to the latest version. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
+		}
+
+		username, ok := res.Value["username"]
+		if !ok {
+			return nil, formatError
+		}
+		password, ok := res.Value["password"]
+		if !ok {
+			return nil, formatError
+		}
+
+		for _, db := range dbSource.GetNeonPostgres().Databases {
+			s := fmt.Sprintf(
+				"postgres://%s:%s@%s:%d/%s",
+				username,
+				password,
+				neon.GetServerHost(),
+				neon.GetServerPort(),
+				*db.Name,
+			)
+			connectionStrings = append(connectionStrings, s)
+		}
+	}
+	return connectionStrings, nil
 }
 
 func (h *DatabaseHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
@@ -42,10 +95,23 @@ func (h *DatabaseHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string
 		)
 	}
 
+	connectionStrings, err := getConnectionStrings(
+		ctx,
+		resDeployment.Deployment.Definition.GetDatabase(),
+		resDeployment.Deployment.GetDatabaseInfo(),
+	)
+	if err != nil {
+		return err
+	}
+
 	full := GetBoolFlags(cmd, "full")
 	getDatabaseReply := NewGetDatabaseReply(
 		ctx.Mapper,
-		DatabaseInfo{Service: resService.GetService(), Deployment: resDeployment.GetDeployment()},
+		DatabaseInfo{
+			Service:           resService.GetService(),
+			Deployment:        resDeployment.GetDeployment(),
+			ConnectionStrings: connectionStrings,
+		},
 		full,
 	)
 	ctx.Renderer.Render(getDatabaseReply)
@@ -75,7 +141,7 @@ func (r *GetDatabaseReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetDatabaseReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "active_time", "used_storage", "created_at"}
+	return []string{"id", "name", "region", "engine", "status", "active_time", "used_storage", "created_at", "connection_strings"}
 }
 
 func (r *GetDatabaseReply) Fields() []map[string]string {
@@ -100,14 +166,15 @@ func (r *GetDatabaseReply) Fields() []map[string]string {
 	}
 
 	fields := map[string]string{
-		"id":           renderer.FormatID(r.value.Service.GetId(), r.full),
-		"name":         r.value.Service.GetName(),
-		"region":       region,
-		"engine":       engine,
-		"status":       formatServiceStatus(r.value.Service.GetStatus()),
-		"active_time":  activeTime,
-		"used_storage": usedStorage,
-		"created_at":   renderer.FormatTime(r.value.Service.GetCreatedAt()),
+		"id":                 renderer.FormatID(r.value.Service.GetId(), r.full),
+		"name":               r.value.Service.GetName(),
+		"region":             region,
+		"engine":             engine,
+		"status":             formatServiceStatus(r.value.Service.GetStatus()),
+		"active_time":        activeTime,
+		"used_storage":       usedStorage,
+		"created_at":         renderer.FormatTime(r.value.Service.GetCreatedAt()),
+		"connection_strings": strings.Join(r.value.ConnectionStrings, "\n"),
 	}
 	return []map[string]string{fields}
 }
