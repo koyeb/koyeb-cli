@@ -26,6 +26,7 @@ func NewOrganizationCmd() *cobra.Command {
 	switchCmd := &cobra.Command{
 		Use:   "switch",
 		Short: "Switch the CLI context to another organization",
+		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Switch),
 	}
 	rootCmd.AddCommand(switchCmd)
