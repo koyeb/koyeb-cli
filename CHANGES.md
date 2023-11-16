@@ -8,6 +8,9 @@
   - https://github.com/koyeb/koyeb-cli/issues/147
 * Support `koyeb secret show <secret_name>`. *The API behind this command is not stable yet and may change in the future. This command can break at any time and will require an update of the CLI.*
   - https://github.com/koyeb/koyeb-cli/issues/150
+* Fix an issue where running `koyeb organizations switch` without specifying an organization or specifying more than one organization would crash.
+  - https://github.com/koyeb/koyeb-cli/issues/151
+
 
 **v3.3.2**
 
