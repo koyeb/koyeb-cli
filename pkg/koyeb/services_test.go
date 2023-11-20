@@ -347,10 +347,10 @@ func TestSetDefaultPortsAndRoutes(t *testing.T) {
 			definition: koyeb.DeploymentDefinition{},
 			expected: koyeb.DeploymentDefinition{
 				Ports: []koyeb.DeploymentPort{
-					{Port: koyeb.PtrInt64(80), Protocol: koyeb.PtrString("http")},
+					{Port: koyeb.PtrInt64(8000), Protocol: koyeb.PtrString("http")},
 				},
 				Routes: []koyeb.DeploymentRoute{
-					{Port: koyeb.PtrInt64(80), Path: koyeb.PtrString("/")},
+					{Port: koyeb.PtrInt64(8000), Path: koyeb.PtrString("/")},
 				},
 			},
 			expectedErr: false,
