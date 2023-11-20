@@ -864,7 +864,7 @@ Secrets
 * [koyeb secrets describe](#koyeb-secrets-describe)	 - Describe secret
 * [koyeb secrets get](#koyeb-secrets-get)	 - Get secret
 * [koyeb secrets list](#koyeb-secrets-list)	 - List secrets
-* [koyeb secrets show](#koyeb-secrets-show)	 - Show secret value
+* [koyeb secrets reveal](#koyeb-secrets-reveal)	 - Show secret value
 * [koyeb secrets update](#koyeb-secrets-update)	 - Update secret
 
 ## koyeb secrets create
@@ -1029,18 +1029,18 @@ koyeb secrets list [flags]
 
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 
-## koyeb secrets show
+## koyeb secrets reveal
 
 Show secret value
 
 ```
-koyeb secrets show NAME [flags]
+koyeb secrets reveal NAME [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for show
+  -h, --help   help for reveal
 ```
 
 ### Options inherited from parent commands

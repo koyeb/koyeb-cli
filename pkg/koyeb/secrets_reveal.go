@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *SecretHandler) Show(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+func (h *SecretHandler) Reveal(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	secret, err := ResolveSecretArgs(ctx, args[0])
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (h *SecretHandler) Show(ctx *CLIContext, cmd *cobra.Command, args []string)
 	// from the response body.
 	if resp.StatusCode != 200 && err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while showing the secret `%s`", args[0]),
+			fmt.Sprintf("Error while revealing the secret `%s`", args[0]),
 			err,
 			resp,
 		)
