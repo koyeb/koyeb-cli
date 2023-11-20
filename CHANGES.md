@@ -10,6 +10,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/150
 * Fix an issue where running `koyeb organizations switch` without specifying an organization or specifying more than one organization would crash.
   - https://github.com/koyeb/koyeb-cli/issues/151
+* The default --port and --route for `koyeb service create` is now the port 8000 to match the default of https://app.koyeb.com
+  - https://github.com/koyeb/koyeb-cli/issues/152
 
 
 **v3.3.2**
