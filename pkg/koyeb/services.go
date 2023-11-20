@@ -27,11 +27,11 @@ func NewServiceCmd() *cobra.Command {
 		Short: "Create service",
 		Args:  cobra.ExactArgs(1),
 		Example: `
-# Deploy a nginx docker image, with default port (80:http), default route (/:80)
-$> koyeb service create myservice --app myapp --docker nginx
+# Deploy a nginx docker image, listening on port 80
+$> koyeb service create myservice --app myapp --docker nginx --port 80
 
-# Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 8000 to the root route
-$> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=8000 --port 8000:http --route /:8000
+# Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 9000 to the root route
+$> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=9000 --port 9000:http --route /:9000
 
 # Build and deploy a GitHub repository using docker
 $> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker`,
@@ -272,14 +272,14 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 		"routes",
 		nil,
 		"Update service routes (available for services of type \"web\" only) using the format PATH[:PORT], for example '/foo:8080'\n"+
-			"If no port is specified, it defaults to 80\n"+
+			"PORT defaults to 8000\n"+
 			"To delete a route, use '!PATH', for example --route '!/foo'\n",
 	)
 	flags.StringSlice(
 		"ports",
 		nil,
-		"Update service ports (available for services of type \"web\" only) using the format PORT[:PROTOCOL], for example --port 80:http\n"+
-			"If no protocol is specified, it defaults to \"http\". Supported protocols are \"http\" and \"http2\"\n"+
+		"Update service ports (available for services of type \"web\" only) using the format PORT[:PROTOCOL], for example --port 8080:http\n"+
+			"PROTOCOL defaults to \"http\". Supported protocols are \"http\" and \"http2\"\n"+
 			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
 	)
 	flags.StringSlice(
@@ -554,8 +554,8 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 	switch {
 	// If no route and no port is specified, add the default route and port
 	case len(currentPorts) == 0 && len(currentRoutes) == 0:
-		definition.SetPorts(getDeploymentPort(80))
-		definition.SetRoutes(getDeploymentRoute(80))
+		definition.SetPorts(getDeploymentPort(8000))
+		definition.SetRoutes(getDeploymentRoute(8000))
 
 	// One or more port set, no route set
 	case len(currentPorts) > 0 && len(currentRoutes) == 0:

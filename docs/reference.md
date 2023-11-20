@@ -281,8 +281,8 @@ koyeb apps init NAME [flags]
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
-                                                If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
+      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                PROTOCOL defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the service container should run in privileged mode
@@ -291,7 +291,7 @@ koyeb apps init NAME [flags]
                                                 If the region is not specified on service creation, the service is deployed in fra
                                                 
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                If no port is specified, it defaults to 80
+                                                PORT defaults to 8000
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
@@ -1146,11 +1146,11 @@ koyeb services create NAME [flags]
 
 ```
 
-# Deploy a nginx docker image, with default port (80:http), default route (/:80)
-$> koyeb service create myservice --app myapp --docker nginx
+# Deploy a nginx docker image, listening on port 80
+$> koyeb service create myservice --app myapp --docker nginx --port 80
 
-# Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 8000 to the root route
-$> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=8000 --port 8000:http --route /:8000
+# Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 9000 to the root route
+$> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=9000 --port 9000:http --route /:9000
 
 # Build and deploy a GitHub repository using docker
 $> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
@@ -1192,8 +1192,8 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
-      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
-                                                If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
+      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                PROTOCOL defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the service container should run in privileged mode
@@ -1202,7 +1202,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 If the region is not specified on service creation, the service is deployed in fra
                                                 
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                If no port is specified, it defaults to 80
+                                                PORT defaults to 8000
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
@@ -1581,8 +1581,8 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
       --override                                Override the service configuration with the new configuration instead of merging them
-      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 80:http
-                                                If no protocol is specified, it defaults to "http". Supported protocols are "http" and "http2"
+      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                PROTOCOL defaults to "http". Supported protocols are "http" and "http2"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the service container should run in privileged mode
@@ -1591,7 +1591,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 If the region is not specified on service creation, the service is deployed in fra
                                                 
       --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                If no port is specified, it defaults to 80
+                                                PORT defaults to 8000
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
