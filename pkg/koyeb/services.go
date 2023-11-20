@@ -50,6 +50,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 			}
 
 			createDefinition.Name = koyeb.PtrString(serviceName)
+			createService.SetDefinition(*createDefinition)
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
