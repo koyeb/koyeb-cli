@@ -30,7 +30,7 @@ func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) er
 		for _, app := range res.GetApps() {
 			// Database apps are displayed in the database command. There is no
 			// better way to filter them out than using the name.
-			if app.GetName() == "koyeb-db-preview-app" {
+			if app.GetName() == DatabaseAppName {
 				continue
 			}
 			list = append(list, app)

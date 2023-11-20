@@ -10,6 +10,11 @@ import (
 	"github.com/spf13/pflag"
 )
 
+// DatabaseAppName is the name of the database app that is created when the user
+// creates a database. This name is hard-coded, and has the same value as the
+// one used in the console.
+const DatabaseAppName = "koyeb-db-preview-app"
+
 func NewDatabaseCmd() *cobra.Command {
 	h := NewDatabaseHandler()
 
@@ -41,11 +46,7 @@ func NewDatabaseCmd() *cobra.Command {
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
-
-			serviceName, err := parseServiceNameWithoutApp(cmd, args[0])
-			if err != nil {
-				return err
-			}
+			serviceName := args[0]
 
 			if err := parseDbServiceDefinitionFlags(cmd.Flags(), serviceName, createDefinition); err != nil {
 				return err
@@ -54,10 +55,8 @@ func NewDatabaseCmd() *cobra.Command {
 			createDefinition.Name = koyeb.PtrString(serviceName)
 			createService.SetDefinition(*createDefinition)
 			return h.Create(ctx, cmd, args, createService)
-			return nil
 		}),
 	}
-	createDbCmd.Flags().StringP("app", "a", "", "Service application")
 	addDbServiceDefinitionFlags(createDbCmd.Flags())
 	databaseCmd.AddCommand(createDbCmd)
 
