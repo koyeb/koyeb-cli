@@ -12,6 +12,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/151
 * The default --port and --route for `koyeb service create` is now the port 8000 to match the default of https://app.koyeb.com
   - https://github.com/koyeb/koyeb-cli/issues/152
+* `koyeb service create`: set default branch to `main`
+  - https://github.com/koyeb/koyeb-cli/issues/153
 
 
 **v3.3.2**

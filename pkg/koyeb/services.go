@@ -293,7 +293,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 
 	// Git service
 	flags.String("git", "", "Git repository")
-	flags.String("git-branch", "", "Git branch")
+	flags.String("git-branch", "main", "Git branch")
 	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
 	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
 	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
@@ -754,7 +754,7 @@ func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSo
 		repository, _ := flags.GetString("git")
 		source.SetRepository(repository)
 	}
-	if flags.Lookup("git-branch").Changed {
+	if source.GetBranch() == "" || flags.Lookup("git-branch").Changed {
 		branch, _ := flags.GetString("git-branch")
 		source.SetBranch(branch)
 	}

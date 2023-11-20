@@ -19,12 +19,21 @@ func TestSetGitSourceBuilder(t *testing.T) {
 			source:   &koyeb.GitSource{},
 			expected: nil,
 		},
+		"source_git_default_branch": {
+			args:   []string{"--git", "github.com/org/repo"},
+			source: &koyeb.GitSource{},
+			expected: &koyeb.GitSource{
+				Repository: koyeb.PtrString("github.com/org/repo"),
+				Branch:     koyeb.PtrString("main"),
+			},
+		},
 		"source_buildpack_no_arg": {
 			args: []string{},
 			source: &koyeb.GitSource{
 				Buildpack: &koyeb.BuildpackBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch:    koyeb.PtrString("main"),
 				Buildpack: &koyeb.BuildpackBuilder{},
 			},
 		},
@@ -34,6 +43,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Docker: &koyeb.DockerBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Docker: &koyeb.DockerBuilder{},
 			},
 		},
@@ -43,6 +53,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Buildpack: &koyeb.BuildpackBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch:    koyeb.PtrString("main"),
 				Buildpack: &koyeb.BuildpackBuilder{},
 			},
 		},
@@ -52,6 +63,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Buildpack: &koyeb.BuildpackBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Docker: &koyeb.DockerBuilder{},
 			},
 		},
@@ -61,6 +73,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Docker: &koyeb.DockerBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch:    koyeb.PtrString("main"),
 				Buildpack: &koyeb.BuildpackBuilder{},
 			},
 		},
@@ -70,6 +83,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Docker: &koyeb.DockerBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Docker: &koyeb.DockerBuilder{},
 			},
 		},
@@ -88,6 +102,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Buildpack: &koyeb.BuildpackBuilder{
 					RunCommand:   koyeb.PtrString("run"),
 					BuildCommand: koyeb.PtrString("build"),
@@ -115,6 +130,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Docker: &koyeb.DockerBuilder{},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Docker: &koyeb.DockerBuilder{
 					Command:    koyeb.PtrString("cmd"),
 					Args:       []string{"arg1", "arg2"},
@@ -133,6 +149,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Buildpack: &koyeb.BuildpackBuilder{
 					Privileged: koyeb.PtrBool(false),
 				},
@@ -146,6 +163,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				},
 			},
 			expected: &koyeb.GitSource{
+				Branch: koyeb.PtrString("main"),
 				Docker: &koyeb.DockerBuilder{
 					Privileged: koyeb.PtrBool(true),
 				},
@@ -164,7 +182,7 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				t.Fatal()
 			}
 
-			ret, err := setGitSourceBuilder(cmd.Flags(), tc.source)
+			ret, err := parseGitSource(cmd.Flags(), tc.source)
 
 			if tc.expected != nil {
 				assert.Nil(t, err)

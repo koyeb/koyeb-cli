@@ -264,7 +264,7 @@ koyeb apps init NAME [flags]
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                 
       --git string                              Git repository
-      --git-branch string                       Git branch
+      --git-branch string                       Git branch (default "main")
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
       --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string      Buid command
@@ -1175,7 +1175,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                 
       --git string                              Git repository
-      --git-branch string                       Git branch
+      --git-branch string                       Git branch (default "main")
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
       --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string      Buid command
@@ -1563,7 +1563,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                 
       --git string                              Git repository
-      --git-branch string                       Git branch
+      --git-branch string                       Git branch (default "main")
       --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
       --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string      Buid command
