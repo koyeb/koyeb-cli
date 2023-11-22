@@ -1,6 +1,7 @@
 **unreleased**
 
-* ...
+* Fix nil pointer dereference when `--url` is invalid
+* - https://github.com/koyeb/koyeb-cli/issues/155
 
 **v3.4.0**
 
