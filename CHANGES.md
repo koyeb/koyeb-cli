@@ -1,3 +1,7 @@
+**unreleased**
+
+* ...
+
 **v3.4.0**
 
 * Accept the two syntaxes `--app xxx` and `<app>/<service_name>` for koyeb service commands
