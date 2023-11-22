@@ -14,6 +14,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/152
 * `koyeb service create`: set default branch to `main`
   - https://github.com/koyeb/koyeb-cli/issues/153
+* Implement `koyeb database list`, `koyeb database create`, `koyeb database get` and `koyeb database delete`
+  - https://github.com/koyeb/koyeb-cli/issues/144
 
 
 **v3.3.2**
