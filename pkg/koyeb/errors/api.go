@@ -18,7 +18,7 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 		What: what,
 	}
 
-	if resp.StatusCode == 429 {
+	if resp != nil && resp.StatusCode == 429 {
 		ret.Why = "the Koyeb API returned an error HTTP/429: Too Many Requests because you have exceeded the rate limit"
 		ret.Solution = "Please try again in a few seconds."
 		return ret
