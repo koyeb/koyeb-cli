@@ -60,6 +60,14 @@ func NewDatabaseCmd() *cobra.Command {
 	addDbServiceDefinitionFlags(createDbCmd.Flags())
 	databaseCmd.AddCommand(createDbCmd)
 
+	deleteDbCmd := &cobra.Command{
+		Use:   "delete NAME",
+		Short: "Delete database",
+		Args:  cobra.ExactArgs(1),
+		RunE:  WithCLIContext(h.Delete),
+	}
+	databaseCmd.AddCommand(deleteDbCmd)
+
 	return databaseCmd
 }
 
