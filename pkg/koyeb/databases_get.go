@@ -57,15 +57,18 @@ func getConnectionStrings(ctx *CLIContext, dbSource koyeb.DatabaseSource, dbInfo
 		}
 
 		for _, db := range dbSource.GetNeonPostgres().Databases {
-			s := fmt.Sprintf(
-				"postgres://%s:%s@%s:%d/%s",
-				username,
-				password,
-				neon.GetServerHost(),
-				neon.GetServerPort(),
-				*db.Name,
-			)
-			connectionStrings = append(connectionStrings, s)
+			// host is empty when the database is not yet fully provisioned
+			if neon.GetServerHost() != "" {
+				s := fmt.Sprintf(
+					"postgres://%s:%s@%s:%d/%s",
+					username,
+					password,
+					neon.GetServerHost(),
+					neon.GetServerPort(),
+					*db.Name,
+				)
+				connectionStrings = append(connectionStrings, s)
+			}
 		}
 	}
 	return connectionStrings, nil

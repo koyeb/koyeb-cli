@@ -4,6 +4,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/155
 * Fix error when the token is invalid and the user tries to switch organization
   - https://github.com/koyeb/koyeb-cli/issues/154
+* Stop rendering partial connection string during the provisioning of a database
+  - https://github.com/koyeb/koyeb-cli/issues/159
 
 
 **v3.4.0**
