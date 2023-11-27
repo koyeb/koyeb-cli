@@ -1,7 +1,10 @@
 **unreleased**
 
 * Fix nil pointer dereference when `--url` is invalid
-* - https://github.com/koyeb/koyeb-cli/issues/155
+  - https://github.com/koyeb/koyeb-cli/issues/155
+* Fix error when the token is invalid and the user tries to switch organization
+  - https://github.com/koyeb/koyeb-cli/issues/154
+
 
 **v3.4.0**
 
