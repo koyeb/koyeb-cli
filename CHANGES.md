@@ -6,6 +6,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/154
 * Stop rendering partial connection string during the provisioning of a database
   - https://github.com/koyeb/koyeb-cli/issues/159
+* Allow to manage registry secrets with `koyeb service create --type registry-<type>` and `koyeb service update`
+  - https://github.com/koyeb/koyeb-cli/issues/157
 
 
 **v3.4.0**
