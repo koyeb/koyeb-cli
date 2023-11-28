@@ -879,9 +879,14 @@ koyeb secrets create NAME [flags]
 ### Options
 
 ```
-  -h, --help               help for create
-  -v, --value string       Secret Value
-      --value-from-stdin   Secret Value from stdin
+  -h, --help                       help for create
+      --registry-keyfile string    Registry URL. Only valid with --type=registry-gcp, otherwise ignored
+      --registry-name string       Registry name. Only valid with --type=registry-azure, otherwise ignored
+      --registry-url string        Registry URL. Only valid with --type=registry-private and --type=registry-gcp, otherwise ignored
+      --registry-username string   Registry username. Only valid with --type=registry-*
+      --type type                  Secret type (simple, registry-dockerhub, registry-private, registry-digital-ocean, registry-gitlab, registry-gcp, registry-azure) (default simple)
+  -v, --value string               Secret Value
+      --value-from-stdin           Secret Value from stdin
 ```
 
 ### Options inherited from parent commands
@@ -1073,9 +1078,13 @@ koyeb secrets update NAME [flags]
 ### Options
 
 ```
-  -h, --help               help for update
-  -v, --value string       Secret Value
-      --value-from-stdin   Secret Value from stdin
+  -h, --help                       help for update
+      --registry-keyfile string    Registry URL. Only valid with --type=registry-gcp, otherwise ignored
+      --registry-name string       Registry name. Only valid with --type=registry-azure, otherwise ignored
+      --registry-url string        Registry URL. Only valid with --type=registry-private and --type=registry-gcp, otherwise ignored
+      --registry-username string   Registry username. Only valid with --type=registry-*
+  -v, --value string               Secret Value
+      --value-from-stdin           Secret Value from stdin
 ```
 
 ### Options inherited from parent commands
