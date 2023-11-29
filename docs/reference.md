@@ -2015,6 +2015,138 @@ koyeb instances logs NAME [flags]
 
 * [koyeb instances](#koyeb-instances)	 - Instances
 
+## koyeb databases create
+
+Create database
+
+```
+koyeb databases create NAME [flags]
+```
+
+### Options
+
+```
+      --db-name string    Database name (default "koyebdb")
+      --db-owner string   Database owner (default "koyeb-adm")
+  -h, --help              help for create
+      --pg-version int    PostgreSQL version (default 16)
+      --region string     Region where the database is deployed (default "fra")
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb databases](#koyeb-databases)	 - Databases
+
+## koyeb databases delete
+
+Delete database
+
+```
+koyeb databases delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb databases](#koyeb-databases)	 - Databases
+
+## koyeb databases get
+
+Get database
+
+```
+koyeb databases get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb databases](#koyeb-databases)	 - Databases
+
+## koyeb databases list
+
+List databases
+
+```
+koyeb databases list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb databases](#koyeb-databases)	 - Databases
+
 ## koyeb version
 
 Get version
