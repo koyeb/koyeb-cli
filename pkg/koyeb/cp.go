@@ -28,21 +28,23 @@ func NewCopyManager(src, dst *FileSpec) (*CopyManager, error) {
 }
 
 func (manager *CopyManager) Copy(ctx *CLIContext) error {
-	if len(manager.Src.InstanceID) == 0 {
+	isCopyToInstance := len(manager.Src.InstanceID) == 0
+
+	if err := manager.Src.Validate(ctx, isCopyToInstance); err != nil {
+		return err
+	}
+
+	if err := manager.Dst.Validate(ctx, isCopyToInstance); err != nil {
+		return err
+	}
+
+	if isCopyToInstance {
 		return manager.copyToInstance(ctx)
 	}
-	return manager.copyFromInstance()
+	return manager.copyFromInstance(ctx)
 }
 
 func (manager *CopyManager) copyToInstance(ctx *CLIContext) error {
-	if err := manager.Src.Validate(ctx); err != nil {
-		return err
-	}
-
-	if err := manager.Dst.Validate(ctx); err != nil {
-		return err
-	}
-
 	reader, writer := io.Pipe()
 
 	go func(srcPath string, writer io.WriteCloser) {
@@ -79,8 +81,43 @@ func (manager *CopyManager) copyToInstance(ctx *CLIContext) error {
 	return nil
 }
 
-func (manager *CopyManager) copyFromInstance() error {
-	return errors.New("not implemented")
+func (manager *CopyManager) copyFromInstance(ctx *CLIContext) error {
+	reader, writer := io.Pipe()
+
+	go func(dstPath string, reader io.ReadCloser) {
+		defer reader.Close()
+
+		err := Untar(dstPath, reader)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to tar file: %s\n", err)
+			os.Exit(1)
+		}
+	}(manager.Dst.FilePath, reader)
+
+	pathDir := path.Dir(manager.Src.FilePath)
+	pathBase := path.Base(manager.Src.FilePath)
+	retCode, err := ctx.ExecClient.ExecWithStreams(
+		ctx.Context,
+		&StdStreams{
+			Stdin:  bytes.NewReader([]byte{}),
+			Stdout: writer,
+			Stderr: os.Stderr,
+		},
+		ExecId{
+			Id:   manager.Src.InstanceID,
+			Type: koyeb.EXECCOMMANDREQUESTIDTYPE_INSTANCE_ID,
+		},
+		[]string{"tar", "-C", pathDir, "-czf", "-", pathBase},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to copy path %s: %w", manager.Src.FilePath, err)
+	}
+
+	if retCode != 0 {
+		os.Exit(retCode)
+	}
+
+	return nil
 }
 
 func ValidateTargets(srcSpec, dstSpec *FileSpec) error {
@@ -115,7 +152,14 @@ func (spec *FileSpec) validateLocalPath() error {
 	return nil
 }
 
-func (spec *FileSpec) validateRemotePath(ctx *CLIContext) error {
+func (spec *FileSpec) validateRemotePath(ctx *CLIContext, isDir bool) error {
+	// if isDir is true, we check if the path is a directory
+	// otherwise we allow path to be a file or a directory
+	testFlag := "-r"
+	if isDir {
+		testFlag = "-d"
+	}
+
 	retCode, err := ctx.ExecClient.ExecWithStreams(
 		ctx.Context,
 		&StdStreams{
@@ -127,22 +171,24 @@ func (spec *FileSpec) validateRemotePath(ctx *CLIContext) error {
 			Id:   spec.InstanceID,
 			Type: koyeb.EXECCOMMANDREQUESTIDTYPE_INSTANCE_ID,
 		},
-		[]string{"test", "-d", spec.FilePath},
+		[]string{"test", testFlag, spec.FilePath},
 	)
 	if err != nil {
-		return fmt.Errorf("remote filepath %s doesn't exist %v", spec.FilePath, err)
+		return fmt.Errorf("failed to check if path %s exist %v", spec.FilePath, err)
 	}
 
 	if retCode != 0 {
+		fmt.Fprintf(os.Stdout, "Remote path %s doesn't exist", spec.FilePath)
 		os.Exit(retCode)
 	}
 
 	return err
 }
 
-func (spec *FileSpec) Validate(ctx *CLIContext) error {
+// isDir is used to determine if we should check existence of a remote directory or a path in general
+func (spec *FileSpec) Validate(ctx *CLIContext, isDir bool) error {
 	if len(spec.InstanceID) == 0 {
 		return spec.validateLocalPath()
 	}
-	return spec.validateRemotePath(ctx)
+	return spec.validateRemotePath(ctx, isDir)
 }
