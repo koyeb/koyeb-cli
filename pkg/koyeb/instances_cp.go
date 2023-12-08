@@ -3,6 +3,7 @@ package koyeb
 import (
 	"strings"
 
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -10,7 +11,13 @@ import (
 func (h *InstanceHandler) ExtractFileSpec(ctx *CLIContext, target string) (*FileSpec, error) {
 	switch i := strings.Index(target, ":"); i {
 	case 0:
-		return nil, errFileSpecDoesntMatchFormat
+		return nil, &errors.CLIError{
+			What:       "Error while copying",
+			Why:        "Filespec must match the canonical format: [instance:]file/path",
+			Additional: nil,
+			Orig:       nil,
+			Solution:   "If the problem persists, try to update the CLI to the latest version.",
+		}
 	case -1:
 		return &FileSpec{
 			FilePath: target,
