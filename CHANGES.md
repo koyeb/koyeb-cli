@@ -1,3 +1,7 @@
+## unreleased
+
+* ...
+
 ## v3.5.0
 
 * Fix nil pointer dereference when `--url` is invalid
