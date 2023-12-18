@@ -2,6 +2,10 @@
 
 * ...
 
+## v3.5.1
+
+* Fix build. See v3.5.0 for the other changes.
+
 ## v3.5.0
 
 * Fix nil pointer dereference when `--url` is invalid
@@ -15,6 +19,7 @@
 * Add `koyeb instance cp` to copy files from and to an instance, for example with `koyeb instance cp file.txt <instance_id>:/tmp/` or `koyeb instance cp <instance_id>:/tmp/file.txt .`
   - https://github.com/koyeb/koyeb-cli/pull/161
 
+This version has never been released and is replaced with v3.5.1.
 
 ## v3.4.0
 
