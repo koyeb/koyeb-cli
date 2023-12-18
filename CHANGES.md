@@ -1,4 +1,4 @@
-## unreleased
+## v3.5.0
 
 * Fix nil pointer dereference when `--url` is invalid
   - https://github.com/koyeb/koyeb-cli/issues/155
@@ -8,6 +8,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/159
 * Allow to manage registry secrets with `koyeb service create --type registry-<type>` and `koyeb service update`
   - https://github.com/koyeb/koyeb-cli/issues/157
+* Add `koyeb instance cp` to copy files from and to an instance, for example with `koyeb instance cp file.txt <instance_id>:/tmp/` or `koyeb instance cp <instance_id>:/tmp/file.txt .`
+  - https://github.com/koyeb/koyeb-cli/pull/161
 
 
 ## v3.4.0
