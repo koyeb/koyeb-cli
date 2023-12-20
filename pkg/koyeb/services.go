@@ -832,7 +832,8 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 				Solution: "Add --git-builder=buildpack to the arguments to configure the buildpack builder",
 			}
 		}
-		builder, err := parseGitSourceBuildpackBuilder(flags, source.GetBuildpack())
+
+		builder, err := parseGitSourceBuildpackBuilder(flags, source)
 		if err != nil {
 			return nil, err
 		}
@@ -843,7 +844,8 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 }
 
 // Parse --git-buildpack-* flags
-func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.BuildpackBuilder) (*koyeb.BuildpackBuilder, error) {
+func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.BuildpackBuilder, error) {
+	builder := source.GetBuildpack()
 	// Legacy options for backward compatibility. We prefer
 	// --git-buildpack-build-command and --git-buildpack-run-command over --git-build-command and --git-run-command
 	buildCommand, _ := flags.GetString("git-build-command")
@@ -878,13 +880,17 @@ func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, builder koyeb.Buildpac
 		}
 	}
 	if flags.Lookup("git-build-command").Changed {
+		source.SetBuildCommand(buildCommand)
 		builder.SetBuildCommand(buildCommand)
 	} else if flags.Lookup("git-buildpack-build-command").Changed {
+		source.SetBuildCommand(buildpackBuildCommand)
 		builder.SetBuildCommand(buildpackBuildCommand)
 	}
 	if flags.Lookup("git-run-command").Changed {
+		source.SetRunCommand(runCommand)
 		builder.SetRunCommand(runCommand)
 	} else if flags.Lookup("git-buildpack-run-command").Changed {
+		source.SetRunCommand(buildpackRunCommand)
 		builder.SetRunCommand(buildpackRunCommand)
 	}
 	if flags.Lookup("privileged").Changed {

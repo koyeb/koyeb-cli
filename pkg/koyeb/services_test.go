@@ -102,7 +102,9 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				},
 			},
 			expected: &koyeb.GitSource{
-				Branch: koyeb.PtrString("main"),
+				Branch:       koyeb.PtrString("main"),
+				RunCommand:   koyeb.PtrString("run"),
+				BuildCommand: koyeb.PtrString("build"),
 				Buildpack: &koyeb.BuildpackBuilder{
 					RunCommand:   koyeb.PtrString("run"),
 					BuildCommand: koyeb.PtrString("build"),
