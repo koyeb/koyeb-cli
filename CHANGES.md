@@ -1,6 +1,7 @@
-## unreleased
+## v3.5.2
 
-* ...
+* Fix `koyeb service update --git-build-command` and `koyeb service update --git-run-command` when the service has already a build command or a run command configured.
+  - https://github.com/koyeb/koyeb-cli/issues/168
 
 ## v3.5.1
 
