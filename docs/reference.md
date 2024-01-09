@@ -250,6 +250,9 @@ koyeb apps init NAME [flags]
 ### Options
 
 ```
+      --autoscaling-average-cpu int             Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int             Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-requests-per-second int     Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --checks strings                          Update service healthchecks (available for services of type "web" only)
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -1170,6 +1173,9 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 
 ```
   -a, --app string                              Service application
+      --autoscaling-average-cpu int             Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int             Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-requests-per-second int     Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --checks strings                          Update service healthchecks (available for services of type "web" only)
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -1558,6 +1564,9 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 
 ```
   -a, --app string                              Service application
+      --autoscaling-average-cpu int             Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int             Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-requests-per-second int     Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --checks strings                          Update service healthchecks (available for services of type "web" only)
                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
