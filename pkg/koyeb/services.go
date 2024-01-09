@@ -265,6 +265,9 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.Int64("scale", 1, "Set both min-scale and max-scale")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
+	flags.Int64("autoscaling-average-cpu", 0, "Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.")
+	flags.Int64("autoscaling-average-mem", 0, "Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.")
+	flags.Int64("autoscaling-requests-per-second", 0, "Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 
 	// Global flags, only for services with the type "web" (not "worker")
@@ -661,6 +664,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 		scaling := koyeb.NewDeploymentScalingWithDefaults()
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
+		setScalingsTargets(flags, scaling)
 		return []koyeb.DeploymentScaling{*scaling}
 	} else {
 		// Otherwise, update the current scaling configuration only if one of the scale flags has been provided
@@ -671,9 +675,108 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 			if flags.Lookup("scale").Changed || flags.Lookup("max-scale").Changed {
 				currentScalings[idx].SetMax(maxScale)
 			}
+			setScalingsTargets(flags, &currentScalings[idx])
 		}
 	}
 	return currentScalings
+}
+
+// setScalingsTargets updates the scaling targets in a koyeb.DeploymentScaling object based on the specified flags.
+// It checks for changes in flags related to autoscaling parameters (CPU, memory, and requests per second).
+// If a change is detected in any of these flags, the function either updates an existing scaling target or creates a new one.
+//
+// setScalingsTargets performs the following steps:
+// 1. For each autoscaling parameter (CPU, memory, requests per second), it checks if the corresponding flag has changed.
+// 2. If a flag has changed, it iterates over the existing targets to find a matching target type.
+// 3. If a matching target is found, it updates the target with the new value.
+// 4. If no matching target is found, it creates a new target with the specified value and appends it to the scaling targets.
+//
+// Note: there is no way to easily avoid the code duplication in this function
+// because NewDeploymentScalingTarget{AverageCPU,AverageMem,RequestsPerSecond}
+// do not implement a common interface.
+func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) {
+	if scaling.Targets == nil {
+		scaling.Targets = []koyeb.DeploymentScalingTarget{}
+	}
+
+	if flags.Lookup("autoscaling-average-cpu").Changed {
+		newTargets := []koyeb.DeploymentScalingTarget{}
+		cpu, _ := flags.GetInt64("autoscaling-average-cpu")
+		found := false
+		for _, target := range scaling.GetTargets() {
+			if target.HasAverageCpu() {
+				if cpu == 0 {
+					continue // Remove the target
+				}
+
+				average := koyeb.NewDeploymentScalingTargetAverageCPU()
+				average.SetValue(cpu)
+				target.SetAverageCpu(*average)
+				found = true
+				newTargets = append(newTargets, target)
+			}
+		}
+		if !found {
+			target := koyeb.NewDeploymentScalingTarget()
+			average := koyeb.NewDeploymentScalingTargetAverageCPU()
+			average.SetValue(cpu)
+			target.SetAverageCpu(*average)
+			newTargets = append(newTargets, *target)
+		}
+		scaling.Targets = newTargets
+	}
+
+	if flags.Lookup("autoscaling-average-mem").Changed {
+		newTargets := []koyeb.DeploymentScalingTarget{}
+		mem, _ := flags.GetInt64("autoscaling-average-mem")
+		found := false
+		for _, target := range scaling.GetTargets() {
+			if target.HasAverageMem() {
+				if mem == 0 {
+					continue // Remove the target
+				}
+				average := koyeb.NewDeploymentScalingTargetAverageMem()
+				average.SetValue(mem)
+				target.SetAverageMem(*average)
+				found = true
+				newTargets = append(newTargets, target)
+			}
+		}
+		if !found {
+			target := koyeb.NewDeploymentScalingTarget()
+			average := koyeb.NewDeploymentScalingTargetAverageMem()
+			average.SetValue(mem)
+			target.SetAverageMem(*average)
+			newTargets = append(newTargets, *target)
+		}
+		scaling.Targets = newTargets
+	}
+
+	if flags.Lookup("autoscaling-requests-per-second").Changed {
+		newTargets := []koyeb.DeploymentScalingTarget{}
+		rps, _ := flags.GetInt64("autoscaling-requests-per-second")
+		found := false
+		for _, target := range scaling.GetTargets() {
+			if target.HasAverageCpu() {
+				if rps == 0 {
+					continue // Remove the target
+				}
+				average := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
+				average.SetValue(rps)
+				target.SetRequestsPerSecond(*average)
+				found = true
+				newTargets = append(newTargets, target)
+			}
+		}
+		if !found {
+			target := koyeb.NewDeploymentScalingTarget()
+			average := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
+			average.SetValue(rps)
+			target.SetRequestsPerSecond(*average)
+			newTargets = append(newTargets, *target)
+		}
+		scaling.Targets = newTargets
+	}
 }
 
 // Parse --git-* and --docker-* flags to set deployment.Git or deployment.Docker
