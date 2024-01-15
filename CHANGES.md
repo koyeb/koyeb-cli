@@ -1,4 +1,4 @@
-## unreleased
+## v3.6.0
 
 * `koyeb service create` and `koyeb service update` accept the parameters `--autoscaling-average-cpu`, `--autoscaling-average-mem` and `--autoscaling-requests-per-second` to set the autoscaling policy.
   - https://github.com/koyeb/koyeb-cli/issues/170
