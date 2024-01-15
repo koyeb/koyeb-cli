@@ -299,6 +299,7 @@ koyeb apps init NAME [flags]
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
+      --skip-cache                              Whether to use the cache when building the service
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
@@ -1222,6 +1223,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
+      --skip-cache                              Whether to use the cache when building the service
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 
@@ -1614,6 +1616,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
+      --skip-cache                              Whether to use the cache when building the service
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
 

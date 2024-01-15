@@ -269,6 +269,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.Int64("autoscaling-average-mem", 0, "Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.")
 	flags.Int64("autoscaling-requests-per-second", 0, "Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
+	flags.Bool("skip-cache", false, "Whether to use the cache when building the service")
 
 	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
@@ -349,6 +350,9 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 		return err
 	}
 	definition.SetType(type_)
+
+	skipCache, _ := flags.GetBool("skip-cache")
+	definition.SetSkipCache(skipCache)
 
 	envs, err := parseEnv(flags, definition.Env)
 	if err != nil {
