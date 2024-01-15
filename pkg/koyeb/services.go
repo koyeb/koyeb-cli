@@ -692,7 +692,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 // setScalingsTargets performs the following steps:
 // 1. For each autoscaling parameter (CPU, memory, requests per second), it checks if the corresponding flag has changed.
 // 2. If a flag has changed, it iterates over the existing targets to find a matching target type.
-// 3. If a matching target is found, it updates the target with the new value.
+// 3. If a matching target is found, it updates the target with the new value or removes the target if the value is 0.
 // 4. If no matching target is found, it creates a new target with the specified value and appends it to the scaling targets.
 //
 // Note: there is no way to easily avoid the code duplication in this function
@@ -704,79 +704,89 @@ func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) 
 	}
 
 	if flags.Lookup("autoscaling-average-cpu").Changed {
+		value, _ := flags.GetInt64("autoscaling-average-cpu")
 		newTargets := []koyeb.DeploymentScalingTarget{}
-		cpu, _ := flags.GetInt64("autoscaling-average-cpu")
 		found := false
-		for _, target := range scaling.GetTargets() {
-			if target.HasAverageCpu() {
-				if cpu == 0 {
-					continue // Remove the target
-				}
 
-				average := koyeb.NewDeploymentScalingTargetAverageCPU()
-				average.SetValue(cpu)
-				target.SetAverageCpu(*average)
+		for _, target := range scaling.GetTargets() {
+			// Update the current target if it is a CPU target, or remove it if value is 0.
+			if target.HasAverageCpu() {
 				found = true
+				if value == 0 {
+					continue
+				}
+				cpu := koyeb.NewDeploymentScalingTargetAverageCPU()
+				cpu.SetValue(value)
+				target.SetAverageCpu(*cpu)
+				newTargets = append(newTargets, target)
+			} else {
 				newTargets = append(newTargets, target)
 			}
 		}
-		if !found {
+		// No existing CPU target found, create a new entry
+		if !found && value > 0 {
 			target := koyeb.NewDeploymentScalingTarget()
-			average := koyeb.NewDeploymentScalingTargetAverageCPU()
-			average.SetValue(cpu)
-			target.SetAverageCpu(*average)
+			cpu := koyeb.NewDeploymentScalingTargetAverageCPU()
+			cpu.SetValue(value)
+			target.SetAverageCpu(*cpu)
 			newTargets = append(newTargets, *target)
 		}
 		scaling.Targets = newTargets
 	}
 
 	if flags.Lookup("autoscaling-average-mem").Changed {
+		value, _ := flags.GetInt64("autoscaling-average-mem")
 		newTargets := []koyeb.DeploymentScalingTarget{}
-		mem, _ := flags.GetInt64("autoscaling-average-mem")
 		found := false
+
 		for _, target := range scaling.GetTargets() {
 			if target.HasAverageMem() {
-				if mem == 0 {
-					continue // Remove the target
-				}
-				average := koyeb.NewDeploymentScalingTargetAverageMem()
-				average.SetValue(mem)
-				target.SetAverageMem(*average)
 				found = true
+				if value == 0 {
+					continue
+				}
+				mem := koyeb.NewDeploymentScalingTargetAverageMem()
+				mem.SetValue(value)
+				target.SetAverageMem(*mem)
+				newTargets = append(newTargets, target)
+			} else {
 				newTargets = append(newTargets, target)
 			}
 		}
-		if !found {
+		if !found && value > 0 {
 			target := koyeb.NewDeploymentScalingTarget()
-			average := koyeb.NewDeploymentScalingTargetAverageMem()
-			average.SetValue(mem)
-			target.SetAverageMem(*average)
+			mem := koyeb.NewDeploymentScalingTargetAverageMem()
+			mem.SetValue(value)
+			target.SetAverageMem(*mem)
 			newTargets = append(newTargets, *target)
 		}
 		scaling.Targets = newTargets
 	}
 
 	if flags.Lookup("autoscaling-requests-per-second").Changed {
+		value, _ := flags.GetInt64("autoscaling-requests-per-second")
 		newTargets := []koyeb.DeploymentScalingTarget{}
-		rps, _ := flags.GetInt64("autoscaling-requests-per-second")
 		found := false
+
 		for _, target := range scaling.GetTargets() {
-			if target.HasAverageCpu() {
-				if rps == 0 {
-					continue // Remove the target
-				}
-				average := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
-				average.SetValue(rps)
-				target.SetRequestsPerSecond(*average)
+			if target.HasRequestsPerSecond() {
 				found = true
+				if value == 0 {
+					continue
+				}
+				rps := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
+				rps.SetValue(value)
+				target.SetRequestsPerSecond(*rps)
+				newTargets = append(newTargets, target)
+			} else {
 				newTargets = append(newTargets, target)
 			}
 		}
-		if !found {
+		if !found && value > 0 {
 			target := koyeb.NewDeploymentScalingTarget()
-			average := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
-			average.SetValue(rps)
-			target.SetRequestsPerSecond(*average)
+			rps := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
+			rps.SetValue(value)
+			target.SetRequestsPerSecond(*rps)
 			newTargets = append(newTargets, *target)
 		}
 		scaling.Targets = newTargets
