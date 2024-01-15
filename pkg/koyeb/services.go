@@ -165,6 +165,11 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 				updateDef = latestDeploy.GetDeployments()[0].Definition
 			}
 
+			// zero the sha to make sure that the latest sha is fetched
+			if updateDef.Git != nil {
+				updateDef.Git.Sha = koyeb.PtrString("")
+			}
+
 			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef)
 			if err != nil {
 				return err
