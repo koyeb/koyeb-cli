@@ -90,7 +90,7 @@ func (r *ListDatabasesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListDatabasesReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "active_time", "used_storage", "created_at"}
+	return []string{"id", "name", "region", "engine", "status", "active_time", "instance", "used_storage", "created_at"}
 }
 
 func (r *ListDatabasesReply) Fields() []map[string]string {
@@ -98,7 +98,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {
-		var region, engine, activeTime, usedStorage string
+		var region, engine, activeTime, instance, usedStorage string
 
 		// At the moment, we only support neon postgres so the if statement is
 		// always true. If we add support for other providers in the future, the statement
@@ -115,6 +115,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 			activeTimeValue, _ := strconv.ParseFloat(item.Deployment.DatabaseInfo.NeonPostgres.GetActiveTimeSeconds(), 32)
 			// The maximum active time is 100h and is not configurable yet.
 			activeTime = fmt.Sprintf("%.1fh/100h", activeTimeValue/60/60)
+			instance = *item.Deployment.Definition.Database.NeonPostgres.InstanceType
 			usedStorage = fmt.Sprintf("%dMB/%dMB (%d%%)", size, maxSize, size*100/maxSize)
 		}
 
@@ -125,6 +126,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 			"engine":       engine,
 			"status":       formatServiceStatus(item.Service.GetStatus()),
 			"active_time":  activeTime,
+			"instance":     instance,
 			"used_storage": usedStorage,
 			"created_at":   renderer.FormatTime(item.Service.GetCreatedAt()),
 		}
