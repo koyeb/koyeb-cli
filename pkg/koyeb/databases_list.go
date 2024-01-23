@@ -126,7 +126,6 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 				activeTime = fmt.Sprintf("%.1fh", activeTimeValue/60/60)
 				usedStorage = fmt.Sprintf("%dMB", size)
 			}
-
 		}
 
 		fields := map[string]string{
