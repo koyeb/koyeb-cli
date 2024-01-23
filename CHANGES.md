@@ -2,6 +2,8 @@
 
 * Add `koyeb regional-deployments list` and `koyeb regional-deployments get`. Also works with the aliases `rd`, `rdeployment` and `rdeployments`.
   - https://github.com/koyeb/koyeb-cli/issues/176
+* Stop hardcoding the maximum usage time and the database size displayed by `koyeb db list` and `koyeb db get`
+  - https://github.com/koyeb/koyeb-cli/issues/169
 
 ## v3.6.1
 
