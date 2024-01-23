@@ -38,6 +38,7 @@ Koyeb CLI
 * [koyeb instances](#koyeb-instances)	 - Instances
 * [koyeb login](#koyeb-login)	 - Login to your Koyeb account
 * [koyeb organizations](#koyeb-organizations)	 - Organization
+* [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb version](#koyeb-version)	 - Get version

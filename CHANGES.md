@@ -1,3 +1,8 @@
+## (unreleased)
+
+* Add `koyeb regional-deployments list` and `koyeb regional-deployments get`. Also works with the aliases `rd`, `rdeployment` and `rdeployments`.
+  - https://github.com/koyeb/koyeb-cli/issues/176
+
 ## v3.6.1
 
 * Always fetch the latest git commit with `koyeb service update`. It should fix the issue where an old commit is deployed instead of the latest one.
