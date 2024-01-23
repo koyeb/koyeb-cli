@@ -98,7 +98,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 	resp := make([]map[string]string, 0, len(items))
 
 	for _, item := range items {
-		var region, engine, activeTime, instance, usedStorage string
+		var region, engine, activeTime, instanceType, usedStorage string
 
 		// At the moment, we only support neon postgres so the if statement is
 		// always true. This condition is to make sure we don't panic in the
@@ -108,16 +108,25 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 			region = item.Deployment.Definition.GetDatabase().NeonPostgres.GetRegion()
 			engine = fmt.Sprintf("Postgres %d", item.Deployment.Definition.GetDatabase().NeonPostgres.GetPgVersion())
 
+			instanceType = *item.Deployment.Definition.Database.NeonPostgres.InstanceType
+
 			size, _ := strconv.Atoi(item.Deployment.DatabaseInfo.NeonPostgres.GetDefaultBranchLogicalSize())
 			// Convert to MB
 			size = size / 1024 / 1024
-			// The maximum size is 3GB and is not configurable yet.
-			maxSize := 3 * 1024
+
 			activeTimeValue, _ := strconv.ParseFloat(item.Deployment.DatabaseInfo.NeonPostgres.GetActiveTimeSeconds(), 32)
-			// The maximum active time is 100h and is not configurable yet.
-			activeTime = fmt.Sprintf("%.1fh/100h", activeTimeValue/60/60)
-			instance = *item.Deployment.Definition.Database.NeonPostgres.InstanceType
-			usedStorage = fmt.Sprintf("%dMB/%dMB (%d%%)", size, maxSize, size*100/maxSize)
+
+			// Free instances have a maximum active time of 50h and a maximum
+			// size of 1Gb, which is not configurable. Other types of instances
+			// don't have limits.
+			if instanceType == "free" {
+				activeTime = fmt.Sprintf("%.1fh/50h", activeTimeValue/60/60)
+				usedStorage = fmt.Sprintf("%dMB/1GB", size)
+			} else {
+				activeTime = fmt.Sprintf("%.1fh", activeTimeValue/60/60)
+				usedStorage = fmt.Sprintf("%dMB", size)
+			}
+
 		}
 
 		fields := map[string]string{
@@ -127,7 +136,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 			"engine":       engine,
 			"status":       formatServiceStatus(item.Service.GetStatus()),
 			"active_time":  activeTime,
-			"instance":     instance,
+			"instance":     instanceType,
 			"used_storage": usedStorage,
 			"created_at":   renderer.FormatTime(item.Service.GetCreatedAt()),
 		}
