@@ -101,8 +101,9 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 		var region, engine, activeTime, instance, usedStorage string
 
 		// At the moment, we only support neon postgres so the if statement is
-		// always true. If we add support for other providers in the future, the statement
-		// will prevent a nil pointer dereference.
+		// always true. This condition is to make sure we don't panic in the
+		// future while accessing NeonPostgres if we support other database
+		// engines.
 		if item.Deployment.DatabaseInfo.HasNeonPostgres() {
 			region = item.Deployment.Definition.GetDatabase().NeonPostgres.GetRegion()
 			engine = fmt.Sprintf("Postgres %d", item.Deployment.Definition.GetDatabase().NeonPostgres.GetPgVersion())
