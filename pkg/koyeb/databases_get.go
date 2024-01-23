@@ -144,11 +144,11 @@ func (r *GetDatabaseReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetDatabaseReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "active_time", "used_storage", "created_at", "connection_strings"}
+	return []string{"id", "name", "region", "engine", "status", "active_time", "instance", "used_storage", "created_at", "connection_strings"}
 }
 
 func (r *GetDatabaseReply) Fields() []map[string]string {
-	var region, engine, activeTime, usedStorage string
+	var region, engine, activeTime, instanceType, usedStorage string
 
 	// At the moment, we only support neon postgres so the if statement is
 	// always true. If we add support for other providers in the future, the statement
@@ -157,15 +157,24 @@ func (r *GetDatabaseReply) Fields() []map[string]string {
 		region = r.value.Deployment.Definition.GetDatabase().NeonPostgres.GetRegion()
 		engine = fmt.Sprintf("Postgres %d", r.value.Deployment.Definition.GetDatabase().NeonPostgres.GetPgVersion())
 
+		instanceType = *r.value.Deployment.Definition.Database.NeonPostgres.InstanceType
+
 		size, _ := strconv.Atoi(r.value.Deployment.DatabaseInfo.NeonPostgres.GetDefaultBranchLogicalSize())
 		// Convert to MB
 		size = size / 1024 / 1024
-		// The maximum size is 3GB and is not configurable yet.
-		maxSize := 3 * 1024
+
 		activeTimeValue, _ := strconv.ParseFloat(r.value.Deployment.DatabaseInfo.NeonPostgres.GetActiveTimeSeconds(), 32)
-		// The maximum active time is 100h and is not configurable yet.
-		activeTime = fmt.Sprintf("%.1fh/100h", activeTimeValue/60/60)
-		usedStorage = fmt.Sprintf("%dMB/%dMB (%d%%)", size, maxSize, size*100/maxSize)
+
+		// Free instances have a maximum active time of 50h and a maximum
+		// size of 1Gb, which is not configurable. Other types of instances
+		// don't have limits.
+		if instanceType == "free" {
+			activeTime = fmt.Sprintf("%.1fh/50h", activeTimeValue/60/60)
+			usedStorage = fmt.Sprintf("%dMB/1GB", size)
+		} else {
+			activeTime = fmt.Sprintf("%.1fh", activeTimeValue/60/60)
+			usedStorage = fmt.Sprintf("%dMB", size)
+		}
 	}
 
 	fields := map[string]string{
@@ -175,6 +184,7 @@ func (r *GetDatabaseReply) Fields() []map[string]string {
 		"engine":             engine,
 		"status":             formatServiceStatus(r.value.Service.GetStatus()),
 		"active_time":        activeTime,
+		"instance":           instanceType,
 		"used_storage":       usedStorage,
 		"created_at":         renderer.FormatTime(r.value.Service.GetCreatedAt()),
 		"connection_strings": strings.Join(r.value.ConnectionStrings, "\n"),
