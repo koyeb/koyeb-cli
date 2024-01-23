@@ -76,31 +76,36 @@ func addDbServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("region", "fra", "Region where the database is deployed")
 	flags.String("db-name", "koyebdb", "Database name")
 	flags.String("db-owner", "koyeb-adm", "Database owner")
+	flags.String("instance-type", "free", "Instance type (free, small, medium or large)")
 }
 
-// parseDbServiceDefinitionFlags parses the flags to update the deployment definition, which can be represented as:
+// parseDbServiceDefinitionFlags parses the flags to update the deployment definition.
+// The deployment definition can be represented as:
 //
-//	"definition": {
-//		"type": "DATABASE",
-//		"name": "<service name>",
-//		"database": {
-//			"neon_postgres": {
-//				"pg_version": <postgres version>,
-//				"region": "<region>",
-//				"roles": [
-//					{
-//						"name": "<role name>",
-//						"secret": "<secret name>"
-//					}
-//				],
-//				"databases": [
-//					{
-//						"name": "<database name>,
-//						"owner": "<role name>"
-//					}
-//				]
-//			}
-//		}
+//	{
+//	  "definition": {
+//	    "type": "DATABASE",
+//	    "name": "<service name>",
+//	    "database": {
+//	      "neon_postgres": {
+//	        "pg_version": "<postgres version>",
+//	        "region": "<region>",
+//	        "instance_type": "<instance type>",
+//	        "roles": [
+//	          {
+//	            "name": "<role name>",
+//	            "secret": "<secret name>"
+//	          }
+//	        ],
+//	        "databases": [
+//	          {
+//	            "name": "<database name>",
+//	            "owner": "<role name>"
+//	          }
+//	        ]
+//	      }
+//	    }
+//	  }
 //	}
 func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, definition *koyeb.DeploymentDefinition) error {
 	definition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_DATABASE)
@@ -120,6 +125,10 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 	if definition.Database.NeonPostgres.Region == nil || flags.Lookup("region").Changed {
 		region, _ := flags.GetString("region")
 		definition.Database.NeonPostgres.SetRegion(region)
+	}
+	if definition.Database.NeonPostgres.InstanceType == nil || flags.Lookup("instance-type").Changed {
+		instanceType, _ := flags.GetString("instance-type")
+		definition.Database.NeonPostgres.SetInstanceType(instanceType)
 	}
 
 	if len(definition.Database.NeonPostgres.Roles) == 0 || flags.Lookup("db-owner").Changed {

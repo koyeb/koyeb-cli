@@ -2104,11 +2104,12 @@ koyeb databases create NAME [flags]
 ### Options
 
 ```
-      --db-name string    Database name (default "koyebdb")
-      --db-owner string   Database owner (default "koyeb-adm")
-  -h, --help              help for create
-      --pg-version int    PostgreSQL version (default 16)
-      --region string     Region where the database is deployed (default "fra")
+      --db-name string         Database name (default "koyebdb")
+      --db-owner string        Database owner (default "koyeb-adm")
+  -h, --help                   help for create
+      --instance-type string   Instance type (free, small, medium or large) (default "free")
+      --pg-version int         PostgreSQL version (default 16)
+      --region string          Region where the database is deployed (default "fra")
 ```
 
 ### Options inherited from parent commands
