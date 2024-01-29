@@ -1,4 +1,4 @@
-## (unreleased)
+## v3.7.0
 
 * Add `koyeb regional-deployments list` and `koyeb regional-deployments get`. Also works with the aliases `rd`, `rdeployment` and `rdeployments`.
   - https://github.com/koyeb/koyeb-cli/issues/176
