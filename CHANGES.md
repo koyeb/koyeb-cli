@@ -1,6 +1,7 @@
-## (unreleased)
+## v3.7.1
 
-* ...
+* Add `koyeb db update <name> --instance-type <type>` to update the instance type of a database
+  - https://github.com/koyeb/koyeb-cli/issues/180
 
 ## v3.7.0
 

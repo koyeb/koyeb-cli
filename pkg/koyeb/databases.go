@@ -57,8 +57,58 @@ func NewDatabaseCmd() *cobra.Command {
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
-	addDbServiceDefinitionFlags(createDbCmd.Flags())
+	addCreateDbServiceDefinitionFlags(createDbCmd.Flags())
 	databaseCmd.AddCommand(createDbCmd)
+
+	updateDbCmd := &cobra.Command{
+		Use:   "update NAME",
+		Short: "Update database",
+		Args:  cobra.ExactArgs(1),
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			service, err := h.ResolveDatabaseArgs(ctx, args[0])
+			if err != nil {
+				return err
+			}
+
+			latestDeployment, resp, err := ctx.Client.DeploymentsApi.
+				ListDeployments(ctx.Context).
+				Limit("1").
+				ServiceId(service).
+				Execute()
+			if err != nil {
+				return errors.NewCLIErrorFromAPIError(
+					fmt.Sprintf("Error while updating the service `%s`", args[0]),
+					err,
+					resp,
+				)
+			}
+			if len(latestDeployment.GetDeployments()) == 0 {
+				return &errors.CLIError{
+					What: "Error while updating the database",
+					Why:  "we couldn't find the latest deployment of your database",
+					Additional: []string{
+						"When you create a database for the first time, it can take a few seconds for the first deployment to be created.",
+						"We need to fetch the configuration of this latest deployment to update your database.",
+					},
+					Orig:     nil,
+					Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
+				}
+			}
+
+			updateDef := latestDeployment.GetDeployments()[0].GetDefinition()
+
+			if err := parseDbServiceDefinitionFlags(cmd.Flags(), updateDef.GetName(), &updateDef); err != nil {
+				return err
+			}
+
+			updateService := koyeb.NewUpdateServiceWithDefaults()
+			updateService.SetDefinition(updateDef)
+
+			return h.Update(ctx, cmd, args, service, updateService)
+		}),
+	}
+	addUpdateDbServiceDefinitionFlags(updateDbCmd.Flags())
+	databaseCmd.AddCommand(updateDbCmd)
 
 	deleteDbCmd := &cobra.Command{
 		Use:   "delete NAME",
@@ -71,12 +121,18 @@ func NewDatabaseCmd() *cobra.Command {
 	return databaseCmd
 }
 
-func addDbServiceDefinitionFlags(flags *pflag.FlagSet) {
+func addUpdateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
+	flags.String("instance-type", "free", "Instance type (free, small, medium or large)")
+}
+
+// All the flags to create a database include the flags to update a database, plus more.
+func addCreateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
+	addUpdateDbServiceDefinitionFlags(flags)
+
 	flags.Int64("pg-version", 16, "PostgreSQL version")
 	flags.String("region", "fra", "Region where the database is deployed")
 	flags.String("db-name", "koyebdb", "Database name")
 	flags.String("db-owner", "koyeb-adm", "Database owner")
-	flags.String("instance-type", "free", "Instance type (free, small, medium or large)")
 }
 
 // parseDbServiceDefinitionFlags parses the flags to update the deployment definition.
@@ -111,6 +167,14 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 	definition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_DATABASE)
 	definition.SetName(serviceName)
 
+	flagChanged := func(name string) bool {
+		f := flags.Lookup(name)
+		if f == nil {
+			return false
+		}
+		return f.Changed
+	}
+
 	if !definition.HasDatabase() {
 		definition.SetDatabase(*koyeb.NewDatabaseSourceWithDefaults())
 	}
@@ -118,20 +182,20 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 		definition.Database.SetNeonPostgres(*koyeb.NewNeonPostgresDatabaseWithDefaults())
 	}
 
-	if definition.Database.NeonPostgres.PgVersion == nil || flags.Lookup("pg-version").Changed {
+	if definition.Database.NeonPostgres.PgVersion == nil || flagChanged("pg-version") {
 		version, _ := flags.GetInt64("pg-version")
 		definition.Database.NeonPostgres.SetPgVersion(version)
 	}
-	if definition.Database.NeonPostgres.Region == nil || flags.Lookup("region").Changed {
+	if definition.Database.NeonPostgres.Region == nil || flagChanged("region") {
 		region, _ := flags.GetString("region")
 		definition.Database.NeonPostgres.SetRegion(region)
 	}
-	if definition.Database.NeonPostgres.InstanceType == nil || flags.Lookup("instance-type").Changed {
+	if definition.Database.NeonPostgres.InstanceType == nil || flagChanged("instance-type") {
 		instanceType, _ := flags.GetString("instance-type")
 		definition.Database.NeonPostgres.SetInstanceType(instanceType)
 	}
 
-	if len(definition.Database.NeonPostgres.Roles) == 0 || flags.Lookup("db-owner").Changed {
+	if len(definition.Database.NeonPostgres.Roles) == 0 || flagChanged("db-owner") {
 		if len(definition.Database.NeonPostgres.Roles) > 1 {
 			return &errors.CLIError{
 				What: "Error while updating the database service definition",
@@ -157,7 +221,7 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 		definition.Database.NeonPostgres.Roles[0].Name = &owner
 	}
 
-	if len(definition.Database.NeonPostgres.Databases) == 0 || flags.Lookup("db-name").Changed {
+	if len(definition.Database.NeonPostgres.Databases) == 0 || flagChanged("db-name") {
 		if len(definition.Database.NeonPostgres.Databases) > 1 {
 			return &errors.CLIError{
 				What: "Error while updating the database service definition",
