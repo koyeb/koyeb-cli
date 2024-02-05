@@ -1,3 +1,8 @@
+## v3.8.0 (unreleased)
+
+* `koyeb service update`: remove autoscaling targets when --min-scale is equal to --max-scale
+  - https://github.com/koyeb/koyeb-cli/issues/182
+
 ## v3.7.1
 
 * Add `koyeb db update <name> --instance-type <type>` to update the instance type of a database

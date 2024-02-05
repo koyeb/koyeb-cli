@@ -704,7 +704,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 // because NewDeploymentScalingTarget{AverageCPU,AverageMem,RequestsPerSecond}
 // do not implement a common interface.
 func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) {
-	if scaling.Targets == nil {
+	if scaling.Targets == nil || scaling.GetMin() == scaling.GetMax() {
 		scaling.Targets = []koyeb.DeploymentScalingTarget{}
 	}
 
