@@ -55,14 +55,20 @@ func (r *GetDeploymentReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetDeploymentReply) Headers() []string {
-	return []string{"id", "service", "type", "status", "messages", "regions", "created_at"}
+	return []string{"id", "service", "git sha", "type", "status", "messages", "regions", "created_at"}
 }
 
 func (r *GetDeploymentReply) Fields() []map[string]string {
 	item := r.value.GetDeployment()
+	sha := "N/A"
+	if item.ProvisioningInfo != nil {
+		sha = *item.ProvisioningInfo.Sha
+	}
+
 	fields := map[string]string{
 		"id":         renderer.FormatID(item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+		"git sha":    sha,
 		"type":       formatDeploymentType(item.Definition.GetType()),
 		"status":     formatDeploymentStatus(item.GetStatus()),
 		"messages":   formatDeploymentMessages(item.GetMessages(), 0),
