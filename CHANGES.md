@@ -2,6 +2,8 @@
 
 * `koyeb service update`: remove autoscaling targets when --min-scale is equal to --max-scale
   - https://github.com/koyeb/koyeb-cli/issues/182
+* `koyeb deployment get` and `koyeb deployment describe` now display the GIT commit hash for git services types
+  - https://github.com/koyeb/koyeb-cli/pull/184
 
 ## v3.7.1
 

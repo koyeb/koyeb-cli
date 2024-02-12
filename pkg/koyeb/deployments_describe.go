@@ -25,7 +25,6 @@ func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args [
 			resp,
 		)
 	}
-
 	// TODO(tleroux): Experimental for now.
 	regionalRes, resp, err := ctx.Client.RegionalDeploymentsApi.ListRegionalDeployments(ctx.Context).
 		DeploymentId(res.Deployment.GetId()).
@@ -93,14 +92,21 @@ func (r *DescribeDeploymentReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *DescribeDeploymentReply) Headers() []string {
-	return []string{"id", "service", "status", "messages", "regions", "created_at", "updated_at", "definition"}
+	return []string{"id", "service", "git sha", "status", "messages", "regions", "created_at", "updated_at", "definition"}
 }
 
 func (r *DescribeDeploymentReply) Fields() []map[string]string {
 	item := r.value.GetDeployment()
+
+	sha := "N/A"
+	if item.ProvisioningInfo != nil {
+		sha = *item.ProvisioningInfo.Sha
+	}
+
 	fields := map[string]string{
 		"id":         renderer.FormatID(item.GetId(), r.full),
 		"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
+		"git sha":    sha,
 		"status":     formatDeploymentStatus(item.GetStatus()),
 		"messages":   formatDeploymentMessages(item.GetMessages(), 0),
 		"regions":    renderRegions(item.Definition.Regions),
