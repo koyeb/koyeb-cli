@@ -4,6 +4,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/182
 * `koyeb deployment get` and `koyeb deployment describe` now display the GIT commit hash for git services types
   - https://github.com/koyeb/koyeb-cli/pull/184
+* Check the validity of the docker image when creating or updating a service
+  - https://github.com/koyeb/koyeb-cli/pull/185
 
 ## v3.7.1
 
