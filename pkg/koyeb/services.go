@@ -39,7 +39,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-			err := parseServiceDefinitionFlags(cmd.Flags(), createDefinition)
+			err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition)
 			if err != nil {
 				return err
 			}
@@ -170,7 +170,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 				updateDef.Git.Sha = koyeb.PtrString("")
 			}
 
-			err = parseServiceDefinitionFlags(cmd.Flags(), updateDef)
+			err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDef)
 			if err != nil {
 				return err
 			}
@@ -349,7 +349,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	})
 }
 
-func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
+func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
 	type_, err := parseType(flags, definition.GetType())
 	if err != nil {
 		return err
@@ -408,7 +408,7 @@ func parseServiceDefinitionFlags(flags *pflag.FlagSet, definition *koyeb.Deploym
 	// Scalings and environment variables refer to regions, so we must call setRegions after definition.SetScalings and definition.SetEnv.
 	setRegions(definition, regions)
 
-	err = setSource(definition, flags)
+	err = setSource(ctx, definition, flags)
 	if err != nil {
 		return err
 	}
@@ -799,7 +799,7 @@ func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) 
 }
 
 // Parse --git-* and --docker-* flags to set deployment.Git or deployment.Docker
-func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
+func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
 	hasGitFlags := false
 	hasDockerFlags := false
 	flags.VisitAll(func(flag *pflag.Flag) {
@@ -826,7 +826,10 @@ func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) err
 	}
 	if hasDockerFlags || definition.HasDocker() {
 		docker := definition.GetDocker()
-		source := parseDockerSource(flags, &docker)
+		source, err := parseDockerSource(ctx, flags, &docker)
+		if err != nil {
+			return err
+		}
 		definition.SetDocker(*source)
 		definition.Git = nil
 	} else if hasGitFlags || definition.HasGit() {
@@ -842,10 +845,13 @@ func setSource(definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) err
 }
 
 // Parse --docker-* flags
-func parseDockerSource(flags *pflag.FlagSet, source *koyeb.DockerSource) *koyeb.DockerSource {
+func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (*koyeb.DockerSource, error) {
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
 		source.SetImage(image)
+		if err := checkDockerImage(ctx, source); err != nil {
+			return nil, err
+		}
 	}
 	if flags.Lookup("docker-args").Changed {
 		args, _ := flags.GetStringSlice("docker-args")
@@ -867,7 +873,7 @@ func parseDockerSource(flags *pflag.FlagSet, source *koyeb.DockerSource) *koyeb.
 		privileged, _ := flags.GetBool("privileged")
 		source.SetPrivileged(privileged)
 	}
-	return source
+	return source, nil
 }
 
 // Parse --git-* flags
@@ -1208,4 +1214,39 @@ func parseAppName(cmd *cobra.Command, serviceName string) (string, error) {
 		}
 	}
 	return split[0], nil
+}
+
+// checkDockerImage calls the API /v1/docker-helper/verify to check the validity
+// of the docker image in the given source. It returns nil if the image is
+// valid, or an error if the image is invalid.
+func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
+	req := ctx.Client.DockerHelperApi.VerifyDockerImage(ctx.Context).Image(source.GetImage())
+
+	secret := source.GetImageRegistrySecret()
+	if len(secret) > 0 {
+		req = req.SecretId(source.GetImageRegistrySecret())
+	}
+
+	res, resp, err := req.Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while checking the validity of the docker image `%s`", source.GetImage()),
+			err,
+			resp,
+		)
+	}
+
+	if !res.GetSuccess() {
+		return &errors.CLIError{
+			What: fmt.Sprintf("Error while checking the validity of the docker image `%s`", source.GetImage()),
+			Why:  res.GetReason(),
+			Additional: []string{
+				fmt.Sprintf("Make sure the image name `%s` is correct and that the image exists.", source.GetImage()),
+				"If the image requires authentication, make sure to provide the parameter --docker-private-registry-secret.",
+			},
+			Orig:     nil,
+			Solution: "Fix the image name or provide the required authentication and try again",
+		}
+	}
+	return nil
 }
