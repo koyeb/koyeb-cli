@@ -1230,7 +1230,7 @@ func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
 	res, resp, err := req.Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
-			fmt.Sprintf("Error while checking the validity of the docker image `%s`", source.GetImage()),
+			fmt.Sprintf("Error while checking the validity of the docker image `%s`", getImageRef(source)),
 			err,
 			resp,
 		)
@@ -1238,10 +1238,10 @@ func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
 
 	if !res.GetSuccess() {
 		return &errors.CLIError{
-			What: fmt.Sprintf("Error while checking the validity of the docker image `%s`", source.GetImage()),
+			What: fmt.Sprintf("Error while checking the validity of the docker image `%s`", getImageRef(source)),
 			Why:  res.GetReason(),
 			Additional: []string{
-				fmt.Sprintf("Make sure the image name `%s` is correct and that the image exists.", source.GetImage()),
+				fmt.Sprintf("Make sure the image name `%s` is correct and that the image exists.", getImageRef(source)),
 				"If the image requires authentication, make sure to provide the parameter --docker-private-registry-secret.",
 			},
 			Orig:     nil,
@@ -1249,4 +1249,13 @@ func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
 		}
 	}
 	return nil
+}
+
+func getImageRef(source *koyeb.DockerSource) string {
+	ref := source.GetImage()
+	parts := strings.Split(ref, ":")
+	if len(parts) == 1 {
+		return fmt.Sprintf("%s:latest", ref)
+	}
+	return ref
 }
