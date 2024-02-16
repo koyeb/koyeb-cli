@@ -849,9 +849,6 @@ func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.Dock
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
 		source.SetImage(image)
-		if err := checkDockerImage(ctx, source); err != nil {
-			return nil, err
-		}
 	}
 	if flags.Lookup("docker-args").Changed {
 		args, _ := flags.GetStringSlice("docker-args")
@@ -872,6 +869,9 @@ func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.Dock
 	if flags.Lookup("privileged").Changed {
 		privileged, _ := flags.GetBool("privileged")
 		source.SetPrivileged(privileged)
+	}
+	if err := checkDockerImage(ctx, source); err != nil {
+		return nil, err
 	}
 	return source, nil
 }
