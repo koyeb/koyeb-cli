@@ -846,6 +846,11 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 
 // Parse --docker-* flags
 func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (*koyeb.DockerSource, error) {
+	// docker-private-registry-secret needs to be parsed first, because checkDockerImage reads it
+	if flags.Lookup("docker-private-registry-secret").Changed {
+		secret, _ := flags.GetString("docker-private-registry-secret")
+		source.SetImageRegistrySecret(secret)
+	}
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
 		source.SetImage(image)
@@ -864,10 +869,6 @@ func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.Dock
 	if flags.Lookup("docker-entrypoint").Changed {
 		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
 		source.SetEntrypoint(entrypoint)
-	}
-	if flags.Lookup("docker-private-registry-secret").Changed {
-		secret, _ := flags.GetString("docker-private-registry-secret")
-		source.SetImageRegistrySecret(secret)
 	}
 	if flags.Lookup("privileged").Changed {
 		privileged, _ := flags.GetBool("privileged")
@@ -1224,7 +1225,17 @@ func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
 
 	secret := source.GetImageRegistrySecret()
 	if len(secret) > 0 {
-		req = req.SecretId(source.GetImageRegistrySecret())
+		secretID, err := ResolveSecretArgs(ctx, secret)
+		if err != nil {
+			return &errors.CLIError{
+				What:       fmt.Sprintf("Error while checking the validity of the docker image `%s`", source.GetImage()),
+				Why:        "the secret provided with the --docker-private-registry-secret flag is invalid",
+				Additional: []string{},
+				Orig:       nil,
+				Solution:   "Create a secret with `koyeb secret create --type registry-<type>` and provide the secret name with the --docker-private-registry-secret flag",
+			}
+		}
+		req = req.SecretId(secretID)
 	}
 
 	res, resp, err := req.Execute()
