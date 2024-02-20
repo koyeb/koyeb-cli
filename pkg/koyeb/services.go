@@ -1249,7 +1249,7 @@ func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
 
 	if !res.GetSuccess() {
 		return &errors.CLIError{
-			What: fmt.Sprintf("Error while checking the validity of the docker image `%s`", source.GetImage()),
+			What: "Error while checking the validity of the docker image",
 			Why:  res.GetReason(),
 			Additional: []string{
 				fmt.Sprintf("Make sure the image name `%s` is correct and that the image exists.", source.GetImage()),
