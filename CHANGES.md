@@ -1,3 +1,7 @@
+## v3.8.1 (unreleased)
+
+* ...
+
 ## v3.8.0
 
 * `koyeb service update`: remove autoscaling targets when --min-scale is equal to --max-scale
