@@ -1,4 +1,4 @@
-## v3.8.0 (unreleased)
+## v3.8.0
 
 * `koyeb service update`: remove autoscaling targets when --min-scale is equal to --max-scale
   - https://github.com/koyeb/koyeb-cli/issues/182
