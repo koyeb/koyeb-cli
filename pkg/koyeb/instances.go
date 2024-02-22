@@ -52,12 +52,8 @@ func NewInstanceCmd() *cobra.Command {
 		Short:   "Copy files and directories to and from instances.",
 		Aliases: []string{"copy"},
 		Args:    cobra.ExactArgs(2),
-		Example: `
-To copy a file called `hello.txt` from the current directory of your local machine to the `/tmp` directory of a remote Koyeb Instance, type:
-$> koyeb instance cp hello.txt <instance_id>:/tmp/
-To copy a `spreadsheet.csv` file from the `/tmp/` directory of your Koyeb Instance to the current directory on your local machine, type:
-$> koyeb instance cp <instance_id>:/tmp/spreadsheet.csv .`,
-		RunE: WithCLIContext(instanceHandler.Cp),
+		Example: "\nTo copy a file called `hello.txt` from the current directory of your local machine to the `/tmp` directory of a remote Koyeb Instance, type:\n$> koyeb instance cp hello.txt <instance_id>:/tmp/\nTo copy a `spreadsheet.csv` file from the `/tmp/` directory of your Koyeb Instance to the current directory on your local machine, type:\n$> koyeb instance cp <instance_id>:/tmp/spreadsheet.csv .",
+		RunE:    WithCLIContext(instanceHandler.Cp),
 	}
 	instanceCmd.AddCommand(cpInstanceCmd)
 
