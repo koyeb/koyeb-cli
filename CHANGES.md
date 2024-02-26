@@ -1,6 +1,7 @@
-## v3.8.1 (unreleased)
+## v3.8.1
 
-* ...
+* Better help message for `koyeb cp`
+* The version 3.8.0 had never been released because the github action has not been triggered. This version is a re-release of the version 3.8.0.
 
 ## v3.8.0
 
