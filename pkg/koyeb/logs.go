@@ -82,13 +82,26 @@ type LogLine struct {
 }
 
 type LogLineResult struct {
-	Msg string `json:"msg"`
+	CreatedAt string `json:"created_at"`
+	Msg       string `json:"msg"`
 }
 
 // WatchLogsEntry is an entry returned by WatchLogsQuery.Execute()
 type WatchLogsEntry struct {
-	Msg string
-	Err error
+	Date time.Time
+	Msg  string
+	Err  error
+}
+
+// ParseTime parses a time string contained in the field result.created_at of
+// the endpoint /v1/streams/logs/tail. In case of error, a zero time is returned.
+func (query *WatchLogsQuery) ParseTime(date string) time.Time {
+	layout := "2006-01-02T15:04:05.999999999Z"
+	parsed, err := time.Parse(layout, date)
+	if err != nil {
+		return time.Time{}
+	}
+	return parsed
 }
 
 func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
@@ -139,7 +152,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 					Solution: "Try again in a few seconds",
 				}}
 			} else {
-				logs <- WatchLogsEntry{Msg: msg.Result.Msg}
+				logs <- WatchLogsEntry{Msg: msg.Result.Msg, Date: query.ParseTime(msg.Result.CreatedAt)}
 			}
 		}
 	}()
@@ -190,7 +203,10 @@ func (query *WatchLogsQuery) PrintAll() error {
 		if log.Err != nil {
 			return log.Err
 		}
-		fmt.Println(log.Msg)
+		layout := "2006-01-02 15:04:05"
+		date := log.Date.Format(layout)
+		zone, _ := log.Date.Zone()
+		fmt.Printf("[%s %s] %s\n", date, zone, log.Msg)
 	}
 	return nil
 }

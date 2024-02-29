@@ -1,3 +1,8 @@
+## v3.9.0 (unreleased)
+
+* Display date in `koyeb service logs` and `koyeb instance logs`
+  - https://github.com/koyeb/koyeb-cli/issues/190
+
 ## v3.8.1
 
 * Better help message for `koyeb cp`
