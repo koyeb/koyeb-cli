@@ -1879,9 +1879,9 @@ koyeb instances cp SRC DST [flags]
 
 ```
 
-# To copy the file hello.txt, located in your working directory on your machine to a remote koyeb instance, in the /tmp/ directory
+To copy a file called `hello.txt` from the current directory of your local machine to the `/tmp` directory of a remote Koyeb Instance, type:
 $> koyeb instance cp hello.txt <instance_id>:/tmp/
-# To copy the file spreadsheet.csv, located in /tmp/ in your Instance to the local directory on your machine
+To copy a `spreadsheet.csv` file from the `/tmp/` directory of your Koyeb Instance to the current directory on your local machine, type:
 $> koyeb instance cp <instance_id>:/tmp/spreadsheet.csv .
 ```
 
