@@ -82,15 +82,26 @@ type LogLine struct {
 }
 
 type LogLineResult struct {
-	CreatedAt string `json:"created_at"`
-	Msg       string `json:"msg"`
+	CreatedAt string              `json:"created_at"`
+	Msg       string              `json:"msg"`
+	Labels    LogLineResultLabels `json:"labels"`
+}
+
+type LogLineResultLabels struct {
+	Type           string `json:"type"`
+	Stream         string `json:"stream"`
+	OrganizationID string `json:"organization_id"`
+	AppID          string `json:"app_id"`
+	ServiceID      string `json:"service_id"`
+	InstanceID     string `json:"instance_id"`
 }
 
 // WatchLogsEntry is an entry returned by WatchLogsQuery.Execute()
 type WatchLogsEntry struct {
-	Date time.Time
-	Msg  string
-	Err  error
+	Date   time.Time
+	Stream string
+	Msg    string
+	Err    error
 }
 
 // ParseTime parses a time string contained in the field result.created_at of
@@ -152,7 +163,11 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 					Solution: "Try again in a few seconds",
 				}}
 			} else {
-				logs <- WatchLogsEntry{Msg: msg.Result.Msg, Date: query.ParseTime(msg.Result.CreatedAt)}
+				logs <- WatchLogsEntry{
+					Stream: msg.Result.Labels.Stream,
+					Msg:    msg.Result.Msg,
+					Date:   query.ParseTime(msg.Result.CreatedAt),
+				}
 			}
 		}
 	}()
@@ -206,7 +221,7 @@ func (query *WatchLogsQuery) PrintAll() error {
 		layout := "2006-01-02 15:04:05"
 		date := log.Date.Format(layout)
 		zone, _ := log.Date.Zone()
-		fmt.Printf("[%s %s] %s\n", date, zone, log.Msg)
+		fmt.Printf("[%s %s] %6s - %s\n", date, zone, log.Stream, log.Msg)
 	}
 	return nil
 }

@@ -2,6 +2,8 @@
 
 * Display date in `koyeb service logs` and `koyeb instance logs`
   - https://github.com/koyeb/koyeb-cli/issues/190
+* Display the log stream in `koyeb service logs` and `koyeb instance logs`
+  - https://github.com/koyeb/koyeb-cli/issues/192
 
 ## v3.8.1
 
