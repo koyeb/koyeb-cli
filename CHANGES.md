@@ -1,4 +1,4 @@
-## v3.9.0 (unreleased)
+## v3.9.0 (2024-03-14)
 
 * Display date in `koyeb service logs` and `koyeb instance logs`
   - https://github.com/koyeb/koyeb-cli/issues/190
