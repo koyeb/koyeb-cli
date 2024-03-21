@@ -21,9 +21,11 @@ func (h *ServiceHandler) ReDeploy(ctx *CLIContext, cmd *cobra.Command, args []st
 	}
 
 	useCache := GetBoolFlags(cmd, "use-cache")
+	skipBuild := GetBoolFlags(cmd, "skip-build")
 
 	redeployBody := *koyeb.NewRedeployRequestInfoWithDefaults()
 	redeployBody.UseCache = &useCache
+	redeployBody.SkipBuild = &skipBuild
 	_, resp, err := ctx.Client.ServicesApi.ReDeploy(ctx.Context, service).Info(redeployBody).Execute()
 
 	if err != nil {
