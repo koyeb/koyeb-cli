@@ -3,6 +3,8 @@
 * Add the `--skip-build` flag for the `koyeb services redeploy` and `koyeb services update` commands.
 * Add `--app` and `--service` flags to `koyeb deployments list` to filter deployments by app and service.
   - https://github.com/koyeb/koyeb-cli/issues/197
+* Add `--deployment` to `koyeb regional-deployments list` to filter regional deployments by deployment ID.
+  - https://github.com/koyeb/koyeb-cli/issues/198
 
 ## v3.9.0 (2024-03-14)
 
