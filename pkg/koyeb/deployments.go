@@ -18,6 +18,8 @@ func NewDeploymentCmd() *cobra.Command {
 		Short: "List deployments",
 		RunE:  WithCLIContext(h.List),
 	}
+	listDeploymentCmd.Flags().String("app", "", "Limit the list to deployments of a specific app")
+	listDeploymentCmd.Flags().String("service", "", "Limit the list to deployments of a specific service")
 	deploymentCmd.AddCommand(listDeploymentCmd)
 
 	getDeploymentCmd := &cobra.Command{
@@ -61,6 +63,24 @@ func NewDeploymentHandler() *DeploymentHandler {
 }
 
 type DeploymentHandler struct {
+}
+
+func (h *DeploymentHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, error) {
+	appMapper := ctx.Mapper.App()
+	id, err := appMapper.ResolveID(val)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
+func (h *DeploymentHandler) ResolveServiceArgs(ctx *CLIContext, val string) (string, error) {
+	serviceMapper := ctx.Mapper.Service()
+	id, err := serviceMapper.ResolveID(val)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
 func (h *DeploymentHandler) ResolveDeploymentArgs(ctx *CLIContext, val string) (string, error) {

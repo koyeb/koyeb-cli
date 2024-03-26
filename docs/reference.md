@@ -1493,6 +1493,7 @@ koyeb services redeploy NAME [flags]
 ```
   -a, --app string   Service application
   -h, --help         help for redeploy
+      --skip-build   If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
       --use-cache    Use cache to redeploy
 ```
 
@@ -1617,6 +1618,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
       --scale int                               Set both min-scale and max-scale (default 1)
+      --skip-build                              If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
       --skip-cache                              Whether to use the cache when building the service
       --type string                             Service type, either "web" or "worker" (default "web")
 ```
@@ -1779,7 +1781,9 @@ koyeb deployments list [flags]
 ### Options
 
 ```
-  -h, --help   help for list
+      --app string       Limit the list to deployments of a specific app
+  -h, --help             help for list
+      --service string   Limit the list to deployments of a specific service
 ```
 
 ### Options inherited from parent commands
