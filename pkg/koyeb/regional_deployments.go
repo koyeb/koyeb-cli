@@ -18,6 +18,7 @@ func NewRegionalDeploymentCmd() *cobra.Command {
 		Short: "List regional deployments",
 		RunE:  WithCLIContext(h.List),
 	}
+	listRegionalDeploymentCmd.Flags().String("deployment", "", "Limit the list to regional deployments of a specific deployment")
 	regionalDeploymentCmd.AddCommand(listRegionalDeploymentCmd)
 
 	getRegionalDeploymentCmd := &cobra.Command{
@@ -36,6 +37,15 @@ func NewRegionalDeploymentHandler() *RegionalDeploymentHandler {
 }
 
 type RegionalDeploymentHandler struct {
+}
+
+func (h *RegionalDeploymentHandler) ResolveDeploymentArgs(ctx *CLIContext, val string) (string, error) {
+	deploymentMapper := ctx.Mapper.Deployment()
+	id, err := deploymentMapper.ResolveID(val)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
 func (h *RegionalDeploymentHandler) ResolveRegionalDeploymentArgs(ctx *CLIContext, val string) (string, error) {
