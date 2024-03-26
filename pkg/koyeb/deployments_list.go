@@ -13,12 +13,35 @@ import (
 func (h *DeploymentHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	list := []koyeb.DeploymentListItem{}
 
+	appId := ""
+	if app, _ := cmd.Flags().GetString("app"); app != "" {
+		var err error
+		if appId, err = h.ResolveAppArgs(ctx, app); err != nil {
+			return err
+		}
+	}
+	serviceId := ""
+	if service, _ := cmd.Flags().GetString("service"); service != "" {
+		var err error
+		if serviceId, err = h.ResolveServiceArgs(ctx, service); err != nil {
+			return err
+		}
+	}
+
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context).
-			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
+		req := ctx.Client.DeploymentsApi.ListDeployments(ctx.Context)
+
+		if appId != "" {
+			req = req.AppId(appId)
+		}
+		if serviceId != "" {
+			req = req.ServiceId(serviceId)
+		}
+
+		res, resp, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
 				"Error while listing the deployments",
