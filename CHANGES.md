@@ -1,6 +1,6 @@
 ## v3.9.1 (unreleased)
 
-* ...
+* Add the `--skip-build` flag for the `koyeb services redeploy` and `koyeb services update` commands.
 
 ## v3.9.0 (2024-03-14)
 
