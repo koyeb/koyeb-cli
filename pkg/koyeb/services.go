@@ -181,6 +181,11 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 				updateService.SetSkipBuild(true)
 			}
 
+			saveOnly, _ := cmd.Flags().GetBool("save-only")
+			if saveOnly {
+				updateService.SetSaveOnly(true)
+			}
+
 			return h.Update(ctx, cmd, args, updateService)
 		}),
 	}
@@ -188,6 +193,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 	updateServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	updateServiceCmd.Flags().Bool("override", false, "Override the service configuration with the new configuration instead of merging them")
 	updateServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
+	updateServiceCmd.Flags().Bool("save-only", false, "Save the new configuration without deploying it")
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{
