@@ -1,4 +1,4 @@
-## v3.10.0 (unreleased)
+## v3.10.0
 
 * Add the `--skip-build` flag for the `koyeb services redeploy` and `koyeb services update` commands.
 * Add `--app` and `--service` flags to `koyeb deployments list` to filter deployments by app and service.
