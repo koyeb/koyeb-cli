@@ -1,3 +1,8 @@
+## (unreleased)
+
+* Add warning when accessing logs of a deployment with skipped build.
+  - https://github.com/koyeb/koyeb-cli/pull/201
+
 ## v3.10.0
 
 * Add the `--skip-build` flag for the `koyeb services redeploy` and `koyeb services update` commands.
