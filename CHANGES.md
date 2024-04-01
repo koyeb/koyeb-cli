@@ -2,6 +2,8 @@
 
 * Add warning when accessing logs of a deployment with skipped build.
   - https://github.com/koyeb/koyeb-cli/pull/201
+* Add instance ID to `koyeb service logs`, `koyeb deployment logs` and `koyeb instance logs`
+  - https://github.com/koyeb/koyeb-cli/pull/202
 
 ## v3.10.0
 

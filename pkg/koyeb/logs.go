@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 )
 
 type LogsAPIClient struct {
@@ -48,16 +49,18 @@ type WatchLogsQuery struct {
 	instanceId   string
 	conn         *websocket.Conn
 	ticker       *time.Ticker
+	full         bool // Whether to display full IDs
 }
 
 func (client *LogsAPIClient) NewWatchLogsQuery(
-	logType string, serviceId string, deploymentId string, instanceId string,
+	logType string, serviceId string, deploymentId string, instanceId string, full bool,
 ) (*WatchLogsQuery, error) {
 	query := &WatchLogsQuery{
 		client:       client,
 		serviceId:    serviceId,
 		deploymentId: deploymentId,
 		instanceId:   instanceId,
+		full:         full,
 	}
 	switch logType {
 	case "build", "runtime", "":
@@ -102,6 +105,7 @@ type WatchLogsEntry struct {
 	Stream string
 	Msg    string
 	Err    error
+	Labels LogLineResultLabels
 }
 
 // ParseTime parses a time string contained in the field result.created_at of
@@ -167,6 +171,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 					Stream: msg.Result.Labels.Stream,
 					Msg:    msg.Result.Msg,
 					Date:   query.ParseTime(msg.Result.CreatedAt),
+					Labels: msg.Result.Labels,
 				}
 			}
 		}
@@ -221,7 +226,7 @@ func (query *WatchLogsQuery) PrintAll() error {
 		layout := "2006-01-02 15:04:05"
 		date := log.Date.Format(layout)
 		zone, _ := log.Date.Zone()
-		fmt.Printf("[%s %s] %6s - %s\n", date, zone, log.Stream, log.Msg)
+		fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(log.Labels.InstanceID, query.full), log.Stream, log.Msg)
 	}
 	return nil
 }

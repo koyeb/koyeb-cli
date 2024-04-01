@@ -27,6 +27,7 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []str
 		"",
 		deploymentDetail.Deployment.GetId(),
 		"",
+		GetBoolFlags(cmd, "full"),
 	)
 	if err != nil {
 		return err

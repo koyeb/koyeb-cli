@@ -95,6 +95,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 		serviceId,
 		deploymentId,
 		instanceId,
+		GetBoolFlags(cmd, "full"),
 	)
 	if err != nil {
 		return err

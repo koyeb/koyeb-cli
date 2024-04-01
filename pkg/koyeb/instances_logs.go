@@ -26,6 +26,7 @@ func (h *InstanceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []strin
 		"",
 		"",
 		instanceDetail.Instance.GetId(),
+		GetBoolFlags(cmd, "full"),
 	)
 	if err != nil {
 		return err
