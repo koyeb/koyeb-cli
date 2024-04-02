@@ -177,14 +177,10 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'`,
 			updateService.SetDefinition(*updateDef)
 
 			skipBuild, _ := cmd.Flags().GetBool("skip-build")
-			if skipBuild {
-				updateService.SetSkipBuild(true)
-			}
+			updateService.SetSkipBuild(skipBuild)
 
 			saveOnly, _ := cmd.Flags().GetBool("save-only")
-			if saveOnly {
-				updateService.SetSaveOnly(true)
-			}
+			updateService.SetSaveOnly(saveOnly)
 
 			return h.Update(ctx, cmd, args, updateService)
 		}),
