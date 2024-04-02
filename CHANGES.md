@@ -6,6 +6,8 @@
   - https://github.com/koyeb/koyeb-cli/pull/202
 * Add the `--save-only` flag to the `koyeb services update` command, that only saves the changes and does not trigger an immediate deploy.
   - https://github.com/koyeb/koyeb-cli/pull/200
+* Support `-o json` for `koyeb service logs`, `koyeb deployment logs` and `koyeb instance logs`
+  - https://github.com/koyeb/koyeb-cli/issues/203
 
 ## v3.10.0
 
