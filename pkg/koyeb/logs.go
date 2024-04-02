@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -101,11 +102,11 @@ type LogLineResultLabels struct {
 
 // WatchLogsEntry is an entry returned by WatchLogsQuery.Execute()
 type WatchLogsEntry struct {
-	Date   time.Time
-	Stream string
-	Msg    string
-	Err    error
-	Labels LogLineResultLabels
+	Date   time.Time           `json:"date"`
+	Stream string              `json:"stream"`
+	Msg    string              `json:"msg"`
+	Err    error               `json:"error"`
+	Labels LogLineResultLabels `json:"labels"`
 }
 
 // ParseTime parses a time string contained in the field result.created_at of
@@ -226,7 +227,17 @@ func (query *WatchLogsQuery) PrintAll() error {
 		layout := "2006-01-02 15:04:05"
 		date := log.Date.Format(layout)
 		zone, _ := log.Date.Zone()
-		fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(log.Labels.InstanceID, query.full), log.Stream, log.Msg)
+
+		switch outputFormat {
+		case "json", "yaml":
+			data, err := json.Marshal(log)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", data)
+		default:
+			fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(log.Labels.InstanceID, query.full), log.Stream, log.Msg)
+		}
 	}
 	return nil
 }
