@@ -3,6 +3,7 @@ module github.com/koyeb/koyeb-cli
 go 1.18
 
 require (
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.3.0+incompatible
