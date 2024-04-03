@@ -261,9 +261,9 @@ koyeb apps init NAME [flags]
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
                                                 
       --docker string                           Docker image
-      --docker-args strings                     Docker args
-      --docker-command string                   Docker command
-      --docker-entrypoint strings               Docker entrypoint
+      --docker-args strings                     Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                   Docker command. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
@@ -1165,11 +1165,15 @@ koyeb services create NAME [flags]
 # Deploy a nginx docker image, listening on port 80
 $> koyeb service create myservice --app myapp --docker nginx --port 80
 
+# Deploy a nginx docker image, but set the docker CMD explicitly
+$> koyeb service create myservice --app myapp --docker nginx --port 80 --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
+
 # Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 9000 to the root route
 $> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=9000 --port 9000:http --route /:9000
 
 # Build and deploy a GitHub repository using docker
 $> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
+
 ```
 
 ### Options
@@ -1185,9 +1189,9 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
                                                 
       --docker string                           Docker image
-      --docker-args strings                     Docker args
-      --docker-command string                   Docker command
-      --docker-entrypoint strings               Docker entrypoint
+      --docker-args strings                     Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                   Docker command. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
@@ -1578,9 +1582,9 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
                                                 
       --docker string                           Docker image
-      --docker-args strings                     Docker args
-      --docker-command string                   Docker command
-      --docker-entrypoint strings               Docker entrypoint
+      --docker-args strings                     Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                   Docker command. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
