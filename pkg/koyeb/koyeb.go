@@ -111,6 +111,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewDeploymentCmd())
 	rootCmd.AddCommand(NewRegionalDeploymentCmd())
 	rootCmd.AddCommand(NewDatabaseCmd())
+	rootCmd.AddCommand(NewMetricsCmd())
 	return rootCmd
 }
 

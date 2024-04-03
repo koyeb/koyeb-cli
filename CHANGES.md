@@ -8,6 +8,8 @@
   - https://github.com/koyeb/koyeb-cli/pull/200
 * Support `-o json` for `koyeb service logs`, `koyeb deployment logs` and `koyeb instance logs`
   - https://github.com/koyeb/koyeb-cli/issues/203
+* Add command `koyeb metrics get` to get the metrics of a service or an instance
+  - https://github.com/koyeb/koyeb-cli/issues/162
 
 ## v3.10.0
 

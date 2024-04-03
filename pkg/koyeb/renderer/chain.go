@@ -6,7 +6,7 @@ type ChainRenderer struct {
 }
 
 // Most of the CLI display only one resource, but some commands need to display
-// multiple resources, like the `koyeb deployments describe` command.
+// multiple resources, like the `koyeb deployments describe` or `koyeb metrics get` commands.
 //
 // The ChainRenderer complies with the Renderer interface and can be used to display multiple resources, like this:
 //
