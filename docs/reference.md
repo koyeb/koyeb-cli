@@ -37,6 +37,7 @@ Koyeb CLI
 * [koyeb domains](#koyeb-domains)	 - Domains
 * [koyeb instances](#koyeb-instances)	 - Instances
 * [koyeb login](#koyeb-login)	 - Login to your Koyeb account
+* [koyeb metrics](#koyeb-metrics)	 - Metrics
 * [koyeb organizations](#koyeb-organizations)	 - Organization
 * [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
@@ -1617,6 +1618,7 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
                                                 PORT defaults to 8000
                                                 To delete a route, use '!PATH', for example --route '!/foo'
                                                 
+      --save-only                               Save the new configuration without deploying it
       --scale int                               Set both min-scale and max-scale (default 1)
       --skip-build                              If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
       --skip-cache                              Whether to use the cache when building the service
