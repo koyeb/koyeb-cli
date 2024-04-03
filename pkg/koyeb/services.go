@@ -334,16 +334,16 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	// Git service: docker builder
 	flags.String("git-docker-dockerfile", "", "Dockerfile path")
 	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("git-docker-command", "", "Docker CMD")
-	flags.StringSlice("git-docker-args", []string{}, "Arguments for the Docker CMD")
+	flags.String("git-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
+	flags.StringSlice("git-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.")
 	flags.String("git-docker-target", "", "Docker target")
 
 	// Docker service
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
-	flags.String("docker-command", "", "Docker command. To provide arguments to the command, use the --docker-args flag.")
-	flags.StringSlice("docker-args", []string{}, "Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.")
+	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
+	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {

@@ -261,8 +261,8 @@ koyeb apps init NAME [flags]
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
                                                 
       --docker string                           Docker image
-      --docker-args strings                     Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                   Docker command. To provide arguments to the command, use the --docker-args flag.
+      --docker-args strings                     Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                   Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
       --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
@@ -275,8 +275,8 @@ koyeb apps init NAME [flags]
       --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string      Buid command
       --git-buildpack-run-command string        Run command
-      --git-docker-args strings                 Arguments for the Docker CMD
-      --git-docker-command string               Docker CMD
+      --git-docker-args strings                 Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string               Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
       --git-docker-dockerfile string            Dockerfile path
       --git-docker-entrypoint strings           Docker entrypoint
       --git-docker-target string                Docker target
@@ -1189,8 +1189,8 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
                                                 
       --docker string                           Docker image
-      --docker-args strings                     Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                   Docker command. To provide arguments to the command, use the --docker-args flag.
+      --docker-args strings                     Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                   Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
       --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
@@ -1203,8 +1203,8 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
       --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string      Buid command
       --git-buildpack-run-command string        Run command
-      --git-docker-args strings                 Arguments for the Docker CMD
-      --git-docker-command string               Docker CMD
+      --git-docker-args strings                 Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string               Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
       --git-docker-dockerfile string            Dockerfile path
       --git-docker-entrypoint strings           Docker entrypoint
       --git-docker-target string                Docker target
@@ -1586,8 +1586,8 @@ $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g
                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
                                                 
       --docker string                           Docker image
-      --docker-args strings                     Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                   Docker command. To provide arguments to the command, use the --docker-args flag.
+      --docker-args strings                     Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                   Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
       --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
@@ -1600,8 +1600,8 @@ $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g
       --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string      Buid command
       --git-buildpack-run-command string        Run command
-      --git-docker-args strings                 Arguments for the Docker CMD
-      --git-docker-command string               Docker CMD
+      --git-docker-args strings                 Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string               Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
       --git-docker-dockerfile string            Dockerfile path
       --git-docker-entrypoint strings           Docker entrypoint
       --git-docker-target string                Docker target
