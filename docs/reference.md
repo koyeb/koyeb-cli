@@ -1165,7 +1165,7 @@ koyeb services create NAME [flags]
 # Deploy a nginx docker image, listening on port 80
 $> koyeb service create myservice --app myapp --docker nginx --port 80
 
-# Deploy a nginx docker image, but set the docker CMD explicitly
+# Deploy a nginx docker image and set the docker CMD explicitly, equivalent to docker CMD ["nginx", "-g", "daemon off;"]
 $> koyeb service create myservice --app myapp --docker nginx --port 80 --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
 
 # Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 9000 to the root route
@@ -1567,6 +1567,10 @@ koyeb services update NAME [flags]
 
 # Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
+
+# Update the docker command of the service "myservice" in the app "myapp", equivalent to docker CMD ["nginx", "-g", "daemon off;"]
+$> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
+
 ```
 
 ### Options
