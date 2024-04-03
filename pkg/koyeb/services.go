@@ -30,11 +30,15 @@ func NewServiceCmd() *cobra.Command {
 # Deploy a nginx docker image, listening on port 80
 $> koyeb service create myservice --app myapp --docker nginx --port 80
 
+# Deploy a nginx docker image, but set the docker CMD explicitly
+$> koyeb service create myservice --app myapp --docker nginx --port 80 --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
+
 # Build and deploy a GitHub repository using buildpack (default), set the environment variable PORT, and expose the port 9000 to the root route
 $> koyeb service create myservice --app myapp --git github.com/koyeb/example-flask --git-branch main --env PORT=9000 --port 9000:http --route /:9000
 
 # Build and deploy a GitHub repository using docker
-$> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker`,
+$> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
+`,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
@@ -333,9 +337,9 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	// Docker service
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("docker-command", "", "Docker command")
-	flags.StringSlice("docker-args", []string{}, "Docker args")
+	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
+	flags.String("docker-command", "", "Docker command. To provide arguments to the command, use the --docker-args flag.")
+	flags.StringSlice("docker-args", []string{}, "Docker command arguments. To provide multiple arguments, use the --docker-args flag multiple times.")
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
