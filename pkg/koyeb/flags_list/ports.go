@@ -60,7 +60,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 		} else {
 			port.protocol = *koyeb.PtrString("http")
 			if len(split) > 1 {
-				if split[1] != "http" && split[1] != "http2" {
+				if split[1] != "http" && split[1] != "http2" && split[1] != "tcp" {
 					return nil, &errors.CLIError{
 						What: "Error while configuring the service",
 						Why:  fmt.Sprintf("unable to parse the protocol from the port \"%s\"", port.cliValue),
