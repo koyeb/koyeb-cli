@@ -249,6 +249,12 @@ Create app and service
 koyeb apps init NAME [flags]
 ```
 
+### Examples
+
+```
+See examples of koyeb service create --help
+```
+
 ### Options
 
 ```
@@ -1574,7 +1580,8 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 # Update the docker command of the service "myservice" in the app "myapp", equivalent to docker CMD ["nginx", "-g", "daemon off;"]
 $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
 
-# Given a public service configured with the port 80:http and the route /:80, update it to make the service private, ie. only accessible from the mesh, by changing the port's protocol and removing the route
+# Given a public service configured with the port 80:http and the route /:80, update it to make the service private, ie. only
+# accessible from the mesh, by changing the port's protocol and removing the route
 $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 
 ```

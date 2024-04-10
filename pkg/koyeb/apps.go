@@ -27,9 +27,10 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(createAppCmd)
 
 	initAppCmd := &cobra.Command{
-		Use:   "init NAME",
-		Short: "Create app and service",
-		Args:  cobra.ExactArgs(1),
+		Use:     "init NAME",
+		Short:   "Create app and service",
+		Example: "See examples of koyeb service create --help",
+		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createApp := koyeb.NewCreateAppWithDefaults()
 
