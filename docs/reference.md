@@ -1174,6 +1174,9 @@ $> koyeb service create myservice --app myapp --git github.com/koyeb/example-fla
 # Build and deploy a GitHub repository using docker
 $> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
 
+# Create a docker service, only accessible from the mesh (--route is not automatically created for TCP ports)
+$> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
+
 ```
 
 ### Options
@@ -1570,6 +1573,9 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 
 # Update the docker command of the service "myservice" in the app "myapp", equivalent to docker CMD ["nginx", "-g", "daemon off;"]
 $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
+
+# Given a public service configured with the port 80:http and the route /:80, update it to make the service private, ie. only accessible from the mesh, by changing the port's protocol and removing the route
+$> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 
 ```
 
