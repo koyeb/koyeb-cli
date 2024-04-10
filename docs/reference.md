@@ -288,7 +288,7 @@ koyeb apps init NAME [flags]
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http" and "http2"
+                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the service container should run in privileged mode
@@ -1216,7 +1216,7 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http" and "http2"
+                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the service container should run in privileged mode
@@ -1614,7 +1614,7 @@ $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g
       --min-scale int                           Min scale (default 1)
       --override                                Override the service configuration with the new configuration instead of merging them
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http" and "http2"
+                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the service container should run in privileged mode

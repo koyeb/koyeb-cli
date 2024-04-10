@@ -306,7 +306,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 		"ports",
 		nil,
 		"Update service ports (available for services of type \"web\" only) using the format PORT[:PROTOCOL], for example --port 8080:http\n"+
-			"PROTOCOL defaults to \"http\". Supported protocols are \"http\" and \"http2\"\n"+
+			"PROTOCOL defaults to \"http\". Supported protocols are \"http\", \"http2\" and \"tcp\"\n"+
 			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
 	)
 	flags.StringSlice(

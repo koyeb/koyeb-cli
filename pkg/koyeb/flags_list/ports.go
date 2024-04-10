@@ -35,7 +35,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 				Additional: []string{
 					"Ports must be specified as PORT[:PROTOCOL]",
 					"PORT must be a valid port number (e.g. 80)",
-					"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
+					"PROTOCOL must be either \"http\", \"http2\" or \"tcp\". It can be omitted, in which case it defaults to \"http\"",
 					"To remove a port from the service, prefix it with '!', e.g. '!80'",
 				},
 				Orig:     nil,
@@ -67,7 +67,7 @@ func NewPortListFromFlags(values []string) ([]Flag[koyeb.DeploymentPort], error)
 						Additional: []string{
 							"Ports must be specified as PORT[:PROTOCOL]",
 							"PORT must be a valid port number (e.g. 80)",
-							"PROTOCOL must be either \"http\" or \"http2\". It can be omitted, in which case it defaults to \"http\"",
+							"PROTOCOL must be either \"http\", \"http2\" or \"tcp\". It can be omitted, in which case it defaults to \"http\"",
 						},
 						Orig:     nil,
 						Solution: "Fix the protocol and try again",
