@@ -10,6 +10,8 @@
   - https://github.com/koyeb/koyeb-cli/issues/203
 * Add command `koyeb metrics get` to get the metrics of a service or an instance
   - https://github.com/koyeb/koyeb-cli/issues/162
+* It is now possible to create services only available from the mesh, for example with `koyeb service create app/service --docker nginx --port 80:tcp`. With only `--port 80` (equivalent to `--port 80:http`), the service is also exposed to the internet.
+  - https://github.com/koyeb/koyeb-cli/issues/207
 
 ## v3.10.0
 
