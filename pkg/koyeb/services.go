@@ -38,6 +38,9 @@ $> koyeb service create myservice --app myapp --git github.com/koyeb/example-fla
 
 # Build and deploy a GitHub repository using docker
 $> koyeb service create myservice --app myapp --git github.com/org/name --git-branch main --git-builder docker
+
+# Create a docker service, only accessible from the mesh (--route is not automatically created for TCP ports)
+$> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
@@ -121,6 +124,10 @@ $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
 
 # Update the docker command of the service "myservice" in the app "myapp", equivalent to docker CMD ["nginx", "-g", "daemon off;"]
 $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
+
+# Given a public service configured with the port 80:http and the route /:80, update it to make the service private, ie. only
+# accessible from the mesh, by changing the port's protocol and removing the route
+$> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			serviceName, err := parseServiceName(cmd, args[0])
@@ -367,6 +374,7 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	})
 }
 
+// parseServiceDefinitionFlags parses the flags related to the service definition, and updates the given definition accordingly.
 func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
 	type_, err := parseType(flags, definition.GetType())
 	if err != nil {
@@ -587,9 +595,10 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 		definition.SetPorts(getDeploymentPort(8000))
 		definition.SetRoutes(getDeploymentRoute(8000))
 
-	// One or more port set, no route set
+	// When one or more port are set but no route is set:
+	// - if more than one port is set, we can't determine which one should be used to create the default route, so we return an error
+	// - if exactly only one port is set, we create the default route with this port
 	case len(currentPorts) > 0 && len(currentRoutes) == 0:
-		// Two or more ports are set
 		if len(currentPorts) > 1 {
 			return &errors.CLIError{
 				What: "Error while configuring the service",
@@ -601,13 +610,15 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 				Solution: "Set the routes and try again",
 			}
 		}
-		// One port set
 		portNumber := currentPorts[0].GetPort()
-		definition.SetRoutes(getDeploymentRoute(portNumber))
+		if currentPorts[0].GetProtocol() != "tcp" {
+			definition.SetRoutes(getDeploymentRoute(portNumber))
+		}
 
-	// One or more route set, no port set
+	// If one or more routes are set but no port is set:
+	// - if more than one route is set, we can't determine which one should be used to create the default port, so we return an error
+	// - if exactly only one route is set, we create the default port with this the port value of the route
 	case len(currentRoutes) > 0 && len(currentPorts) == 0:
-		// Two or more routes are set
 		if len(currentRoutes) > 1 {
 			return &errors.CLIError{
 				What: "Error while configuring the service",
@@ -619,7 +630,6 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 				Solution: "Set the ports and try again",
 			}
 		}
-		// One route set
 		portNumber := currentRoutes[0].GetPort()
 		definition.SetPorts(getDeploymentPort(portNumber))
 	}
