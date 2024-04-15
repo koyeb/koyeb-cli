@@ -1,4 +1,4 @@
-## (unreleased)
+## v3.11.0 (2024-04-15)
 
 * Add warning when accessing logs of a deployment with skipped build.
   - https://github.com/koyeb/koyeb-cli/pull/201
@@ -13,7 +13,7 @@
 * It is now possible to create services only available from the mesh, for example with `koyeb service create app/service --docker nginx --port 80:tcp`. With only `--port 80` (equivalent to `--port 80:http`), the service is also exposed to the internet.
   - https://github.com/koyeb/koyeb-cli/issues/207
 
-## v3.10.0
+## v3.10.0 (2024-03-28)
 
 * Add the `--skip-build` flag for the `koyeb services redeploy` and `koyeb services update` commands.
 * Add `--app` and `--service` flags to `koyeb deployments list` to filter deployments by app and service.
