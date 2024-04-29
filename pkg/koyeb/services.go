@@ -202,6 +202,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	}
 	addServiceDefinitionFlags(updateServiceCmd.Flags())
 	updateServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	updateServiceCmd.Flags().String("name", "", "Specify to update the service name")
 	updateServiceCmd.Flags().Bool("override", false, "Override the service configuration with the new configuration instead of merging them")
 	updateServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
 	updateServiceCmd.Flags().Bool("save-only", false, "Save the new configuration without deploying it")
@@ -376,6 +377,13 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 
 // parseServiceDefinitionFlags parses the flags related to the service definition, and updates the given definition accordingly.
 func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
+	// For `koyeb service create`, the flag "name" does not exist so flags.Lookup("name") will return nil.
+	// For `koyeb service update`, we only override the name in the definition if the flag is set.
+	if flags.Lookup("name") != nil && flags.Lookup("name").Changed {
+		name, _ := flags.GetString("name")
+		definition.SetName(name)
+	}
+
 	type_, err := parseType(flags, definition.GetType())
 	if err != nil {
 		return err

@@ -1,3 +1,8 @@
+## v3.12.0 (unreleased)
+
+* Add `koyeb service update <app>/<service> --name <new_name>` to rename a service
+  - https://github.com/koyeb/koyeb-cli/issues/211
+
 ## v3.11.0 (2024-04-15)
 
 * Add warning when accessing logs of a deployment with skipped build.

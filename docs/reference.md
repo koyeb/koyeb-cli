@@ -1625,6 +1625,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --instance-type string                    Instance type (default "nano")
       --max-scale int                           Max scale (default 1)
       --min-scale int                           Min scale (default 1)
+      --name string                             Specify to update the service name
       --override                                Override the service configuration with the new configuration instead of merging them
       --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
