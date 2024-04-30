@@ -2,6 +2,8 @@
 
 * Add `koyeb service update <app>/<service> --name <new_name>` to rename a service
   - https://github.com/koyeb/koyeb-cli/issues/211
+* Fix when changing the source of a project from Docker to Git.
+  - https://github.com/koyeb/koyeb-cli/issues/215
 
 ## v3.11.0 (2024-04-15)
 

@@ -860,7 +860,9 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 			Solution: "Fix the flags and try again",
 		}
 	}
-	if hasDockerFlags || definition.HasDocker() {
+	if hasDockerFlags {
+		// If --docker-* flags are set and the service already has a Docker
+		// source, update it.
 		docker := definition.GetDocker()
 		source, err := parseDockerSource(ctx, flags, &docker)
 		if err != nil {
@@ -868,7 +870,31 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		}
 		definition.SetDocker(*source)
 		definition.Git = nil
-	} else if hasGitFlags || definition.HasGit() {
+		// If --docker-* flags are set and the service has a Git source, replace
+		// it with a Docker source.
+	} else if hasGitFlags {
+		git := definition.GetGit()
+		source, err := parseGitSource(flags, &git)
+		if err != nil {
+			return err
+		}
+		definition.Docker = nil
+		definition.SetGit(*source)
+	} else if definition.HasDocker() {
+		// If --git-* and --docker-* flags are not set, parse the flag to update
+		// the existing Docker source. This might seem to be a no-op (since the
+		// docker flags are not set, you could expect the source to remain the
+		// same), but it is necessary to update the
+		// --privileged flag, for example.
+		docker := definition.GetDocker()
+		source, err := parseDockerSource(ctx, flags, &docker)
+		if err != nil {
+			return err
+		}
+		definition.SetDocker(*source)
+		definition.Git = nil
+	} else {
+		// Same as above, but for the Git source.
 		git := definition.GetGit()
 		source, err := parseGitSource(flags, &git)
 		if err != nil {
