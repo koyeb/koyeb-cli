@@ -10,20 +10,22 @@ import (
 )
 
 type AppMapper struct {
-	ctx     context.Context
-	client  *koyeb.APIClient
-	fetched bool
-	sidMap  *IDMap
-	nameMap *IDMap
+	ctx           context.Context
+	client        *koyeb.APIClient
+	fetched       bool
+	sidMap        *IDMap
+	nameMap       *IDMap
+	autoDomainMap *IDMap
 }
 
 func NewAppMapper(ctx context.Context, client *koyeb.APIClient) *AppMapper {
 	return &AppMapper{
-		ctx:     ctx,
-		client:  client,
-		fetched: false,
-		sidMap:  NewIDMap(),
-		nameMap: NewIDMap(),
+		ctx:           ctx,
+		client:        client,
+		fetched:       false,
+		sidMap:        NewIDMap(),
+		nameMap:       NewIDMap(),
+		autoDomainMap: NewIDMap(),
 	}
 }
 
@@ -71,6 +73,22 @@ func (mapper *AppMapper) GetName(id string) (string, error) {
 	return name, nil
 }
 
+func (mapper *AppMapper) GetAutoDomain(id string) (string, error) {
+	if !mapper.fetched {
+		err := mapper.fetch()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	name, ok := mapper.autoDomainMap.GetValue(id)
+	if !ok {
+		return "", fmt.Errorf("app automatic domain not found for %q", id)
+	}
+
+	return name, nil
+}
+
 func (mapper *AppMapper) fetch() error {
 	radix := NewRadixTree()
 
@@ -110,9 +128,16 @@ func (mapper *AppMapper) fetch() error {
 		id := app.GetId()
 		name := app.GetName()
 		sid := getShortID(id, minLength)
+		domains := app.GetDomains()
 
 		mapper.sidMap.Set(id, sid)
 		mapper.nameMap.Set(id, name)
+		for _, domain := range domains {
+			if domain.GetType() == koyeb.DOMAINTYPE_AUTOASSIGNED {
+				mapper.autoDomainMap.Set(id, domain.GetId())
+			}
+			break
+		}
 
 		return nil
 	})
