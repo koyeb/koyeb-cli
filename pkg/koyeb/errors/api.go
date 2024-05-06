@@ -34,7 +34,7 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 		switch genericErrModel := genericErr.Model().(type) {
 		case koyeb.ErrorWithFields:
 			ret.Why = fmt.Sprintf("the Koyeb API returned an error %d: %s", *genericErrModel.Status, genericErrModel.GetMessage())
-			ret.Solution = solutionFixRequest
+			ret.Solution = SolutionFixRequest
 			for _, f := range genericErrModel.GetFields() {
 				ret.Additional = append(ret.Additional, fmt.Sprintf("Field %s: %s", f.GetField(), f.GetDescription()))
 			}
@@ -45,27 +45,27 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 				ret.Orig = nil // the original error contains "401 Unauthorized" which is not very useful. Remove it.
 			} else {
 				ret.Why = fmt.Sprintf("the Koyeb API returned an error %d: %s", *genericErrModel.Status, genericErrModel.GetMessage())
-				ret.Solution = solutionFixRequest
+				ret.Solution = SolutionFixRequest
 			}
 		default:
 			if resp != nil {
 				ret.Why = fmt.Sprintf("the Koyeb API returned an unexpected error HTTP/%d that the CLI was unable to process, likely due to a bug in the CLI", resp.StatusCode)
-				ret.Solution = solutionUpdateOrIssue
+				ret.Solution = SolutionUpdateOrIssue
 			} else {
 				ret.Why = "the Koyeb API returned an unexpected error, not bound to an HTTP response, that the CLI was unable to process, likely due to a bug in the CLI"
-				ret.Solution = solutionUpdateOrIssue
+				ret.Solution = SolutionUpdateOrIssue
 			}
 		}
 		return ret
 	} else if errors.As(err, &unmarshalErr) {
 		ret.Why = "the Koyeb API returned an error that the CLI was unable to parse, likely due to a bug in the CLI."
-		ret.Solution = solutionTryAgainOrUpdateOrIssue
+		ret.Solution = SolutionTryAgainOrUpdateOrIssue
 	} else if errors.As(err, &urlError) {
 		ret.Why = "the CLI was unable to query the Koyeb API because of an issue on your machine or in your configuration"
-		ret.Solution = solutionFixConfig
+		ret.Solution = SolutionFixConfig
 	} else {
 		ret.Why = "the Koyeb API returned an error that the CLI was unable to process, likely due to a bug in the CLI or a problem in your configuration."
-		ret.Solution = solutionTryAgainOrUpdateOrIssue
+		ret.Solution = SolutionTryAgainOrUpdateOrIssue
 	}
 	return ret
 }
