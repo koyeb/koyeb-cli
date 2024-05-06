@@ -85,7 +85,8 @@ func NewAppCmd() *cobra.Command {
 		}),
 	}
 	appCmd.AddCommand(updateAppCmd)
-	updateAppCmd.Flags().StringP("name", "n", "", "Name of the app")
+	updateAppCmd.Flags().StringP("name", "n", "", "Change the name of the app")
+	updateAppCmd.Flags().StringP("domain", "D", "", "Change the subdomain of the app (only specify the subdomain, skipping \".koyeb.app\")")
 
 	deleteAppCmd := &cobra.Command{
 		Use:   "delete NAME",
