@@ -43,7 +43,7 @@ func (h *AppHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, 
 		domainRes, domainResp, err := ctx.Client.DomainsApi.UpdateDomain(ctx.Context, domainID).Domain(*updateDomainReq).Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
-				fmt.Sprintf("Error while renaming the automatic domain for `%s` to %q", args[0], args[1]),
+				fmt.Sprintf("Error while renaming the automatic domain for `%s` to %q", args[0], domain),
 				err,
 				domainResp,
 			)
