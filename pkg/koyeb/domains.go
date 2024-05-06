@@ -76,14 +76,6 @@ func NewDomainCmd() *cobra.Command {
 	}
 	domainCmd.AddCommand(detachDomainCmd)
 
-	setSubDomainCmd := &cobra.Command{
-		Use:   "set-subdomain APP SUBDOMAIN",
-		Short: "Change the automatic subdomain for an existing app",
-		Args:  cobra.ExactArgs(2),
-		RunE:  WithCLIContext(h.SetSubdomain),
-	}
-	domainCmd.AddCommand(setSubDomainCmd)
-
 	return domainCmd
 }
 
