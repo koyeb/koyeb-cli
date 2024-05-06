@@ -4,6 +4,7 @@
   - https://github.com/koyeb/koyeb-cli/issues/211
 * Fix when changing the source of a project from Docker to Git.
   - https://github.com/koyeb/koyeb-cli/issues/215
+* Add `koyeb apps update --domain <subdomain> <app>` to change the autoassigned subdomain
 
 ## v3.11.0 (2024-04-15)
 
