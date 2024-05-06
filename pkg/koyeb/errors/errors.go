@@ -86,8 +86,8 @@ func (e *CLIError) Error() string {
 }
 
 const (
-	solutionTryAgainOrUpdateOrIssue CLIErrorSolution = "Please try again, and if the problem persists, try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
-	solutionUpdateOrIssue           CLIErrorSolution = "Please try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
-	solutionFixRequest              CLIErrorSolution = "Fix the request, and try again"
-	solutionFixConfig               CLIErrorSolution = "Fix your configuration and try again"
+	SolutionTryAgainOrUpdateOrIssue CLIErrorSolution = "Please try again, and if the problem persists, try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
+	SolutionUpdateOrIssue           CLIErrorSolution = "Please try upgrading to the latest version of the CLI. If the problem still persists, please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and include the output of the command you ran with the --debug flag enabled."
+	SolutionFixRequest              CLIErrorSolution = "Fix the request, and try again"
+	SolutionFixConfig               CLIErrorSolution = "Fix your configuration and try again"
 )
