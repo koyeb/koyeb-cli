@@ -135,8 +135,8 @@ func (mapper *AppMapper) fetch() error {
 		for _, domain := range domains {
 			if domain.GetType() == koyeb.DOMAINTYPE_AUTOASSIGNED {
 				mapper.autoDomainMap.Set(id, domain.GetId())
+				break
 			}
-			break
 		}
 
 		return nil
