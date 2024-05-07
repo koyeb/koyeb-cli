@@ -1,4 +1,4 @@
-## v3.12.0 (unreleased)
+## v3.12.0 (2024-05-07)
 
 * Add `koyeb service update <app>/<service> --name <new_name>` to rename a service
   - https://github.com/koyeb/koyeb-cli/issues/211
