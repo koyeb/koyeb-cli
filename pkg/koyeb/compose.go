@@ -3,7 +3,7 @@ package koyeb
 import (
 	"fmt"
 	"os"
-	"slices"
+	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -12,6 +12,9 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gonum.org/v1/gonum/graph"
+	"gonum.org/v1/gonum/graph/simple"
+	"gonum.org/v1/gonum/graph/topo"
 )
 
 func NewComposeCmd() *cobra.Command {
@@ -64,6 +67,13 @@ func parseComposeFile(path string) (*KoyebCompose, error) {
 		return nil, err
 	}
 
+	for serviceName, serviceData := range config.Services {
+		// TODO (pawel) fix this hacky way of setting service name
+		serviceNameCopy := strings.Clone(serviceName)
+		serviceData.Name = &(serviceNameCopy)
+		config.Services[serviceName] = serviceData
+	}
+
 	return config, nil
 }
 
@@ -90,34 +100,91 @@ func (h *KoyebComposeHandler) Compose(ctx *CLIContext, koyebCompose *KoyebCompos
 		return err
 	}
 
-	for serviceName, serviceDetails := range koyebCompose.Services {
-		serviceDefinition := &serviceDetails.DeploymentDefinition
-		serviceDefinition.Name = koyeb.PtrString(serviceName)
-
-		deploymentId, err := h.UpdateService(ctx, appId, appName, serviceDefinition)
-		if err != nil {
-			return err
-		}
-
-		err = h.MonitorService(ctx, deploymentId, serviceName)
-		if err != nil {
-			return err
-		}
-
+	servicesOrdering, err := h.OrderServices(koyebCompose.Services)
+	if err != nil {
+		return err
 	}
+
+	// TODO (pawel) parallelize deployments if possible (a matter of checking degree of service node in the graph)
+	for _, service := range servicesOrdering {
+		deploymentId, err := h.UpdateService(ctx, appId, appName, &service)
+		if err != nil {
+			return err
+		}
+
+		err = h.MonitorService(ctx, deploymentId, service.GetName())
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Infof("\nYour app %v has been succesfully deployed 🚀", appName)
 
 	return nil
 }
 
 func (h *KoyebComposeHandler) isMonitoringEndState(status koyeb.DeploymentStatus) bool {
-	return slices.Contains([]koyeb.DeploymentStatus{
+	endStates := []koyeb.DeploymentStatus{
 		koyeb.DEPLOYMENTSTATUS_HEALTHY,
 		koyeb.DEPLOYMENTSTATUS_DEGRADED,
 		koyeb.DEPLOYMENTSTATUS_UNHEALTHY,
 		koyeb.DEPLOYMENTSTATUS_CANCELED,
 		koyeb.DEPLOYMENTSTATUS_STOPPED,
 		koyeb.DEPLOYMENTSTATUS_ERROR,
-	}, status)
+	}
+
+	for _, endState := range endStates {
+		if status == endState {
+			return true
+		}
+	}
+	return false
+}
+
+// orders services based on dependOn field (calculates topological order for services)
+func (h *KoyebComposeHandler) OrderServices(services map[string]KoyebComposeService) ([]koyeb.DeploymentDefinition, error) {
+	dependencies := simple.NewDirectedGraph()
+	serviceNameToId := map[string]graph.Node{}
+	idToServiceName := map[graph.Node]string{}
+	for serviceName := range services {
+		serviceNode := dependencies.NewNode()
+
+		serviceNameToId[serviceName] = serviceNode
+		idToServiceName[serviceNode] = serviceName
+		dependencies.AddNode(serviceNode)
+	}
+
+	for serviceName, serviceDetails := range services {
+		for _, dependency := range serviceDetails.DependsOn {
+			fromNode := serviceNameToId[dependency]
+			toNode, ok := serviceNameToId[serviceName]
+			if !ok {
+				return nil, &errors.CLIError{
+					What: "failed to calculate deployment order of services",
+					Why:  fmt.Sprintf("service %s depends on %s which is not defined", serviceName, dependency),
+				}
+			}
+
+			edge := dependencies.NewEdge(fromNode, toNode)
+			dependencies.SetEdge(edge)
+		}
+	}
+
+	servicesIdOrdering, err := topo.Sort(dependencies)
+	if err != nil {
+		return nil, &errors.CLIError{
+			What: "failed to calculate deployment order of services",
+			Why:  "this probably indicates circular dependency",
+		}
+	}
+
+	servicesOrdering := make([]koyeb.DeploymentDefinition, len(servicesIdOrdering))
+	for i, id := range servicesIdOrdering {
+		serviceName := idToServiceName[id]
+		servicesOrdering[i] = services[serviceName].DeploymentDefinition
+	}
+
+	return servicesOrdering, nil
 }
 
 func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serviceName string) error {
@@ -154,7 +221,10 @@ func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serv
 		log.Infof("\nSucccessfully deployed %v ✅", serviceName)
 	} else {
 		log.Errorf("\nFailed to deploy %v deployment status: %v ❌", serviceName, previousStatus)
-		return fmt.Errorf("failed to deploy %v", serviceName)
+		return &errors.CLIError{
+			What:       fmt.Sprintf("failed to deploy %v", serviceName),
+			Additional: []string{"please double check koyeb compose definition"},
+		}
 	}
 
 	return nil
