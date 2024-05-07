@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/briandowns/spinner v1.23.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gorilla/websocket v1.5.0
@@ -23,11 +24,11 @@ require (
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/term v0.8.0
+	gonum.org/v1/gonum v0.13.0
 )
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -59,7 +60,7 @@ require (
 	golang.org/x/net v0.0.0-20220927171203-f486391704dc // indirect
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
