@@ -61,8 +61,10 @@ func parseComposeFile(path string) (*KoyebCompose, error) {
 		return nil, err
 	}
 
+	exapandEnvData := os.ExpandEnv(string(data))
+
 	var config *KoyebCompose
-	err = yaml.Unmarshal(data, &config)
+	err = yaml.Unmarshal([]byte(exapandEnvData), &config)
 	if err != nil {
 		return nil, err
 	}
