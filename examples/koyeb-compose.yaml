@@ -22,7 +22,7 @@ services:
     docker:
       image: curlimages/curl
       command: 'sh'
-      args: ['-c', 'while true; do curl go-service.compose-app.koyeb:8000; sleep 30; done']
+      args: ['-c', 'while true; do curl go-service:8000; sleep 30; done']
     type: 'WORKER'
     regions: ['par']
     scalings:
