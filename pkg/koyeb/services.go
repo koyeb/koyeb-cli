@@ -353,19 +353,35 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
 	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
 
+	// Archive service
+	flags.String("archive", "", "Archive ID to deploy")
+	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	// Archive service: buildpack builder
+	flags.String("archive-buildpack-build-command", "", "Buid command")
+	flags.String("archive-buildpack-run-command", "", "Run command")
+
+	// Archive service: docker builder
+	flags.String("archive-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("archive-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
+	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
+	flags.String("archive-docker-target", "", "Docker target")
+
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		aliases := map[string]string{
-			"port":           "ports",
-			"check":          "checks",
-			"healthcheck":    "checks",
-			"health-check":   "checks",
-			"healthchecks":   "checks",
-			"health-checks":  "checks",
-			"route":          "routes",
-			"region":         "regions",
-			"git-docker-arg": "git-docker-args",
-			"docker-arg":     "docker-args",
+			"port":               "ports",
+			"check":              "checks",
+			"healthcheck":        "checks",
+			"health-check":       "checks",
+			"healthchecks":       "checks",
+			"health-checks":      "checks",
+			"route":              "routes",
+			"region":             "regions",
+			"git-docker-arg":     "git-docker-args",
+			"docker-arg":         "docker-args",
+			"archive-docker-arg": "archive-docker-args",
 		}
 		alias, exists := aliases[name]
 		if exists {
@@ -838,23 +854,27 @@ func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) 
 func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
 	hasGitFlags := false
 	hasDockerFlags := false
+	hasArchiveFlags := false
 	flags.VisitAll(func(flag *pflag.Flag) {
 		if flag.Changed {
 			if strings.HasPrefix(flag.Name, "git") {
 				hasGitFlags = true
 			} else if strings.HasPrefix(flag.Name, "docker") {
 				hasDockerFlags = true
+			} else if strings.HasPrefix(flag.Name, "archive") {
+				hasArchiveFlags = true
 			}
 		}
 	})
-	if hasGitFlags && hasDockerFlags {
+	if hasGitFlags && hasDockerFlags || hasGitFlags && hasArchiveFlags || hasDockerFlags && hasArchiveFlags {
 		return &errors.CLIError{
 			What: "Error while updating the service",
 			Why:  "invalid flag combination",
 			Additional: []string{
-				"Your service has both --git-* and --docker-* flags, which is not allowed.",
-				"To build a GitHub repository, specify --git-*",
-				"To deploy a Docker image hosted on the Docker Hub or a private registry, specify --docker-*",
+				"Your service has conflicting options --git*, --docker* and/or --archive*.",
+				"To build a GitHub repository, specify --git github.com/<owner>/<repo>",
+				"To deploy a Docker image hosted on the Docker Hub or a private registry, specify --docker <image>",
+				"To deploy from an archive created with `koyeb archive create`, specify --archive <archive-id>",
 			},
 			Orig:     nil,
 			Solution: "Fix the flags and try again",
@@ -870,6 +890,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		}
 		definition.SetDocker(*source)
 		definition.Git = nil
+		definition.Archive = nil
 		// If --docker-* flags are set and the service has a Git source, replace
 		// it with a Docker source.
 	} else if hasGitFlags {
@@ -878,13 +899,23 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		if err != nil {
 			return err
 		}
-		definition.Docker = nil
 		definition.SetGit(*source)
+		definition.Docker = nil
+		definition.Archive = nil
+	} else if hasArchiveFlags {
+		archive := definition.GetArchive()
+		source, err := parseArchiveSource(flags, &archive)
+		if err != nil {
+			return err
+		}
+		definition.SetArchive(*source)
+		definition.Git = nil
+		definition.Docker = nil
 	} else if definition.HasDocker() {
-		// If --git-* and --docker-* flags are not set, parse the flag to update
-		// the existing Docker source. This might seem to be a no-op (since the
-		// docker flags are not set, you could expect the source to remain the
-		// same), but it is necessary to update the
+		// If none of the flags --git, --docker and --archive are set, parse the
+		// flag to update the existing Docker source. This might seem to be a
+		// no-op (since the docker flags are not set, you could expect the
+		// source to remain the same), but it is necessary to update the
 		// --privileged flag, for example.
 		docker := definition.GetDocker()
 		source, err := parseDockerSource(ctx, flags, &docker)
@@ -893,6 +924,16 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		}
 		definition.SetDocker(*source)
 		definition.Git = nil
+		definition.Archive = nil
+	} else if definition.HasArchive() {
+		archive := definition.GetArchive()
+		source, err := parseArchiveSource(flags, &archive)
+		if err != nil {
+			return err
+		}
+		definition.SetArchive(*source)
+		definition.Git = nil
+		definition.Docker = nil
 	} else {
 		// Same as above, but for the Git source.
 		git := definition.GetGit()
@@ -900,8 +941,9 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		if err != nil {
 			return err
 		}
-		definition.Docker = nil
 		definition.SetGit(*source)
+		definition.Docker = nil
+		definition.Archive = nil
 	}
 	return nil
 }
@@ -960,7 +1002,7 @@ func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSo
 	return setGitSourceBuilder(flags, source)
 }
 
-// Parse --git-builder and --git-docker-*
+// Parse --git-builder and --git-* flags
 func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
 	builder, _ := flags.GetString("git-builder")
 	if builder != "buildpack" && builder != "docker" {
@@ -1111,6 +1153,135 @@ func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuild
 	}
 	if flags.Lookup("git-docker-target").Changed {
 		target, _ := flags.GetString("git-docker-target")
+		builder.SetTarget(target)
+	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		builder.SetPrivileged(privileged)
+	}
+	return &builder, nil
+}
+
+// Parse --archive-* flags
+func parseArchiveSource(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
+	if flags.Lookup("archive").Changed {
+		archive, _ := flags.GetString("archive")
+		source.SetId(archive)
+	}
+	return setArchiveSourceBuilder(flags, source)
+}
+
+// Parse --archive-builder and --archive-* flags
+func setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
+	builder, _ := flags.GetString("archive-builder")
+	if builder != "buildpack" && builder != "docker" {
+		return nil, &errors.CLIError{
+			What: "Error while updating the service",
+			Why:  "the --archive-builder is invalid",
+			Additional: []string{
+				"The --archive-builder must be either 'buildpack' or 'docker'",
+			},
+			Orig:     nil,
+			Solution: "Fix the --archive-builder and try again",
+		}
+	}
+	// If docker builder arguments are specified with --archive-builder=buildpack,
+	// or if --archive-builder is not specified but the current source is a docker
+	// builder, return an error
+	if flags.Lookup("archive-docker-dockerfile").Changed ||
+		flags.Lookup("archive-docker-entrypoint").Changed ||
+		flags.Lookup("archive-docker-command").Changed ||
+		flags.Lookup("archive-docker-args").Changed ||
+		flags.Lookup("archive-docker-target").Changed ||
+		(flags.Lookup("archive-builder").Changed && builder == "docker") ||
+		source.HasDocker() {
+
+		// If --archive-builder has not been provided, but the current source is a buildpack builder.
+		if !flags.Lookup("archive-builder").Changed && source.HasBuildpack() {
+			return nil, &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"The arguments --archive-docker-* are used to configure the docker builder, but the current builder is a buildpack builder",
+				},
+				Orig:     nil,
+				Solution: "Add --archive-builder=docker to the arguments to configure the docker builder",
+			}
+		}
+		builder, err := parseArchiveSourceDockerBuilder(flags, source.GetDocker())
+		if err != nil {
+			return nil, err
+		}
+		source.Buildpack = nil
+		source.SetDocker(*builder)
+	}
+	if flags.Lookup("archive-buildpack-build-command").Changed ||
+		flags.Lookup("archive-buildpack-run-command").Changed ||
+		(flags.Lookup("archive-builder").Changed && builder == "buildpack") ||
+		source.HasBuildpack() {
+
+		// If --archive-builder has not been provided, but the current source is a buildpack builder.
+		if !flags.Lookup("archive-builder").Changed && source.HasDocker() {
+			return nil, &errors.CLIError{
+				What: "Error while updating the service",
+				Why:  "invalid flag combination",
+				Additional: []string{
+					"The arguments --archive-buildpack-* are used to configure the buildpack builder, but the current builder is a docker builder",
+				},
+				Orig:     nil,
+				Solution: "Add --archive-builder=buildpack to the arguments to configure the buildpack builder",
+			}
+		}
+
+		builder, err := parseArchiveSourceBuildpackBuilder(flags, source)
+		if err != nil {
+			return nil, err
+		}
+		source.SetBuildpack(*builder)
+		source.Docker = nil
+	}
+	return source, nil
+}
+
+// Parse --archive-buildpack-* flags
+func parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.BuildpackBuilder, error) {
+	builder := source.GetBuildpack()
+	buildpackBuildCommand, _ := flags.GetString("archive-buildpack-build-command")
+	buildpackRunCommand, _ := flags.GetString("archive-buildpack-run-command")
+
+	if flags.Lookup("archive-buildpack-build-command").Changed {
+		builder.SetBuildCommand(buildpackBuildCommand)
+	}
+	if flags.Lookup("archive-buildpack-run-command").Changed {
+		builder.SetRunCommand(buildpackRunCommand)
+	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		builder.SetPrivileged(privileged)
+	}
+	return &builder, nil
+}
+
+// Parse --archive-docker-* flags
+func parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
+	if flags.Lookup("archive-docker-dockerfile").Changed {
+		dockerfile, _ := flags.GetString("archive-docker-dockerfile")
+		builder.SetDockerfile(dockerfile)
+	}
+	if flags.Lookup("archive-docker-entrypoint").Changed {
+		entrypoint, _ := flags.GetStringSlice("archive-docker-entrypoint")
+		builder.SetEntrypoint(entrypoint)
+	}
+	if flags.Lookup("archive-docker-command").Changed {
+		command, _ := flags.GetString("archive-docker-command")
+		builder.SetCommand(command)
+	}
+	if flags.Lookup("archive-docker-args").Changed {
+		args, _ := flags.GetStringSlice("archive-docker-args")
+		builder.SetArgs(args)
+	}
+	if flags.Lookup("archive-docker-target").Changed {
+		target, _ := flags.GetString("archive-docker-target")
 		builder.SetTarget(target)
 	}
 	if flags.Lookup("privileged").Changed {
