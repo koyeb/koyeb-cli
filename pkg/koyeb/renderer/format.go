@@ -35,5 +35,8 @@ func FormatID(fullId string, full bool) string {
 	if full {
 		return fullId
 	}
+	if fullId == "" {
+		return ""
+	}
 	return fullId[:8]
 }

@@ -1,5 +1,7 @@
 ## v3.13.0 (unreleased)
 
+* Fix nil dereference in `koyeb deployment logs -t build`.
+
 ## v3.12.0 (2024-05-07)
 
 * Add `koyeb service update <app>/<service> --name <new_name>` to rename a service
