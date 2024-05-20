@@ -24,7 +24,7 @@ func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string
 			Why:        fmt.Sprintf("we encountered an error while archiving the directory `%s`", path),
 			Additional: nil,
 			Orig:       err,
-			Solution:   errors.SolutionUpdateOrIssue,
+			Solution:   errors.SolutionFixRequest,
 		}
 	}
 	defer tarball.Close()
