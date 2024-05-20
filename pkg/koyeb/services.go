@@ -275,6 +275,14 @@ func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, er
 }
 
 func addServiceDefinitionFlags(flags *pflag.FlagSet) {
+	addServiceDefinitionFlagsForAllSources(flags)
+	addServiceDefinitionFlagsForGitSource(flags)
+	addServiceDefinitionFlagsForDockerSource(flags)
+	addServiceDefinitionFlagsForArchiveSource(flags)
+}
+
+// Add the flags common to all sources: git, docker and archive
+func addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
 	// Global flags
 	flags.String("type", "web", `Service type, either "web" or "worker"`)
 
@@ -326,48 +334,6 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 			"To delete a healthcheck, use !PORT, for example --checks '!8080'\n",
 	)
 
-	// Git service
-	flags.String("git", "", "Git repository")
-	flags.String("git-branch", "main", "Git branch")
-	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
-	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
-	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
-
-	// Git service: buildpack builder
-	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
-	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
-	flags.String("git-buildpack-build-command", "", "Buid command")
-	flags.String("git-buildpack-run-command", "", "Run command")
-
-	// Git service: docker builder
-	flags.String("git-docker-dockerfile", "", "Dockerfile path")
-	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("git-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
-	flags.StringSlice("git-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.")
-	flags.String("git-docker-target", "", "Docker target")
-
-	// Docker service
-	flags.String("docker", "", "Docker image")
-	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
-	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
-	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
-
-	// Archive service
-	flags.String("archive", "", "Archive ID to deploy")
-	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
-
-	// Archive service: buildpack builder
-	flags.String("archive-buildpack-build-command", "", "Buid command")
-	flags.String("archive-buildpack-run-command", "", "Run command")
-
-	// Archive service: docker builder
-	flags.String("archive-docker-dockerfile", "", "Dockerfile path")
-	flags.StringSlice("archive-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
-	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
-	flags.String("archive-docker-target", "", "Docker target")
-
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		aliases := map[string]string{
@@ -389,6 +355,54 @@ func addServiceDefinitionFlags(flags *pflag.FlagSet) {
 		}
 		return pflag.NormalizedName(name)
 	})
+}
+
+// Add the flags for Git sources
+func addServiceDefinitionFlagsForGitSource(flags *pflag.FlagSet) {
+	flags.String("git", "", "Git repository")
+	flags.String("git-branch", "main", "Git branch")
+	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
+	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
+	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	// Git service: buildpack builder
+	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
+	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
+	flags.String("git-buildpack-build-command", "", "Buid command")
+	flags.String("git-buildpack-run-command", "", "Run command")
+
+	// Git service: docker builder
+	flags.String("git-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("git-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
+	flags.StringSlice("git-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.")
+	flags.String("git-docker-target", "", "Docker target")
+}
+
+// Add the flags for Docker sources
+func addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
+	flags.String("docker", "", "Docker image")
+	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
+	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
+	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
+	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
+}
+
+// Add the flags for Archive sources
+func addServiceDefinitionFlagsForArchiveSource(flags *pflag.FlagSet) {
+	flags.String("archive", "", "Archive ID to deploy")
+	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	// Archive service: buildpack builder
+	flags.String("archive-buildpack-build-command", "", "Buid command")
+	flags.String("archive-buildpack-run-command", "", "Run command")
+
+	// Archive service: docker builder
+	flags.String("archive-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("archive-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
+	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
+	flags.String("archive-docker-target", "", "Docker target")
 }
 
 // parseServiceDefinitionFlags parses the flags related to the service definition, and updates the given definition accordingly.

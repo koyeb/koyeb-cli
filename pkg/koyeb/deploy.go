@@ -54,10 +54,6 @@ func NewDeployCmd() *cobra.Command {
 				createService := koyeb.NewCreateServiceWithDefaults()
 				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-				if err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
-					return err
-				}
-
 				log.Infof("Creating and uploading an archive from `%s`", args[0])
 				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
 				if err != nil {
@@ -71,6 +67,12 @@ func NewDeployCmd() *cobra.Command {
 				createDefinition.SetArchive(archive)
 				createDefinition.Git = nil
 				createDefinition.Docker = nil
+				createService.SetDefinition(*createDefinition)
+
+				// Update definition with the flags provided by the user.
+				if err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
+					return err
+				}
 				createService.SetDefinition(*createDefinition)
 
 				log.Infof("Creating the new service `%s`", serviceName)
@@ -106,10 +108,6 @@ func NewDeployCmd() *cobra.Command {
 				}
 
 				updateDefinition := latestDeploy.GetDeployments()[0].Definition
-				err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition)
-				if err != nil {
-					return err
-				}
 
 				log.Infof("Creating and uploading an archive from `%s`", args[0])
 				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
@@ -124,6 +122,16 @@ func NewDeployCmd() *cobra.Command {
 				updateDefinition.Docker = nil
 				updateService.SetDefinition(*updateDefinition)
 
+				// Update definition with the flags provided by the user.
+				// parseServiceDefinitionFlags expects to have an archive
+				// source, otherwise it would try to get the --git or --docker
+				// flags which are not present.
+				err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition)
+				if err != nil {
+					return err
+				}
+				updateService.SetDefinition(*updateDefinition)
+
 				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
 					return err
@@ -133,7 +141,8 @@ func NewDeployCmd() *cobra.Command {
 		}),
 	}
 	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
-	addServiceDefinitionFlags(deployCmd.Flags())
+	addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
+	addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
 	return deployCmd
 }
 
