@@ -35,9 +35,13 @@ func NewDeployCmd() *cobra.Command {
 				log.Infof("Application `%s` already exists, using it", appName)
 			} else {
 				log.Infof("Application `%s` does not exist. Creating it", appName)
-				if err := appHandler.Create(ctx, cmd, []string{appName}, koyeb.NewCreateAppWithDefaults()); err != nil {
+				createApp := koyeb.NewCreateAppWithDefaults()
+				createApp.SetName(appName)
+				createAppReply, err := appHandler.CreateApp(ctx, createApp)
+				if err != nil {
 					return err
 				}
+				appId = *createAppReply.GetApp().Id
 			}
 
 			serviceName, err := parseServiceNameWithoutApp(cmd, args[1])
