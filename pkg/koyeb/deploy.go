@@ -21,12 +21,6 @@ func NewDeployCmd() *cobra.Command {
 		Short: "Deploy a directory to Koyeb",
 		Args:  cobra.ExactArgs(2),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			log.Infof("Creating and uploading an archive from `%s`...", args[0])
-			archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
-			if err != nil {
-				return err
-			}
-
 			appName, err := parseAppName(cmd, args[1])
 			if err != nil {
 				return err
@@ -38,9 +32,9 @@ func NewDeployCmd() *cobra.Command {
 			}
 
 			if appId != "" {
-				log.Infof("Application `%s` already exists, using it...", appName)
+				log.Infof("Application `%s` already exists, using it", appName)
 			} else {
-				log.Infof("Application `%s` does not exist. Creating it...", appName)
+				log.Infof("Application `%s` does not exist. Creating it", appName)
 				if err := appHandler.Create(ctx, cmd, []string{appName}, koyeb.NewCreateAppWithDefaults()); err != nil {
 					return err
 				}
@@ -57,11 +51,16 @@ func NewDeployCmd() *cobra.Command {
 			}
 
 			if serviceId == "" {
-				log.Infof("Service `%s` does not exist. Creating it...", serviceName)
 				createService := koyeb.NewCreateServiceWithDefaults()
 				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
 				if err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
+					return err
+				}
+
+				log.Infof("Creating and uploading an archive from `%s`", args[0])
+				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+				if err != nil {
 					return err
 				}
 
@@ -74,12 +73,11 @@ func NewDeployCmd() *cobra.Command {
 				createDefinition.Docker = nil
 				createService.SetDefinition(*createDefinition)
 
+				log.Infof("Creating the new service `%s`", serviceName)
 				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
 					return err
 				}
 			} else {
-				log.Infof("Service `%s` already exists, updating it...", serviceName)
-
 				updateService := koyeb.NewUpdateServiceWithDefaults()
 				latestDeploy, resp, err := ctx.Client.DeploymentsApi.
 					ListDeployments(ctx.Context).
@@ -113,6 +111,12 @@ func NewDeployCmd() *cobra.Command {
 					return err
 				}
 
+				log.Infof("Creating and uploading an archive from `%s`", args[0])
+				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+				if err != nil {
+					return err
+				}
+
 				archive := updateDefinition.GetArchive()
 				archive.Id = archiveReply.GetArchive().Id
 				updateDefinition.SetArchive(archive)
@@ -120,6 +124,7 @@ func NewDeployCmd() *cobra.Command {
 				updateDefinition.Docker = nil
 				updateService.SetDefinition(*updateDefinition)
 
+				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
 					return err
 				}
