@@ -9,7 +9,7 @@ func NewDeploymentCmd() *cobra.Command {
 
 	deploymentCmd := &cobra.Command{
 		Use:     "deployments ACTION",
-		Aliases: []string{"d", "dep", "depl", "deploy", "deployment"},
+		Aliases: []string{"d", "deployment"},
 		Short:   "Deployments",
 	}
 

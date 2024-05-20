@@ -1395,7 +1395,7 @@ func parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
 	if appFlagValue != "" {
 		if match[ServiceNameRegexp.SubexpIndex("app_name")] != "" && appFlagValue != match[ServiceNameRegexp.SubexpIndex("app_name")] {
 			return "", &errors.CLIError{
-				What:       "Inconsitent values for the --app flag and the service name",
+				What:       "Inconsistent values for the --app flag and the service name",
 				Why:        "the application name provided with the --app flag and the application name in <app>/<service> do not match",
 				Additional: nil,
 				Orig:       nil,

@@ -1,0 +1,215 @@
+package koyeb
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+)
+
+func NewDeployCmd() *cobra.Command {
+	h := NewDeployHandler()
+	appHandler := NewAppHandler()
+	archiveHandler := NewArchiveHandler()
+	serviceHandler := NewServiceHandler()
+
+	deployCmd := &cobra.Command{
+		Use:   "deploy <path> <app>/<service>",
+		Short: "Deploy a directory to Koyeb",
+		Args:  cobra.ExactArgs(2),
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			log.Infof("Creating and uploading an archive from `%s`...", args[0])
+			archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+			if err != nil {
+				return err
+			}
+
+			appName, err := parseAppName(cmd, args[1])
+			if err != nil {
+				return err
+			}
+
+			appId, err := h.GetAppId(ctx, appName)
+			if err != nil {
+				return err
+			}
+
+			if appId != "" {
+				log.Infof("Application `%s` already exists, using it...", appName)
+			} else {
+				log.Infof("Application `%s` does not exist. Creating it...", appName)
+				if err := appHandler.Create(ctx, cmd, []string{appName}, koyeb.NewCreateAppWithDefaults()); err != nil {
+					return err
+				}
+			}
+
+			serviceName, err := parseServiceNameWithoutApp(cmd, args[1])
+			if err != nil {
+				return err
+			}
+
+			serviceId, err := h.GetServiceId(ctx, appId, serviceName)
+			if err != nil {
+				return err
+			}
+
+			if serviceId == "" {
+				log.Infof("Service `%s` does not exist. Creating it...", serviceName)
+				createService := koyeb.NewCreateServiceWithDefaults()
+				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
+
+				if err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
+					return err
+				}
+
+				createDefinition.Name = koyeb.PtrString(serviceName)
+
+				archive := createDefinition.GetArchive()
+				archive.Id = archiveReply.GetArchive().Id
+				createDefinition.SetArchive(archive)
+				createDefinition.Git = nil
+				createDefinition.Docker = nil
+				createService.SetDefinition(*createDefinition)
+
+				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
+					return err
+				}
+			} else {
+				log.Infof("Service `%s` already exists, updating it...", serviceName)
+
+				updateService := koyeb.NewUpdateServiceWithDefaults()
+				latestDeploy, resp, err := ctx.Client.DeploymentsApi.
+					ListDeployments(ctx.Context).
+					Limit("1").
+					ServiceId(serviceId).
+					Execute()
+				if err != nil {
+					return errors.NewCLIErrorFromAPIError(
+						fmt.Sprintf("Error while updating the service `%s`", args[0]),
+						err,
+						resp,
+					)
+				}
+
+				if len(latestDeploy.GetDeployments()) == 0 {
+					return &errors.CLIError{
+						What: "Error while updating the service",
+						Why:  "we couldn't find the latest deployment of your service",
+						Additional: []string{
+							"When you create a service for the first time, it can take a few seconds for the first deployment to be created.",
+							"We need to fetch the configuration of this latest deployment to update your service.",
+						},
+						Orig:     nil,
+						Solution: "Try again in a few seconds. If the problem persists, delete the service and create it again.",
+					}
+				}
+
+				updateDefinition := latestDeploy.GetDeployments()[0].Definition
+				err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition)
+				if err != nil {
+					return err
+				}
+
+				archive := updateDefinition.GetArchive()
+				archive.Id = archiveReply.GetArchive().Id
+				updateDefinition.SetArchive(archive)
+				updateDefinition.Git = nil
+				updateDefinition.Docker = nil
+				updateService.SetDefinition(*updateDefinition)
+
+				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
+					return err
+				}
+			}
+			return nil
+		}),
+	}
+	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
+	addServiceDefinitionFlags(deployCmd.Flags())
+	return deployCmd
+}
+
+func NewDeployHandler() *DeployHandler {
+	return &DeployHandler{}
+}
+
+type DeployHandler struct {
+}
+
+// Return the app id if it exists, otherwise return an empty string.
+func (h *DeployHandler) GetAppId(ctx *CLIContext, name string) (string, error) {
+	page := int64(0)
+	offset := int64(0)
+	limit := int64(100)
+
+	// Consume paginated results until the application is found or the end of the list is reached.
+	for {
+		res, resp, err := ctx.Client.AppsApi.ListApps(ctx.Context).
+			Name(name).
+			Offset(strconv.FormatInt(offset, 10)).
+			Limit(strconv.FormatInt(limit, 10)).
+			Execute()
+
+		if err != nil {
+			return "", errors.NewCLIErrorFromAPIError(
+				"Error while listing applications",
+				err,
+				resp,
+			)
+		}
+
+		for _, app := range res.GetApps() {
+			if app.GetName() == name {
+				return app.GetId(), nil
+			}
+		}
+
+		page++
+		offset = page * limit
+		if offset >= res.GetCount() {
+			break
+		}
+	}
+	return "", nil
+}
+
+// Return the service id if it exists, otherwise return an empty string.
+func (h *DeployHandler) GetServiceId(ctx *CLIContext, appId string, name string) (string, error) {
+	page := int64(0)
+	offset := int64(0)
+	limit := int64(100)
+
+	// Consume paginated results until the application is found or the end of the list is reached.
+	for {
+		res, resp, err := ctx.Client.ServicesApi.ListServices(ctx.Context).
+			AppId(appId).
+			Name(name).
+			Offset(strconv.FormatInt(offset, 10)).
+			Limit(strconv.FormatInt(limit, 10)).
+			Execute()
+
+		if err != nil {
+			return "", errors.NewCLIErrorFromAPIError(
+				"Error while listing services",
+				err,
+				resp,
+			)
+		}
+
+		for _, service := range res.GetServices() {
+			if service.GetName() == name {
+				return service.GetId(), nil
+			}
+		}
+
+		page++
+		offset = page * limit
+		if offset >= res.GetCount() {
+			break
+		}
+	}
+	return "", nil
+}

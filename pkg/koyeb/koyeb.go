@@ -113,6 +113,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewDatabaseCmd())
 	rootCmd.AddCommand(NewMetricsCmd())
 	rootCmd.AddCommand(NewArchiveCmd())
+	rootCmd.AddCommand(NewDeployCmd())
 	return rootCmd
 }
 

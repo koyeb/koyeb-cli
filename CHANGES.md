@@ -3,6 +3,7 @@
 * Fix nil dereference in `koyeb deployment logs -t build`.
 * Create new command `koyeb archives create <path>` to store an archive. This command will be necessary for the future deployment of a directory.
 * Add `--archive` parameters to `koyeb service create` and `koyeb service update` to deploy an archive instead of a Docker image. The archive is stored in GCS and can be created with `koyeb archives create`.
+* Add command `koyeb deploy <directory> <app_name>/<service_name>.
 
 ## v3.12.0 (2024-05-07)
 

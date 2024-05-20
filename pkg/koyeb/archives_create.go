@@ -16,10 +16,10 @@ import (
 // Create makes a .tar.gz out of the given path, queries the endpoint
 // /v1/archives to get a signed URL to upload the archive to, and uploads the
 // archive.
-func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string) error {
+func (h *ArchiveHandler) CreateArchive(ctx *CLIContext, path string) (*koyeb.CreateArchiveReply, error) {
 	tarball, err := archive.Archive(path)
 	if err != nil {
-		return &errors.CLIError{
+		return nil, &errors.CLIError{
 			What:       "Unable to create archive",
 			Why:        fmt.Sprintf("we encountered an error while archiving the directory `%s`", path),
 			Additional: nil,
@@ -31,7 +31,7 @@ func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string
 
 	stat, err := tarball.File.Stat()
 	if err != nil {
-		return &errors.CLIError{
+		return nil, &errors.CLIError{
 			What:       "Unable to create archive",
 			Why:        fmt.Sprintf("error while getting the file info of `%s` (archive of %s)", tarball.File.Name(), path),
 			Additional: nil,
@@ -49,7 +49,7 @@ func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string
 
 	res, resp, err := ctx.Client.ArchivesApi.CreateArchive(ctx.Context).Archive(*c).Execute()
 	if err != nil {
-		return errors.NewCLIErrorFromAPIError(
+		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while requesting an upload URL to upload the archive '%s' (%d bytes)", path, stat.Size()),
 			err,
 			resp,
@@ -57,6 +57,14 @@ func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string
 	}
 	// Upload the archive to the upload URL
 	if err := h.uploadArchive(tarball.File, stat.Size(), *res.GetArchive().UploadUrl); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string) error {
+	res, err := h.CreateArchive(ctx, path)
+	if err != nil {
 		return err
 	}
 
