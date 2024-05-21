@@ -180,9 +180,11 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 				updateDef = latestDeploy.GetDeployments()[0].Definition
 			}
 
-			// zero the sha to make sure that the latest sha is fetched
-			if updateDef.Git != nil {
-				updateDef.Git.Sha = koyeb.PtrString("")
+			if updateDef.Git != nil && updateDef.Git.GetSha() != "" && !cmd.Flags().Lookup("git-sha").Changed {
+				logrus.Warnf(
+					"Warning: you are updating the service without specifying a commit with the --git-sha flag, and the service is currently deployed with the specific commit %s. If you want to deploy the latest commit of the branch instead, use --git-sha ''.",
+					updateDef.Git.GetSha(),
+				)
 			}
 
 			err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDef)
@@ -361,6 +363,7 @@ func addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
 func addServiceDefinitionFlagsForGitSource(flags *pflag.FlagSet) {
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "main", "Git branch")
+	flags.String("git-sha", "", "Git commit SHA to deploy")
 	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
 	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
 	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
@@ -1004,6 +1007,10 @@ func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSo
 	if source.GetBranch() == "" || flags.Lookup("git-branch").Changed {
 		branch, _ := flags.GetString("git-branch")
 		source.SetBranch(branch)
+	}
+	if flags.Lookup("git-sha").Changed {
+		sha, _ := flags.GetString("git-sha")
+		source.SetSha(sha)
 	}
 	if flags.Lookup("git-no-deploy-on-push").Changed {
 		noDeployOnPush, _ := flags.GetBool("git-no-deploy-on-push")
