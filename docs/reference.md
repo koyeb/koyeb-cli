@@ -299,6 +299,7 @@ See examples of koyeb service create --help
       --git-docker-target string                 Docker target
       --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
       --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-sha string                           Git commit SHA to deploy
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for init
       --instance-type string                     Instance type (default "nano")
@@ -1240,6 +1241,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --git-docker-target string                 Docker target
       --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
       --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-sha string                           Git commit SHA to deploy
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for create
       --instance-type string                     Instance type (default "nano")
@@ -1650,6 +1652,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --git-docker-target string                 Docker target
       --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
       --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-sha string                           Git commit SHA to deploy
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for update
       --instance-type string                     Instance type (default "nano")
