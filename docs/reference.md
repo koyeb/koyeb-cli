@@ -31,8 +31,10 @@ Koyeb CLI
 
 
 * [koyeb apps](#koyeb-apps)	 - Apps
+* [koyeb archives](#koyeb-archives)	 - Archives
 
 * [koyeb databases](#koyeb-databases)	 - Databases
+* [koyeb deploy](#koyeb-deploy)	 - Deploy a directory to Koyeb
 * [koyeb deployments](#koyeb-deployments)	 - Deployments
 * [koyeb domains](#koyeb-domains)	 - Domains
 * [koyeb instances](#koyeb-instances)	 - Instances
@@ -258,57 +260,66 @@ See examples of koyeb service create --help
 ### Options
 
 ```
-      --autoscaling-average-cpu int             Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
-      --autoscaling-average-mem int             Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
-      --autoscaling-requests-per-second int     Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
-      --checks strings                          Update service healthchecks (available for services of type "web" only)
-                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
-                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
-                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
-                                                
-      --docker string                           Docker image
-      --docker-args strings                     Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                   Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
-      --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
-      --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
-                                                To delete an environment variable, prefix its name with '!', for example --env '!FOO'
-                                                
-      --git string                              Git repository
-      --git-branch string                       Git branch (default "main")
-      --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
-      --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
-      --git-buildpack-build-command string      Buid command
-      --git-buildpack-run-command string        Run command
-      --git-docker-args strings                 Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
-      --git-docker-command string               Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
-      --git-docker-dockerfile string            Dockerfile path
-      --git-docker-entrypoint strings           Docker entrypoint
-      --git-docker-target string                Docker target
-      --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                  Run command (legacy, prefer git-buildpack-run-command)
-      --git-workdir string                      Path to the sub-directory containing the code to build and deploy
-  -h, --help                                    help for init
-      --instance-type string                    Instance type (default "nano")
-      --max-scale int                           Max scale (default 1)
-      --min-scale int                           Min scale (default 1)
-      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
-                                                To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                
-      --privileged                              Whether the service container should run in privileged mode
-      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
-                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
-                                                If the region is not specified on service creation, the service is deployed in fra
-                                                
-      --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                PORT defaults to 8000
-                                                To delete a route, use '!PATH', for example --route '!/foo'
-                                                
-      --scale int                               Set both min-scale and max-scale (default 1)
-      --skip-cache                              Whether to use the cache when building the service
-      --type string                             Service type, either "web" or "worker" (default "web")
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --docker string                            Docker image
+      --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
+      --docker-private-registry-secret string    Docker private registry secret
+      --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                 
+      --git string                               Git repository
+      --git-branch string                        Git branch (default "main")
+      --git-build-command string                 Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string       Buid command
+      --git-buildpack-run-command string         Run command
+      --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
+      --git-docker-dockerfile string             Dockerfile path
+      --git-docker-entrypoint strings            Docker entrypoint
+      --git-docker-target string                 Docker target
+      --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-workdir string                       Path to the sub-directory containing the code to build and deploy
+  -h, --help                                     help for init
+      --instance-type string                     Instance type (default "nano")
+      --max-scale int                            Max scale (default 1)
+      --min-scale int                            Min scale (default 1)
+      --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the service container should run in privileged mode
+      --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                 If the region is not specified on service creation, the service is deployed in fra
+                                                 
+      --routes strings                           Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                 PORT defaults to 8000
+                                                 To delete a route, use '!PATH', for example --route '!/foo'
+                                                 
+      --scale int                                Set both min-scale and max-scale (default 1)
+      --skip-cache                               Whether to use the cache when building the service
+      --type string                              Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
@@ -436,8 +447,9 @@ koyeb apps update NAME [flags]
 ### Options
 
 ```
-  -h, --help          help for update
-  -n, --name string   Name of the app
+  -D, --domain string   Change the subdomain of the app (only specify the subdomain, skipping ".koyeb.app")
+  -h, --help            help for update
+  -n, --name string     Change the name of the app
 ```
 
 ### Options inherited from parent commands
@@ -1188,58 +1200,67 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 ### Options
 
 ```
-  -a, --app string                              Service application
-      --autoscaling-average-cpu int             Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
-      --autoscaling-average-mem int             Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
-      --autoscaling-requests-per-second int     Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
-      --checks strings                          Update service healthchecks (available for services of type "web" only)
-                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
-                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
-                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
-                                                
-      --docker string                           Docker image
-      --docker-args strings                     Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                   Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
-      --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
-      --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
-                                                To delete an environment variable, prefix its name with '!', for example --env '!FOO'
-                                                
-      --git string                              Git repository
-      --git-branch string                       Git branch (default "main")
-      --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
-      --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
-      --git-buildpack-build-command string      Buid command
-      --git-buildpack-run-command string        Run command
-      --git-docker-args strings                 Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
-      --git-docker-command string               Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
-      --git-docker-dockerfile string            Dockerfile path
-      --git-docker-entrypoint strings           Docker entrypoint
-      --git-docker-target string                Docker target
-      --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                  Run command (legacy, prefer git-buildpack-run-command)
-      --git-workdir string                      Path to the sub-directory containing the code to build and deploy
-  -h, --help                                    help for create
-      --instance-type string                    Instance type (default "nano")
-      --max-scale int                           Max scale (default 1)
-      --min-scale int                           Min scale (default 1)
-      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
-                                                To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                
-      --privileged                              Whether the service container should run in privileged mode
-      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
-                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
-                                                If the region is not specified on service creation, the service is deployed in fra
-                                                
-      --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                PORT defaults to 8000
-                                                To delete a route, use '!PATH', for example --route '!/foo'
-                                                
-      --scale int                               Set both min-scale and max-scale (default 1)
-      --skip-cache                              Whether to use the cache when building the service
-      --type string                             Service type, either "web" or "worker" (default "web")
+  -a, --app string                               Service application
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --docker string                            Docker image
+      --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
+      --docker-private-registry-secret string    Docker private registry secret
+      --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                 
+      --git string                               Git repository
+      --git-branch string                        Git branch (default "main")
+      --git-build-command string                 Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string       Buid command
+      --git-buildpack-run-command string         Run command
+      --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
+      --git-docker-dockerfile string             Dockerfile path
+      --git-docker-entrypoint strings            Docker entrypoint
+      --git-docker-target string                 Docker target
+      --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-workdir string                       Path to the sub-directory containing the code to build and deploy
+  -h, --help                                     help for create
+      --instance-type string                     Instance type (default "nano")
+      --max-scale int                            Max scale (default 1)
+      --min-scale int                            Min scale (default 1)
+      --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the service container should run in privileged mode
+      --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                 If the region is not specified on service creation, the service is deployed in fra
+                                                 
+      --routes strings                           Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                 PORT defaults to 8000
+                                                 To delete a route, use '!PATH', for example --route '!/foo'
+                                                 
+      --scale int                                Set both min-scale and max-scale (default 1)
+      --skip-cache                               Whether to use the cache when building the service
+      --type string                              Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
@@ -1589,62 +1610,71 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 ### Options
 
 ```
-  -a, --app string                              Service application
-      --autoscaling-average-cpu int             Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
-      --autoscaling-average-mem int             Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
-      --autoscaling-requests-per-second int     Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
-      --checks strings                          Update service healthchecks (available for services of type "web" only)
-                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
-                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
-                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
-                                                
-      --docker string                           Docker image
-      --docker-args strings                     Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                   Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
-      --docker-entrypoint strings               Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
-      --docker-private-registry-secret string   Docker private registry secret
-      --env strings                             Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
-                                                To delete an environment variable, prefix its name with '!', for example --env '!FOO'
-                                                
-      --git string                              Git repository
-      --git-branch string                       Git branch (default "main")
-      --git-build-command string                Buid command (legacy, prefer git-buildpack-build-command)
-      --git-builder string                      Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
-      --git-buildpack-build-command string      Buid command
-      --git-buildpack-run-command string        Run command
-      --git-docker-args strings                 Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
-      --git-docker-command string               Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
-      --git-docker-dockerfile string            Dockerfile path
-      --git-docker-entrypoint strings           Docker entrypoint
-      --git-docker-target string                Docker target
-      --git-no-deploy-on-push                   Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                  Run command (legacy, prefer git-buildpack-run-command)
-      --git-workdir string                      Path to the sub-directory containing the code to build and deploy
-  -h, --help                                    help for update
-      --instance-type string                    Instance type (default "nano")
-      --max-scale int                           Max scale (default 1)
-      --min-scale int                           Min scale (default 1)
-      --name string                             Specify to update the service name
-      --override                                Override the service configuration with the new configuration instead of merging them
-      --ports strings                           Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
-                                                To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                
-      --privileged                              Whether the service container should run in privileged mode
-      --regions strings                         Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
-                                                To update a service and remove a region, prefix the region name with '!', for example --region '!par'
-                                                If the region is not specified on service creation, the service is deployed in fra
-                                                
-      --routes strings                          Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                PORT defaults to 8000
-                                                To delete a route, use '!PATH', for example --route '!/foo'
-                                                
-      --save-only                               Save the new configuration without deploying it
-      --scale int                               Set both min-scale and max-scale (default 1)
-      --skip-build                              If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
-      --skip-cache                              Whether to use the cache when building the service
-      --type string                             Service type, either "web" or "worker" (default "web")
+  -a, --app string                               Service application
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --docker string                            Docker image
+      --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
+      --docker-private-registry-secret string    Docker private registry secret
+      --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                 
+      --git string                               Git repository
+      --git-branch string                        Git branch (default "main")
+      --git-build-command string                 Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string       Buid command
+      --git-buildpack-run-command string         Run command
+      --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
+      --git-docker-dockerfile string             Dockerfile path
+      --git-docker-entrypoint strings            Docker entrypoint
+      --git-docker-target string                 Docker target
+      --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-workdir string                       Path to the sub-directory containing the code to build and deploy
+  -h, --help                                     help for update
+      --instance-type string                     Instance type (default "nano")
+      --max-scale int                            Max scale (default 1)
+      --min-scale int                            Min scale (default 1)
+      --name string                              Specify to update the service name
+      --override                                 Override the service configuration with the new configuration instead of merging them
+      --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the service container should run in privileged mode
+      --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                 If the region is not specified on service creation, the service is deployed in fra
+                                                 
+      --routes strings                           Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                 PORT defaults to 8000
+                                                 To delete a route, use '!PATH', for example --route '!/foo'
+                                                 
+      --save-only                                Save the new configuration without deploying it
+      --scale int                                Set both min-scale and max-scale (default 1)
+      --skip-build                               If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
+      --skip-cache                               Whether to use the cache when building the service
+      --type string                              Service type, either "web" or "worker" (default "web")
 ```
 
 ### Options inherited from parent commands
