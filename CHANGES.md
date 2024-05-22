@@ -3,7 +3,7 @@
 * Fix nil dereference in `koyeb deployment logs -t build`.
 * Create new command `koyeb archives create <path>` to store an archive. This command will be necessary for the future deployment of a directory.
 * Add `--archive` parameters to `koyeb service create` and `koyeb service update` to deploy an archive instead of a Docker image. The archive is stored in GCS and can be created with `koyeb archives create`.
-* Add command `koyeb deploy <directory> <app_name>/<service_name>.
+* Add command `koyeb deploy <directory> <app_name>/<service_name>`.
 * Allow to specify `--git-sha` in `koyeb service update` and `koyeb service create`. Warning: if the service is deployed with a specific git sha (which is the case if the deployment has been triggered by the "git push" webhook), `koyeb service update` without `--git-sha` will no longer deploy the latest commit, but the commit set in the configuration. To deploy the latest commit, use `koyeb service update --git-sha ''`.
   - https://github.com/koyeb/koyeb-cli/issues/222
 
