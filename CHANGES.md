@@ -1,4 +1,4 @@
-## v4.0.0 (unreleased)
+## v4.0.0 (2024-05-22)
 
 * Fix nil dereference in `koyeb deployment logs -t build`.
 * Create new command `koyeb archives create <path>` to store an archive. This command will be necessary for the future deployment of a directory.
