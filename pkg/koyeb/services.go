@@ -309,6 +309,7 @@ func addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
 	flags.Int64("autoscaling-average-cpu", 0, "Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.")
 	flags.Int64("autoscaling-average-mem", 0, "Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.")
 	flags.Int64("autoscaling-requests-per-second", 0, "Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
+	flags.Int64("autoscaling-concurrent-requests", 0, "Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.")
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 	flags.Bool("skip-cache", false, "Whether to use the cache when building the service")
 
@@ -760,17 +761,17 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 }
 
 // setScalingsTargets updates the scaling targets in a koyeb.DeploymentScaling object based on the specified flags.
-// It checks for changes in flags related to autoscaling parameters (CPU, memory, and requests per second).
+// It checks for changes in flags related to autoscaling parameters (CPU, memory, requests per second and concurrent requests).
 // If a change is detected in any of these flags, the function either updates an existing scaling target or creates a new one.
 //
 // setScalingsTargets performs the following steps:
-// 1. For each autoscaling parameter (CPU, memory, requests per second), it checks if the corresponding flag has changed.
+// 1. For each autoscaling parameter (CPU, memory, requests per second, concurrent requests), it checks if the corresponding flag has changed.
 // 2. If a flag has changed, it iterates over the existing targets to find a matching target type.
 // 3. If a matching target is found, it updates the target with the new value or removes the target if the value is 0.
 // 4. If no matching target is found, it creates a new target with the specified value and appends it to the scaling targets.
 //
 // Note: there is no way to easily avoid the code duplication in this function
-// because NewDeploymentScalingTarget{AverageCPU,AverageMem,RequestsPerSecond}
+// because NewDeploymentScalingTarget{AverageCPU,AverageMem,RequestsPerSecond,ConcurrentRequests}
 // do not implement a common interface.
 func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) {
 	if scaling.Targets == nil || scaling.GetMin() == scaling.GetMax() {
@@ -861,6 +862,35 @@ func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) 
 			rps := koyeb.NewDeploymentScalingTargetRequestsPerSecond()
 			rps.SetValue(value)
 			target.SetRequestsPerSecond(*rps)
+			newTargets = append(newTargets, *target)
+		}
+		scaling.Targets = newTargets
+	}
+
+	if flags.Lookup("autoscaling-concurrent-requests").Changed {
+		value, _ := flags.GetInt64("autoscaling-concurrent-requests")
+		newTargets := []koyeb.DeploymentScalingTarget{}
+		found := false
+
+		for _, target := range scaling.GetTargets() {
+			if target.HasConcurrentRequests() {
+				found = true
+				if value == 0 {
+					continue
+				}
+				cr := koyeb.NewDeploymentScalingTargetConcurrentRequests()
+				cr.SetValue(value)
+				target.SetConcurrentRequests(*cr)
+				newTargets = append(newTargets, target)
+			} else {
+				newTargets = append(newTargets, target)
+			}
+		}
+		if !found && value > 0 {
+			target := koyeb.NewDeploymentScalingTarget()
+			cr := koyeb.NewDeploymentScalingTargetConcurrentRequests()
+			cr.SetValue(value)
+			target.SetConcurrentRequests(*cr)
 			newTargets = append(newTargets, *target)
 		}
 		scaling.Targets = newTargets
