@@ -271,6 +271,7 @@ See examples of koyeb service create --help
       --archive-docker-target string             Docker target
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
@@ -1213,6 +1214,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --archive-docker-target string             Docker target
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
@@ -1624,6 +1626,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --archive-docker-target string             Docker target
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
