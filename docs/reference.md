@@ -273,6 +273,7 @@ See examples of koyeb service create --help
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -1216,6 +1217,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -1628,6 +1630,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
