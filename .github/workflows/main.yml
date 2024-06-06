@@ -42,6 +42,6 @@ jobs:
         with:
           version: latest
           workdir: ./src/github.com/${{ github.repository }}
-          args: release --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
