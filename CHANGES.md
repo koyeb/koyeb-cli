@@ -1,3 +1,7 @@
+## v4.2.0 (unreleased)
+
+* ...
+
 ## v4.1.1 (2024-06-06)
 
 * Fix release.
