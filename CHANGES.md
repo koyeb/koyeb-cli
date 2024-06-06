@@ -1,4 +1,4 @@
-## v4.1.0 (unreleased)
+## v4.1.0 (2024-06-06)
 
 * Add `--autoscaling-concurrent-requests` and `--autoscaling-requests-response-time` to `koyeb service create` and `koyeb service update`.
 
