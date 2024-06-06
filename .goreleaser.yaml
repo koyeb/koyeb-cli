@@ -1,3 +1,4 @@
+version: 2
 builds:
   - id: default
     main: ./cmd/koyeb
@@ -62,11 +63,11 @@ snapshot:
   name_template: "{{.Branch}}-{{.ShortCommit}}"
 
 brews:
-  - tap:
+  - repository:
       owner: koyeb
       name: homebrew-tap
     name: koyeb
-    folder: Formula
+    directory: Formula
     homepage: https://koyeb.com
     skip_upload: auto
     test: |
