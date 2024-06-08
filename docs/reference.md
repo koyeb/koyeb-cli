@@ -473,6 +473,142 @@ koyeb apps update NAME [flags]
 
 * [koyeb apps](#koyeb-apps)	 - Apps
 
+## koyeb archives
+
+Archives
+
+### Options
+
+```
+  -h, --help   help for archives
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb archives create](#koyeb-archives-create)	 - Create archive
+
+## koyeb archives create
+
+Create archive
+
+```
+koyeb archives create NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for create
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb archives](#koyeb-archives)	 - Archives
+
+## koyeb deploy
+
+Deploy a directory to Koyeb
+
+```
+koyeb deploy <path> <app>/<service> [flags]
+```
+
+### Options
+
+```
+      --app string                               Service application. Can also be provided in the service name with the format <app>/<service>
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
+      --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                 
+  -h, --help                                     help for deploy
+      --instance-type string                     Instance type (default "nano")
+      --max-scale int                            Max scale (default 1)
+      --min-scale int                            Min scale (default 1)
+      --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the service container should run in privileged mode
+      --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                 If the region is not specified on service creation, the service is deployed in fra
+                                                 
+      --routes strings                           Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                 PORT defaults to 8000
+                                                 To delete a route, use '!PATH', for example --route '!/foo'
+                                                 
+      --scale int                                Set both min-scale and max-scale (default 1)
+      --skip-cache                               Whether to use the cache when building the service
+      --type string                              Service type, either "web" or "worker" (default "web")
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+
 ## koyeb domains
 
 Domains
