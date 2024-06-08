@@ -9,6 +9,9 @@ define gen-doc-in-dir
 	cat ./$1/koyeb_login.md >> ./$1/reference.md
 	cat ./$1/koyeb_apps.md >> ./$1/reference.md
 	cat ./$1/koyeb_apps_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_archives.md >> ./$1/reference.md
+	cat ./$1/koyeb_archives_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_deploy.md >> ./$1/reference.md
 	cat ./$1/koyeb_domains.md >> ./$1/reference.md
 	cat ./$1/koyeb_domains_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_organizations.md >> ./$1/reference.md
