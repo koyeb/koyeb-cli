@@ -206,7 +206,7 @@ func TestParseRegions(t *testing.T) {
 		"set default": {
 			cliFlags:       []string{},
 			currentRegions: []string{},
-			expected:       []string{"fra"},
+			expected:       []string{"was"},
 		},
 		"replace default": {
 			cliFlags:       []string{"--region", "tyo"},
