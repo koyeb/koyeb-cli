@@ -114,6 +114,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewMetricsCmd())
 	rootCmd.AddCommand(NewArchiveCmd())
 	rootCmd.AddCommand(NewDeployCmd())
+	rootCmd.AddCommand(NewVolumeCmd())
 	return rootCmd
 }
 
