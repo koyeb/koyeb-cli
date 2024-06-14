@@ -45,6 +45,7 @@ Koyeb CLI
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb version](#koyeb-version)	 - Get version
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
 
 ## koyeb login
 
@@ -2504,4 +2505,37 @@ koyeb version [flags]
 
 
 * [koyeb](#koyeb)	 - Koyeb CLI
+
+## koyeb volumes
+
+Manage persistent volumes
+
+### Options
+
+```
+  -h, --help   help for volumes
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb volumes create](#koyeb-volumes-create)	 - Create a new volume
+* [koyeb volumes delete](#koyeb-volumes-delete)	 - Delete a volume
+* [koyeb volumes get](#koyeb-volumes-get)	 - Get a volume
+* [koyeb volumes list](#koyeb-volumes-list)	 - List volumes
+* [koyeb volumes update](#koyeb-volumes-update)	 - Update a volume
 
