@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
@@ -39,4 +40,17 @@ func FormatID(fullId string, full bool) string {
 		return ""
 	}
 	return fullId[:8]
+}
+
+func FormatSize(size int64) string {
+	switch {
+	case size > 1024*1024*1024:
+		return fmt.Sprintf("%.2fG", float64(size)/1024/1024/1024)
+	case size > 1024*1024:
+		return fmt.Sprintf("%.2fM", float64(size)/1024/1024)
+	case size > 1024:
+		return fmt.Sprintf("%.2fK", float64(size)/1024)
+	default:
+		return fmt.Sprintf("%d", size)
+	}
 }
