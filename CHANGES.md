@@ -1,6 +1,6 @@
 ## v4.2.0 (unreleased)
 
-* ...
+* Add `volumes` subcommand.
 
 ## v4.1.1 (2024-06-06)
 

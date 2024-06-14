@@ -27,6 +27,7 @@ define gen-doc-in-dir
 	cat ./$1/koyeb_databases.md >> ./$1/reference.md
 	cat ./$1/koyeb_databases_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_version.md >> ./$1/reference.md
+	cat ./$1/koyeb_volumes.md >> ./$1/reference.md
 	find ./$1 -type f -not -name 'reference.md' -delete
 endef
 
