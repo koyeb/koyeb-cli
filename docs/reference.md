@@ -2324,7 +2324,7 @@ koyeb databases create NAME [flags]
   -h, --help                   help for create
       --instance-type string   Instance type (free, small, medium or large) (default "free")
       --pg-version int         PostgreSQL version (default 16)
-      --region string          Region where the database is deployed (default "fra")
+      --region string          Region where the database is deployed (default "was")
 ```
 
 ### Options inherited from parent commands

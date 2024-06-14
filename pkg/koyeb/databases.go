@@ -130,7 +130,7 @@ func addCreateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
 	addUpdateDbServiceDefinitionFlags(flags)
 
 	flags.Int64("pg-version", 16, "PostgreSQL version")
-	flags.String("region", "fra", "Region where the database is deployed")
+	flags.String("region", "was", "Region where the database is deployed")
 	flags.String("db-name", "koyebdb", "Database name")
 	flags.String("db-owner", "koyeb-adm", "Database owner")
 }

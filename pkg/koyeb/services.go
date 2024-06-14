@@ -717,7 +717,7 @@ func parseRegions(flags *pflag.FlagSet, currentRegions []string) ([]string, erro
 	}
 	// For new services, if no region is specified, add the default region
 	if !flags.Lookup("regions").Changed && len(currentRegions) == 0 {
-		newRegions = []string{"fra"}
+		newRegions = []string{"was"}
 	}
 	return newRegions, nil
 }
