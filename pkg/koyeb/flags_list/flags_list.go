@@ -19,7 +19,7 @@ type Flag[T any] interface {
 }
 
 // ParseListFlags is a generic function which takes a list of flags and a list of existing items, and returns the updated list of items.
-// It is used to parse the flags --env, --checks, --routes, --ports and --regions of `koyeb service update`.
+// It is used to parse the flags --env, --checks, --routes, --ports, --regions and --volumes of `koyeb service update`.
 // The function will:
 // - Remove the items marked for deletion from the existingItems list
 // - If the flag corresponds to an existing item, update the item from the existingItems list
