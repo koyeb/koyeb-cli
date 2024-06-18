@@ -10,7 +10,7 @@ import (
 )
 
 func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
-	serviceName, err := parseServiceName(cmd, args[0])
+	serviceName, err := h.parseServiceName(cmd, args[0])
 	if err != nil {
 		return err
 	}

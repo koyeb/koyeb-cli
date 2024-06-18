@@ -10,7 +10,7 @@ import (
 )
 
 func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
-	appID, err := parseAppName(cmd, args[0])
+	appID, err := h.parseAppName(cmd, args[0])
 	if err != nil {
 		return err
 	}

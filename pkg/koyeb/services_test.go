@@ -177,14 +177,15 @@ func TestSetGitSourceBuilder(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			cmd := &cobra.Command{}
 
-			addServiceDefinitionFlags(cmd.Flags())
+			h := NewServiceHandler()
+			h.addServiceDefinitionFlags(cmd.Flags())
 
 			cmd.SetArgs(tc.args)
 			if err := cmd.ParseFlags(tc.args); err != nil {
 				t.Fatal()
 			}
 
-			ret, err := parseGitSource(cmd.Flags(), tc.source)
+			ret, err := h.parseGitSource(cmd.Flags(), tc.source)
 
 			if tc.expected != nil {
 				assert.Nil(t, err)
@@ -237,12 +238,13 @@ func TestParseRegions(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			cmd := &cobra.Command{}
-			addServiceDefinitionFlags(cmd.Flags())
+			h := NewServiceHandler()
+			h.addServiceDefinitionFlags(cmd.Flags())
 
 			err := cmd.ParseFlags(test.cliFlags)
 			assert.NoError(t, err)
 
-			regions, err := parseRegions(cmd.Flags(), test.currentRegions)
+			regions, err := h.parseRegions(cmd.Flags(), test.currentRegions)
 			assert.Equal(t, test.expected, regions)
 			assert.NoError(t, err)
 		})
@@ -351,7 +353,8 @@ func TestSetRegions(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			setRegions(&test.definition, test.regions)
+			h := NewServiceHandler()
+			h.setRegions(&test.definition, test.regions)
 			assert.Equal(t, test.expected, test.definition)
 		})
 	}
@@ -451,7 +454,8 @@ func TestSetDefaultPortsAndRoutes(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := setDefaultPortsAndRoutes(&test.definition, test.definition.Ports, test.definition.Routes)
+			h := NewServiceHandler()
+			err := h.setDefaultPortsAndRoutes(&test.definition, test.definition.Ports, test.definition.Routes)
 
 			if test.expectedErr {
 				assert.Error(t, err)

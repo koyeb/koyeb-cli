@@ -7,6 +7,7 @@ import (
 
 func NewAppCmd() *cobra.Command {
 	h := NewAppHandler()
+	serviceHandler := NewServiceHandler()
 
 	appCmd := &cobra.Command{
 		Use:     "apps ACTION",
@@ -37,7 +38,7 @@ func NewAppCmd() *cobra.Command {
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-			err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition)
+			err := serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition)
 			if err != nil {
 				return err
 			}
@@ -49,7 +50,7 @@ func NewAppCmd() *cobra.Command {
 		}),
 	}
 	appCmd.AddCommand(initAppCmd)
-	addServiceDefinitionFlags(initAppCmd.Flags())
+	serviceHandler.addServiceDefinitionFlags(initAppCmd.Flags())
 
 	getAppCmd := &cobra.Command{
 		Use:   "get NAME",

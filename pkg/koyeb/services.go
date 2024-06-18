@@ -46,12 +46,12 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-			err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition)
+			err := h.parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition)
 			if err != nil {
 				return err
 			}
 
-			serviceName, err := parseServiceNameWithoutApp(cmd, args[0])
+			serviceName, err := h.parseServiceNameWithoutApp(cmd, args[0])
 			if err != nil {
 				return err
 			}
@@ -61,7 +61,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
-	addServiceDefinitionFlags(createServiceCmd.Flags())
+	h.addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(createServiceCmd)
 
@@ -130,7 +130,7 @@ $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g
 $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			serviceName, err := parseServiceName(cmd, args[0])
+			serviceName, err := h.parseServiceName(cmd, args[0])
 			if err != nil {
 				return err
 			}
@@ -187,7 +187,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 				)
 			}
 
-			err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDef)
+			err = h.parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDef)
 			if err != nil {
 				return err
 			}
@@ -202,7 +202,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			return h.Update(ctx, cmd, args, updateService)
 		}),
 	}
-	addServiceDefinitionFlags(updateServiceCmd.Flags())
+	h.addServiceDefinitionFlags(updateServiceCmd.Flags())
 	updateServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	updateServiceCmd.Flags().String("name", "", "Specify to update the service name")
 	updateServiceCmd.Flags().Bool("override", false, "Override the service configuration with the new configuration instead of merging them")
@@ -276,15 +276,24 @@ func (h *ServiceHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, er
 	return id, nil
 }
 
-func addServiceDefinitionFlags(flags *pflag.FlagSet) {
-	addServiceDefinitionFlagsForAllSources(flags)
-	addServiceDefinitionFlagsForGitSource(flags)
-	addServiceDefinitionFlagsForDockerSource(flags)
-	addServiceDefinitionFlagsForArchiveSource(flags)
+func (h *ServiceHandler) ResolveVolumeArgs(ctx *CLIContext, val string) (string, error) {
+	volumeMapper := ctx.Mapper.Volume()
+	id, err := volumeMapper.ResolveID(val)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
+func (h *ServiceHandler) addServiceDefinitionFlags(flags *pflag.FlagSet) {
+	h.addServiceDefinitionFlagsForAllSources(flags)
+	h.addServiceDefinitionFlagsForGitSource(flags)
+	h.addServiceDefinitionFlagsForDockerSource(flags)
+	h.addServiceDefinitionFlagsForArchiveSource(flags)
 }
 
 // Add the flags common to all sources: git, docker and archive
-func addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
+func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
 	// Global flags
 	flags.String("type", "web", `Service type, either "web" or "worker"`)
 
@@ -362,7 +371,7 @@ func addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
 }
 
 // Add the flags for Git sources
-func addServiceDefinitionFlagsForGitSource(flags *pflag.FlagSet) {
+func (h *ServiceHandler) addServiceDefinitionFlagsForGitSource(flags *pflag.FlagSet) {
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "main", "Git branch")
 	flags.String("git-sha", "", "Git commit SHA to deploy")
@@ -385,7 +394,7 @@ func addServiceDefinitionFlagsForGitSource(flags *pflag.FlagSet) {
 }
 
 // Add the flags for Docker sources
-func addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
+func (h *ServiceHandler) addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
 	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
@@ -394,7 +403,7 @@ func addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
 }
 
 // Add the flags for Archive sources
-func addServiceDefinitionFlagsForArchiveSource(flags *pflag.FlagSet) {
+func (h *ServiceHandler) addServiceDefinitionFlagsForArchiveSource(flags *pflag.FlagSet) {
 	flags.String("archive", "", "Archive ID to deploy")
 	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
 
@@ -411,7 +420,7 @@ func addServiceDefinitionFlagsForArchiveSource(flags *pflag.FlagSet) {
 }
 
 // parseServiceDefinitionFlags parses the flags related to the service definition, and updates the given definition accordingly.
-func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
+func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
 	// For `koyeb service create`, the flag "name" does not exist so flags.Lookup("name") will return nil.
 	// For `koyeb service update`, we only override the name in the definition if the flag is set.
 	if flags.Lookup("name") != nil && flags.Lookup("name").Changed {
@@ -419,7 +428,7 @@ func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definiti
 		definition.SetName(name)
 	}
 
-	type_, err := parseType(flags, definition.GetType())
+	type_, err := h.parseType(flags, definition.GetType())
 	if err != nil {
 		return err
 	}
@@ -428,42 +437,42 @@ func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definiti
 	skipCache, _ := flags.GetBool("skip-cache")
 	definition.SetSkipCache(skipCache)
 
-	envs, err := parseEnv(flags, definition.Env)
+	envs, err := h.parseEnv(flags, definition.Env)
 	if err != nil {
 		return err
 	}
 	definition.SetEnv(envs)
 
-	definition.SetInstanceTypes(parseInstanceType(flags, definition.GetInstanceTypes()))
+	definition.SetInstanceTypes(h.parseInstanceType(flags, definition.GetInstanceTypes()))
 
-	ports, err := parsePorts(definition.GetType(), flags, definition.Ports)
+	ports, err := h.parsePorts(definition.GetType(), flags, definition.Ports)
 	if err != nil {
 		return err
 	}
 	definition.SetPorts(ports)
 
-	routes, err := parseRoutes(definition.GetType(), flags, definition.Routes)
+	routes, err := h.parseRoutes(definition.GetType(), flags, definition.Routes)
 	if err != nil {
 		return err
 	}
 	definition.SetRoutes(routes)
 
 	if definition.GetType() == koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
-		err = setDefaultPortsAndRoutes(definition, definition.Ports, definition.Routes)
+		err = h.setDefaultPortsAndRoutes(definition, definition.Ports, definition.Routes)
 		if err != nil {
 			return err
 		}
 	}
 
-	definition.SetScalings(parseScalings(flags, definition.Scalings))
+	definition.SetScalings(h.parseScalings(flags, definition.Scalings))
 
-	healthchecks, err := parseChecks(definition.GetType(), flags, definition.HealthChecks)
+	healthchecks, err := h.parseChecks(definition.GetType(), flags, definition.HealthChecks)
 	if err != nil {
 		return err
 	}
 	definition.SetHealthChecks(healthchecks)
 
-	regions, err := parseRegions(flags, definition.GetRegions())
+	regions, err := h.parseRegions(flags, definition.GetRegions())
 	if err != nil {
 		return err
 	}
@@ -475,9 +484,14 @@ func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definiti
 		)
 	}
 	// Scalings and environment variables refer to regions, so we must call setRegions after definition.SetScalings and definition.SetEnv.
-	setRegions(definition, regions)
+	h.setRegions(definition, regions)
 
-	err = setSource(ctx, definition, flags)
+	err = h.setSource(ctx, definition, flags)
+	if err != nil {
+		return err
+	}
+
+	err = h.setSource(ctx, definition, flags)
 	if err != nil {
 		return err
 	}
@@ -485,7 +499,7 @@ func parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definiti
 }
 
 // Parse --type
-func parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType) (koyeb.DeploymentDefinitionType, error) {
+func (h *ServiceHandler) parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType) (koyeb.DeploymentDefinitionType, error) {
 	if !flags.Lookup("type").Changed {
 		// New service: return the default value
 		if currentType == koyeb.DEPLOYMENTDEFINITIONTYPE_INVALID {
@@ -517,7 +531,7 @@ func parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType)
 }
 
 // Parse --instance-type
-func parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.DeploymentInstanceType) []koyeb.DeploymentInstanceType {
+func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.DeploymentInstanceType) []koyeb.DeploymentInstanceType {
 	if !flags.Lookup("instance-type").Changed {
 		// New service: return the default value
 		if len(currentInstanceTypes) == 0 {
@@ -558,12 +572,12 @@ func parseListFlags[T any](
 }
 
 // Parse --env
-func parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
+func (h *ServiceHandler) parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
 	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, currentEnv)
 }
 
 // Parse --ports
-func parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
+func (h *ServiceHandler) parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
 	newPorts, err := parseListFlags("ports", flags_list.NewPortListFromFlags, flags, currentPorts)
 	if err != nil {
 		return nil, err
@@ -589,7 +603,7 @@ func parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, curr
 }
 
 // Parse --routes
-func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
+func (h *ServiceHandler) parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
 	newRoutes, err := parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
 	if err != nil {
 		return nil, err
@@ -615,7 +629,7 @@ func parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 }
 
 // Set default port to `portNumber` and `http`
-func getDeploymentPort(portNumber int64) []koyeb.DeploymentPort {
+func (h *ServiceHandler) getDeploymentPort(portNumber int64) []koyeb.DeploymentPort {
 	newPort := koyeb.NewDeploymentPortWithDefaults()
 	newPort.SetPort(portNumber)
 	newPort.SetProtocol("http")
@@ -623,7 +637,7 @@ func getDeploymentPort(portNumber int64) []koyeb.DeploymentPort {
 }
 
 // Set default route to `portNumber` and `/`
-func getDeploymentRoute(portNumber int64) []koyeb.DeploymentRoute {
+func (h *ServiceHandler) getDeploymentRoute(portNumber int64) []koyeb.DeploymentRoute {
 	newRoute := koyeb.NewDeploymentRouteWithDefaults()
 	newRoute.SetPath("/")
 	newRoute.SetPort(portNumber)
@@ -631,12 +645,12 @@ func getDeploymentRoute(portNumber int64) []koyeb.DeploymentRoute {
 }
 
 // Dynamically sets the defaults ports and routes for "web" services
-func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPorts []koyeb.DeploymentPort, currentRoutes []koyeb.DeploymentRoute) error {
+func (h *ServiceHandler) setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPorts []koyeb.DeploymentPort, currentRoutes []koyeb.DeploymentRoute) error {
 	switch {
 	// If no route and no port is specified, add the default route and port
 	case len(currentPorts) == 0 && len(currentRoutes) == 0:
-		definition.SetPorts(getDeploymentPort(8000))
-		definition.SetRoutes(getDeploymentRoute(8000))
+		definition.SetPorts(h.getDeploymentPort(8000))
+		definition.SetRoutes(h.getDeploymentRoute(8000))
 
 	// When one or more port are set but no route is set:
 	// - if more than one port is set, we can't determine which one should be used to create the default route, so we return an error
@@ -655,7 +669,7 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 		}
 		portNumber := currentPorts[0].GetPort()
 		if currentPorts[0].GetProtocol() != "tcp" {
-			definition.SetRoutes(getDeploymentRoute(portNumber))
+			definition.SetRoutes(h.getDeploymentRoute(portNumber))
 		}
 
 	// If one or more routes are set but no port is set:
@@ -674,13 +688,13 @@ func setDefaultPortsAndRoutes(definition *koyeb.DeploymentDefinition, currentPor
 			}
 		}
 		portNumber := currentRoutes[0].GetPort()
-		definition.SetPorts(getDeploymentPort(portNumber))
+		definition.SetPorts(h.getDeploymentPort(portNumber))
 	}
 	return nil
 }
 
 // Parse --checks
-func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
+func (h *ServiceHandler) parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
 	newChecks, err := parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, currentHealthChecks)
 	if err != nil {
 		return nil, err
@@ -710,7 +724,7 @@ func parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, cur
 }
 
 // Parse --regions
-func parseRegions(flags *pflag.FlagSet, currentRegions []string) ([]string, error) {
+func (h *ServiceHandler) parseRegions(flags *pflag.FlagSet, currentRegions []string) ([]string, error) {
 	newRegions, err := parseListFlags("regions", flags_list.NewRegionsListFromFlags, flags, currentRegions)
 	if err != nil {
 		return nil, err
@@ -723,7 +737,7 @@ func parseRegions(flags *pflag.FlagSet, currentRegions []string) ([]string, erro
 }
 
 // Parse --min-scale and --max-scale
-func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
+func (h *ServiceHandler) parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
 	var minScale int64
 	var maxScale int64
 
@@ -744,7 +758,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 		scaling := koyeb.NewDeploymentScalingWithDefaults()
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
-		setScalingsTargets(flags, scaling)
+		h.setScalingsTargets(flags, scaling)
 		return []koyeb.DeploymentScaling{*scaling}
 	} else {
 		// Otherwise, update the current scaling configuration only if one of the scale flags has been provided
@@ -755,7 +769,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 			if flags.Lookup("scale").Changed || flags.Lookup("max-scale").Changed {
 				currentScalings[idx].SetMax(maxScale)
 			}
-			setScalingsTargets(flags, &currentScalings[idx])
+			h.setScalingsTargets(flags, &currentScalings[idx])
 		}
 	}
 	return currentScalings
@@ -779,7 +793,7 @@ func parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScali
 // Note: there is no way to easily avoid the code duplication in this function
 // because NewDeploymentScalingTarget{AverageCPU,AverageMem,RequestsPerSecond,ConcurrentRequests,...}
 // do not implement a common interface.
-func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) {
+func (h *ServiceHandler) setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) {
 	if scaling.Targets == nil || scaling.GetMin() == scaling.GetMax() {
 		scaling.Targets = []koyeb.DeploymentScalingTarget{}
 	}
@@ -936,7 +950,7 @@ func setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) 
 }
 
 // Parse --git-* and --docker-* flags to set deployment.Git or deployment.Docker
-func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
+func (h *ServiceHandler) setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *pflag.FlagSet) error {
 	hasGitFlags := false
 	hasDockerFlags := false
 	hasArchiveFlags := false
@@ -969,7 +983,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		// If --docker-* flags are set and the service already has a Docker
 		// source, update it.
 		docker := definition.GetDocker()
-		source, err := parseDockerSource(ctx, flags, &docker)
+		source, err := h.parseDockerSource(ctx, flags, &docker)
 		if err != nil {
 			return err
 		}
@@ -980,7 +994,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		// it with a Docker source.
 	} else if hasGitFlags {
 		git := definition.GetGit()
-		source, err := parseGitSource(flags, &git)
+		source, err := h.parseGitSource(flags, &git)
 		if err != nil {
 			return err
 		}
@@ -989,7 +1003,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		definition.Archive = nil
 	} else if hasArchiveFlags {
 		archive := definition.GetArchive()
-		source, err := parseArchiveSource(flags, &archive)
+		source, err := h.parseArchiveSource(flags, &archive)
 		if err != nil {
 			return err
 		}
@@ -1003,7 +1017,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		// source to remain the same), but it is necessary to update the
 		// --privileged flag, for example.
 		docker := definition.GetDocker()
-		source, err := parseDockerSource(ctx, flags, &docker)
+		source, err := h.parseDockerSource(ctx, flags, &docker)
 		if err != nil {
 			return err
 		}
@@ -1012,7 +1026,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 		definition.Archive = nil
 	} else if definition.HasArchive() {
 		archive := definition.GetArchive()
-		source, err := parseArchiveSource(flags, &archive)
+		source, err := h.parseArchiveSource(flags, &archive)
 		if err != nil {
 			return err
 		}
@@ -1022,7 +1036,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 	} else {
 		// Same as above, but for the Git source.
 		git := definition.GetGit()
-		source, err := parseGitSource(flags, &git)
+		source, err := h.parseGitSource(flags, &git)
 		if err != nil {
 			return err
 		}
@@ -1034,7 +1048,7 @@ func setSource(ctx *CLIContext, definition *koyeb.DeploymentDefinition, flags *p
 }
 
 // Parse --docker-* flags
-func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (*koyeb.DockerSource, error) {
+func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (*koyeb.DockerSource, error) {
 	// docker-private-registry-secret needs to be parsed first, because checkDockerImage reads it
 	if flags.Lookup("docker-private-registry-secret").Changed {
 		secret, _ := flags.GetString("docker-private-registry-secret")
@@ -1043,7 +1057,7 @@ func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.Dock
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
 		source.SetImage(image)
-		if err := checkDockerImage(ctx, source); err != nil {
+		if err := h.checkDockerImage(ctx, source); err != nil {
 			return nil, err
 		}
 	}
@@ -1067,7 +1081,7 @@ func parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.Dock
 }
 
 // Parse --git-* flags
-func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
+func (h *ServiceHandler) parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
 	if flags.Lookup("git").Changed {
 		repository, _ := flags.GetString("git")
 		source.SetRepository(repository)
@@ -1088,11 +1102,11 @@ func parseGitSource(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSo
 		workdir, _ := flags.GetString("git-workdir")
 		source.SetWorkdir(workdir)
 	}
-	return setGitSourceBuilder(flags, source)
+	return h.setGitSourceBuilder(flags, source)
 }
 
 // Parse --git-builder and --git-* flags
-func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
+func (h *ServiceHandler) setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.GitSource, error) {
 	builder, _ := flags.GetString("git-builder")
 	if builder != "buildpack" && builder != "docker" {
 		return nil, &errors.CLIError{
@@ -1128,7 +1142,7 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 				Solution: "Add --git-builder=docker to the arguments to configure the docker builder",
 			}
 		}
-		builder, err := parseGitSourceDockerBuilder(flags, source.GetDocker())
+		builder, err := h.parseGitSourceDockerBuilder(flags, source.GetDocker())
 		if err != nil {
 			return nil, err
 		}
@@ -1155,7 +1169,7 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 			}
 		}
 
-		builder, err := parseGitSourceBuildpackBuilder(flags, source)
+		builder, err := h.parseGitSourceBuildpackBuilder(flags, source)
 		if err != nil {
 			return nil, err
 		}
@@ -1166,7 +1180,7 @@ func setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.
 }
 
 // Parse --git-buildpack-* flags
-func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.BuildpackBuilder, error) {
+func (h *ServiceHandler) parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.BuildpackBuilder, error) {
 	builder := source.GetBuildpack()
 	// Legacy options for backward compatibility. We prefer
 	// --git-buildpack-build-command and --git-buildpack-run-command over --git-build-command and --git-run-command
@@ -1223,7 +1237,7 @@ func parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.GitSourc
 }
 
 // Parse --git-docker-* flags
-func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
+func (h *ServiceHandler) parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
 	if flags.Lookup("git-docker-dockerfile").Changed {
 		dockerfile, _ := flags.GetString("git-docker-dockerfile")
 		builder.SetDockerfile(dockerfile)
@@ -1252,16 +1266,16 @@ func parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuild
 }
 
 // Parse --archive-* flags
-func parseArchiveSource(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
+func (h *ServiceHandler) parseArchiveSource(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
 	if flags.Lookup("archive").Changed {
 		archive, _ := flags.GetString("archive")
 		source.SetId(archive)
 	}
-	return setArchiveSourceBuilder(flags, source)
+	return h.setArchiveSourceBuilder(flags, source)
 }
 
 // Parse --archive-builder and --archive-* flags
-func setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
+func (h *ServiceHandler) setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
 	builder, _ := flags.GetString("archive-builder")
 	if builder != "buildpack" && builder != "docker" {
 		return nil, &errors.CLIError{
@@ -1297,7 +1311,7 @@ func setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) 
 				Solution: "Add --archive-builder=docker to the arguments to configure the docker builder",
 			}
 		}
-		builder, err := parseArchiveSourceDockerBuilder(flags, source.GetDocker())
+		builder, err := h.parseArchiveSourceDockerBuilder(flags, source.GetDocker())
 		if err != nil {
 			return nil, err
 		}
@@ -1322,7 +1336,7 @@ func setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) 
 			}
 		}
 
-		builder, err := parseArchiveSourceBuildpackBuilder(flags, source)
+		builder, err := h.parseArchiveSourceBuildpackBuilder(flags, source)
 		if err != nil {
 			return nil, err
 		}
@@ -1333,7 +1347,7 @@ func setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) 
 }
 
 // Parse --archive-buildpack-* flags
-func parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.BuildpackBuilder, error) {
+func (h *ServiceHandler) parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.BuildpackBuilder, error) {
 	builder := source.GetBuildpack()
 	buildpackBuildCommand, _ := flags.GetString("archive-buildpack-build-command")
 	buildpackRunCommand, _ := flags.GetString("archive-buildpack-run-command")
@@ -1352,7 +1366,7 @@ func parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.Arch
 }
 
 // Parse --archive-docker-* flags
-func parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
+func (h *ServiceHandler) parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
 	if flags.Lookup("archive-docker-dockerfile").Changed {
 		dockerfile, _ := flags.GetString("archive-docker-dockerfile")
 		builder.SetDockerfile(dockerfile)
@@ -1409,7 +1423,7 @@ func parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerB
 // is exposed for a given region. For example, while the API allows to update an
 // environment variable to have a specific value for a given region and another
 // value for another region, the CLI and the console do not allow to do that.
-func setRegions(definition *koyeb.DeploymentDefinition, regions []string) {
+func (h *ServiceHandler) setRegions(definition *koyeb.DeploymentDefinition, regions []string) {
 	definition.SetRegions(regions)
 
 	updateScopes := func(regions []string, currentScopes []string) []string {
@@ -1467,7 +1481,7 @@ var ServiceNameRegexp = regexp.MustCompile(`^(?:(?P<app_name>[^/]+)/)?(?P<servic
 // <service>, and returns an error if the service name is invalid, or if both
 // --app and <app>/<service> are specified but the application names do not
 // match.
-func parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
+func (h *ServiceHandler) parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
 	match := ServiceNameRegexp.FindStringSubmatch(serviceName)
 
 	if match == nil {
@@ -1508,8 +1522,8 @@ func parseServiceName(cmd *cobra.Command, serviceName string) (string, error) {
 }
 
 // parseServiceNameWithoutApp is similar to parseServiceName, but does not return the application name.
-func parseServiceNameWithoutApp(cmd *cobra.Command, serviceName string) (string, error) {
-	name, err := parseServiceName(cmd, serviceName)
+func (h *ServiceHandler) parseServiceNameWithoutApp(cmd *cobra.Command, serviceName string) (string, error) {
+	name, err := h.parseServiceName(cmd, serviceName)
 	if err != nil {
 		return "", err
 	}
@@ -1521,8 +1535,8 @@ func parseServiceNameWithoutApp(cmd *cobra.Command, serviceName string) (string,
 }
 
 // parseAppName is similar to parseServiceName, but returns the application name. If the application name is not specified, an error is returned.
-func parseAppName(cmd *cobra.Command, serviceName string) (string, error) {
-	name, err := parseServiceName(cmd, serviceName)
+func (h *ServiceHandler) parseAppName(cmd *cobra.Command, serviceName string) (string, error) {
+	name, err := h.parseServiceName(cmd, serviceName)
 	if err != nil {
 		return "", err
 	}
@@ -1542,7 +1556,7 @@ func parseAppName(cmd *cobra.Command, serviceName string) (string, error) {
 // checkDockerImage calls the API /v1/docker-helper/verify to check the validity
 // of the docker image in the given source. It returns nil if the image is
 // valid, or an error if the image is invalid.
-func checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
+func (h *ServiceHandler) checkDockerImage(ctx *CLIContext, source *koyeb.DockerSource) error {
 	req := ctx.Client.DockerHelperApi.VerifyDockerImage(ctx.Context).Image(source.GetImage())
 
 	secret := source.GetImageRegistrySecret()

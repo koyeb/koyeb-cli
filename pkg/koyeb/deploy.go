@@ -21,7 +21,7 @@ func NewDeployCmd() *cobra.Command {
 		Short: "Deploy a directory to Koyeb",
 		Args:  cobra.ExactArgs(2),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			appName, err := parseAppName(cmd, args[1])
+			appName, err := serviceHandler.parseAppName(cmd, args[1])
 			if err != nil {
 				return err
 			}
@@ -44,7 +44,7 @@ func NewDeployCmd() *cobra.Command {
 				appId = *createAppReply.GetApp().Id
 			}
 
-			serviceName, err := parseServiceNameWithoutApp(cmd, args[1])
+			serviceName, err := serviceHandler.parseServiceNameWithoutApp(cmd, args[1])
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,7 @@ func NewDeployCmd() *cobra.Command {
 				createService.SetDefinition(*createDefinition)
 
 				// Update definition with the flags provided by the user.
-				if err := parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
+				if err := serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
 					return err
 				}
 				createService.SetDefinition(*createDefinition)
@@ -130,7 +130,7 @@ func NewDeployCmd() *cobra.Command {
 				// parseServiceDefinitionFlags expects to have an archive
 				// source, otherwise it would try to get the --git or --docker
 				// flags which are not present.
-				err = parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition)
+				err = serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition)
 				if err != nil {
 					return err
 				}
@@ -145,8 +145,8 @@ func NewDeployCmd() *cobra.Command {
 		}),
 	}
 	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
-	addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
-	addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
+	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
+	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
 	return deployCmd
 }
 
