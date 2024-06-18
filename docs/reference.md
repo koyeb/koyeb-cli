@@ -324,6 +324,8 @@ See examples of koyeb service create --help
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, either "web" or "worker" (default "web")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
 ```
 
 ### Options inherited from parent commands
@@ -590,6 +592,8 @@ koyeb deploy <path> <app>/<service> [flags]
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, either "web" or "worker" (default "web")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
 ```
 
 ### Options inherited from parent commands
@@ -1404,6 +1408,8 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, either "web" or "worker" (default "web")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
 ```
 
 ### Options inherited from parent commands
@@ -1821,6 +1827,8 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --skip-build                               If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, either "web" or "worker" (default "web")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
 ```
 
 ### Options inherited from parent commands

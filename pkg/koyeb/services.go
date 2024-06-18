@@ -346,6 +346,12 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp\n"+
 			"To delete a healthcheck, use !PORT, for example --checks '!8080'\n",
 	)
+	flags.StringSlice(
+		"volumes",
+		nil,
+		"Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data."+
+			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
+	)
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
@@ -357,6 +363,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"healthchecks":       "checks",
 			"health-checks":      "checks",
 			"route":              "routes",
+			"volume":             "volumes",
 			"region":             "regions",
 			"git-docker-arg":     "git-docker-args",
 			"docker-arg":         "docker-args",
@@ -491,10 +498,12 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		return err
 	}
 
-	err = h.setSource(ctx, definition, flags)
+	volumes, err := h.parseVolumes(ctx, flags, definition.Volumes)
 	if err != nil {
 		return err
 	}
+	definition.SetVolumes(volumes)
+
 	return nil
 }
 
@@ -548,7 +557,7 @@ func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstance
 	return []koyeb.DeploymentInstanceType{*ret}
 }
 
-// parseListFlags is the generic function parsing --env, --port, --routes, --checks and --regions.
+// parseListFlags is the generic function parsing --env, --port, --routes, --checks, --regions and --volumes
 // It gets the arguments given from the command line for the given flag, then
 // builds a list of flags_list.Flag entries, and update the service
 // configuration (given in existingItems) with the new values.
@@ -1596,4 +1605,13 @@ func (h *ServiceHandler) checkDockerImage(ctx *CLIContext, source *koyeb.DockerS
 		}
 	}
 	return nil
+}
+
+// Parse --volumes
+func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, currentVolumes []koyeb.DeploymentVolume) ([]koyeb.DeploymentVolume, error) {
+	wrappedResolveVolumeId := func(value string) (string, error) {
+		return h.ResolveVolumeArgs(ctx, value)
+	}
+
+	return parseListFlags("volumes", flags_list.GetNewVolumeListFromFlags(wrappedResolveVolumeId), flags, currentVolumes)
 }

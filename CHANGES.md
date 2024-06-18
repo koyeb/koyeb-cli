@@ -1,6 +1,7 @@
 ## v4.2.0 (unreleased)
 
 * Add `volumes` subcommand.
+* Allow to edit service volumes with `koyeb service update --volume`.
 
 ## v4.1.1 (2024-06-06)
 
