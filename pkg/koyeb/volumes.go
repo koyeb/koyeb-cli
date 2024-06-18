@@ -67,7 +67,7 @@ func NewVolumeCmd() *cobra.Command {
 		}),
 	}
 	createVolumeCmd.Flags().String("region", "was", "Region of the volume")
-	createVolumeCmd.Flags().String("size", "100M", "Size of the volume")
+	createVolumeCmd.Flags().String("size", "10G", "Size of the volume (will be rounded to the nearest upper size in MB)")
 	createVolumeCmd.Flags().Bool("read-only", false, "Force the volume to be read-only")
 	volumeCmd.AddCommand(createVolumeCmd)
 
@@ -179,5 +179,11 @@ func parseSize(size string) (int64, error) {
 		}
 	}
 
-	return result, nil
+	return roundToMB(result), nil
+}
+
+func roundToMB(size int64) int64 {
+	const MB int64 = 1024*1024 - 1
+	rounded := (size + MB) &^ MB
+	return int64(float64(rounded) / 1024 / 1024)
 }
