@@ -42,7 +42,37 @@ func FormatID(fullId string, full bool) string {
 	return fullId[:8]
 }
 
-func FormatSize(size int64) string {
+type Size interface {
+	GetSize() int64
+}
+
+type ByteSize int64
+
+func (b ByteSize) GetSize() int64 {
+	return int64(b)
+}
+
+type KBSize int64
+
+func (k KBSize) GetSize() int64 {
+	return int64(k) * 1024
+}
+
+type MBSize int64
+
+func (m MBSize) GetSize() int64 {
+	return int64(m) * 1024 * 1024
+}
+
+type GBSize int64
+
+func (g GBSize) GetSize() int64 {
+	return int64(g) * 1024 * 1024 * 1024
+}
+
+func FormatSize(sized Size) string {
+	size := sized.GetSize()
+
 	switch {
 	case size > 1024*1024*1024:
 		return fmt.Sprintf("%.2fG", float64(size)/1024/1024/1024)
