@@ -2,6 +2,8 @@
 
 * Add `volumes` subcommand.
 * Allow to edit service volumes with `koyeb service update --volume`.
+* Better error message when performing actions requiring a user context with an organization token.
+  - https://github.com/koyeb/koyeb-cli/pull/235
 
 ## v4.1.1 (2024-06-06)
 

@@ -91,7 +91,7 @@ func Archive(path string) (*tarball, error) {
 			return fmt.Errorf("Unable to write header for file '%s': %w", file, err)
 		}
 
-		if !fi.IsDir() {
+		if header.Typeflag == tar.TypeReg {
 			data, err := os.Open(file)
 			if err != nil {
 				return fmt.Errorf("Unable to open file '%s': %w", file, err)

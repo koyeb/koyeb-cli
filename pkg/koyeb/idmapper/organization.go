@@ -56,9 +56,19 @@ func (mapper *OrganizationMapper) ResolveID(val string) (string, error) {
 }
 
 func (mapper *OrganizationMapper) getCurrentUserId() (string, error) {
-	res, resp, err := mapper.client.ProfileApi.GetCurrentUser(mapper.ctx).Execute()
+	res, _, err := mapper.client.ProfileApi.GetCurrentUser(mapper.ctx).Execute()
 	if err != nil {
-		return "", errors.NewCLIErrorFromAPIError("Your authentication token is not linked to a user", err, resp)
+		return "", &errors.CLIError{
+			What: "The token used is not linked to a user",
+			Why:  "you are authenticated with a token linked to an organization",
+			Additional: []string{
+				"On Koyeb, two types of tokens exist: user tokens and organization tokens.",
+				"Your are currently using an organization token, which is not linked to a user.",
+				"Organization tokens are unable to perform operations that require a user context, such as listing organizations or managing your account.",
+			},
+			Orig:     err,
+			Solution: "From the Koyeb console (https://app.koyeb.com/user/settings/api/), create a user token and use it in the CLI configuration file.",
+		}
 	}
 	return *res.GetUser().Id, nil
 }
