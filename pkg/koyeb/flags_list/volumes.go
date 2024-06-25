@@ -24,19 +24,6 @@ func GetNewVolumeListFromFlags(resolveVolumeId func(string) (string, error)) fun
 			hc := &FlagVolume{BaseFlag: BaseFlag{cliValue: value}}
 			components := strings.Split(value, ":")
 
-			if len(components) != 2 {
-				return nil, &errors.CLIError{
-					What: "Error while configuring the service",
-					Why:  fmt.Sprintf("unable to parse the volume \"%s\"", hc.cliValue),
-					Additional: []string{
-						"Volumes must be specified as VOLUME_ID:PATH",
-						"To remove a volume from the service, prefix it with '!', e.g. '!myvolume'",
-					},
-					Orig:     nil,
-					Solution: "Fix the volume and try again",
-				}
-			}
-
 			if strings.HasPrefix(components[0], "!") {
 				if len(components) > 1 {
 					return nil, &errors.CLIError{
@@ -50,18 +37,32 @@ func GetNewVolumeListFromFlags(resolveVolumeId func(string) (string, error)) fun
 						Solution: "Fix the volume and try again",
 					}
 				}
+				volumeId, err := resolveVolumeId(components[0][1:])
+				if err != nil {
+					return nil, err
+				}
 				hc.markedForDeletion = true
-				components[0] = components[0][1:]
+				hc.volumeId = volumeId
+			} else {
+				if len(components) > 2 {
+					return nil, &errors.CLIError{
+						What: "Error while configuring the service",
+						Why:  fmt.Sprintf("unable to parse the volume \"%s\"", hc.cliValue),
+						Additional: []string{
+							"Volumes must be specified as VOLUME_ID:PATH",
+							"To remove a volume from the service, prefix it with '!', e.g. '!myvolume'",
+						},
+						Orig:     nil,
+						Solution: "Fix the volume and try again",
+					}
+				}
+				volumeId, err := resolveVolumeId(components[0])
+				if err != nil {
+					return nil, err
+				}
+				hc.volumeId = volumeId
+				hc.path = components[1]
 			}
-
-			volumeId, err := resolveVolumeId(components[0])
-			if err != nil {
-				return nil, err
-			}
-
-			hc.volumeId = volumeId
-			hc.path = components[1]
-
 			ret = append(ret, hc)
 		}
 		return ret, nil
