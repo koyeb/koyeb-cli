@@ -62,7 +62,7 @@ func (r *ListVolumesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListVolumesReply) Headers() []string {
-	return []string{"id", "name", "region", "type", "status", "size", "created_at"}
+	return []string{"id", "name", "region", "type", "status", "size", "created_at", "service"}
 }
 
 func (r *ListVolumesReply) Fields() []map[string]string {
