@@ -576,7 +576,7 @@ func parseListFlags[T any](
 	if err != nil {
 		return nil, err
 	}
-	newItems := flags_list.ParseListFlags[T](listFlags, currentItems)
+	newItems := flags_list.ParseListFlags(listFlags, currentItems)
 	return newItems, nil
 }
 
