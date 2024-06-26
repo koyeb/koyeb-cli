@@ -82,6 +82,8 @@ func formatVolumeStatus(st koyeb.PersistentVolumeStatus) string {
 		return "attached"
 	case koyeb.PERSISTENTVOLUMESTATUS_DETACHED:
 		return "detached"
+	case koyeb.PERSISTENTVOLUMESTATUS_DELETING:
+		return "deleting"
 	default:
 		return "invalid"
 	}
