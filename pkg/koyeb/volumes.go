@@ -67,7 +67,7 @@ func NewVolumeCmd() *cobra.Command {
 		}),
 	}
 	createVolumeCmd.Flags().String("region", "was", "Region of the volume")
-	createVolumeCmd.Flags().String("size", "10G", "Size of the volume (will be rounded to the nearest upper size in MB)")
+	createVolumeCmd.Flags().String("size", "20G", "Size of the volume (will be rounded to the nearest upper size in MB)")
 	createVolumeCmd.Flags().Bool("read-only", false, "Force the volume to be read-only")
 	volumeCmd.AddCommand(createVolumeCmd)
 
