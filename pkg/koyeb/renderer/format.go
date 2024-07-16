@@ -43,44 +43,53 @@ func FormatID(fullId string, full bool) string {
 }
 
 type Size interface {
-	GetSize() int64
+	GetSize() (int64, int64, string)
 }
 
 type ByteSize int64
 
-func (b ByteSize) GetSize() int64 {
-	return int64(b)
+func (b ByteSize) GetSize() (int64, int64, string) {
+	return int64(b), 1, "B"
+}
+
+type KiBSize int64
+
+func (k KiBSize) GetSize() (int64, int64, string) {
+	return int64(k) * 1024, 1024, "KiB"
+}
+
+type MiBSize int64
+
+func (m MiBSize) GetSize() (int64, int64, string) {
+	return int64(m) * 1024 * 1024, 1024 * 1024, "MiB"
+}
+
+type GiBSize int64
+
+func (g GiBSize) GetSize() (int64, int64, string) {
+	return int64(g) * 1024 * 1024 * 1024, 1024 * 1024 * 1024, "GiB"
 }
 
 type KBSize int64
 
-func (k KBSize) GetSize() int64 {
-	return int64(k) * 1024
+func (k KBSize) GetSize() (int64, int64, string) {
+	return int64(k) * 1000, 1000, "KB"
 }
 
 type MBSize int64
 
-func (m MBSize) GetSize() int64 {
-	return int64(m) * 1024 * 1024
+func (m MBSize) GetSize() (int64, int64, string) {
+	return int64(m) * 1000 * 1000, 1000 * 1000, "MB"
 }
 
 type GBSize int64
 
-func (g GBSize) GetSize() int64 {
-	return int64(g) * 1024 * 1024 * 1024
+func (g GBSize) GetSize() (int64, int64, string) {
+	return int64(g) * 1000 * 1000 * 1000, 1000 * 1000 * 1000, "GB"
 }
 
 func FormatSize(sized Size) string {
-	size := sized.GetSize()
+	size, mul, unit := sized.GetSize()
 
-	switch {
-	case size > 1024*1024*1024:
-		return fmt.Sprintf("%.2fG", float64(size)/1024/1024/1024)
-	case size > 1024*1024:
-		return fmt.Sprintf("%.2fM", float64(size)/1024/1024)
-	case size > 1024:
-		return fmt.Sprintf("%.2fK", float64(size)/1024)
-	default:
-		return fmt.Sprintf("%d", size)
-	}
+	return fmt.Sprintf("%.2f%s", float64(size)/float64(mul), unit)
 }
