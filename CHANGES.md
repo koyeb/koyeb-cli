@@ -1,3 +1,7 @@
+## v4.2.1 (unreleased)
+
+* Change the `volumes` subcommand to handle sizes in GB.
+
 ## v4.2.0
 
 * Add `volumes` subcommand.
