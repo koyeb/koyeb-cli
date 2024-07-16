@@ -1,16 +1,11 @@
 package koyeb
 
 import (
-	"regexp"
-	"strconv"
-
 	"github.com/spf13/cobra"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
-
-var sizeRegexp = regexp.MustCompile(`^(\d+)([KMG])?$`)
 
 func NewVolumeCmd() *cobra.Command {
 	h := NewVolumeHandler()
@@ -47,11 +42,7 @@ func NewVolumeCmd() *cobra.Command {
 			// TODO: use a flag for the volume type when/if we support more than one
 			req.SetVolumeType(koyeb.PERSISTENTVOLUMEBACKINGSTORE_LOCAL_BLK)
 
-			sizeFlag, err := cmd.Flags().GetString("size")
-			if err != nil {
-				return err
-			}
-			size, err := parseSize(sizeFlag)
+			size, err := cmd.Flags().GetInt64("size")
 			if err != nil {
 				return err
 			}
@@ -102,14 +93,11 @@ func NewVolumeCmd() *cobra.Command {
 				req.SetName(name)
 			}
 
-			sizeFlag, _ := cmd.Flags().GetString("size")
-			if sizeFlag != "" {
-				size, err := parseSize(sizeFlag)
-				if err != nil {
-					return err
-				}
-				req.SetMaxSize(size)
+			size, err := cmd.Flags().GetInt64("size")
+			if err != nil {
+				return err
 			}
+			req.SetMaxSize(size)
 
 			return h.Update(ctx, cmd, args, req)
 		}),
@@ -145,45 +133,4 @@ func ResolveVolumeArgs(ctx *CLIContext, val string) (string, error) {
 		return "", err
 	}
 	return id, nil
-}
-
-func parseSize(size string) (int64, error) {
-	matches := sizeRegexp.FindStringSubmatch(size)
-	if matches == nil {
-		return 0, &errors.CLIError{
-			What:       "Invalid flag",
-			Why:        "Invalid --size format",
-			Additional: []string{"You can specify a number in bytes, or use the suffixes K, M, or G to specify a size in kilobytes, megabytes, or gigabytes, respectively. For example, 100M specifies a size of 100 megabytes."},
-			Solution:   "Please specify a valid size",
-		}
-	}
-
-	result, err := strconv.ParseInt(matches[1], 10, 64)
-	if err != nil {
-		return 0, &errors.CLIError{
-			What:       "Invalid number",
-			Why:        "Invalid number in --size",
-			Additional: []string{"You can specify a number in bytes, or use the suffixes K, M, or G to specify a size in kilobytes, megabytes, or gigabytes, respectively. For example, 100M specifies a size of 100 megabytes."},
-			Solution:   "Please specify a valid size",
-		}
-	}
-
-	if len(matches) > 2 {
-		switch matches[2] {
-		case "K":
-			result *= 1024
-		case "M":
-			result *= 1024 * 1024
-		case "G":
-			result *= 1024 * 1024 * 1024
-		}
-	}
-
-	return roundToMB(result), nil
-}
-
-func roundToMB(size int64) int64 {
-	const MB int64 = 1024*1024 - 1
-	rounded := (size + MB) &^ MB
-	return int64(float64(rounded) / 1024 / 1024)
 }
