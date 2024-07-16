@@ -76,7 +76,7 @@ func (r *ListVolumesReply) Fields() []map[string]string {
 			"region":     item.GetRegion(),
 			"status":     formatVolumeStatus(item.GetStatus()),
 			"type":       formatVolumeType(item.GetBackingStore()),
-			"size":       renderer.FormatSize(renderer.MBSize(item.GetMaxSize())),
+			"size":       renderer.FormatSize(renderer.GBSize(item.GetMaxSize())),
 			"read_only":  fmt.Sprintf("%t", item.GetReadOnly()),
 			"created_at": renderer.FormatTime(item.GetCreatedAt()),
 			"updated_at": renderer.FormatTime(item.GetUpdatedAt()),
