@@ -97,13 +97,15 @@ func NewVolumeCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			req.SetMaxSize(size)
+			if size > 0 {
+				req.SetMaxSize(size)
+			}
 
 			return h.Update(ctx, cmd, args, req)
 		}),
 	}
 	updateVolumeCmd.Flags().String("name", "", "Change the volume name")
-	updateVolumeCmd.Flags().String("size", "", "Increase the volume size")
+	updateVolumeCmd.Flags().Int64("size", -1, "Increase the volume size")
 	volumeCmd.AddCommand(updateVolumeCmd)
 
 	deleteVolumeCmd := &cobra.Command{
