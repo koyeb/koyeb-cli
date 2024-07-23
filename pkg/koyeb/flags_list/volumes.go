@@ -44,7 +44,7 @@ func GetNewVolumeListFromFlags(resolveVolumeId func(string) (string, error)) fun
 				hc.markedForDeletion = true
 				hc.volumeId = volumeId
 			} else {
-				if len(components) > 2 {
+				if len(components) != 2 {
 					return nil, &errors.CLIError{
 						What: "Error while configuring the service",
 						Why:  fmt.Sprintf("unable to parse the volume \"%s\"", hc.cliValue),
