@@ -3,6 +3,7 @@ package koyeb
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -347,6 +348,12 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete a healthcheck, use !PORT, for example --checks '!8080'\n",
 	)
 	flags.StringSlice(
+		"checks-grace-period",
+		nil,
+		"Set healthcheck grace period in seconds.\n"+
+			"Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10\n",
+	)
+	flags.StringSlice(
 		"volumes",
 		nil,
 		"Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data."+
@@ -356,12 +363,25 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		aliases := map[string]string{
-			"port":               "ports",
-			"check":              "checks",
-			"healthcheck":        "checks",
-			"health-check":       "checks",
-			"healthchecks":       "checks",
-			"health-checks":      "checks",
+			"port":  "ports",
+			"check": "checks",
+
+			"healthcheck":              "checks",
+			"healthcheck-grace":        "checks-grace-period",
+			"healthcheck-grace-period": "checks-grace-period",
+
+			"health-check":              "checks",
+			"health-check-grace":        "checks-grace-period",
+			"health-check-grace-period": "checks-grace-period",
+
+			"healthchecks":              "checks",
+			"healthchecks-grace":        "checks-grace-period",
+			"healthchecks-grace-period": "checks-grace-period",
+
+			"health-checks":              "checks",
+			"health-checks-graee":        "checks-grace-period",
+			"health-checks-grace-period": "checks-grace-period",
+
 			"route":              "routes",
 			"volume":             "volumes",
 			"region":             "regions",
@@ -729,7 +749,151 @@ func (h *ServiceHandler) parseChecks(type_ koyeb.DeploymentDefinitionType, flags
 			Solution: "Fix the service type or remove the healthchecks from your service, and try again",
 		}
 	}
+
+	checksGracePeriod, _ := flags.GetStringSlice("checks-grace-period")
+	for _, val := range checksGracePeriod {
+		if err := h.parseChecksGracePeriod(newChecks, val); err != nil {
+			return nil, err
+		}
+	}
 	return newChecks, nil
+}
+
+// parseChecksGracePeriod parses the --checks-grace-period flag and updates the healthchecks with the specified grace period.
+func (h *ServiceHandler) parseChecksGracePeriod(checks []koyeb.DeploymentHealthCheck, grace string) error {
+	parts := strings.Split(grace, "=")
+	if len(parts) != 2 {
+		return &errors.CLIError{
+			What: "Invalid grace period",
+			Why:  "--checks-grace-period should be formatted as <check>=<seconds>",
+			Additional: []string{
+				"If unambiguous, <check> can be the port number of the healthcheck",
+				"If several checks are defined on the same port, provide the full definition for the check, for example 8080:tcp or 8080:http or 8080:http:/healthcheck",
+			},
+			Orig:     nil,
+			Solution: "Provide a valid grace period and try again",
+		}
+	}
+
+	graceValue, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return &errors.CLIError{
+			What:       "Invalid grace period",
+			Why:        fmt.Sprintf("the grace period should be a number of seconds, not %s", parts[1]),
+			Additional: nil,
+			Orig:       nil,
+			Solution:   "Provide a valid grace period and try again",
+		}
+	}
+
+	var match *koyeb.DeploymentHealthCheck
+	// Find a healthcheck matching the identifier provided in the --checks-grace-period flag
+	for idx := range checks {
+		equal, err := h.healthcheckEqual(parts[0], checks[idx])
+		if err != nil {
+			return err
+		}
+		if equal && match != nil {
+			return &errors.CLIError{
+				What: "Ambiguous grace period",
+				Why:  `--checks-grace-period matches multiple healthchecks`,
+				Additional: []string{
+					fmt.Sprintf("The value %s matches several healthchecks", grace),
+					"Provide a more specific identifier, for example 8080:http:/healthcheck or 8080:tcp",
+				},
+				Orig:     nil,
+				Solution: "Provide an unambiguous identifier and try again",
+			}
+		}
+		if equal {
+			match = &checks[idx]
+		}
+	}
+	if match == nil {
+		return &errors.CLIError{
+			What: "Invalid grace period",
+			Why:  "--checks-grace-period does not match any healthcheck",
+			Additional: []string{
+				"The flag --checks-grace-period has been specified, but no healthcheck matches the identifier",
+			},
+			Orig:     nil,
+			Solution: "Fix the flag --checks-grace-period to match an existing healthcheck or remove the grace period, and try again",
+		}
+	}
+	(*match).GracePeriod = &graceValue
+	return nil
+}
+
+// Returns true if the string "candidate" is equal to "healthcheck". The string
+// "a" is a dotted string representation of a healthcheck, for example 8000,
+// 8000:tcp, 8000:http or 8000:http:/path.
+func (h *ServiceHandler) healthcheckEqual(candidate string, healthcheck koyeb.DeploymentHealthCheck) (bool, error) {
+	parts := strings.Split(candidate, ":")
+
+	if len(parts) == 0 {
+		return false, &errors.CLIError{
+			What:       "Invalid grace period",
+			Why:        "the healthcheck identifier should start with a port number",
+			Additional: nil,
+			Orig:       nil,
+			Solution:   "Fix the flag --checks-grace-period to match an existing healthcheck or remove the grace period, and try again",
+		}
+	}
+
+	port, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return false, &errors.CLIError{
+			What: "Invalid grace period",
+			Why:  "the healthcheck identifier should start with a port number",
+			Additional: []string{
+				"The flag --checks-grace-period has been specified, but no healthcheck matches the identifier",
+			},
+			Orig:     nil,
+			Solution: "Fix the flag --checks-grace-period to match an existing healthcheck or remove the grace period, and try again",
+		}
+	}
+
+	switch {
+	case healthcheck.HasHttp():
+		switch len(parts) {
+		case 1:
+			return port == *healthcheck.GetHttp().Port, nil
+		case 2:
+			return port == *healthcheck.GetHttp().Port && strings.ToLower(parts[1]) == "http", nil
+		case 3:
+			return port == *healthcheck.GetHttp().Port && strings.ToLower(parts[1]) == "http" && parts[2] == *healthcheck.GetHttp().Path, nil
+		default:
+			return false, &errors.CLIError{
+				What: "Invalid grace period",
+				Why:  "the healthcheck identifier is invalid",
+				Additional: []string{
+					"For TCP healtchecks, use the format <PORT>:tcp, for example --checks 8080:tcp",
+					"For HTTP healthchecks, use the format <PORT>:http, for example 8080, <PORT>:http or <PORT>:http:<PATH>, for example --checks 8080:http:/health",
+				},
+				Orig:     nil,
+				Solution: "Fix the flag --checks-grace-period to match an existing healthcheck or remove the grace period, and try again",
+			}
+		}
+	case healthcheck.HasTcp():
+		switch len(parts) {
+		case 1:
+			return port == *healthcheck.GetTcp().Port, nil
+		case 2:
+			return port == *healthcheck.GetTcp().Port && strings.ToLower(parts[1]) == "tcp", nil
+		default:
+			return false, &errors.CLIError{
+				What: "Invalid grace period",
+				Why:  "the healthcheck identifier is invalid",
+				Additional: []string{
+					"For TCP healtchecks, use the format <PORT>:tcp, for example --checks 8080:tcp",
+					"For HTTP healthchecks, use the format <PORT>:http, for example 8080, <PORT>:http or <PORT>:http:<PATH>, for example --checks 8080:http:/health",
+				},
+				Orig:     nil,
+				Solution: "Fix the flag --checks-grace-period to match an existing healthcheck or remove the grace period, and try again",
+			}
+		}
+	}
+	return false, nil
 }
 
 // Parse --regions
