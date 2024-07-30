@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/spf13/cobra"
 )
 
@@ -46,15 +47,19 @@ func NewDeploymentCmd() *cobra.Command {
 	}
 	deploymentCmd.AddCommand(cancelDeploymentCmd)
 
+	var since dates.HumanFriendlyDate
 	logDeploymentCmd := &cobra.Command{
 		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},
 		Short:   "Get deployment logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    WithCLIContext(h.Logs),
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			return h.Logs(ctx, cmd, since.Time, args)
+		}),
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
 	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime, build)")
+	logDeploymentCmd.Flags().Var(&since, "since", "Only return logs after this specific date")
 	return deploymentCmd
 }
 

@@ -1616,10 +1616,11 @@ koyeb services logs NAME [flags]
 ### Options
 
 ```
-  -a, --app string        Service application
-  -h, --help              help for logs
-      --instance string   Instance
-  -t, --type string       Type (runtime, build)
+  -a, --app string                Service application
+  -h, --help                      help for logs
+      --instance string           Instance
+      --since HumanFriendlyDate   Only return logs after this specific date (default 0001-01-01 00:00:00 +0000 UTC)
+  -t, --type string               Type (runtime, build)
 ```
 
 ### Options inherited from parent commands
@@ -2035,8 +2036,9 @@ koyeb deployments logs NAME [flags]
 ### Options
 
 ```
-  -h, --help          help for logs
-  -t, --type string   Type of log (runtime, build)
+  -h, --help                      help for logs
+      --since HumanFriendlyDate   Only return logs after this specific date (default 0001-01-01 00:00:00 +0000 UTC)
+  -t, --type string               Type of log (runtime, build)
 ```
 
 ### Options inherited from parent commands
@@ -2274,7 +2276,8 @@ koyeb instances logs NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for logs
+  -h, --help                      help for logs
+      --since HumanFriendlyDate   Only return logs after this specific date (default 0001-01-01 00:00:00 +0000 UTC)
 ```
 
 ### Options inherited from parent commands

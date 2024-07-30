@@ -48,19 +48,21 @@ type WatchLogsQuery struct {
 	serviceId    string
 	deploymentId string
 	instanceId   string
+	since        time.Time
 	conn         *websocket.Conn
 	ticker       *time.Ticker
 	full         bool // Whether to display full IDs
 }
 
 func (client *LogsAPIClient) NewWatchLogsQuery(
-	logType string, serviceId string, deploymentId string, instanceId string, full bool,
+	logType string, serviceId string, deploymentId string, instanceId string, since time.Time, full bool,
 ) (*WatchLogsQuery, error) {
 	query := &WatchLogsQuery{
 		client:       client,
 		serviceId:    serviceId,
 		deploymentId: deploymentId,
 		instanceId:   instanceId,
+		since:        since,
 		full:         full,
 	}
 	switch logType {
@@ -133,6 +135,9 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 	}
 	if query.instanceId != "" {
 		queryParams.Add("instance_id", query.instanceId)
+	}
+	if !query.since.IsZero() {
+		queryParams.Add("start", query.since.Format(time.RFC3339))
 	}
 	query.client.url.RawQuery = queryParams.Encode()
 

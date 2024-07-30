@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/flags_list"
 	"github.com/sirupsen/logrus"
@@ -75,16 +76,20 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	getServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(getServiceCmd)
 
+	var since dates.HumanFriendlyDate
 	logsServiceCmd := &cobra.Command{
 		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},
 		Short:   "Get the service logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    WithCLIContext(h.Logs),
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			return h.Logs(ctx, cmd, since.Time, args)
+		}),
 	}
 	logsServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
+	logsServiceCmd.Flags().Var(&since, "since", "Only return logs after this specific date")
 	serviceCmd.AddCommand(logsServiceCmd)
 
 	listServiceCmd := &cobra.Command{

@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/spf13/cobra"
 )
 
@@ -57,13 +58,17 @@ func NewInstanceCmd() *cobra.Command {
 	}
 	instanceCmd.AddCommand(cpInstanceCmd)
 
+	var since dates.HumanFriendlyDate
 	logInstanceCmd := &cobra.Command{
 		Use:     "logs NAME",
 		Aliases: []string{"l", "log"},
 		Short:   "Get instance logs",
 		Args:    cobra.ExactArgs(1),
-		RunE:    WithCLIContext(instanceHandler.Logs),
+		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			return instanceHandler.Logs(ctx, cmd, since.Time, args)
+		}),
 	}
+	logInstanceCmd.Flags().Var(&since, "since", "Only return logs after this specific date")
 	instanceCmd.AddCommand(logInstanceCmd)
 
 	return instanceCmd
