@@ -2,6 +2,7 @@
 
 * Change the `volumes` subcommand to handle sizes in GB.
 * Add `--checks-grace-period` to set the grace period for health checks, for example with `koyeb service update app/service --checks 8000:http:/healtcheck --checks-grace-period 8000=10`.
+* Add `--since` to `koyeb service logs`, `koyeb deployment logs` and `koyeb instance logs`.
 
 ## v4.2.0
 

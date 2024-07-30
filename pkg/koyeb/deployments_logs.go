@@ -2,12 +2,13 @@ package koyeb
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
 )
 
-func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Time, args []string) error {
 	deployment, err := h.ResolveDeploymentArgs(ctx, args[0])
 	if err != nil {
 		return err
@@ -27,6 +28,7 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []str
 		"",
 		deploymentDetail.Deployment.GetId(),
 		"",
+		since,
 		GetBoolFlags(cmd, "full"),
 	)
 	if err != nil {

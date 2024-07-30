@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
-func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Time, args []string) error {
 	serviceName, err := h.parseServiceName(cmd, args[0])
 	if err != nil {
 		return err
@@ -95,6 +96,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, args []string
 		serviceId,
 		deploymentId,
 		instanceId,
+		since,
 		GetBoolFlags(cmd, "full"),
 	)
 	if err != nil {
