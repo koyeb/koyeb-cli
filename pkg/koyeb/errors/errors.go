@@ -20,6 +20,7 @@ type CLIError struct {
 	Orig       error            // Original error
 	Solution   CLIErrorSolution // How to solve the error. For example: "update the CLI"
 	ASCII      bool             // Whether to use only ASCII characters in the error message
+	Icon       string           // Icon to display in the error message for non-ASCII output
 }
 
 func (e *CLIError) Error() string {
@@ -42,7 +43,10 @@ func (e *CLIError) Error() string {
 {{- end}}
 `
 	} else {
-		tmplError = `❌ {{.What}}: {{.Why}}
+		if e.Icon == "" {
+			e.Icon = "❌"
+		}
+		tmplError = `{{.Icon}} {{.What}}: {{.Why}}
 {{if .Additional}}
 🔎 Additional details
 {{range .Additional}}{{.}}
