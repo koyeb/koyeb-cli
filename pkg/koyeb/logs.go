@@ -179,6 +179,9 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 	go func() {
 		var lastLogReceived *LogLine
 
+		logsTimeout := 6 * time.Hour
+		timer := time.NewTimer(logsTimeout)
+
 		for {
 			readCh := make(chan LogLine)
 			errCh := make(chan error)
@@ -197,6 +200,24 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 			}()
 
 			select {
+			case <-timer.C:
+				// Stop sending ping messages to the websocket connection
+				conn.Stop()
+
+				logs <- WatchLogsEntry{Err: &errors.CLIError{
+					Icon: "⏰",
+					What: "Disconnected from the logs API",
+					Why:  fmt.Sprintf("forced disconnection after %s", logsTimeout),
+					Additional: []string{
+						fmt.Sprintf("To avoid keeping the connection to the logs API open indefinitely, the CLI disconnects after %s.", logsTimeout),
+						"This timeout value is hardcoded in the CLI and cannot be changed.",
+						"If you need to make the timeout configurable, please create an issue on GitHub:",
+						"https://github.com/koyeb/koyeb-cli/issues/new",
+					},
+					Orig:     nil,
+					Solution: "Run the command again to reconnect",
+				}}
+				close(logs)
 			case msg := <-readCh:
 				// Sometimes, for example when passing a future date in --since, the
 				// first log message is empty.
