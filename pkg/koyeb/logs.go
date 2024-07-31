@@ -180,10 +180,47 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 		var lastLogReceived *LogLine
 
 		for {
-			msg := LogLine{}
-			err := conn.Conn.ReadJSON(&msg)
+			readCh := make(chan LogLine)
+			errCh := make(chan error)
 
-			if err != nil {
+			go func() {
+				defer close(readCh)
+				defer close(errCh)
+
+				var msg LogLine
+				err := conn.Conn.ReadJSON(&msg)
+				if err != nil {
+					errCh <- err
+				} else {
+					readCh <- msg
+				}
+			}()
+
+			select {
+			case msg := <-readCh:
+				// Sometimes, for example when passing a future date in --since, the
+				// first log message is empty.
+				var emptyLogLine LogLine
+				if msg == emptyLogLine {
+					continue
+				}
+
+				// If the last log received is the same as the current one, ignore
+				// it. This can happens when there is a connection error: we
+				// reconnect and set the ?start parameter to the last log received,
+				// which is then sent again.
+				if lastLogReceived != nil && msg == *lastLogReceived {
+					continue
+				}
+
+				lastLogReceived = &msg
+				logs <- WatchLogsEntry{
+					Stream: msg.Result.Labels.Stream,
+					Msg:    msg.Result.Msg,
+					Date:   query.ParseTime(msg.Result.CreatedAt),
+					Labels: msg.Result.Labels,
+				}
+			case err := <-errCh:
 				// Stop sending ping messages to the websocket connection
 				conn.Stop()
 
@@ -217,29 +254,6 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 				logs <- WatchLogsEntry{Err: err}
 				close(logs)
 				return
-			}
-
-			// Sometimes, for example when passing a future date in --since, the
-			// first log message is empty.
-			var emptyLogLine LogLine
-			if msg == emptyLogLine {
-				continue
-			}
-
-			// If the last log received is the same as the current one, ignore
-			// it. This can happens when there is a connection error: we
-			// reconnect and set the ?start parameter to the last log received,
-			// which is then sent again.
-			if lastLogReceived != nil && msg == *lastLogReceived {
-				continue
-			}
-
-			lastLogReceived = &msg
-			logs <- WatchLogsEntry{
-				Stream: msg.Result.Labels.Stream,
-				Msg:    msg.Result.Msg,
-				Date:   query.ParseTime(msg.Result.CreatedAt),
-				Labels: msg.Result.Labels,
 			}
 		}
 	}()
