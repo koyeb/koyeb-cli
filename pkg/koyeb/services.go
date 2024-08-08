@@ -308,7 +308,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 		[]string{},
 		"Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.\n"+
 			"To update a service and remove a region, prefix the region name with '!', for example --region '!par'\n"+
-			"If the region is not specified on service creation, the service is deployed in fra\n",
+			"If the region is not specified on service creation, the service is deployed in was\n",
 	)
 	flags.StringSlice(
 		"env",
