@@ -26,15 +26,7 @@ func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) er
 				resp,
 			)
 		}
-
-		for _, app := range res.GetApps() {
-			// Database apps are displayed in the database command. There is no
-			// better way to filter them out than using the name.
-			if app.GetName() == DatabaseAppName {
-				continue
-			}
-			list = append(list, app)
-		}
+		list = append(list, res.GetApps()...)
 
 		page++
 		offset = page * limit

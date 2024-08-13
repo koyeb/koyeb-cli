@@ -14,7 +14,7 @@ import (
 // Try to create a koyeb application. Do nothing if the application already exists.
 func TryCreateKoyebApplication(name string, ctx *CLIContext) error {
 	createApp := koyeb.NewCreateAppWithDefaults()
-	createApp.SetName(DatabaseAppName)
+	createApp.SetName(name)
 
 	_, resp, err := ctx.Client.AppsApi.CreateApp(ctx.Context).App(*createApp).Execute()
 	if err != nil {
@@ -40,11 +40,17 @@ func TryCreateKoyebApplication(name string, ctx *CLIContext) error {
 }
 
 func (h *DatabaseHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
-	if err := TryCreateKoyebApplication(DatabaseAppName, ctx); err != nil {
+	serviceHandler := NewServiceHandler()
+	appName, err := serviceHandler.parseAppName(cmd, args[0])
+	if err != nil {
 		return err
 	}
 
-	appID, err := h.ResolveAppArgs(ctx, DatabaseAppName)
+	if err := TryCreateKoyebApplication(appName, ctx); err != nil {
+		return err
+	}
+
+	appID, err := h.ResolveAppArgs(ctx, appName)
 	if err != nil {
 		return err
 	}

@@ -28,7 +28,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 	instanceMapper := NewInstanceMapper(ctx, client)
 	secretMapper := NewSecretMapper(ctx, client)
 	organizationMapper := NewOrganizationMapper(ctx, client)
-	databaseMapper := NewDatabaseMapper(ctx, client)
+	databaseMapper := NewDatabaseMapper(ctx, client, appMapper)
 	volumeMapper := NewVolumeMapper(ctx, client)
 
 	return &Mapper{

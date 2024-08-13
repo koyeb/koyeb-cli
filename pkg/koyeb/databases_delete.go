@@ -9,7 +9,14 @@ import (
 )
 
 func (h *DatabaseHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	service, err := h.ResolveDatabaseArgs(ctx, args[0])
+	serviceHandler := NewServiceHandler()
+
+	serviceName, err := serviceHandler.parseServiceName(cmd, args[0])
+	if err != nil {
+		return err
+	}
+
+	service, err := h.ResolveDatabaseArgs(ctx, serviceName)
 	if err != nil {
 		return err
 	}
