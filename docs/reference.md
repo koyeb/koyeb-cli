@@ -2342,12 +2342,14 @@ koyeb databases create NAME [flags]
 ### Options
 
 ```
-      --db-name string         Database name (default "koyebdb")
-      --db-owner string        Database owner (default "koyeb-adm")
-  -h, --help                   help for create
-      --instance-type string   Instance type (free, small, medium or large) (default "free")
-      --pg-version int         PostgreSQL version (default 16)
-      --region string          Region where the database is deployed (default "was")
+      --app app-name/database-name   Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format app-name/database-name
+      --db-name string               Database name (default "koyebdb")
+      --db-owner string              Database owner (default "koyeb-adm")
+  -h, --help                         help for create
+      --instance-type string         Instance type (free, small, medium or large) (default "free")
+      --name string                  Specify to update the database name
+      --pg-version int               PostgreSQL version (default 16)
+      --region string                Region where the database is deployed (default "was")
 ```
 
 ### Options inherited from parent commands
@@ -2411,7 +2413,8 @@ koyeb databases get NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for get
+      --app app-name/database-name   Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format app-name/database-name
+  -h, --help                         help for get
 ```
 
 ### Options inherited from parent commands
@@ -2475,8 +2478,10 @@ koyeb databases update NAME [flags]
 ### Options
 
 ```
-  -h, --help                   help for update
-      --instance-type string   Instance type (free, small, medium or large) (default "free")
+      --app app-name/database-name   Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format app-name/database-name
+  -h, --help                         help for update
+      --instance-type string         Instance type (free, small, medium or large) (default "free")
+      --name string                  Specify to update the database name
 ```
 
 ### Options inherited from parent commands
