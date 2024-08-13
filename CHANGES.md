@@ -1,6 +1,7 @@
-## v4.4.0 (unreleased)
+## v5.0.0 (unreleased)
 
-* ...
+* Breaking change: the application name needs to be provided with `koyeb db` commands. In the past, the command `koyeb db create mydb` created a database named `mydb` under the hardcoded application `koyeb-db-preview-app`. With this new version, it is mandatory to specify the service name, for example with `koyeb db create myapp/mydb` or `koyeb db create mydb --app myapp`.
+* Allow to rename a database with `koyeb db update myapp/mydb --name newname`.
 
 ## v4.3.0 (2024-07-31)
 
