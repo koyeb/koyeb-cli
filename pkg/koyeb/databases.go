@@ -129,6 +129,7 @@ func NewDatabaseCmd() *cobra.Command {
 func addUpdateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("instance-type", "free", "Instance type (free, small, medium or large)")
 	flags.String("app", "", "Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format `app-name/database-name`")
+	flags.String("name", "", "Specify to update the database name")
 }
 
 // All the flags to create a database include the flags to update a database, plus more.
@@ -171,7 +172,15 @@ func addCreateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
 //	}
 func parseDbServiceDefinitionFlags(cmd *cobra.Command, serviceName string, definition *koyeb.DeploymentDefinition) error {
 	definition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_DATABASE)
+
 	definition.SetName(serviceName)
+
+	// For `koyeb db create`, the flag "name" does not exist so flags.Lookup("name") returns nil.
+	// For `koyeb db update`, we only override the name in the definition if the flag is set.
+	if cmd.Flags().Lookup("name") != nil && cmd.Flags().Lookup("name").Changed {
+		name, _ := cmd.Flags().GetString("name")
+		definition.SetName(name)
+	}
 
 	flagChanged := func(name string) bool {
 		f := cmd.Flags().Lookup(name)
