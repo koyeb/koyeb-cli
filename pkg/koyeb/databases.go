@@ -10,13 +10,9 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// DatabaseAppName is the name of the database app that is created when the user
-// creates a database. This name is hard-coded, and has the same value as the
-// one used in the console.
-const DatabaseAppName = "koyeb-db-preview-app"
-
 func NewDatabaseCmd() *cobra.Command {
 	h := NewDatabaseHandler()
+	serviceHandler := NewServiceHandler()
 
 	databaseCmd := &cobra.Command{
 		Use:     "databases ACTION",
@@ -37,6 +33,7 @@ func NewDatabaseCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Get),
 	}
+	getDbCmd.Flags().String("app", "", "Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format `app-name/database-name`")
 	databaseCmd.AddCommand(getDbCmd)
 
 	createDbCmd := &cobra.Command{
@@ -46,13 +43,16 @@ func NewDatabaseCmd() *cobra.Command {
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
-			serviceName := args[0]
 
-			if err := parseDbServiceDefinitionFlags(cmd.Flags(), serviceName, createDefinition); err != nil {
+			serviceName, err := serviceHandler.parseServiceNameWithoutApp(cmd, args[0])
+			if err != nil {
 				return err
 			}
 
-			createDefinition.Name = koyeb.PtrString(serviceName)
+			if err := parseDbServiceDefinitionFlags(cmd, serviceName, createDefinition); err != nil {
+				return err
+			}
+
 			createService.SetDefinition(*createDefinition)
 			return h.Create(ctx, cmd, args, createService)
 		}),
@@ -65,7 +65,12 @@ func NewDatabaseCmd() *cobra.Command {
 		Short: "Update database",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			service, err := h.ResolveDatabaseArgs(ctx, args[0])
+			serviceName, err := serviceHandler.parseServiceName(cmd, args[0])
+			if err != nil {
+				return err
+			}
+
+			service, err := h.ResolveDatabaseArgs(ctx, serviceName)
 			if err != nil {
 				return err
 			}
@@ -97,7 +102,7 @@ func NewDatabaseCmd() *cobra.Command {
 
 			updateDef := latestDeployment.GetDeployments()[0].GetDefinition()
 
-			if err := parseDbServiceDefinitionFlags(cmd.Flags(), updateDef.GetName(), &updateDef); err != nil {
+			if err := parseDbServiceDefinitionFlags(cmd, updateDef.GetName(), &updateDef); err != nil {
 				return err
 			}
 
@@ -123,6 +128,7 @@ func NewDatabaseCmd() *cobra.Command {
 
 func addUpdateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
 	flags.String("instance-type", "free", "Instance type (free, small, medium or large)")
+	flags.String("app", "", "Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format `app-name/database-name`")
 }
 
 // All the flags to create a database include the flags to update a database, plus more.
@@ -163,12 +169,12 @@ func addCreateDbServiceDefinitionFlags(flags *pflag.FlagSet) {
 //	    }
 //	  }
 //	}
-func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, definition *koyeb.DeploymentDefinition) error {
+func parseDbServiceDefinitionFlags(cmd *cobra.Command, serviceName string, definition *koyeb.DeploymentDefinition) error {
 	definition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_DATABASE)
 	definition.SetName(serviceName)
 
 	flagChanged := func(name string) bool {
-		f := flags.Lookup(name)
+		f := cmd.Flags().Lookup(name)
 		if f == nil {
 			return false
 		}
@@ -183,15 +189,15 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 	}
 
 	if definition.Database.NeonPostgres.PgVersion == nil || flagChanged("pg-version") {
-		version, _ := flags.GetInt64("pg-version")
+		version, _ := cmd.Flags().GetInt64("pg-version")
 		definition.Database.NeonPostgres.SetPgVersion(version)
 	}
 	if definition.Database.NeonPostgres.Region == nil || flagChanged("region") {
-		region, _ := flags.GetString("region")
+		region, _ := cmd.Flags().GetString("region")
 		definition.Database.NeonPostgres.SetRegion(region)
 	}
 	if definition.Database.NeonPostgres.InstanceType == nil || flagChanged("instance-type") {
-		instanceType, _ := flags.GetString("instance-type")
+		instanceType, _ := cmd.Flags().GetString("instance-type")
 		definition.Database.NeonPostgres.SetInstanceType(instanceType)
 	}
 
@@ -217,7 +223,7 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 			role.SetSecret(secretName)
 			definition.Database.NeonPostgres.Roles = append(definition.Database.NeonPostgres.Roles, *role)
 		}
-		owner, _ := flags.GetString("db-owner")
+		owner, _ := cmd.Flags().GetString("db-owner")
 		definition.Database.NeonPostgres.Roles[0].Name = &owner
 	}
 
@@ -237,7 +243,7 @@ func parseDbServiceDefinitionFlags(flags *pflag.FlagSet, serviceName string, def
 		if len(definition.Database.NeonPostgres.Databases) == 0 {
 			definition.Database.NeonPostgres.Databases = append(definition.Database.NeonPostgres.Databases, *koyeb.NewNeonPostgresDatabaseNeonDatabaseWithDefaults())
 		}
-		dbName, _ := flags.GetString("db-name")
+		dbName, _ := cmd.Flags().GetString("db-name")
 		definition.Database.NeonPostgres.Databases[0].SetName(dbName)
 		definition.Database.NeonPostgres.Databases[0].SetOwner(*definition.Database.NeonPostgres.Roles[0].Name)
 	}

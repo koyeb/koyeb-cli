@@ -2,6 +2,7 @@ package idmapper
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -9,20 +10,22 @@ import (
 )
 
 type DatabaseMapper struct {
-	ctx     context.Context
-	client  *koyeb.APIClient
-	fetched bool
-	sidMap  *IDMap
-	nameMap *IDMap
+	ctx       context.Context
+	client    *koyeb.APIClient
+	appMapper *AppMapper
+	fetched   bool
+	sidMap    *IDMap
+	nameMap   *IDMap
 }
 
-func NewDatabaseMapper(ctx context.Context, client *koyeb.APIClient) *DatabaseMapper {
+func NewDatabaseMapper(ctx context.Context, client *koyeb.APIClient, appMapper *AppMapper) *DatabaseMapper {
 	return &DatabaseMapper{
-		ctx:     ctx,
-		client:  client,
-		fetched: false,
-		sidMap:  NewIDMap(),
-		nameMap: NewIDMap(),
+		ctx:       ctx,
+		client:    client,
+		appMapper: appMapper,
+		fetched:   false,
+		sidMap:    NewIDMap(),
+		nameMap:   NewIDMap(),
 	}
 }
 
@@ -51,7 +54,7 @@ func (mapper *DatabaseMapper) ResolveID(val string) (string, error) {
 	return "", errors.NewCLIErrorForMapperResolve(
 		"database",
 		val,
-		[]string{"database full UUID", "database short ID (8 characters)", "database name"},
+		[]string{"database full UUID", "service short ID (8 characters)", "the database name prefixed by the application name and a slash (e.g. my-app/my-database)"},
 	)
 }
 
@@ -75,7 +78,39 @@ func (mapper *DatabaseMapper) fetch() error {
 
 		for _, service := range res.GetServices() {
 			mapper.sidMap.Set(service.GetId(), getShortID(service.GetId(), 8))
-			mapper.nameMap.Set(service.GetId(), service.GetName())
+
+			appName, err := mapper.appMapper.GetName(service.GetAppId())
+			if err != nil {
+				return err
+			}
+
+			// Possible values:
+			// <app_name>/<service_id>
+			// <app_id>/<service_id>
+			// <app_short_id>/<service_id>
+			//
+			// <app_name>/<short_service_id>
+			// <app_id>/<short_service_id>
+			// <app_short_id>/<short_service_id>
+			//
+			// <app_name>/<service_name>
+			// <app_id>/<service_name>
+			// <app_short_id>/<service_name>
+			for _, key := range []string{
+				fmt.Sprint(appName, "/", service.GetId()),
+				fmt.Sprint(service.GetAppId(), "/", service.GetId()),
+				fmt.Sprint(service.GetAppId()[:8], "/", service.GetId()),
+
+				fmt.Sprint(appName, "/", getShortID(service.GetId(), 8)),
+				fmt.Sprint(service.GetAppId(), "/", getShortID(service.GetId(), 8)),
+				fmt.Sprint(service.GetAppId()[:8], "/", getShortID(service.GetId(), 8)),
+
+				fmt.Sprint(appName, "/", service.GetName()),
+				fmt.Sprint(service.GetAppId(), "/", service.GetName()),
+				fmt.Sprint(service.GetAppId()[:8], "/", service.GetName()),
+			} {
+				mapper.nameMap.Set(service.GetId(), key)
+			}
 		}
 
 		page++

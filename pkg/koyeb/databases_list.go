@@ -90,7 +90,7 @@ func (r *ListDatabasesReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListDatabasesReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "active_time", "instance", "used_storage", "created_at"}
+	return []string{"id", "app", "name", "region", "engine", "status", "active_time", "instance", "used_storage", "created_at"}
 }
 
 func (r *ListDatabasesReply) Fields() []map[string]string {
@@ -130,6 +130,7 @@ func (r *ListDatabasesReply) Fields() []map[string]string {
 
 		fields := map[string]string{
 			"id":           renderer.FormatID(item.Service.GetId(), r.full),
+			"app":          renderer.FormatAppName(r.mapper, item.Deployment.GetAppId(), r.full),
 			"name":         item.Service.GetName(),
 			"region":       region,
 			"engine":       engine,
