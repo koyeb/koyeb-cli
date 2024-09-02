@@ -318,6 +318,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'\n",
 	)
 	flags.String("instance-type", "nano", "Instance type")
+	flags.String("deployment-strategy", "rolling", "Deployment strategy")
 	flags.Int64("scale", 1, "Set both min-scale and max-scale")
 	flags.Int64("min-scale", 1, "Min scale")
 	flags.Int64("max-scale", 1, "Max scale")
@@ -386,6 +387,8 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"health-checks":              "checks",
 			"health-checks-graee":        "checks-grace-period",
 			"health-checks-grace-period": "checks-grace-period",
+
+			"strategy": "deployment-strategy",
 
 			"route":              "routes",
 			"volume":             "volumes",
@@ -465,6 +468,12 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		return err
 	}
 	definition.SetType(type_)
+
+	strategy, err := h.parseDeploymentStrategy(flags, definition.GetStrategy())
+	if err != nil {
+		return err
+	}
+	definition.SetStrategy(strategy)
 
 	skipCache, _ := flags.GetBool("skip-cache")
 	definition.SetSkipCache(skipCache)
@@ -580,6 +589,50 @@ func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstance
 	value, _ := flags.GetString("instance-type")
 	ret.SetType(value)
 	return []koyeb.DeploymentInstanceType{*ret}
+}
+
+// Parse --deployment-strategy
+func (h *ServiceHandler) parseDeploymentStrategy(flags *pflag.FlagSet, currentStrategy koyeb.DeploymentStrategy) (koyeb.DeploymentStrategy, error) {
+	if !flags.Lookup("deployment-strategy").Changed {
+		// New service: return the default value
+		if currentStrategy.Type == nil {
+			value := flags.Lookup("deployment-strategy").DefValue
+			enum := fmt.Sprintf("DEPLOYMENT_STRATEGY_TYPE_%s", strings.ToUpper(strings.ReplaceAll(value, "-", "_")))
+			kind, err := koyeb.NewDeploymentStrategyTypeFromValue(enum)
+			if err != nil {
+				panic(err)
+			}
+			ret := koyeb.DeploymentStrategy{
+				Type: kind,
+			}
+			return ret, nil
+		}
+		// Existing service: return the strategy currently configured
+		return currentStrategy, nil
+	}
+
+	value, _ := flags.GetString("deployment-strategy")
+	enum := fmt.Sprintf("DEPLOYMENT_STRATEGY_TYPE_%s", strings.ToUpper(strings.ReplaceAll(value, "-", "_")))
+	kind, err := koyeb.NewDeploymentStrategyTypeFromValue(enum)
+	if err != nil {
+		return koyeb.DeploymentStrategy{}, &errors.CLIError{
+			What: "Error while updating the service",
+			Why:  "the --deployment-strategy flag is not valid",
+			Additional: []string{
+				"The --deployment-strategy flag must be one of the following:",
+				" - rolling",
+				" - canary",
+				" - blue-green",
+				" - immediate",
+			},
+			Orig:     nil,
+			Solution: "Fix the --deployment-strategy flag and try again",
+		}
+	}
+	ret := koyeb.DeploymentStrategy{
+		Type: kind,
+	}
+	return ret, nil
 }
 
 // parseListFlags is the generic function parsing --env, --port, --routes, --checks, --regions and --volumes
