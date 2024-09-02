@@ -283,6 +283,7 @@ See examples of koyeb service create --help
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "canary", "blue-green" or "immediate".
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -574,6 +575,7 @@ koyeb deploy <path> <app>/<service> [flags]
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "canary", "blue-green" or "immediate".
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
@@ -1373,6 +1375,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "canary", "blue-green" or "immediate".
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -1792,6 +1795,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "canary", "blue-green" or "immediate".
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
