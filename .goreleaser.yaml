@@ -47,6 +47,12 @@ archives:
 
 release:
   prerelease: auto
+  header: |
+    ## The best version ever of Koyeb CLI is here!
+
+    Welcome to this new release!
+    Check the changelog in [CHANGES.md](https://github.com/koyeb/koyeb-cli/blob/master/CHANGES.md) for more details.
+    For upgrade instructions, see [README.md](https://github.com/koyeb/koyeb-cli/blob/master/README.md).
 
 dockers:
   - goos: linux
