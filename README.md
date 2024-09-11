@@ -59,24 +59,35 @@ Usage:
   koyeb [command]
 
 Available Commands:
-  apps        Apps
-  completion  Generate completion script
-  deployments Deployments
-  help        Help about any command
-  instances   Instances
-  login       Login to your Koyeb account
-  secrets     Secrets
-  services    Services
-  version     Get version
+  apps                 Apps
+  archives             Archives
+  completion           Generate completion script
+  databases            Databases
+  deploy               Deploy a directory to Koyeb
+  deployments          Deployments
+  domains              Domains
+  help                 Help about any command
+  instances            Instances
+  login                Login to your Koyeb account
+  metrics              Metrics
+  organizations        Organization
+  regional-deployments Regional deployments
+  secrets              Secrets
+  services             Services
+  version              Get version
+  volumes              Manage persistent volumes
 
 Flags:
-  -c, --config string   config file (default is $HOME/.koyeb.yaml)
-  -d, --debug           debug
-      --full            show full id
-  -h, --help            help for koyeb
-  -o, --output string   output format (yaml,json,table)
-      --token string    API token
-      --url string      url of the api (default "https://app.koyeb.com")
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+  -h, --help                  help for koyeb
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
 
 Use "koyeb [command] --help" for more information about a command.
 ```
