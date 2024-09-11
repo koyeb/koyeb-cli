@@ -10,9 +10,9 @@ builds:
       - linux
     ignore:
       - goos: darwin
-        goarch: 386
+        goarch: "386"
       - goos: linux
-        goarch: 386
+        goarch: "386"
     ldflags:
       - -X github.com/koyeb/koyeb-cli/pkg/koyeb.BuildDate={{ .Date }}
       - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Version={{ .Version }}
@@ -26,7 +26,7 @@ builds:
       - windows
     ignore:
       - goos: windows
-        goarch: 386
+        goarch: "386"
     ldflags:
       - -X github.com/koyeb/koyeb-cli/pkg/koyeb.BuildDate={{ .Date }}
       - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Version={{ .Version }}
