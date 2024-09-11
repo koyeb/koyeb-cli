@@ -60,7 +60,7 @@ checksum:
   name_template: "checksums.txt"
 
 snapshot:
-  name_template: "{{.Branch}}-{{.ShortCommit}}"
+  version_template: "{{.Branch}}-{{.ShortCommit}}"
 
 brews:
   - repository:
