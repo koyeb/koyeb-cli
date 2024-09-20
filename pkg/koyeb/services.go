@@ -320,7 +320,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.String("instance-type", "nano", "Instance type")
 
 	var strategy DeploymentStrategy
-	flags.Var(&strategy, "deployment-strategy", `Deployment strategy, either "rolling" (default), "canary", "blue-green" or "immediate".`)
+	flags.Var(&strategy, "deployment-strategy", `Deployment strategy, either "rolling" (default), "blue-green" or "immediate".`)
 
 	flags.Int64("scale", 1, "Set both min-scale and max-scale")
 	flags.Int64("min-scale", 1, "Min scale")
@@ -1736,14 +1736,12 @@ func (s *DeploymentStrategy) Set(value string) error {
 	switch value {
 	case "rolling":
 		*s = DeploymentStrategy(koyeb.DEPLOYMENTSTRATEGYTYPE_ROLLING)
-	case "canary":
-		*s = DeploymentStrategy(koyeb.DEPLOYMENTSTRATEGYTYPE_CANARY)
 	case "blue-green":
 		*s = DeploymentStrategy(koyeb.DEPLOYMENTSTRATEGYTYPE_BLUE_GREEN)
 	case "immediate":
 		*s = DeploymentStrategy(koyeb.DEPLOYMENTSTRATEGYTYPE_IMMEDIATE)
 	default:
-		return fmt.Errorf("invalid deployment strategy: %s. Valid values are: rolling, canary, blue-green, immediate.", value)
+		return fmt.Errorf("invalid deployment strategy: %s. Valid values are: rolling, blue-green, immediate.", value)
 	}
 	return nil
 }

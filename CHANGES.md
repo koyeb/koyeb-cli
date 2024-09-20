@@ -1,6 +1,6 @@
 ## v5.1.0 (unreleased)
 
-* Add `--deployment-strategy` which can have the value `rolling`, `canary`, `blue-green` or `immediate` to service. 
+* Add `--deployment-strategy` which can have the value `rolling`, `blue-green` or `immediate` to service. 
   - https://github.com/koyeb/koyeb-cli/pull/248/files
 
 ## v5.0.0 (2024-08-20)
