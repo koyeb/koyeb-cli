@@ -1,3 +1,7 @@
+## v5.2.0 (unreleased)
+* Add the `snapshots` subcommand to manage volume snapshots.
+  - https://github.com/koyeb/koyeb-cli/pull/250/files
+
 ## v5.1.0 (2024-09-26)
 
 * Add `--deployment-strategy` which can have the value `rolling`, `blue-green` or `immediate` to service. 
