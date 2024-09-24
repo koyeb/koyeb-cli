@@ -314,7 +314,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 		"env",
 		[]string{},
 		"Update service environment variables using the format KEY=VALUE, for example --env FOO=bar\n"+
-			"To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar\n"+
+			"To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}\n"+
 			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'\n",
 	)
 	flags.String("instance-type", "nano", "Instance type")
