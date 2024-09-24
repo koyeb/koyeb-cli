@@ -291,7 +291,8 @@ See examples of koyeb service create --help
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To use the value of a secret as an environment variable, use the following syntax: 
+                                                 --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
       --git string                               Git repository
@@ -578,7 +579,8 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To use the value of a secret as an environment variable, use the following syntax: 
+                                                 --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
   -h, --help                                     help for deploy
@@ -1384,7 +1386,8 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To use the value of a secret as an environment variable, use the following syntax: 
+                                                 --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
       --git string                               Git repository
@@ -1837,7 +1840,8 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, specify the secret name preceded by @, for example --env FOO=@bar
+                                                 To use the value of a secret as an environment variable, use the following syntax: 
+                                                 --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
       --git string                               Git repository
