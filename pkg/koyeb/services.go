@@ -711,8 +711,8 @@ func (h *ServiceHandler) setDefaultPortsAndRoutes(definition *koyeb.DeploymentDe
 		definition.SetRoutes(h.getDeploymentRoute(8000))
 
 	// When one or more ports are set but no route is explicitly configured:
-	// - if only one HTTP port is defined, create the default route using that port
-	// - if more than one HTTP port is set, we return an error as we can't determine routes configuration
+	// - if only one HTTP/HTTP2 port is defined, create the default route using that port
+	// - if more than one HTTP/HTTP2 port is set, we return an error as we can't determine routes configuration
 	case len(currentPorts) > 0 && len(currentRoutes) == 0:
 		httpPorts := []koyeb.DeploymentPort{}
 
@@ -729,9 +729,9 @@ func (h *ServiceHandler) setDefaultPortsAndRoutes(definition *koyeb.DeploymentDe
 		if len(httpPorts) > 1 {
 			return &errors.CLIError{
 				What: "Error while configuring the service",
-				Why:  `your service has two or more HTTP ports set but no matching routes`,
+				Why:  `your service has two or more HTTP/HTTP2 ports set but no matching routes`,
 				Additional: []string{
-					"For each HTTP port, you must specify a matching route with the --routes flag",
+					"For each  HTTP/HTTP2 port, you must specify a matching route with the --routes flag",
 				},
 				Orig:     nil,
 				Solution: "Set the routes and try again",
