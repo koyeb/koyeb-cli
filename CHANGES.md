@@ -1,7 +1,8 @@
-## v5.1.0 (unreleased)
+## v5.1.0 (2024-09-26)
 
 * Add `--deployment-strategy` which can have the value `rolling`, `blue-green` or `immediate` to service. 
   - https://github.com/koyeb/koyeb-cli/pull/248/files
+* Fix the logic on how validation is performed for `--port` to avoid raising an error when `TCP` ports are used and `--routes` are not set.
 
 ## v5.0.0 (2024-08-20)
 
