@@ -717,7 +717,7 @@ func (h *ServiceHandler) setDefaultPortsAndRoutes(definition *koyeb.DeploymentDe
 		httpPorts := []koyeb.DeploymentPort{}
 
 		for _, port := range currentPorts {
-			if port.GetProtocol() == "http" {
+			if port.GetProtocol() == "http" || port.GetProtocol() == "http2" {
 				httpPorts = append(httpPorts, port)
 			}
 		}
