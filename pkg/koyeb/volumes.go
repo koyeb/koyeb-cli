@@ -39,6 +39,18 @@ func NewVolumeCmd() *cobra.Command {
 			}
 			req.SetRegion(region)
 
+			snapshot, err := cmd.Flags().GetString("snapshot")
+			if err != nil {
+				return err
+			}
+			if snapshot != "" {
+				id, err := ResolveSnapshotArgs(ctx, snapshot)
+				if err != nil {
+					return err
+				}
+				req.SetSnapshotId(id)
+			}
+
 			// TODO: use a flag for the volume type when/if we support more than one
 			req.SetVolumeType(koyeb.PERSISTENTVOLUMEBACKINGSTORE_LOCAL_BLK)
 
@@ -60,6 +72,7 @@ func NewVolumeCmd() *cobra.Command {
 	createVolumeCmd.Flags().String("region", "was", "Region of the volume")
 	createVolumeCmd.Flags().Int64("size", 10, "Size of the volume in GB")
 	createVolumeCmd.Flags().Bool("read-only", false, "Force the volume to be read-only")
+	createVolumeCmd.Flags().String("snapshot", "", "Specify a snapshot to use to create the volume from")
 	volumeCmd.AddCommand(createVolumeCmd)
 
 	getVolumeCmd := &cobra.Command{
