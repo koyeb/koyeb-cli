@@ -39,6 +39,7 @@ func NewVolumeCmd() *cobra.Command {
 			}
 			req.SetRegion(region)
 
+			isFromSnapshot := false
 			snapshot, err := cmd.Flags().GetString("snapshot")
 			if err != nil {
 				return err
@@ -49,6 +50,7 @@ func NewVolumeCmd() *cobra.Command {
 					return err
 				}
 				req.SetSnapshotId(id)
+				isFromSnapshot = true
 			}
 
 			// TODO: use a flag for the volume type when/if we support more than one
@@ -57,6 +59,20 @@ func NewVolumeCmd() *cobra.Command {
 			size, err := cmd.Flags().GetInt64("size")
 			if err != nil {
 				return err
+			}
+			if size < 0 {
+				return &errors.CLIError{
+					What:     "Invalid flag",
+					Why:      "Invalid --size flag",
+					Solution: "A size for the volume cannot be negative",
+				}
+			}
+			if size != 0 && isFromSnapshot {
+				return &errors.CLIError{
+					What:     "Invalid flag",
+					Why:      "Invalid --size flag",
+					Solution: "A size for the volume cannot be specified when creating a volume from a snapshot",
+				}
 			}
 			req.SetMaxSize(size)
 
