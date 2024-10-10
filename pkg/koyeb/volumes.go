@@ -7,6 +7,11 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
+const (
+	defaultVolumeSize   = 10 // This is in GB
+	defaultVolumeRegion = "was"
+)
+
 func NewVolumeCmd() *cobra.Command {
 	h := NewVolumeHandler()
 	_ = h
@@ -39,6 +44,7 @@ func NewVolumeCmd() *cobra.Command {
 			}
 			req.SetRegion(region)
 
+			isFromSnapshot := false
 			snapshot, err := cmd.Flags().GetString("snapshot")
 			if err != nil {
 				return err
@@ -49,6 +55,7 @@ func NewVolumeCmd() *cobra.Command {
 					return err
 				}
 				req.SetSnapshotId(id)
+				isFromSnapshot = true
 			}
 
 			// TODO: use a flag for the volume type when/if we support more than one
@@ -58,7 +65,27 @@ func NewVolumeCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			req.SetMaxSize(size)
+			if isFromSnapshot {
+				if size != -1 {
+					return &errors.CLIError{
+						What:     "Invalid flag",
+						Why:      "Invalid --size flag",
+						Solution: "A size for the volume cannot be specified when creating a volume from a snapshot",
+					}
+				}
+			} else {
+				if size != -1 && size < 0 {
+					return &errors.CLIError{
+						What:     "Invalid flag",
+						Why:      "Invalid --size flag",
+						Solution: "A size for the volume cannot be negative",
+					}
+				}
+				if size == -1 {
+					size = defaultVolumeSize
+				}
+				req.SetMaxSize(size)
+			}
 
 			readOnly, err := cmd.Flags().GetBool("read-only")
 			if err != nil {
@@ -69,8 +96,8 @@ func NewVolumeCmd() *cobra.Command {
 			return h.Create(ctx, cmd, args, req)
 		}),
 	}
-	createVolumeCmd.Flags().String("region", "was", "Region of the volume")
-	createVolumeCmd.Flags().Int64("size", 10, "Size of the volume in GB")
+	createVolumeCmd.Flags().String("region", defaultVolumeRegion, "Region of the volume")
+	createVolumeCmd.Flags().Int64("size", -1, "Size of the volume in GB")
 	createVolumeCmd.Flags().Bool("read-only", false, "Force the volume to be read-only")
 	createVolumeCmd.Flags().String("snapshot", "", "Specify a snapshot to use to create the volume from")
 	volumeCmd.AddCommand(createVolumeCmd)
