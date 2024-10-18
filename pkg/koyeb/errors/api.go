@@ -27,6 +27,9 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 		case 501:
 			ret.Why = "the Koyeb API returned an error HTTP/501: Not Implemented because the feature you are trying to use is not yet implemented"
 			ret.Solution = "Reach out to Koyeb support for more information."
+			if message, ok := getMessage(resp); ok {
+				ret.Additional = append(ret.Additional, message)
+			}
 			return ret
 		}
 	}
@@ -75,4 +78,17 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 		ret.Solution = SolutionTryAgainOrUpdateOrIssue
 	}
 	return ret
+}
+
+func getMessage(r *http.Response) (string, bool) {
+	body := map[string]any{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err == nil {
+		if message, ok := body["message"]; ok {
+			if messageStr, ok := message.(string); ok {
+				return messageStr, true
+			}
+		}
+	}
+
+	return "", false
 }
