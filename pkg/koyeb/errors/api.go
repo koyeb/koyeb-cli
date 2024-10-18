@@ -18,10 +18,17 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 		What: what,
 	}
 
-	if resp != nil && resp.StatusCode == 429 {
-		ret.Why = "the Koyeb API returned an error HTTP/429: Too Many Requests because you have exceeded the rate limit"
-		ret.Solution = "Please try again in a few seconds."
-		return ret
+	if resp != nil {
+		switch resp.StatusCode {
+		case 429:
+			ret.Why = "the Koyeb API returned an error HTTP/429: Too Many Requests because you have exceeded the rate limit"
+			ret.Solution = "Please try again in a few seconds."
+			return ret
+		case 501:
+			ret.Why = "the Koyeb API returned an error HTTP/501: Not Implemented because the feature you are trying to use is not yet implemented"
+			ret.Solution = "Reach out to Koyeb support for more information."
+			return ret
+		}
 	}
 
 	ret.Orig = err
