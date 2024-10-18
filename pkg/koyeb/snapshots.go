@@ -34,9 +34,6 @@ func NewSnapshotCmd() *cobra.Command {
 			return h.Create(ctx, cmd, args, req)
 		}),
 	}
-	createSnapshotCmd.Flags().String("region", "was", "Region of the snapshot")
-	createSnapshotCmd.Flags().Int64("size", 10, "Size of the snapshot in GB")
-	createSnapshotCmd.Flags().Bool("read-only", false, "Force the snapshot to be read-only")
 	snapshotCmd.AddCommand(createSnapshotCmd)
 
 	getSnapshotCmd := &cobra.Command{
@@ -74,7 +71,6 @@ func NewSnapshotCmd() *cobra.Command {
 		}),
 	}
 	updateSnapshotCmd.Flags().String("name", "", "Change the snapshot name")
-	updateSnapshotCmd.Flags().Int64("size", -1, "Increase the snapshot size")
 	snapshotCmd.AddCommand(updateSnapshotCmd)
 
 	deleteSnapshotCmd := &cobra.Command{
