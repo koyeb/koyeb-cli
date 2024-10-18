@@ -17,7 +17,7 @@ func NewSnapshotCmd() *cobra.Command {
 	}
 
 	createSnapshotCmd := &cobra.Command{
-		Use:   "create NAME",
+		Use:   "create NAME PARENT_VOLUME",
 		Short: "Create a new snapshot",
 		Args:  cobra.ExactArgs(2),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
