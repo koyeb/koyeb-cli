@@ -1,6 +1,7 @@
 ## v5.2.0 (unreleased)
 * Add the `snapshots` subcommand to manage volume snapshots.
   - https://github.com/koyeb/koyeb-cli/pull/250/files
+  - https://github.com/koyeb/koyeb-cli/pull/256
 * Add the `--snapshot` flag to the volume creation command, to create a volume from a snapshot.
   - https://github.com/koyeb/koyeb-cli/pull/254/files
   - https://github.com/koyeb/koyeb-cli/pull/255/files
