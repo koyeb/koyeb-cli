@@ -99,6 +99,10 @@ func (r *ListDeploymentsReply) Fields() []map[string]string {
 	}
 
 	for _, item := range items {
+		if item.GetStatus() == koyeb.DEPLOYMENTSTATUS_STASHED {
+			continue
+		}
+
 		fields := map[string]string{
 			"id":         renderer.FormatID(item.GetId(), r.full),
 			"service":    renderer.FormatServiceSlug(r.mapper, item.GetServiceId(), r.full),
