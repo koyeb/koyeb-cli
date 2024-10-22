@@ -5,6 +5,8 @@
 * Add the `--snapshot` flag to the volume creation command, to create a volume from a snapshot.
   - https://github.com/koyeb/koyeb-cli/pull/254/files
   - https://github.com/koyeb/koyeb-cli/pull/255/files
+* Add command `koyeb service unapplied-changes <service_id>` to view the changes that have been made with `koyeb service update --save-only`.
+  - https://github.com/koyeb/koyeb-cli/pull/258
 
 ## v5.1.0 (2024-09-26)
 
