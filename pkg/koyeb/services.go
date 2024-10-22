@@ -76,6 +76,15 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	getServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(getServiceCmd)
 
+	unappliedChangesCmd := &cobra.Command{
+		Use:   "unapplied-changes SERVICE_NAME",
+		Short: "Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment",
+		Args:  cobra.ExactArgs(1),
+		RunE:  WithCLIContext(h.ShowUnappliedChanges),
+	}
+	unappliedChangesCmd.Flags().StringP("app", "a", "", "Service application")
+	serviceCmd.AddCommand(unappliedChangesCmd)
+
 	var since dates.HumanFriendlyDate
 	logsServiceCmd := &cobra.Command{
 		Use:     "logs NAME",
