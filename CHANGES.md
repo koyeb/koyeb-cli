@@ -1,4 +1,5 @@
-## v5.2.0 (unreleased)
+## v5.2.0 (2024-10-24)
+
 * Add the `snapshots` subcommand to manage volume snapshots.
   - https://github.com/koyeb/koyeb-cli/pull/250/files
   - https://github.com/koyeb/koyeb-cli/pull/256
