@@ -62,8 +62,8 @@ func (h *ServiceHandler) ShowUnappliedChanges(ctx *CLIContext, cmd *cobra.Comman
 
 			// Last deployment is not stashed, render an empty diff
 			if res.Deployments[0].GetStatus() != koyeb.DEPLOYMENTSTATUS_STASHED {
-				// xx := NewShowDeploymentsDiff(jsondiff.Patch{})
-				// ctx.Renderer.Render(xx)
+				showUnappliedChangesReply := NewShowDeploymentsDiff(nil, nil)
+				ctx.Renderer.Render(showUnappliedChangesReply)
 				return nil
 			}
 			stashedDeployment = &res.Deployments[0]
@@ -116,6 +116,10 @@ func (ShowDeploymentsDiff) Title() string {
 }
 
 func (r *ShowDeploymentsDiff) MarshalBinary() ([]byte, error) {
+	if r.diff == nil {
+		return nil, nil
+	}
+
 	formatter := formatter.NewDeltaFormatter()
 	diffString, _ := formatter.Format(r.diff)
 	return []byte(diffString), nil
@@ -126,16 +130,22 @@ func (r *ShowDeploymentsDiff) Headers() []string {
 }
 
 func (r *ShowDeploymentsDiff) Fields() []map[string]string {
-	config := formatter.AsciiFormatterConfig{
-		ShowArrayIndex: true,
-		Coloring:       true,
+	var diffString string
+
+	if r.diff == nil || len(r.diff.Deltas()) == 0 {
+		diffString = "No unapplied changes"
+	} else {
+		config := formatter.AsciiFormatterConfig{
+			ShowArrayIndex: true,
+			Coloring:       true,
+		}
+
+		var aJson map[string]interface{}
+		_ = json.Unmarshal(r.lhs, &aJson)
+
+		formatter := formatter.NewAsciiFormatter(aJson, config)
+		diffString, _ = formatter.Format(r.diff)
 	}
-
-	var aJson map[string]interface{}
-	_ = json.Unmarshal(r.lhs, &aJson)
-
-	formatter := formatter.NewAsciiFormatter(aJson, config)
-	diffString, _ := formatter.Format(r.diff)
 
 	fields := map[string]string{
 		"diff": diffString,
