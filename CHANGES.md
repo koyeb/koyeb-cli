@@ -1,3 +1,7 @@
+## v5.4.0 (unreleased)
+
+* …
+
 ## v5.3.0 (2024-11-07)
 
 * `koyeb service unapplied-changes <service_id>`: display "no changes" when there is no stashed deployment, or when the stashed deployment is the same as the current deployment.
