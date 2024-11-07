@@ -2,6 +2,8 @@
 
 * `koyeb service unapplied-changes <service_id>`: display "no changes" when there is no stashed deployment, or when the stashed deployment is the same as the current deployment.
   - https://github.com/koyeb/koyeb-cli/pull/259
+* `koyeb service update`: fix when changing the type of an environment variable given with `--type`
+  - https://github.com/koyeb/koyeb-cli/pull/260
 
 ## v5.2.0 (2024-10-24)
 

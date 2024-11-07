@@ -78,7 +78,9 @@ func (f *FlagEnv) UpdateItem(env *koyeb.DeploymentEnv) {
 	env.Key = koyeb.PtrString(f.key)
 	if f.isSecret {
 		env.Secret = koyeb.PtrString(f.value)
+		env.Value = nil
 	} else {
+		env.Secret = nil
 		env.Value = koyeb.PtrString(f.value)
 	}
 }
