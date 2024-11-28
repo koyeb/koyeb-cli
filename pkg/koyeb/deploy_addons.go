@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	log "github.com/sirupsen/logrus"
@@ -63,9 +64,13 @@ func (h *addonsHandler) PostDeploy(ctx *CLIContext, definition *koyeb.Deployment
 }
 
 func (h *addonsHandler) Setup(ctx *CLIContext, dir string) error {
+	basePath, err := filepath.Abs(dir)
+	if err != nil {
+		return err
+	}
 	for _, addon := range h.addons {
 		log.Debugf("Running addon setup in dir %s", dir)
-		if err := addon.Setup(ctx, dir); err != nil {
+		if err := addon.Setup(ctx, basePath); err != nil {
 			return err
 		}
 	}
