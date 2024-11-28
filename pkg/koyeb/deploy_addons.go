@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	log "github.com/sirupsen/logrus"
 )
 
 type addonsHandler struct {
@@ -42,6 +43,7 @@ func (h *addonsHandler) RegisterAddon(name string) error {
 
 func (h *addonsHandler) PreDeploy(ctx *CLIContext, definition *koyeb.DeploymentDefinition) error {
 	for _, addon := range h.addons {
+		log.Debugf("Running pre-deploy for addon %s", addon)
 		if err := addon.PreDeploy(ctx, definition); err != nil {
 			return err
 		}
@@ -51,6 +53,7 @@ func (h *addonsHandler) PreDeploy(ctx *CLIContext, definition *koyeb.DeploymentD
 
 func (h *addonsHandler) PostDeploy(ctx *CLIContext, definition *koyeb.DeploymentDefinition) error {
 	for _, addon := range h.addons {
+		log.Debugf("Running post-deploy for addon %s", addon)
 		if err := addon.PostDeploy(ctx, definition); err != nil {
 			return err
 		}
@@ -60,6 +63,7 @@ func (h *addonsHandler) PostDeploy(ctx *CLIContext, definition *koyeb.Deployment
 
 func (h *addonsHandler) Setup(ctx *CLIContext) error {
 	for _, addon := range h.addons {
+		log.Debugf("Running setup for addon %s", addon)
 		if err := addon.Setup(ctx); err != nil {
 			return err
 		}
@@ -69,6 +73,7 @@ func (h *addonsHandler) Setup(ctx *CLIContext) error {
 
 func (h *addonsHandler) Cleanup(ctx *CLIContext) error {
 	for _, addon := range h.addons {
+		log.Debugf("Running cleanup for addon %s", addon)
 		if err := addon.Cleanup(ctx); err != nil {
 			return err
 		}
