@@ -54,20 +54,34 @@ func NewDeployCmd() *cobra.Command {
 				return err
 			}
 
+			// Parse the flags for the addons.
+			addons, err := serviceHandler.parseAddonsFlags(ctx, cmd.Flags())
+			if err != nil {
+				return err
+			}
+			addonsHandler, err := NewAddonsHandler(addons)
+			if err != nil {
+				return err
+			}
+
+			// Setup the addons.
+			if err := addonsHandler.Setup(ctx, args[0]); err != nil {
+				return err
+			}
+			defer func() {
+				err := addonsHandler.Cleanup(ctx)
+				if err != nil {
+					log.Errorf("Error while cleaning up addons: %s", err)
+				}
+			}()
+
 			if serviceId == "" {
 				createService := koyeb.NewCreateServiceWithDefaults()
 				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-				log.Infof("Creating and uploading an archive from `%s`", args[0])
-				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
-				if err != nil {
-					return err
-				}
-
 				createDefinition.Name = koyeb.PtrString(serviceName)
 
 				archive := createDefinition.GetArchive()
-				archive.Id = archiveReply.GetArchive().Id
 				createDefinition.SetArchive(archive)
 				createDefinition.Git = nil
 				createDefinition.Docker = nil
@@ -77,10 +91,24 @@ func NewDeployCmd() *cobra.Command {
 				if err := serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
 					return err
 				}
+
+				if err = addonsHandler.PreDeploy(ctx, createDefinition); err != nil {
+					return err
+				}
+
+				log.Infof("Creating and uploading an archive from `%s`", args[0])
+				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+				if err != nil {
+					return err
+				}
+				createDefinition.Archive.Id = archiveReply.GetArchive().Id
 				createService.SetDefinition(*createDefinition)
 
 				log.Infof("Creating the new service `%s`", serviceName)
 				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
+					return err
+				}
+				if err = addonsHandler.PostDeploy(ctx, createDefinition); err != nil {
 					return err
 				}
 			} else {
@@ -113,14 +141,7 @@ func NewDeployCmd() *cobra.Command {
 
 				updateDefinition := latestDeploy.GetDeployments()[0].Definition
 
-				log.Infof("Creating and uploading an archive from `%s`", args[0])
-				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
-				if err != nil {
-					return err
-				}
-
 				archive := updateDefinition.GetArchive()
-				archive.Id = archiveReply.GetArchive().Id
 				updateDefinition.SetArchive(archive)
 				updateDefinition.Git = nil
 				updateDefinition.Docker = nil
@@ -134,19 +155,43 @@ func NewDeployCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
+
+				if err = addonsHandler.PreDeploy(ctx, updateDefinition); err != nil {
+					return err
+				}
+
+				log.Infof("Creating and uploading an archive from `%s`", args[0])
+				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+				if err != nil {
+					return err
+				}
+				updateDefinition.Archive.Id = archiveReply.GetArchive().Id
 				updateService.SetDefinition(*updateDefinition)
 
 				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
 					return err
 				}
+				if err = addonsHandler.PostDeploy(ctx, updateDefinition); err != nil {
+					return err
+				}
 			}
+
 			return nil
 		}),
 	}
 	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
+
+	// Add addons flags to the deploy command.
+	deployCmd.Flags().StringSlice(
+		"addons",
+		[]string{},
+		"List of addons, the addons will be executed localy before the deployment",
+	)
+	_ = deployCmd.Flags().MarkHidden("addons")
+
 	return deployCmd
 }
 
