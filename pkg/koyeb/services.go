@@ -615,6 +615,16 @@ func (h *ServiceHandler) parseDeploymentStrategy(flags *pflag.FlagSet, currentSt
 	}, nil
 }
 
+// Parse --addons
+func (h *ServiceHandler) parseAddonsFlags(ctx *CLIContext, flags *pflag.FlagSet) ([]string, error) {
+	addons := []string{}
+	parseListFlags("addons", flags_list.NewAddonsListFromFlags, flags, addons)
+	if !flags.Lookup("addons").Changed {
+		return addons, nil
+	}
+	return addons, nil
+}
+
 // parseListFlags is the generic function parsing --env, --port, --routes, --checks, --regions and --volumes
 // It gets the arguments given from the command line for the given flag, then
 // builds a list of flags_list.Flag entries, and update the service

@@ -54,6 +54,22 @@ func NewDeployCmd() *cobra.Command {
 				return err
 			}
 
+			// Parse the flags for the addons.
+			addons, err := serviceHandler.parseAddonsFlags(ctx, cmd.Flags())
+			if err != nil {
+				return err
+			}
+			addonsHandler, err := NewAddonsHandler(addons)
+			if err != nil {
+				return err
+			}
+
+			// Setup the addons.
+			if err := addonsHandler.Setup(ctx); err != nil {
+				return err
+			}
+			defer addonsHandler.Cleanup(ctx)
+
 			if serviceId == "" {
 				createService := koyeb.NewCreateServiceWithDefaults()
 				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
@@ -79,8 +95,15 @@ func NewDeployCmd() *cobra.Command {
 				}
 				createService.SetDefinition(*createDefinition)
 
+				if err = addonsHandler.PreDeploy(ctx, createDefinition); err != nil {
+					return err
+				}
+
 				log.Infof("Creating the new service `%s`", serviceName)
 				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
+					return err
+				}
+				if err = addonsHandler.PostDeploy(ctx, createDefinition); err != nil {
 					return err
 				}
 			} else {
@@ -136,17 +159,34 @@ func NewDeployCmd() *cobra.Command {
 				}
 				updateService.SetDefinition(*updateDefinition)
 
+				if err = addonsHandler.PreDeploy(ctx, updateDefinition); err != nil {
+					return err
+				}
+
 				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
 					return err
 				}
+				if err = addonsHandler.PostDeploy(ctx, updateDefinition); err != nil {
+					return err
+				}
 			}
+
 			return nil
 		}),
 	}
 	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
+
+	// Add addons flags to the deploy command.
+	deployCmd.Flags().StringSlice(
+		"addons",
+		[]string{},
+		"List of addons, the addons will be executed localy before the deployment",
+	)
+	deployCmd.Flags().MarkHidden("addons")
+
 	return deployCmd
 }
 
