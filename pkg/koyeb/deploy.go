@@ -68,7 +68,12 @@ func NewDeployCmd() *cobra.Command {
 			if err := addonsHandler.Setup(ctx, args[0]); err != nil {
 				return err
 			}
-			defer addonsHandler.Cleanup(ctx)
+			defer func() {
+				err := addonsHandler.Cleanup(ctx)
+				if err != nil {
+					log.Errorf("Error while cleaning up addons: %s", err)
+				}
+			}()
 
 			if serviceId == "" {
 				createService := koyeb.NewCreateServiceWithDefaults()
@@ -185,7 +190,7 @@ func NewDeployCmd() *cobra.Command {
 		[]string{},
 		"List of addons, the addons will be executed localy before the deployment",
 	)
-	deployCmd.Flags().MarkHidden("addons")
+	_ = deployCmd.Flags().MarkHidden("addons")
 
 	return deployCmd
 }
