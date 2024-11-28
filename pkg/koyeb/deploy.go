@@ -74,16 +74,9 @@ func NewDeployCmd() *cobra.Command {
 				createService := koyeb.NewCreateServiceWithDefaults()
 				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
-				log.Infof("Creating and uploading an archive from `%s`", args[0])
-				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
-				if err != nil {
-					return err
-				}
-
 				createDefinition.Name = koyeb.PtrString(serviceName)
 
 				archive := createDefinition.GetArchive()
-				archive.Id = archiveReply.GetArchive().Id
 				createDefinition.SetArchive(archive)
 				createDefinition.Git = nil
 				createDefinition.Docker = nil
@@ -93,11 +86,18 @@ func NewDeployCmd() *cobra.Command {
 				if err := serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
 					return err
 				}
-				createService.SetDefinition(*createDefinition)
 
 				if err = addonsHandler.PreDeploy(ctx, createDefinition); err != nil {
 					return err
 				}
+
+				log.Infof("Creating and uploading an archive from `%s`", args[0])
+				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+				if err != nil {
+					return err
+				}
+				createDefinition.Archive.Id = archiveReply.GetArchive().Id
+				createService.SetDefinition(*createDefinition)
 
 				log.Infof("Creating the new service `%s`", serviceName)
 				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
@@ -136,14 +136,7 @@ func NewDeployCmd() *cobra.Command {
 
 				updateDefinition := latestDeploy.GetDeployments()[0].Definition
 
-				log.Infof("Creating and uploading an archive from `%s`", args[0])
-				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
-				if err != nil {
-					return err
-				}
-
 				archive := updateDefinition.GetArchive()
-				archive.Id = archiveReply.GetArchive().Id
 				updateDefinition.SetArchive(archive)
 				updateDefinition.Git = nil
 				updateDefinition.Docker = nil
@@ -157,11 +150,18 @@ func NewDeployCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				updateService.SetDefinition(*updateDefinition)
 
 				if err = addonsHandler.PreDeploy(ctx, updateDefinition); err != nil {
 					return err
 				}
+
+				log.Infof("Creating and uploading an archive from `%s`", args[0])
+				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
+				if err != nil {
+					return err
+				}
+				updateDefinition.Archive.Id = archiveReply.GetArchive().Id
+				updateService.SetDefinition(*updateDefinition)
 
 				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
