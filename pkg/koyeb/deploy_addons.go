@@ -32,6 +32,8 @@ type Addon interface {
 
 func (h *addonsHandler) RegisterAddon(name string) error {
 	switch name {
+	case "cog":
+		h.addons = append(h.addons, &cogAddon{})
 	default:
 		return fmt.Errorf("unknown addon: %s", name)
 	}
