@@ -102,7 +102,7 @@ func (c *cogAddon) Cleanup(ctx *CLIContext) error {
 		path := path.Join(c.directory, "Dockerfile.cog")
 		err := os.Remove(path)
 		if err != nil {
-			return err
+			log.Debugf("Unable to delete Dockerfile.cog %v", err)
 		}
 	}
 
