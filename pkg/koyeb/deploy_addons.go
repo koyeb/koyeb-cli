@@ -25,7 +25,7 @@ func NewAddonsHandler(addons []string) (*addonsHandler, error) {
 }
 
 type Addon interface {
-	Setup(ctx *CLIContext) error
+	Setup(ctx *CLIContext, dir string) error
 	PreDeploy(ctx *CLIContext, definition *koyeb.DeploymentDefinition) error
 	PostDeploy(ctx *CLIContext, definition *koyeb.DeploymentDefinition) error
 	Cleanup(ctx *CLIContext) error
@@ -61,10 +61,10 @@ func (h *addonsHandler) PostDeploy(ctx *CLIContext, definition *koyeb.Deployment
 	return nil
 }
 
-func (h *addonsHandler) Setup(ctx *CLIContext) error {
+func (h *addonsHandler) Setup(ctx *CLIContext, dir string) error {
 	for _, addon := range h.addons {
-		log.Debugf("Running setup for addon %s", addon)
-		if err := addon.Setup(ctx); err != nil {
+		log.Debugf("Running setup for addon in dir %s", dir)
+		if err := addon.Setup(ctx, dir); err != nil {
 			return err
 		}
 	}

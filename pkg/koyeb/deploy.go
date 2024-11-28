@@ -65,7 +65,7 @@ func NewDeployCmd() *cobra.Command {
 			}
 
 			// Setup the addons.
-			if err := addonsHandler.Setup(ctx); err != nil {
+			if err := addonsHandler.Setup(ctx, args[0]); err != nil {
 				return err
 			}
 			defer addonsHandler.Cleanup(ctx)
