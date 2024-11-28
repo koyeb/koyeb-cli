@@ -617,10 +617,9 @@ func (h *ServiceHandler) parseDeploymentStrategy(flags *pflag.FlagSet, currentSt
 
 // Parse --addons
 func (h *ServiceHandler) parseAddonsFlags(ctx *CLIContext, flags *pflag.FlagSet) ([]string, error) {
-	addons := []string{}
-	parseListFlags("addons", flags_list.NewAddonsListFromFlags, flags, addons)
-	if !flags.Lookup("addons").Changed {
-		return addons, nil
+	addons, err := parseListFlags("addons", flags_list.NewAddonsListFromFlags, flags, []string{})
+	if err != nil {
+		return nil, err
 	}
 	return addons, nil
 }
