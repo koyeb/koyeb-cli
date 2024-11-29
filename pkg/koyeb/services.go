@@ -377,6 +377,12 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 		"Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data."+
 			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
 	)
+	flags.StringSlice(
+		"file-mounts",
+		nil,
+		"Mount a secret or file in the service container using the format PATH:SECRET:NAME, PATH:FILE:<local_path>, for example --file-mount /data:secret:mysecret.\n"+
+			"To delete a file mount, use !PATH, for example\n",
+	)
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
@@ -408,6 +414,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"git-docker-arg":     "git-docker-args",
 			"docker-arg":         "docker-args",
 			"archive-docker-arg": "archive-docker-args",
+			"file-mount":         "file-mounts",
 		}
 		alias, exists := aliases[name]
 		if exists {
@@ -549,6 +556,12 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		return err
 	}
 	definition.SetVolumes(volumes)
+
+	fileMounts, err := h.parseFileMounts(ctx, flags, definition.FileMounts)
+	if err != nil {
+		return err
+	}
+	definition.SetFileMounts(fileMounts)
 
 	return nil
 }
@@ -1740,6 +1753,11 @@ func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, cur
 	}
 
 	return parseListFlags("volumes", flags_list.GetNewVolumeListFromFlags(wrappedResolveVolumeId), flags, currentVolumes)
+}
+
+// Parse --file-mounts
+func (h *ServiceHandler) parseFileMounts(ctx *CLIContext, flags *pflag.FlagSet, currentFileMounts []koyeb.DeploymentFileMount) ([]koyeb.DeploymentFileMount, error) {
+	return parseListFlags("file-mounts", flags_list.GetNewFileMountListFromFlags(), flags, currentFileMounts)
 }
 
 // DeploymentStrategy is a type alias for koyeb.DeploymentStrategyType which implements the pflag.Value interface.
