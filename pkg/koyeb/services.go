@@ -378,10 +378,10 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
 	)
 	flags.StringSlice(
-		"file-mounts",
+		"mount-config-file",
 		nil,
-		"Mount a secret or file in the service container using the format PATH:SECRET:NAME, PATH:FILE:<local_path>, for example --file-mount /data:secret:mysecret.\n"+
-			"To delete a file mount, use !PATH, for example\n",
+		"Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS] for example --mount-file /etc/data.yaml:/etc/data.yaml:0644\n"+
+			"To delete a file mount, use !PATH, for example --mount-file !/etc/data.yaml\n",
 	)
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
@@ -414,7 +414,6 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"git-docker-arg":     "git-docker-args",
 			"docker-arg":         "docker-args",
 			"archive-docker-arg": "archive-docker-args",
-			"file-mount":         "file-mounts",
 		}
 		alias, exists := aliases[name]
 		if exists {
@@ -1755,9 +1754,9 @@ func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, cur
 	return parseListFlags("volumes", flags_list.GetNewVolumeListFromFlags(wrappedResolveVolumeId), flags, currentVolumes)
 }
 
-// Parse --file-mounts
-func (h *ServiceHandler) parseFileMounts(ctx *CLIContext, flags *pflag.FlagSet, currentFileMounts []koyeb.DeploymentFileMount) ([]koyeb.DeploymentFileMount, error) {
-	return parseListFlags("file-mounts", flags_list.GetNewFileMountListFromFlags(), flags, currentFileMounts)
+// Parse --mount-config-file
+func (h *ServiceHandler) parseFileMounts(ctx *CLIContext, flags *pflag.FlagSet, currentFileMounts []koyeb.FileMount) ([]koyeb.FileMount, error) {
+	return parseListFlags("mount-config-file", flags_list.GetNewFileMountListFromFlags(), flags, currentFileMounts)
 }
 
 // DeploymentStrategy is a type alias for koyeb.DeploymentStrategyType which implements the pflag.Value interface.
