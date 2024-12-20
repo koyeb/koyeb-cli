@@ -10,32 +10,32 @@ import (
 	kerrors "github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
-type FlagFileMount struct {
+type FlagFile struct {
 	BaseFlag
 	path        string
 	permissions string
 	content     string
 }
 
-func GetNewFileMountListFromFlags() func(values []string) ([]Flag[koyeb.FileMount], error) {
-	return func(values []string) ([]Flag[koyeb.FileMount], error) {
-		ret := make([]Flag[koyeb.FileMount], 0, len(values))
+func GetNewFilestListFromFlags() func(values []string) ([]Flag[koyeb.File], error) {
+	return func(values []string) ([]Flag[koyeb.File], error) {
+		ret := make([]Flag[koyeb.File], 0, len(values))
 
 		for _, value := range values {
-			hc := &FlagFileMount{BaseFlag: BaseFlag{cliValue: value}}
+			hc := &FlagFile{BaseFlag: BaseFlag{cliValue: value}}
 			components := strings.Split(value, ":")
 
 			if strings.HasPrefix(components[0], "!") {
 				if len(components) > 1 {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the file mount\"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to parse the file flag value \"%s\"", hc.cliValue),
 						Additional: []string{
 							"To remove a mounted file from the service, prefix the path with '!', e.g. '!path'",
 							"The source should not be specified to remove it from the service",
 						},
 						Orig:     nil,
-						Solution: "Fix the file mount and try again",
+						Solution: "Fix the file flag value and try again",
 					}
 				}
 				hc.markedForDeletion = true
@@ -44,13 +44,13 @@ func GetNewFileMountListFromFlags() func(values []string) ([]Flag[koyeb.FileMoun
 				if len(components) != 2 && len(components) != 3 {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the file mount\"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to parse the file flag value \"%s\"", hc.cliValue),
 						Additional: []string{
-							"File mount must be specified as SOURCE:PATH[:PERMISSIONS]",
+							"File flag value must be specified as SOURCE:PATH[:PERMISSIONS]",
 							"To remove a mounted file from the service, prefix the path with '!', e.g. '!path'",
 						},
 						Orig:     nil,
-						Solution: "Fix the file mount and try again",
+						Solution: "Fix the file flag value and try again",
 					}
 				}
 				hc.path = components[1]
@@ -58,26 +58,26 @@ func GetNewFileMountListFromFlags() func(values []string) ([]Flag[koyeb.FileMoun
 				if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the file mount \"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to parse the file flag value \"%s\"", hc.cliValue),
 						Additional: []string{
-							"File mount must be specified as SOURCE:PATH[:PERMISSIONS]",
-							"To remove a file mount from the service, prefix it with '!', e.g. '!path'",
+							"File flag value must be specified as SOURCE:PATH[:PERMISSIONS]",
+							"To remove a mounted file from the service, prefix the path with '!', e.g. '!path'",
 						},
 						Orig:     nil,
-						Solution: "Fix the file mount and try again",
+						Solution: "Fix the file flag value and try again",
 					}
 				}
 				data, err := os.ReadFile(path)
 				if err != nil {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to read the file mount\"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to read the file flag value \"%s\"", hc.cliValue),
 						Additional: []string{
-							"File mount must be specified as SOURCE:PATH[:PERMISSIONS]",
+							"File flag value must be specified as SOURCE:PATH[:PERMISSIONS]",
 							"To remove a file mount from the service, prefix it with '!', e.g. '!path'",
 						},
 						Orig:     nil,
-						Solution: "Fix the file mount and try again",
+						Solution: "Fix the file flag value and try again",
 					}
 				}
 				hc.content = string(data)
@@ -89,13 +89,13 @@ func GetNewFileMountListFromFlags() func(values []string) ([]Flag[koyeb.FileMoun
 				if len(permissions) != 4 {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the file mount\"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to parse the file flag value \"%s\"", hc.cliValue),
 						Additional: []string{
 							"File mount permission must be specified as SOURCE:PATH:PERMISSIONS",
 							"To remove a file mount from the service, prefix it with '!', e.g. '!path'",
 						},
 						Orig:     nil,
-						Solution: "Fix the permissions in file mount and try again",
+						Solution: "Fix the permissions in file flag value and try again",
 					}
 				}
 				hc.permissions = permissions
@@ -106,18 +106,18 @@ func GetNewFileMountListFromFlags() func(values []string) ([]Flag[koyeb.FileMoun
 	}
 }
 
-func (f *FlagFileMount) IsEqualTo(hc koyeb.FileMount) bool {
+func (f *FlagFile) IsEqualTo(hc koyeb.File) bool {
 	return hc.GetPath() == f.path
 }
 
-func (f *FlagFileMount) UpdateItem(hc *koyeb.FileMount) {
+func (f *FlagFile) UpdateItem(hc *koyeb.File) {
 	hc.Content = &f.content
 	hc.Path = &f.path
 	hc.Permissions = &f.permissions
 }
 
-func (f *FlagFileMount) CreateNewItem() *koyeb.FileMount {
-	item := koyeb.NewFileMountWithDefaults()
+func (f *FlagFile) CreateNewItem() *koyeb.File{
+	item := koyeb.NewFileWithDefaults()
 	f.UpdateItem(item)
 	return item
 }
