@@ -378,10 +378,10 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
 	)
 	flags.StringSlice(
-		"mount-config-file",
+		"file",
 		nil,
-		"Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS] for example --mount-file /etc/data.yaml:/etc/data.yaml:0644\n"+
-			"To delete a file mount, use !PATH, for example --mount-file !/etc/data.yaml\n",
+		"Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS] for example --file /etc/data.yaml:/etc/data.yaml:0644\n"+
+			"To delete a file mount, use !PATH, for example --file !/etc/data.yaml\n",
 	)
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
@@ -556,11 +556,11 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 	}
 	definition.SetVolumes(volumes)
 
-	fileMounts, err := h.parseFileMounts(ctx, flags, definition.FileMounts)
+	files, err := h.parseFiles(ctx, flags, definition.Files)
 	if err != nil {
 		return err
 	}
-	definition.SetFileMounts(fileMounts)
+	definition.SetFiles(files)
 
 	return nil
 }
@@ -1754,9 +1754,9 @@ func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, cur
 	return parseListFlags("volumes", flags_list.GetNewVolumeListFromFlags(wrappedResolveVolumeId), flags, currentVolumes)
 }
 
-// Parse --mount-config-file
-func (h *ServiceHandler) parseFileMounts(ctx *CLIContext, flags *pflag.FlagSet, currentFileMounts []koyeb.FileMount) ([]koyeb.FileMount, error) {
-	return parseListFlags("mount-config-file", flags_list.GetNewFileMountListFromFlags(), flags, currentFileMounts)
+// Parse --file
+func (h *ServiceHandler) parseFiles(ctx *CLIContext, flags *pflag.FlagSet, currentFiles []koyeb.File) ([]koyeb.File, error) {
+	return parseListFlags("file", flags_list.GetNewFilestListFromFlags(), flags, currentFiles)
 }
 
 // DeploymentStrategy is a type alias for koyeb.DeploymentStrategyType which implements the pflag.Value interface.
