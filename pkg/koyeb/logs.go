@@ -204,7 +204,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 				// Stop sending ping messages to the websocket connection
 				conn.Stop()
 
-				logs <- WatchLogsEntry{Err: &errors.CLIError{
+				newErr := &errors.CLIError{
 					Icon: "⏰",
 					What: "Disconnected from the logs API",
 					Why:  fmt.Sprintf("forced disconnection after %s", logsTimeout),
@@ -216,7 +216,8 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 					},
 					Orig:     nil,
 					Solution: "Run the command again to reconnect",
-				}}
+				}
+				log.Errorf("%s", newErr)
 				close(logs)
 			case msg := <-readCh:
 				// Sometimes, for example when passing a future date in --since, the
@@ -326,23 +327,23 @@ func (query *WatchLogsQuery) PrintAll() error {
 	if err != nil {
 		return err
 	}
-	for log := range logs {
-		if log.Err != nil {
-			return log.Err
+	for logl := range logs {
+		if logl.Err != nil {
+			return logl.Err
 		}
 		layout := "2006-01-02 15:04:05"
-		date := log.Date.Format(layout)
-		zone, _ := log.Date.Zone()
+		date := logl.Date.Format(layout)
+		zone, _ := logl.Date.Zone()
 
 		switch outputFormat {
 		case "json", "yaml":
-			data, err := json.Marshal(log)
+			data, err := json.Marshal(logl)
 			if err != nil {
 				return err
 			}
 			fmt.Printf("%s\n", data)
 		default:
-			fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(log.Labels.InstanceID, query.full), log.Stream, log.Msg)
+			fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(logl.Labels.InstanceID, query.full), logl.Stream, logl.Msg)
 		}
 	}
 	return nil
