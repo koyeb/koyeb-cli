@@ -6,6 +6,7 @@ set -e
 case $(uname -sm) in
 "Darwin x86_64") target="darwin_amd64" ;;
 "Darwin arm64") target="darwin_arm64" ;;
+"Linux aarch64") target="linux_arm64" ;;
 *) target="linux_amd64" ;;
 esac
 
