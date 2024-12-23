@@ -2,6 +2,10 @@
 
 * …
 
+## v5.3.2 (2024-12-23)
+
+* Fix exit status on logs when it's a client timeout.
+
 ## v5.3.1 (2024-11-27)
 
 * Fix release.
