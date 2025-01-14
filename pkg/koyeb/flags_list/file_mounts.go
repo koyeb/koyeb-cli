@@ -58,7 +58,7 @@ func GetNewFilestListFromFlags() func(values []string) ([]Flag[koyeb.File], erro
 				if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the file flag value \"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf(" Unable to locate file at \"%s\"", path),
 						Additional: []string{
 							"File flag value must be specified as SOURCE:PATH[:PERMISSIONS]",
 							"To remove a mounted file from the service, prefix the path with '!', e.g. '!path'",
@@ -71,7 +71,7 @@ func GetNewFilestListFromFlags() func(values []string) ([]Flag[koyeb.File], erro
 				if err != nil {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to read the file flag value \"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to read the file \"%s\"", path),
 						Additional: []string{
 							"File flag value must be specified as SOURCE:PATH[:PERMISSIONS]",
 							"To remove a file mount from the service, prefix it with '!', e.g. '!path'",
@@ -89,9 +89,9 @@ func GetNewFilestListFromFlags() func(values []string) ([]Flag[koyeb.File], erro
 				if len(permissions) != 4 {
 					return nil, &kerrors.CLIError{
 						What: "Error while configuring the service",
-						Why:  fmt.Sprintf("unable to parse the file flag value \"%s\"", hc.cliValue),
+						Why:  fmt.Sprintf("unable to parse the permissions \"%s\"", permissions),
 						Additional: []string{
-							"File mount permission must be specified as SOURCE:PATH:PERMISSIONS",
+							"File mount permission must be specified as SOURCE:PATH:PERMISSIONS and in format like 0644",
 							"To remove a file mount from the service, prefix it with '!', e.g. '!path'",
 						},
 						Orig:     nil,
