@@ -284,6 +284,10 @@ See examples of koyeb service create --help
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+                                                 for example --config-file /etc/data.yaml:/etc/data.yaml:0644
+                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
@@ -291,8 +295,7 @@ See examples of koyeb service create --help
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, use the following syntax: 
-                                                 --env FOO={{secret.bar}}
+                                                 To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
       --git string                               Git repository
@@ -577,10 +580,13 @@ koyeb deploy <path> <app>/<service> [flags]
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+                                                 for example --config-file /etc/data.yaml:/etc/data.yaml:0644
+                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, use the following syntax: 
-                                                 --env FOO={{secret.bar}}
+                                                 To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
   -h, --help                                     help for deploy
@@ -1379,6 +1385,10 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+                                                 for example --config-file /etc/data.yaml:/etc/data.yaml:0644
+                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
@@ -1386,8 +1396,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, use the following syntax: 
-                                                 --env FOO={{secret.bar}}
+                                                 To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
       --git string                               Git repository
@@ -1833,6 +1842,10 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
+      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+                                                 for example --config-file /etc/data.yaml:/etc/data.yaml:0644
+                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
@@ -1840,8 +1853,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, use the following syntax: 
-                                                 --env FOO={{secret.bar}}
+                                                 To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
       --git string                               Git repository
