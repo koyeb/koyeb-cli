@@ -378,10 +378,11 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
 	)
 	flags.StringSlice(
-		"file",
+		"config-file",
 		nil,
-		"Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS] for example --file /etc/data.yaml:/etc/data.yaml:0644\n"+
-			"To delete a file mount, use !PATH, for example --file !/etc/data.yaml\n",
+		"Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]\n"+
+			"for example --config-file /etc/data.yaml:/etc/data.yaml:0644\n"+
+			"To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml\n",
 	)
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
@@ -556,11 +557,11 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 	}
 	definition.SetVolumes(volumes)
 
-	files, err := h.parseFiles(ctx, flags, definition.Files)
+	files, err := h.parseConfigFiles(ctx, flags, definition.ConfigFiles)
 	if err != nil {
 		return err
 	}
-	definition.SetFiles(files)
+	definition.SetConfigFiles(files)
 
 	return nil
 }
@@ -1754,9 +1755,9 @@ func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, cur
 	return parseListFlags("volumes", flags_list.GetNewVolumeListFromFlags(wrappedResolveVolumeId), flags, currentVolumes)
 }
 
-// Parse --file
-func (h *ServiceHandler) parseFiles(ctx *CLIContext, flags *pflag.FlagSet, currentFiles []koyeb.File) ([]koyeb.File, error) {
-	return parseListFlags("file", flags_list.GetNewFilestListFromFlags(), flags, currentFiles)
+// Parse --config-file
+func (h *ServiceHandler) parseConfigFiles(ctx *CLIContext, flags *pflag.FlagSet, currentFiles []koyeb.ConfigFile) ([]koyeb.ConfigFile, error) {
+	return parseListFlags("config-file", flags_list.GetNewConfigFilestListFromFlags(), flags, currentFiles)
 }
 
 // DeploymentStrategy is a type alias for koyeb.DeploymentStrategyType which implements the pflag.Value interface.
