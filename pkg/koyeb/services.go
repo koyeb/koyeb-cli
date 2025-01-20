@@ -380,9 +380,9 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.StringSlice(
 		"config-file",
 		nil,
-		"Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]\n"+
+		"Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]\n"+
 			"for example --config-file /etc/data.yaml:/etc/data.yaml:0644\n"+
-			"To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml\n",
+			"To delete a config file, use !PATH, for example --config-file !/etc/data.yaml\n",
 	)
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
