@@ -133,10 +133,18 @@ func (mapper *AppMapper) fetch() error {
 		mapper.sidMap.Set(id, sid)
 		mapper.nameMap.Set(id, name)
 		for _, domain := range domains {
-			if domain.GetType() == koyeb.DOMAINTYPE_AUTOASSIGNED {
-				mapper.autoDomainMap.Set(id, domain.GetId())
-				break
+			if domain.GetType() != koyeb.DOMAINTYPE_AUTOASSIGNED {
+				continue
 			}
+
+			// We want the original autoassigned domain for the app, not other ones that
+			// could have been provisioned with Koyeb Load Balancer, for example
+			if !domain.HasCloudflare() {
+				continue
+			}
+
+			mapper.autoDomainMap.Set(id, domain.GetId())
+			break
 		}
 
 		return nil
