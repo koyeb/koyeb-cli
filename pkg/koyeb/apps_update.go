@@ -26,7 +26,6 @@ func (h *AppHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, 
 	var newDomain *koyeb.Domain
 	if domain := GetStringFlags(cmd, "domain"); domain != "" {
 		updateDomainReq := koyeb.NewUpdateDomainWithDefaults()
-		updateDomainReq.SetAppId(app)
 		updateDomainReq.SetSubdomain(domain)
 
 		domainID, err := ctx.Mapper.App().GetAutoDomain(app)
