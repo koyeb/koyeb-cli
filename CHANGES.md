@@ -2,7 +2,12 @@
 
 * …
 
-## v5.4.0 (unreleased)
+## v5.4.1 (2025-02-26)
+
+* Fix `koyeb app update <app> --domain <newname>` which was hitting an API error.
+  - https://github.com/koyeb/koyeb-cli/pull/272
+
+## v5.4.0 (2025-01-20)
 
 * Add the `--config-file` flag to the service create and update commands, to add/remove config files to a service.
   - https://github.com/koyeb/koyeb-cli/pull/266
