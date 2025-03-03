@@ -2,6 +2,11 @@
 
 * …
 
+## v5.4.2 (2025-03-03)
+
+* Add `--ignore-dir` flag to `koyeb archive create` command and `--archive-ignore-dir` flag to `koyeb deploy` command to allow overwriting the directories ignored by default.
+  - https://github.com/koyeb/koyeb-cli/pull/274
+
 ## v5.4.1 (2025-02-26)
 
 * Fix `koyeb app update <app> --domain <newname>` which was hitting an API error.
