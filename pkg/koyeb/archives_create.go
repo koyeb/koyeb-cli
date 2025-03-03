@@ -17,7 +17,7 @@ import (
 // /v1/archives to get a signed URL to upload the archive to, and uploads the
 // archive.
 func (h *ArchiveHandler) CreateArchive(ctx *CLIContext, path string) (*koyeb.CreateArchiveReply, error) {
-	tarball, err := archive.Archive(path)
+	tarball, err := archive.Archive(path, h.ignoreDirectories)
 	if err != nil {
 		return nil, &errors.CLIError{
 			What:       "Unable to create archive",

@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -26,16 +27,10 @@ func (t *tarball) Close() error {
 	return t.File.Close()
 }
 
-var ignoredDirectories = map[string]bool{
-	".git":         true,
-	"node_modules": true,
-	"vendor":       true,
-}
-
 // Archive compresses a directory into a tarball and returns the path to this tarball.
 // Some directories are ignored by default (e.g. .git, node_modules, vendor).
 // This is not yet configurable but could be in the future.
-func Archive(path string) (*tarball, error) {
+func Archive(path string, ignoreDirectories []string) (*tarball, error) {
 	basePath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -66,7 +61,7 @@ func Archive(path string) (*tarball, error) {
 		// only match the base name of the directory, there is no yet support
 		// for regex or more complex patterns, that could be useful to ignore
 		// all the files from .gitignore or .dockerignore for example
-		if fi.IsDir() && ignoredDirectories[filepath.Base(file)] {
+		if fi.IsDir() && slices.Contains(ignoreDirectories, filepath.Base(file)) {
 			log.Debugf("Archive: skip %s", file)
 			return filepath.SkipDir
 		}
