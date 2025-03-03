@@ -471,6 +471,12 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForArchiveSource(flags *pflag.
 	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
 	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
 	flags.String("archive-docker-target", "", "Docker target")
+	flags.StringSlice("archive-ignore-dir", []string{".git", "node_modules", "vendor"},
+		"Set directories to ignore when building the archive.\n"+
+			"To ignore multiple directories, use the flag multiple times.\n"+
+			"To include all directories, set the flag to an empty string.",
+	)
+
 }
 
 // parseServiceDefinitionFlags parses the flags related to the service definition, and updates the given definition accordingly.
@@ -1540,6 +1546,16 @@ func (h *ServiceHandler) parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, b
 		builder.SetPrivileged(privileged)
 	}
 	return &builder, nil
+}
+
+func (h *ServiceHandler) ParseArchiveIgnoreDirectories(flags *pflag.FlagSet, handler *ArchiveHandler) error {
+	ignoreDirectories, err := flags.GetStringSlice("archive-ignore-dir")
+	if err != nil {
+		return err
+	}
+	handler.ParseIgnoreDirectories(ignoreDirectories)
+	return nil
+
 }
 
 // DeploymentDefinition contains the keys "env", "scalings" and "instance_types"

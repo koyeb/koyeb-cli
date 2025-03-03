@@ -54,6 +54,11 @@ func NewDeployCmd() *cobra.Command {
 				return err
 			}
 
+			err = serviceHandler.ParseArchiveIgnoreDirectories(cmd.Flags(), archiveHandler)
+			if err != nil {
+				return err
+			}
+
 			if serviceId == "" {
 				createService := koyeb.NewCreateServiceWithDefaults()
 				createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
