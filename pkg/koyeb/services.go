@@ -479,6 +479,15 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForArchiveSource(flags *pflag.
 
 }
 
+func isFreeInstanceUsed(instanceTypes []koyeb.DeploymentInstanceType) bool {
+	for _, instanceType := range instanceTypes {
+		if instanceType.GetType() == "free" {
+			return true
+		}
+	}
+	return false
+}
+
 // parseServiceDefinitionFlags parses the flags related to the service definition, and updates the given definition accordingly.
 func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition) error {
 	// For `koyeb service create`, the flag "name" does not exist so flags.Lookup("name") will return nil.
@@ -530,7 +539,8 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		}
 	}
 
-	definition.SetScalings(h.parseScalings(flags, definition.Scalings))
+	isFreeUsed := isFreeInstanceUsed(definition.GetInstanceTypes())
+	definition.SetScalings(h.parseScalings(isFreeUsed, flags, definition.Scalings))
 
 	healthchecks, err := h.parseChecks(definition.GetType(), flags, definition.HealthChecks)
 	if err != nil {
@@ -891,14 +901,15 @@ func (h *ServiceHandler) parseRegions(flags *pflag.FlagSet, currentRegions []str
 }
 
 // Parse --min-scale and --max-scale
-func (h *ServiceHandler) parseScalings(flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
-	var minScale int64
-	var maxScale int64
+func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
+	var minScale, maxScale int64
 
 	if flags.Lookup("min-scale").Changed {
 		minScale, _ = flags.GetInt64("min-scale")
-	} else {
+	} else if flags.Lookup("scale").Changed || !isFreeUsed {
 		minScale, _ = flags.GetInt64("scale")
+	} else {
+		minScale = 0
 	}
 
 	if flags.Lookup("max-scale").Changed {
