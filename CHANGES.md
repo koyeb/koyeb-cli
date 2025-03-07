@@ -2,6 +2,11 @@
 
 * …
 
+## v5.4.3 (2025-03-07)
+
+* Fix default min-count for free instances
+  - https://github.com/koyeb/koyeb-cli/pull/275
+
 ## v5.4.2 (2025-03-03)
 
 * Add `--ignore-dir` flag to `koyeb archive create` command and `--archive-ignore-dir` flag to `koyeb deploy` command to allow overwriting the directories ignored by default.
