@@ -93,8 +93,8 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 
 	startStr := GetStringFlags(cmd, "start-time")
 	endStr := GetStringFlags(cmd, "end-time")
-	// regex := GetStringFlags(cmd, "regex-search")
-	// text := GetStringFlags(cmd, "text-search")
+	regex := GetStringFlags(cmd, "regex-search")
+	text := GetStringFlags(cmd, "text-search")
 
 	now := time.Now()
 	end := now
@@ -135,24 +135,24 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 
 	}
 
-	// prevLogs, err := ctx.LogsClient.ExecuteQueryLogsQuery(
-	// 	ctx.Context,
-	// 	logsType,
-	// 	serviceId,
-	// 	deploymentId,
-	// 	instanceId,
-	// 	since,
-	// 	end,
-	// 	regex,
-	// 	text,
-	// 	GetBoolFlags(cmd, "full"),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-	// for _, log := range prevLogs {
-	// 	PrintLogLine(log, GetBoolFlags(cmd, "full"), *log.CreatedAt, *log.Msg, log.Labels["stream"].(string), log.Labels["instance_id"].(string))
-	// }
+	prevLogs, err := ctx.LogsClient.ExecuteQueryLogsQuery(
+		ctx.Context,
+		logsType,
+		serviceId,
+		deploymentId,
+		instanceId,
+		since,
+		end,
+		regex,
+		text,
+		GetBoolFlags(cmd, "full"),
+	)
+	if err != nil {
+		return err
+	}
+	for _, log := range prevLogs {
+		PrintLogLine(log, GetBoolFlags(cmd, "full"), *log.CreatedAt, *log.Msg, log.Labels["stream"].(string), log.Labels["instance_id"].(string))
+	}
 
 	// if end was given, we don't tail logs
 	if end != now {
@@ -164,7 +164,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 		serviceId,
 		deploymentId,
 		instanceId,
-		since,
+		end,
 		GetBoolFlags(cmd, "full"),
 	)
 	if err != nil {
