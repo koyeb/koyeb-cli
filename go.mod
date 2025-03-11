@@ -9,7 +9,7 @@ require (
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/iancoleman/strcase v0.2.0
-	github.com/koyeb/koyeb-api-client-go v0.0.0-20250226155650-8b24d170cacf
+	github.com/koyeb/koyeb-api-client-go v0.0.0-20250310144100-60a6c6845719
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	github.com/yudai/gojsondiff v1.0.0
-	golang.org/x/term v0.8.0
+	golang.org/x/term v0.30.0
 )
 
 require (
@@ -32,7 +32,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -57,13 +56,11 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
-	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
-	golang.org/x/net v0.0.0-20220927171203-f486391704dc // indirect
-	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
-	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/oauth2 v0.28.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
