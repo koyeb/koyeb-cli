@@ -404,10 +404,7 @@ func (query *WatchLogsQuery) PrintAll() error {
 		if logl.Err != nil {
 			return logl.Err
 		}
-		err := PrintLogLine(logl, query.full, logl.Date, logl.Msg, logl.Stream, logl.Labels.InstanceID)
-		if err != nil {
-			return err
-		}
+		PrintLogLine(logl, query.full, logl.Date, logl.Msg, logl.Stream, logl.Labels.InstanceID)
 	}
 	return nil
 }
