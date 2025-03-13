@@ -145,10 +145,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 			return err
 		}
 		for _, log := range prevLogs {
-			err := PrintLogLine(log, GetBoolFlags(cmd, "full"), *log.CreatedAt, *log.Msg, log.Labels["stream"].(string), log.Labels["instance_id"].(string))
-			if err != nil {
-				return err
-			}
+			PrintLogLine(log, GetBoolFlags(cmd, "full"), *log.CreatedAt, *log.Msg, log.Labels["stream"].(string), log.Labels["instance_id"].(string))
 		}
 
 		return nil
