@@ -99,8 +99,7 @@ func (client *LogsAPIClient) NewWatchLogsQuery(
 }
 
 func (client *LogsAPIClient) ExecuteQueryLogsQuery(ctx context.Context,
-	logType string, serviceId string, deploymentId string, instanceId string, start time.Time, end time.Time, regex string, text string, order string, full bool,
-) ([]koyeb.LogEntry, error) {
+	logType string, serviceId string, deploymentId string, instanceId string, start time.Time, end time.Time, regex string, text string, order string) (*koyeb.QueryLogsReply, error) {
 	switch logType {
 	case "build", "runtime", "":
 		break
@@ -116,9 +115,6 @@ func (client *LogsAPIClient) ExecuteQueryLogsQuery(ctx context.Context,
 		}
 	}
 
-	hasMore := true
-	logs := make([]koyeb.LogEntry, 0)
-
 	req := client.client.LogsApi.QueryLogs(ctx).
 		Type_(logType).
 		ServiceId(serviceId).
@@ -126,32 +122,20 @@ func (client *LogsAPIClient) ExecuteQueryLogsQuery(ctx context.Context,
 		InstanceId(instanceId).
 		Regex(regex).
 		Text(text).
+		Start(start).
+		End(end).
 		Limit(fmt.Sprintf("%d", 100)).
 		Order(order)
 
-	for hasMore {
-		req = req.Start(start).End(end)
-
-		resp, _, err := req.Execute()
-		if err != nil {
-			return nil, &errors.CLIError{
-				What: "Error while fetching logs",
-				Why:  "could not fetch query results",
-				Orig: err,
-			}
-		}
-		logs = append(logs, resp.Data...)
-
-		if resp.Pagination.HasMore != nil {
-			hasMore = *resp.Pagination.HasMore
-			if hasMore {
-				start = *resp.Pagination.NextStart
-				end = *resp.Pagination.NextEnd
-			}
+	resp, _, err := req.Execute()
+	if err != nil {
+		return nil, &errors.CLIError{
+			What: "Error while fetching logs",
+			Why:  "could not fetch query results",
+			Orig: err,
 		}
 	}
-
-	return logs, nil
+	return resp, nil
 }
 
 // LogLine represents a line returned by /v1/streams/logs/tail or /v1/streams/logs/query

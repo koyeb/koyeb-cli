@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
@@ -97,38 +98,68 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	text := GetStringFlags(cmd, "text-search")
 	order := GetStringFlags(cmd, "order")
 
-	// if either start or end are provided,
-	// query logs, then return
-	if startStr != "" || endStr != "" {
-		end := time.Now()
-		if endStr != "" {
-			layout := "2006-01-02 15:04:05 +0000 UTC"
-			end, err = time.Parse(layout, endStr)
-			if err != nil {
-				return &errors.CLIError{
-					What:     "Error while fetching logs",
-					Why:      "End time was improperly formatted.",
-					Orig:     err,
-					Solution: "Enter end time using this layout: '2006-01-02 15:04:05'",
-				}
+	if !since.IsZero() && startStr != "" {
+		return &errors.CLIError{
+			What: "Error while fetching logs",
+			Why:  "Cannot use since with start-time",
+		}
+	}
+
+	end := time.Now()
+	if endStr != "" {
+		end, err = dates.Parse(endStr)
+		if err != nil {
+			return &errors.CLIError{
+				What:     "Error while fetching logs",
+				Why:      "End time was improperly formatted.",
+				Orig:     err,
+				Solution: "Enter end time using this layout: '2006-01-02 15:04:05'",
 			}
 		}
-
-		start := end.Add(-5 * time.Minute)
-		if startStr != "" {
-			layout := "2006-01-02 15:04:05 +0000 UTC"
-			start, err = time.Parse(layout, startStr)
-			if err != nil {
-				return &errors.CLIError{
-					What:     "Error while fetching logs",
-					Why:      "start time was improperly formatted.",
-					Orig:     err,
-					Solution: "Enter start time using this layout: '2006-01-02 15:04:05'",
-				}
+	}
+	start := end.Add(-5 * time.Minute)
+	if !since.IsZero() {
+		start = since
+	}
+	if startStr != "" {
+		start, err = dates.Parse(startStr)
+		if err != nil {
+			return &errors.CLIError{
+				What:     "Error while fetching logs",
+				Why:      "start time was improperly formatted.",
+				Orig:     err,
+				Solution: "Enter start time using this layout: '2006-01-02 15:04:05'",
 			}
 		}
+	}
 
-		prevLogs, err := ctx.LogsClient.ExecuteQueryLogsQuery(
+	err = h.queryLogs(ctx, logsType, serviceId, deploymentId, instanceId, start, end, regex, text, order, GetBoolFlags(cmd, "full"))
+	if err != nil {
+		return err
+	}
+
+	if endStr != "" {
+		return nil
+	}
+	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
+		logsType,
+		serviceId,
+		deploymentId,
+		instanceId,
+		end,
+		GetBoolFlags(cmd, "full"),
+	)
+	if err != nil {
+		return err
+	}
+	return logsQuery.PrintAll()
+}
+
+func (h *ServiceHandler) queryLogs(ctx *CLIContext, logsType, serviceId, deploymentId, instanceId string, start, end time.Time, regex, text, order string, full bool) error {
+	hasMore := true
+
+	for hasMore {
+		resp, err := ctx.LogsClient.ExecuteQueryLogsQuery(
 			ctx.Context,
 			logsType,
 			serviceId,
@@ -139,35 +170,33 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 			regex,
 			text,
 			order,
-			GetBoolFlags(cmd, "full"),
 		)
 		if err != nil {
 			return err
 		}
-		for _, log := range prevLogs {
-			err := PrintLogLine(log, GetBoolFlags(cmd, "full"), *log.CreatedAt, *log.Msg, log.Labels["stream"].(string), log.Labels["instance_id"].(string))
+
+		if resp.Pagination.HasMore != nil {
+			hasMore = *resp.Pagination.HasMore
+			if hasMore {
+				start = *resp.Pagination.NextStart
+				end = *resp.Pagination.NextEnd
+			}
+		}
+
+		for _, log := range resp.Data {
+			stream, ok := log.Labels["stream"].(string)
+			if !ok {
+				stream = ""
+			}
+			instance_id, ok := log.Labels["instance_id"].(string)
+			if !ok {
+				instance_id = ""
+			}
+			err := PrintLogLine(log, full, *log.CreatedAt, *log.Msg, stream, instance_id)
 			if err != nil {
 				return err
 			}
 		}
-
-		return nil
 	}
-
-	if since.IsZero() {
-		since = serviceDetail.Service.GetCreatedAt()
-	}
-
-	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
-		logsType,
-		serviceId,
-		deploymentId,
-		instanceId,
-		since,
-		GetBoolFlags(cmd, "full"),
-	)
-	if err != nil {
-		return err
-	}
-	return logsQuery.PrintAll()
+	return nil
 }
