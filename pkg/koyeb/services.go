@@ -98,12 +98,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	logsServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
-	logsServiceCmd.Flags().Var(&since, "since", "Tail logs after this specific date")
-	logsServiceCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
-	logsServiceCmd.Flags().StringP("end-time", "e", "", "Return logs before this date")
-	logsServiceCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
-	logsServiceCmd.Flags().String("text-search", "", "Filter logs returned with this text")
-	logsServiceCmd.Flags().String("order", "asc", "Order logs by `asc` or `desc`")
+	logsServiceCmd.Flags().Var(&since, "since", "Only return logs after this specific date")
 	serviceCmd.AddCommand(logsServiceCmd)
 
 	listServiceCmd := &cobra.Command{

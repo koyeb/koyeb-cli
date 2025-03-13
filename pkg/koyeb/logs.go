@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,38 +8,43 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	tailPath  = "/v1/streams/logs/tail"
-	queryPath = "/v1/streams/logs/query"
-)
-
 type LogsAPIClient struct {
-	client *koyeb.APIClient
 	url    *url.URL
-	token  string
+	header http.Header
 }
 
-func NewLogsAPIClient(client *koyeb.APIClient, apiUrl string, token string) (*LogsAPIClient, error) {
-	url, err := url.Parse(apiUrl)
+func NewLogsAPIClient(apiUrl string, token string) (*LogsAPIClient, error) {
+	endpoint, err := url.JoinPath(apiUrl, "/v1/streams/logs/tail")
 	if err != nil {
 		return nil, err
 	}
+	url, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	switch url.Scheme {
+	case "https":
+		url.Scheme = "wss"
+	case "http":
+		url.Scheme = "ws"
+	default:
+		return nil, fmt.Errorf("unsupported schema: %s", url.Scheme)
+	}
 	return &LogsAPIClient{
-		client: client,
-		url:    url,
-		token:  token,
+		url: url,
+		header: http.Header{
+			"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)},
+		},
 	}, nil
 }
 
 type WatchLogsQuery struct {
-	url          *url.URL
-	header       http.Header
+	client       *LogsAPIClient
 	logType      string
 	serviceId    string
 	deploymentId string
@@ -53,34 +57,13 @@ func (client *LogsAPIClient) NewWatchLogsQuery(
 	logType string, serviceId string, deploymentId string, instanceId string, since time.Time, full bool,
 ) (*WatchLogsQuery, error) {
 	query := &WatchLogsQuery{
+		client:       client,
 		serviceId:    serviceId,
 		deploymentId: deploymentId,
 		instanceId:   instanceId,
 		since:        since,
 		full:         full,
 	}
-
-	endpoint, err := url.JoinPath(client.url.String(), tailPath)
-	if err != nil {
-		return nil, err
-	}
-	query.url, err = url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-	switch query.url.Scheme {
-	case "https":
-		query.url.Scheme = "wss"
-	case "http":
-		query.url.Scheme = "ws"
-	default:
-		return nil, fmt.Errorf("unsupported schema: %s", query.url.Scheme)
-	}
-
-	query.header = http.Header{
-		"Sec-Websocket-Protocol": []string{fmt.Sprintf("Bearer, %s", token)},
-	}
-
 	switch logType {
 	case "build", "runtime", "":
 		query.logType = logType
@@ -98,63 +81,7 @@ func (client *LogsAPIClient) NewWatchLogsQuery(
 	return query, nil
 }
 
-func (client *LogsAPIClient) ExecuteQueryLogsQuery(ctx context.Context,
-	logType string, serviceId string, deploymentId string, instanceId string, start time.Time, end time.Time, regex string, text string, order string, full bool,
-) ([]koyeb.LogEntry, error) {
-	switch logType {
-	case "build", "runtime", "":
-		break
-	default:
-		return nil, &errors.CLIError{
-			What: "Error while fetching the logs",
-			Why:  "the log type you provided is invalid",
-			Additional: []string{
-				fmt.Sprintf("The log type should be either `build` or `runtime`, not `%s`", logType),
-			},
-			Orig:     nil,
-			Solution: "Fix the log type and try again",
-		}
-	}
-
-	hasMore := true
-	logs := make([]koyeb.LogEntry, 0)
-
-	req := client.client.LogsApi.QueryLogs(ctx).
-		Type_(logType).
-		ServiceId(serviceId).
-		DeploymentId(deploymentId).
-		InstanceId(instanceId).
-		Regex(regex).
-		Text(text).
-		Limit(fmt.Sprintf("%d", 100)).
-		Order(order)
-
-	for hasMore {
-		req = req.Start(start).End(end)
-
-		resp, _, err := req.Execute()
-		if err != nil {
-			return nil, &errors.CLIError{
-				What: "Error while fetching logs",
-				Why:  "could not fetch query results",
-				Orig: err,
-			}
-		}
-		logs = append(logs, resp.Data...)
-
-		if resp.Pagination.HasMore != nil {
-			hasMore = *resp.Pagination.HasMore
-			if hasMore {
-				start = *resp.Pagination.NextStart
-				end = *resp.Pagination.NextEnd
-			}
-		}
-	}
-
-	return logs, nil
-}
-
-// LogLine represents a line returned by /v1/streams/logs/tail or /v1/streams/logs/query
+// LogLine represents a line returned by /v1/streams/logs/tail
 type LogLine struct {
 	Result LogLineResult `json:"result"`
 }
@@ -195,7 +122,7 @@ func (query *WatchLogsQuery) ParseTime(date string) time.Time {
 }
 
 func (query *WatchLogsQuery) reconnect(isFirstconnection bool) (*WebsocketPingConnection, error) {
-	conn, _, err := websocket.DefaultDialer.Dial(query.url.String(), query.header)
+	conn, _, err := websocket.DefaultDialer.Dial(query.client.url.String(), query.client.header)
 	if err != nil {
 		if isFirstconnection {
 			return nil, &errors.CLIError{
@@ -240,7 +167,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 	if !query.since.IsZero() {
 		queryParams.Add("start", query.since.Format(time.RFC3339))
 	}
-	query.url.RawQuery = queryParams.Encode()
+	query.client.url.RawQuery = queryParams.Encode()
 
 	conn, err := query.reconnect(true)
 	if err != nil {
@@ -336,7 +263,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 				if lastLogReceived != nil && lastLogReceived.Result.CreatedAt != "" {
 					queryParams.Del("start")
 					queryParams.Add("start", lastLogReceived.Result.CreatedAt)
-					query.url.RawQuery = queryParams.Encode()
+					query.client.url.RawQuery = queryParams.Encode()
 				}
 
 				conn, err = query.reconnect(false)
@@ -404,26 +331,20 @@ func (query *WatchLogsQuery) PrintAll() error {
 		if logl.Err != nil {
 			return logl.Err
 		}
-		PrintLogLine(logl, query.full, logl.Date, logl.Msg, logl.Stream, logl.Labels.InstanceID)
-	}
-	return nil
-}
+		layout := "2006-01-02 15:04:05"
+		date := logl.Date.Format(layout)
+		zone, _ := logl.Date.Zone()
 
-func PrintLogLine(logl any, full bool, ts time.Time, msg string, stream string, instanceID string) error {
-	layout := "2006-01-02 15:04:05"
-	date := ts.Format(layout)
-	zone, _ := ts.Zone()
-
-	switch outputFormat {
-	case "json", "yaml":
-		data, err := json.Marshal(logl)
-		if err != nil {
-			return err
+		switch outputFormat {
+		case "json", "yaml":
+			data, err := json.Marshal(logl)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", data)
+		default:
+			fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(logl.Labels.InstanceID, query.full), logl.Stream, logl.Msg)
 		}
-		fmt.Printf("%s\n", data)
-	default:
-		fmt.Printf("[%s %s] %s %6s - %s\n", date, zone, renderer.FormatID(instanceID, full), stream, msg)
 	}
-
 	return nil
 }

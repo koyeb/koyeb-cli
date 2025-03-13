@@ -45,7 +45,7 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 
 	ctx = context.WithValue(ctx, ctx_client, apiClient)
 
-	logsApiClient, err := NewLogsAPIClient(apiClient, apiurl, ctx.Value(koyeb.ContextAccessToken).(string))
+	logsApiClient, err := NewLogsAPIClient(apiurl, ctx.Value(koyeb.ContextAccessToken).(string))
 	if err != nil {
 		return err
 	}
