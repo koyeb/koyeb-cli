@@ -91,6 +91,70 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 		deploymentId = latestDeploymentId
 	}
 
+	startStr := GetStringFlags(cmd, "start-time")
+	endStr := GetStringFlags(cmd, "end-time")
+	regex := GetStringFlags(cmd, "regex-search")
+	text := GetStringFlags(cmd, "text-search")
+	order := GetStringFlags(cmd, "order")
+
+	// if either start or end are provided,
+	// query logs, then return
+	if startStr != "" || endStr != "" {
+		end := time.Now()
+		if endStr != "" {
+			layout := "2006-01-02 15:04:05 +0000 UTC"
+			end, err = time.Parse(layout, endStr)
+			if err != nil {
+				return &errors.CLIError{
+					What:     "Error while fetching logs",
+					Why:      "End time was improperly formatted.",
+					Orig:     err,
+					Solution: "Enter end time using this layout: '2006-01-02 15:04:05'",
+				}
+			}
+		}
+
+		start := end.Add(-5 * time.Minute)
+		if startStr != "" {
+			layout := "2006-01-02 15:04:05 +0000 UTC"
+			start, err = time.Parse(layout, startStr)
+			if err != nil {
+				return &errors.CLIError{
+					What:     "Error while fetching logs",
+					Why:      "start time was improperly formatted.",
+					Orig:     err,
+					Solution: "Enter start time using this layout: '2006-01-02 15:04:05'",
+				}
+			}
+		}
+
+		prevLogs, err := ctx.LogsClient.ExecuteQueryLogsQuery(
+			ctx.Context,
+			logsType,
+			serviceId,
+			deploymentId,
+			instanceId,
+			start,
+			end,
+			regex,
+			text,
+			order,
+			GetBoolFlags(cmd, "full"),
+		)
+		if err != nil {
+			return err
+		}
+		for _, log := range prevLogs {
+			PrintLogLine(log, GetBoolFlags(cmd, "full"), *log.CreatedAt, *log.Msg, log.Labels["stream"].(string), log.Labels["instance_id"].(string))
+		}
+
+		return nil
+	}
+
+	if since.IsZero() {
+		since = serviceDetail.Service.GetCreatedAt()
+	}
+
 	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
 		logsType,
 		serviceId,
