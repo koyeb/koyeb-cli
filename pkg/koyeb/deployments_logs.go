@@ -23,16 +23,28 @@ func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time
 		)
 	}
 
-	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
-		GetStringFlags(cmd, "type"),
-		"",
-		deploymentDetail.Deployment.GetId(),
-		"",
-		since,
-		GetBoolFlags(cmd, "full"),
-	)
-	if err != nil {
-		return err
-	}
-	return logsQuery.PrintAll()
+	logsType := GetStringFlags(cmd, "type")
+	startStr := GetStringFlags(cmd, "start-time")
+	endStr := GetStringFlags(cmd, "end-time")
+	regex := GetStringFlags(cmd, "regex-search")
+	text := GetStringFlags(cmd, "text-search")
+	order := GetStringFlags(cmd, "order")
+	tail := GetBoolFlags(cmd, "tail")
+	output := GetStringFlags(cmd, "output")
+
+	return ctx.LogsClient.PrintLogs(ctx, LogsQuery{
+		Type:         logsType,
+		DeploymentId: deploymentDetail.Deployment.GetId(),
+		ServiceId:    "",
+		InstanceId:   "",
+		Since:        since,
+		Start:        startStr,
+		End:          endStr,
+		Text:         text,
+		Order:        order,
+		Tail:         tail,
+		Regex:        regex,
+		Full:         GetBoolFlags(cmd, "full"),
+		Output:       output,
+	})
 }
