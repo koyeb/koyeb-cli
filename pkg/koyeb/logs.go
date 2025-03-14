@@ -91,7 +91,7 @@ func (client *LogsAPIClient) PrintLogs(ctx *CLIContext, q LogsQuery) error {
 	start := end.Add(-5 * time.Minute)
 	if !q.Since.IsZero() {
 		if q.Output == "" {
-			logrus.Warn("--q.Since is deprecated. Please use --start-time with --tail.")
+			logrus.Warn("--since is deprecated. Please use --tail --start-time.")
 		}
 		q.Tail = true
 		start = q.Since

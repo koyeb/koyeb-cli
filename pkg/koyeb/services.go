@@ -98,7 +98,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	logsServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
-	logsServiceCmd.Flags().Var(&since, "since", "DEPRECATED. DO NOT USE. Tail logs after this specific date")
+	logsServiceCmd.Flags().Var(&since, "since", "DEPRECATED. Use --tail --start-time instead.")
 	logsServiceCmd.Flags().Bool("tail", false, "Tail logs if no `--end-time` is provided.")
 	logsServiceCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
 	logsServiceCmd.Flags().StringP("end-time", "e", "", "Return logs before this date")
