@@ -59,7 +59,7 @@ func NewDeploymentCmd() *cobra.Command {
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
 	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime, build)")
-	logDeploymentCmd.Flags().Var(&since, "since", "DEPRECATED. DO NOT USE. Tail logs after this specific date")
+	logDeploymentCmd.Flags().Var(&since, "since", "DEPRECATED. Use --tail --start-time instead.")
 	logDeploymentCmd.Flags().Bool("tail", false, "Tail logs if no `--end-time` is provided.")
 	logDeploymentCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
 	logDeploymentCmd.Flags().StringP("end-time", "e", "", "Return logs before this date")
