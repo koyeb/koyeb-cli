@@ -10,8 +10,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -47,6 +49,135 @@ type WatchLogsQuery struct {
 	instanceId   string
 	since        time.Time
 	full         bool // Whether to display full IDs
+}
+
+type LogsQuery struct {
+	Type         string
+	DeploymentId string
+	ServiceId    string
+	InstanceId   string
+	Since        time.Time
+	Start        string
+	End          string
+	Regex        string
+	Text         string
+	Order        string
+	Tail         bool
+	Full         bool
+	Output       string
+}
+
+func (client *LogsAPIClient) PrintLogs(ctx *CLIContext, q LogsQuery) error {
+	if !q.Since.IsZero() && q.Start != "" {
+		return &errors.CLIError{
+			What: "Error while fetching logs",
+			Why:  "Cannot use q.Since with start-time",
+		}
+	}
+
+	end := time.Now()
+	if q.End != "" {
+		var err error
+		end, err = dates.Parse(q.End)
+		if err != nil {
+			return &errors.CLIError{
+				What:     "Error while fetching logs",
+				Why:      "End time was improperly formatted.",
+				Orig:     err,
+				Solution: "Enter end time using this layout: '2006-01-02 15:04:05'",
+			}
+		}
+	}
+	start := end.Add(-5 * time.Minute)
+	if !q.Since.IsZero() {
+		if q.Output == "" {
+			logrus.Warn("--q.Since is deprecated. Please use --start-time with --tail.")
+		}
+		q.Tail = true
+		start = q.Since
+	}
+	if q.Start != "" {
+		var err error
+		start, err = dates.Parse(q.Start)
+		if err != nil {
+			return &errors.CLIError{
+				What:     "Error while fetching logs",
+				Why:      "start time was improperly formatted.",
+				Orig:     err,
+				Solution: "Enter start time using this layout: '2006-01-02 15:04:05'",
+			}
+		}
+	}
+
+	err := queryLogs(ctx, q.Type, q.ServiceId, q.DeploymentId, q.InstanceId, start, end, q.Regex, q.Text, q.Order, q.Full)
+	if err != nil {
+		return err
+	}
+
+	if !q.Tail {
+		return nil
+	}
+	if q.End != "" {
+		return nil
+	}
+	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
+		q.Type,
+		q.ServiceId,
+		q.DeploymentId,
+		q.InstanceId,
+		end,
+		q.Full,
+	)
+	if err != nil {
+		return err
+	}
+	return logsQuery.PrintAll()
+}
+
+func queryLogs(ctx *CLIContext, logsType, serviceId, deploymentId, instanceId string, start, end time.Time, regex, text, order string, full bool) error {
+	hasMore := true
+
+	for hasMore {
+		resp, err := ctx.LogsClient.ExecuteQueryLogsQuery(
+			ctx.Context,
+			logsType,
+			serviceId,
+			deploymentId,
+			instanceId,
+			start,
+			end,
+			regex,
+			text,
+			order,
+		)
+		if err != nil {
+			return err
+		}
+
+		if resp.Pagination.HasMore != nil {
+			hasMore = *resp.Pagination.HasMore
+			if hasMore {
+				start = *resp.Pagination.NextStart
+				end = *resp.Pagination.NextEnd
+			}
+		}
+
+		for _, log := range resp.Data {
+			stream, ok := log.Labels["stream"].(string)
+			if !ok {
+				stream = ""
+			}
+			instance_id, ok := log.Labels["instance_id"].(string)
+			if !ok {
+				instance_id = ""
+			}
+			err := PrintLogLine(log, full, *log.CreatedAt, *log.Msg, stream, instance_id)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (client *LogsAPIClient) NewWatchLogsQuery(

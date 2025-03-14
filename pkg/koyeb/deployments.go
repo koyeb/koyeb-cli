@@ -59,7 +59,13 @@ func NewDeploymentCmd() *cobra.Command {
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
 	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime, build)")
-	logDeploymentCmd.Flags().Var(&since, "since", "Only return logs after this specific date")
+	logDeploymentCmd.Flags().Var(&since, "since", "DEPRECATED. DO NOT USE. Tail logs after this specific date")
+	logDeploymentCmd.Flags().Bool("tail", false, "Tail logs if no `--end-time` is provided.")
+	logDeploymentCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
+	logDeploymentCmd.Flags().StringP("end-time", "e", "", "Return logs before this date")
+	logDeploymentCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
+	logDeploymentCmd.Flags().String("text-search", "", "Filter logs returned with this text")
+	logDeploymentCmd.Flags().String("order", "asc", "Order logs by `asc` or `desc`")
 	return deploymentCmd
 }
 

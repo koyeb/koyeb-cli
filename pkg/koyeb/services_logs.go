@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 )
 
@@ -100,112 +99,21 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	tail := GetBoolFlags(cmd, "tail")
 	output := GetStringFlags(cmd, "output")
 
-	if !since.IsZero() && startStr != "" {
-		return &errors.CLIError{
-			What: "Error while fetching logs",
-			Why:  "Cannot use since with start-time",
-		}
-	}
+	ctx.LogsClient.PrintLogs(ctx, LogsQuery{
+		Type:         logsType,
+		DeploymentId: deploymentId,
+		ServiceId:    serviceId,
+		InstanceId:   instanceId,
+		Since:        since,
+		Start:        startStr,
+		End:          endStr,
+		Text:         text,
+		Order:        order,
+		Tail:         tail,
+		Regex:        regex,
+		Full:         GetBoolFlags(cmd, "full"),
+		Output:       output,
+	})
 
-	end := time.Now()
-	if endStr != "" {
-		end, err = dates.Parse(endStr)
-		if err != nil {
-			return &errors.CLIError{
-				What:     "Error while fetching logs",
-				Why:      "End time was improperly formatted.",
-				Orig:     err,
-				Solution: "Enter end time using this layout: '2006-01-02 15:04:05'",
-			}
-		}
-	}
-	start := end.Add(-5 * time.Minute)
-	if !since.IsZero() {
-		if output == "" {
-			logrus.Warn("--since is deprecated. Please use --start-time with --tail.")
-		}
-		tail = true
-		start = since
-	}
-	if startStr != "" {
-		start, err = dates.Parse(startStr)
-		if err != nil {
-			return &errors.CLIError{
-				What:     "Error while fetching logs",
-				Why:      "start time was improperly formatted.",
-				Orig:     err,
-				Solution: "Enter start time using this layout: '2006-01-02 15:04:05'",
-			}
-		}
-	}
-
-	err = h.queryLogs(ctx, logsType, serviceId, deploymentId, instanceId, start, end, regex, text, order, GetBoolFlags(cmd, "full"))
-	if err != nil {
-		return err
-	}
-
-	if !tail {
-		return nil
-	}
-	if endStr != "" {
-		return nil
-	}
-	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
-		logsType,
-		serviceId,
-		deploymentId,
-		instanceId,
-		end,
-		GetBoolFlags(cmd, "full"),
-	)
-	if err != nil {
-		return err
-	}
-	return logsQuery.PrintAll()
-}
-
-func (h *ServiceHandler) queryLogs(ctx *CLIContext, logsType, serviceId, deploymentId, instanceId string, start, end time.Time, regex, text, order string, full bool) error {
-	hasMore := true
-
-	for hasMore {
-		resp, err := ctx.LogsClient.ExecuteQueryLogsQuery(
-			ctx.Context,
-			logsType,
-			serviceId,
-			deploymentId,
-			instanceId,
-			start,
-			end,
-			regex,
-			text,
-			order,
-		)
-		if err != nil {
-			return err
-		}
-
-		if resp.Pagination.HasMore != nil {
-			hasMore = *resp.Pagination.HasMore
-			if hasMore {
-				start = *resp.Pagination.NextStart
-				end = *resp.Pagination.NextEnd
-			}
-		}
-
-		for _, log := range resp.Data {
-			stream, ok := log.Labels["stream"].(string)
-			if !ok {
-				stream = ""
-			}
-			instance_id, ok := log.Labels["instance_id"].(string)
-			if !ok {
-				instance_id = ""
-			}
-			err := PrintLogLine(log, full, *log.CreatedAt, *log.Msg, stream, instance_id)
-			if err != nil {
-				return err
-			}
-		}
-	}
 	return nil
 }
