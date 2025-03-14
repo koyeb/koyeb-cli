@@ -98,6 +98,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	text := GetStringFlags(cmd, "text-search")
 	order := GetStringFlags(cmd, "order")
 	tail := GetBoolFlags(cmd, "tail")
+	output := GetStringFlags(cmd, "output")
 
 	if !since.IsZero() && startStr != "" {
 		return &errors.CLIError{
@@ -120,6 +121,9 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	}
 	start := end.Add(-5 * time.Minute)
 	if !since.IsZero() {
+		if output == "" {
+			logrus.Warn("--since is deprecated. Please use --start-time with --tail.")
+		}
 		tail = true
 		start = since
 	}
