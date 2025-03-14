@@ -120,6 +120,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	}
 	start := end.Add(-5 * time.Minute)
 	if !since.IsZero() {
+		tail = true
 		start = since
 	}
 	if startStr != "" {
