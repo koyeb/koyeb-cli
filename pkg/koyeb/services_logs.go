@@ -97,6 +97,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	regex := GetStringFlags(cmd, "regex-search")
 	text := GetStringFlags(cmd, "text-search")
 	order := GetStringFlags(cmd, "order")
+	follow := GetBoolFlags(cmd, "follow")
 
 	if !since.IsZero() && startStr != "" {
 		return &errors.CLIError{
@@ -138,6 +139,9 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 		return err
 	}
 
+	if !follow {
+		return nil
+	}
 	if endStr != "" {
 		return nil
 	}
