@@ -99,7 +99,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
 	logsServiceCmd.Flags().Var(&since, "since", "DEPRECATED. DO NOT USE. Tail logs after this specific date")
-	logsServiceCmd.Flags().BoolP("follow", "f", true, "Tail logs if no `--end-time` is provided.")
+	logsServiceCmd.Flags().Bool("tail", true, "Tail logs if no `--end-time` is provided.")
 	logsServiceCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
 	logsServiceCmd.Flags().StringP("end-time", "e", "", "Return logs before this date")
 	logsServiceCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
