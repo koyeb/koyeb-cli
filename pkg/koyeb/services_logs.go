@@ -91,16 +91,27 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 		deploymentId = latestDeploymentId
 	}
 
-	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
-		logsType,
-		serviceId,
-		deploymentId,
-		instanceId,
-		since,
-		GetBoolFlags(cmd, "full"),
-	)
-	if err != nil {
-		return err
-	}
-	return logsQuery.PrintAll()
+	startStr := GetStringFlags(cmd, "start-time")
+	endStr := GetStringFlags(cmd, "end-time")
+	regex := GetStringFlags(cmd, "regex-search")
+	text := GetStringFlags(cmd, "text-search")
+	order := GetStringFlags(cmd, "order")
+	tail := GetBoolFlags(cmd, "tail")
+	output := GetStringFlags(cmd, "output")
+
+	return ctx.LogsClient.PrintLogs(ctx, LogsQuery{
+		Type:         logsType,
+		DeploymentId: deploymentId,
+		ServiceId:    serviceId,
+		InstanceId:   instanceId,
+		Since:        since,
+		Start:        startStr,
+		End:          endStr,
+		Text:         text,
+		Order:        order,
+		Tail:         tail,
+		Regex:        regex,
+		Full:         GetBoolFlags(cmd, "full"),
+		Output:       output,
+	})
 }
