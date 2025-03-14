@@ -75,6 +75,13 @@ func (client *LogsAPIClient) PrintLogs(ctx *CLIContext, q LogsQuery) error {
 		}
 	}
 
+	if q.Tail && q.End != "" {
+		return &errors.CLIError{
+			What: "Error while fetching logs",
+			Why:  "--tail cannot be used with --end-time",
+		}
+	}
+
 	end := time.Now()
 	if q.End != "" {
 		var err error
