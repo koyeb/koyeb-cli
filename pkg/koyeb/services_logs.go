@@ -99,7 +99,7 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 	tail := GetBoolFlags(cmd, "tail")
 	output := GetStringFlags(cmd, "output")
 
-	ctx.LogsClient.PrintLogs(ctx, LogsQuery{
+	return ctx.LogsClient.PrintLogs(ctx, LogsQuery{
 		Type:         logsType,
 		DeploymentId: deploymentId,
 		ServiceId:    serviceId,
@@ -114,6 +114,4 @@ func (h *ServiceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Ti
 		Full:         GetBoolFlags(cmd, "full"),
 		Output:       output,
 	})
-
-	return nil
 }
