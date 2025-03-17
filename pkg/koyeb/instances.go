@@ -68,7 +68,13 @@ func NewInstanceCmd() *cobra.Command {
 			return instanceHandler.Logs(ctx, cmd, since.Time, args)
 		}),
 	}
-	logInstanceCmd.Flags().Var(&since, "since", "Only return logs after this specific date")
+	logInstanceCmd.Flags().Var(&since, "since", "DEPRECATED. Use --tail --start-time instead.")
+	logInstanceCmd.Flags().Bool("tail", false, "Tail logs if no --end-time is provided.")
+	logInstanceCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
+	logInstanceCmd.Flags().StringP("end-time", "e", "", "Return logs before this date")
+	logInstanceCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
+	logInstanceCmd.Flags().String("text-search", "", "Filter logs returned with this text")
+	logInstanceCmd.Flags().String("order", "asc", "Order logs by `asc` or `desc`")
 	instanceCmd.AddCommand(logInstanceCmd)
 
 	return instanceCmd
