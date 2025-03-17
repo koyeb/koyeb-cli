@@ -1,6 +1,12 @@
-## v5.5.0 (unreleased)
+## v5.6.0 (unreleased)
 
-* …
+## v5.5.0 (2025-03-17)
+
+* Support new log experience
+  * Query logs time ranges with `--start-time` and `--end-time`
+  * Query logs with text and regex filters
+  * Deprecating `--since` in logs commands replacing it with `--tail`
+  * https://github.com/koyeb/koyeb-cli/pull/279
 
 ## v5.4.3 (2025-03-07)
 
