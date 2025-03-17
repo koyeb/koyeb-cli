@@ -22,16 +22,25 @@ func (h *InstanceHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.T
 			resp,
 		)
 	}
-	logsQuery, err := ctx.LogsClient.NewWatchLogsQuery(
-		"",
-		"",
-		"",
-		instanceDetail.Instance.GetId(),
-		since,
-		GetBoolFlags(cmd, "full"),
-	)
-	if err != nil {
-		return err
-	}
-	return logsQuery.PrintAll()
+
+	startStr := GetStringFlags(cmd, "start-time")
+	endStr := GetStringFlags(cmd, "end-time")
+	regex := GetStringFlags(cmd, "regex-search")
+	text := GetStringFlags(cmd, "text-search")
+	order := GetStringFlags(cmd, "order")
+	tail := GetBoolFlags(cmd, "tail")
+	output := GetStringFlags(cmd, "output")
+
+	return ctx.LogsClient.PrintLogs(ctx, LogsQuery{
+		InstanceId: instanceDetail.Instance.GetId(),
+		Start:      startStr,
+		End:        endStr,
+		Since:      since,
+		Regex:      regex,
+		Text:       text,
+		Order:      order,
+		Tail:       tail,
+		Output:     output,
+		Full:       GetBoolFlags(cmd, "full"),
+	})
 }

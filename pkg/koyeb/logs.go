@@ -47,6 +47,8 @@ type WatchLogsQuery struct {
 	serviceId    string
 	deploymentId string
 	instanceId   string
+	regex        string
+	text         string
 	since        time.Time
 	full         bool // Whether to display full IDs
 }
@@ -133,6 +135,8 @@ func (client *LogsAPIClient) PrintLogs(ctx *CLIContext, q LogsQuery) error {
 		q.DeploymentId,
 		q.InstanceId,
 		end,
+		q.Regex,
+		q.Text,
 		q.Full,
 	)
 	if err != nil {
@@ -188,12 +192,14 @@ func queryLogs(ctx *CLIContext, logsType, serviceId, deploymentId, instanceId st
 }
 
 func (client *LogsAPIClient) NewWatchLogsQuery(
-	logType string, serviceId string, deploymentId string, instanceId string, since time.Time, full bool,
+	logType string, serviceId string, deploymentId string, instanceId string, since time.Time, regex, text string, full bool,
 ) (*WatchLogsQuery, error) {
 	query := &WatchLogsQuery{
 		serviceId:    serviceId,
 		deploymentId: deploymentId,
 		instanceId:   instanceId,
+		regex:        regex,
+		text:         text,
 		since:        since,
 		full:         full,
 	}
@@ -361,6 +367,12 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 	}
 	if !query.since.IsZero() {
 		queryParams.Add("start", query.since.Format(time.RFC3339))
+	}
+	if query.regex != "" {
+		queryParams.Add("regex", query.regex)
+	}
+	if query.text != "" {
+		queryParams.Add("text", query.text)
 	}
 	query.url.RawQuery = queryParams.Encode()
 
