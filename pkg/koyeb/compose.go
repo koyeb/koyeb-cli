@@ -59,6 +59,7 @@ func NewComposeCmd() *cobra.Command {
 	cmd.Flags().BoolP("verbose", "v", false, "Tails service logs to have more information about your deployment.")
 
 	cmd.AddCommand(NewComposeLogsCmd())
+	cmd.AddCommand(NewComposeDeleteCmd())
 
 	return cmd
 }
@@ -128,12 +129,25 @@ func (h *KoyebComposeHandler) Compose(ctx *CLIContext, koyebCompose *KoyebCompos
 		}
 	}
 
-	log.Infof("\nYour app %v has been succesfully deployed 🚀", appName)
+	log.Infof("Your app %v has been succesfully deployed 🚀", appName)
 
 	return nil
 }
 
-func (h *KoyebComposeHandler) isMonitoringEndState(status koyeb.DeploymentStatus) bool {
+func isAppMonitoringEndState(status koyeb.AppStatus) bool {
+	endStates := []koyeb.AppStatus{
+		koyeb.APPSTATUS_DELETED,
+	}
+
+	for _, endState := range endStates {
+		if status == endState {
+			return true
+		}
+	}
+	return false
+}
+
+func (h *KoyebComposeHandler) isDeploymentMonitoringEndState(status koyeb.DeploymentStatus) bool {
 	endStates := []koyeb.DeploymentStatus{
 		koyeb.DEPLOYMENTSTATUS_HEALTHY,
 		koyeb.DEPLOYMENTSTATUS_DEGRADED,
@@ -238,13 +252,14 @@ func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serv
 			}
 		}
 
-		if h.isMonitoringEndState(currentStatus) {
+		if h.isDeploymentMonitoringEndState(currentStatus) {
 			break
 		}
 
 		time.Sleep(5 * time.Second)
 	}
 
+	fmt.Printf("\n")
 	if previousStatus == koyeb.DEPLOYMENTSTATUS_HEALTHY {
 		log.Infof("Succcessfully deployed %v ✅", serviceName)
 	} else {
