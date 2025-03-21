@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +49,12 @@ func NewComposeLogsCmd() *cobra.Command {
 					Order:     "asc",
 					Tail:      true,
 				}
-				go ctx.LogsClient.PrintLogs(ctx, lq)
+				go func() {
+					if err := ctx.LogsClient.PrintLogs(ctx, lq); err != nil {
+						log.Errorf("Error while getting logs: %s", err)
+						return
+					}
+				}()
 			}
 
 			wg.Wait()
