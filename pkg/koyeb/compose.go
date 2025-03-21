@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -18,7 +19,7 @@ import (
 )
 
 func NewComposeCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "compose KOYEB_COMPOSE_FILE_PATH",
 		Short: "Create koyeb resources read from koyeb-compose.yaml file",
 		Example: `
@@ -42,6 +43,8 @@ func NewComposeCmd() *cobra.Command {
 		`,
 		Args: cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			verbose := GetBoolFlags(cmd, "verbose")
+
 			composeFile, err := parseComposeFile(args[0])
 			if err != nil {
 				return err
@@ -50,9 +53,14 @@ func NewComposeCmd() *cobra.Command {
 			// TODO (pawel) validate compose file
 			// TODO (pawel) better error handling and tips how to fix the errors
 
-			return NewKoyebComposeHandler().Compose(ctx, composeFile)
+			return NewKoyebComposeHandler().Compose(ctx, composeFile, verbose)
 		}),
 	}
+	cmd.Flags().BoolP("verbose", "v", false, "Tails service logs to have more information about your deployment.")
+
+	cmd.AddCommand(NewComposeLogsCmd())
+
+	return cmd
 }
 
 func parseComposeFile(path string) (*KoyebCompose, error) {
@@ -95,7 +103,7 @@ func NewKoyebComposeHandler() *KoyebComposeHandler {
 	return &KoyebComposeHandler{}
 }
 
-func (h *KoyebComposeHandler) Compose(ctx *CLIContext, koyebCompose *KoyebCompose) error {
+func (h *KoyebComposeHandler) Compose(ctx *CLIContext, koyebCompose *KoyebCompose, verbose bool) error {
 	appName := *koyebCompose.Name
 	appId, err := h.CreateAppIfNotExists(ctx, appName)
 	if err != nil {
@@ -114,7 +122,7 @@ func (h *KoyebComposeHandler) Compose(ctx *CLIContext, koyebCompose *KoyebCompos
 			return err
 		}
 
-		err = h.MonitorService(ctx, deploymentId, service.GetName())
+		err = h.MonitorService(ctx, deploymentId, service.GetName(), verbose)
 		if err != nil {
 			return err
 		}
@@ -189,10 +197,26 @@ func (h *KoyebComposeHandler) OrderServices(services map[string]KoyebComposeServ
 	return servicesOrdering, nil
 }
 
-func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serviceName string) error {
-	s := spinner.New(spinner.CharSets[21], 100*time.Millisecond, spinner.WithColor("green"))
-	s.Start()
-	defer s.Stop()
+func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serviceName string, verbose bool) error {
+	var s *spinner.Spinner
+	if !verbose {
+		s = spinner.New(spinner.CharSets[21], 100*time.Millisecond, spinner.WithColor("green"))
+		s.Start()
+		defer s.Stop()
+	} else {
+		log.Infof("🚀 Deploying %v", serviceName)
+		lq := LogsQuery{
+			DeploymentId: deploymentId,
+			Start:        time.Now().Format(time.RFC3339),
+			Tail:         true,
+			Order:        "asc",
+		}
+		var cancel context.CancelFunc
+		ctx.Context, cancel = context.WithCancel(ctx.Context)
+		defer cancel()
+
+		go ctx.LogsClient.PrintLogs(ctx, lq)
+	}
 
 	previousStatus := koyeb.DeploymentStatus("")
 	// it's dumb as it's busy waiting but for now we don't support streaming events
@@ -209,7 +233,9 @@ func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serv
 		currentStatus := resDeployment.Deployment.GetStatus()
 		if previousStatus != currentStatus {
 			previousStatus = currentStatus
-			s.Suffix = fmt.Sprintf(" Deploying service %s: %s", serviceName, currentStatus)
+			if !verbose {
+				s.Suffix = fmt.Sprintf(" Deploying service %s: %s", serviceName, currentStatus)
+			}
 		}
 
 		if h.isMonitoringEndState(currentStatus) {
@@ -220,9 +246,9 @@ func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serv
 	}
 
 	if previousStatus == koyeb.DEPLOYMENTSTATUS_HEALTHY {
-		log.Infof("\nSucccessfully deployed %v ✅", serviceName)
+		log.Infof("Succcessfully deployed %v ✅", serviceName)
 	} else {
-		log.Errorf("\nFailed to deploy %v deployment status: %v ❌", serviceName, previousStatus)
+		log.Errorf("Failed to deploy %v deployment status: %v ❌", serviceName, previousStatus)
 		return &errors.CLIError{
 			What:       fmt.Sprintf("failed to deploy %v", serviceName),
 			Additional: []string{"please double check koyeb compose definition"},
