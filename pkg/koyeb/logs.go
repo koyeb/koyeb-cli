@@ -142,7 +142,7 @@ func (client *LogsAPIClient) PrintLogs(ctx *CLIContext, q LogsQuery) error {
 	if err != nil {
 		return err
 	}
-	return logsQuery.PrintAll()
+	return logsQuery.PrintAll(ctx.Context)
 }
 
 func queryLogs(ctx *CLIContext, logsType, serviceId, deploymentId, instanceId string, start, end time.Time, regex, text, order string, full bool) error {
@@ -322,8 +322,8 @@ func (query *WatchLogsQuery) ParseTime(date string) time.Time {
 	return parsed
 }
 
-func (query *WatchLogsQuery) reconnect(isFirstconnection bool) (*WebsocketPingConnection, error) {
-	conn, _, err := websocket.DefaultDialer.Dial(query.url.String(), query.header)
+func (query *WatchLogsQuery) reconnect(ctx context.Context, isFirstconnection bool) (*WebsocketPingConnection, error) {
+	conn, _, err := websocket.DefaultDialer.DialContext(ctx, query.url.String(), query.header)
 	if err != nil {
 		if isFirstconnection {
 			return nil, &errors.CLIError{
@@ -351,7 +351,7 @@ func (query *WatchLogsQuery) reconnect(isFirstconnection bool) (*WebsocketPingCo
 	return &ret, nil
 }
 
-func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
+func (query *WatchLogsQuery) Execute(ctx context.Context) (chan WatchLogsEntry, error) {
 	queryParams := url.Values{}
 	if query.logType != "" {
 		queryParams.Add("type", query.logType)
@@ -376,7 +376,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 	}
 	query.url.RawQuery = queryParams.Encode()
 
-	conn, err := query.reconnect(true)
+	conn, err := query.reconnect(ctx, true)
 	if err != nil {
 		return nil, err
 	}
@@ -473,7 +473,7 @@ func (query *WatchLogsQuery) Execute() (chan WatchLogsEntry, error) {
 					query.url.RawQuery = queryParams.Encode()
 				}
 
-				conn, err = query.reconnect(false)
+				conn, err = query.reconnect(ctx, false)
 				if err == nil {
 					log.Debugf("Reconnection successful")
 					continue
@@ -529,8 +529,8 @@ func (conn *WebsocketPingConnection) Stop() {
 // PrintAll prints all the logs returned by WatchLogsQuery.Execute(). It returns
 // an error if the query failed, or if there was an error while printing the
 // logs.
-func (query *WatchLogsQuery) PrintAll() error {
-	logs, err := query.Execute()
+func (query *WatchLogsQuery) PrintAll(ctx context.Context) error {
+	logs, err := query.Execute(ctx)
 	if err != nil {
 		return err
 	}
