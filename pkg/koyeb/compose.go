@@ -229,7 +229,12 @@ func (h *KoyebComposeHandler) MonitorService(ctx *CLIContext, deploymentId, serv
 		ctx.Context, cancel = context.WithCancel(ctx.Context)
 		defer cancel()
 
-		go ctx.LogsClient.PrintLogs(ctx, lq)
+		go func() {
+			if err := ctx.LogsClient.PrintLogs(ctx, lq); err != nil {
+				log.Errorf("Error while getting logs: %s", err)
+				return
+			}
+		}()
 	}
 
 	previousStatus := koyeb.DeploymentStatus("")
