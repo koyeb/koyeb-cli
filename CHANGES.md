@@ -1,5 +1,9 @@
 ## v5.6.0 (unreleased)
 
+## v5.5.1 (2025-05-27)
+
+- Fix support for private registry secret update
+
 ## v5.5.0 (2025-03-17)
 
 * Support new log experience
