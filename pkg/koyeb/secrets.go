@@ -186,7 +186,7 @@ func NewSecretCmd() *cobra.Command {
 				if registry, ok := res.Secret.GetDockerHubRegistryOk(); ok {
 					abort, err = parseRegistry(cmd.Flags(), registry)
 				} else if registry, ok := res.Secret.GetPrivateRegistryOk(); ok {
-					abort, err = parseRegistry(cmd.Flags(), registry)
+					abort, err = parsePrivateRegistry(cmd.Flags(), registry)
 				} else if registry, ok := res.Secret.GetDigitalOceanRegistryOk(); ok {
 					abort, err = parseRegistry(cmd.Flags(), registry)
 				} else if registry, ok := res.Secret.GetGitlabRegistryOk(); ok {
