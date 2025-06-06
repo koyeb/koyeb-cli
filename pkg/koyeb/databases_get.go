@@ -151,11 +151,11 @@ func (r *GetDatabaseReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetDatabaseReply) Headers() []string {
-	return []string{"id", "name", "region", "engine", "status", "active_time", "instance", "used_storage", "created_at", "connection_strings"}
+	return []string{"id", "name", "region", "engine", "status", "compute_time", "instance", "used_storage", "created_at", "connection_strings"}
 }
 
 func (r *GetDatabaseReply) Fields() []map[string]string {
-	var region, engine, activeTime, instanceType, usedStorage string
+	var region, engine, computeTime, instanceType, usedStorage string
 
 	// At the moment, we only support neon postgres so the if statement is
 	// always true. If we add support for other providers in the future, the statement
@@ -170,16 +170,16 @@ func (r *GetDatabaseReply) Fields() []map[string]string {
 		// Convert to MB
 		size = size / 1024 / 1024
 
-		activeTimeValue, _ := strconv.ParseFloat(r.value.Deployment.DatabaseInfo.NeonPostgres.GetActiveTimeSeconds(), 32)
+		computeTimeValue, _ := strconv.ParseFloat(r.value.Deployment.DatabaseInfo.NeonPostgres.GetComputeTimeSeconds(), 32)
 
-		// Free instances have a maximum active time of 50h and a maximum
+		// Free instances have a maximum compute time of 12.5h and a maximum
 		// size of 1Gb, which is not configurable. Other types of instances
 		// don't have limits.
 		if instanceType == "free" {
-			activeTime = fmt.Sprintf("%.1fh/50h", activeTimeValue/60/60)
+			computeTime = fmt.Sprintf("%.1fh/12.5h", computeTimeValue/60/60)
 			usedStorage = fmt.Sprintf("%dMB/1GB", size)
 		} else {
-			activeTime = fmt.Sprintf("%.1fh", activeTimeValue/60/60)
+			computeTime = fmt.Sprintf("%.1fh", computeTimeValue/60/60)
 			usedStorage = fmt.Sprintf("%dMB", size)
 		}
 	}
@@ -190,7 +190,7 @@ func (r *GetDatabaseReply) Fields() []map[string]string {
 		"region":             region,
 		"engine":             engine,
 		"status":             formatServiceStatus(r.value.Service.GetStatus()),
-		"active_time":        activeTime,
+		"compute_time":       computeTime,
 		"instance":           instanceType,
 		"used_storage":       usedStorage,
 		"created_at":         renderer.FormatTime(r.value.Service.GetCreatedAt()),
