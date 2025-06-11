@@ -1,5 +1,7 @@
 ## v5.6.0 (unreleased)
 
+- Changed the detailed view for the `databases` list and get subcommand, to display the compute time instead of the active time.
+
 ## v5.5.1 (2025-05-27)
 
 - Fix support for private registry secret update
