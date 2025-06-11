@@ -116,6 +116,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewDeployCmd())
 	rootCmd.AddCommand(NewVolumeCmd())
 	rootCmd.AddCommand(NewSnapshotCmd())
+	rootCmd.AddCommand(NewComposeCmd())
 	return rootCmd
 }
 
