@@ -364,6 +364,13 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
 	)
 	flags.StringSlice(
+		"proxy-ports",
+		nil,
+		"Update service proxy ports (available for services of type \"web\" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp\n"+
+			"PROTOCOL defaults to \"tcp\". Supported protocols are \"tcp\"."+
+			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
+	)
+	flags.StringSlice(
 		"checks",
 		nil,
 		"Update service healthchecks (available for services of type \"web\" only)\n"+
@@ -395,6 +402,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		aliases := map[string]string{
 			"port":  "ports",
+			"proxy": "proxy-ports",
 			"check": "checks",
 
 			"healthcheck":              "checks",
@@ -531,6 +539,12 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		return err
 	}
 	definition.SetPorts(ports)
+
+	proxyPorts, err := h.parseProxyPorts(definition.GetType(), flags, definition.ProxyPorts)
+	if err != nil {
+		return err
+	}
+	definition.SetProxyPorts(proxyPorts)
 
 	routes, err := h.parseRoutes(definition.GetType(), flags, definition.Routes)
 	if err != nil {
@@ -699,6 +713,32 @@ func (h *ServiceHandler) parsePorts(type_ koyeb.DeploymentDefinitionType, flags 
 			},
 			Orig:     nil,
 			Solution: "Fix the service type or remove the ports from your service, and try again",
+		}
+	}
+	return newPorts, nil
+}
+
+// Parse --proxy-ports
+func (h *ServiceHandler) parseProxyPorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentProxyPort) ([]koyeb.DeploymentProxyPort, error) {
+	newPorts, err := parseListFlags("proxy-ports", flags_list.NewProxyPortListFromFlags, flags, currentPorts)
+	if err != nil {
+		return nil, err
+	}
+	if len(newPorts) > 0 && type_ != koyeb.DEPLOYMENTDEFINITIONTYPE_WEB {
+		errmsg := ""
+		for _, port := range newPorts {
+			errmsg = fmt.Sprintf("%s --proxy-ports '!%d'", errmsg, port.GetPort())
+		}
+		return nil, &errors.CLIError{
+			What: "Error while configuring the service",
+			Why:  `your service has ports configured, which is only possible for services of type "web"`,
+			Additional: []string{
+				`To change the type of your service, set --type to "web".`,
+				"To remove all the ports from your service, add the following flags:",
+				errmsg,
+			},
+			Orig:     nil,
+			Solution: "Fix the service type or remove the proxy ports from your service, and try again",
 		}
 	}
 	return newPorts, nil
