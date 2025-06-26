@@ -40,8 +40,8 @@ func NewCLIErrorFromAPIError(what string, err error, resp *http.Response) *CLIEr
 			}
 		case koyeb.Error:
 			if genericErrModel.GetStatus() == 401 {
-				ret.Why = "your authentication token is invalid or has expired"
-				ret.Solution = "Please login again using `koyeb login`, or provide a valid token using the `--token` flag."
+				ret.Why = "your authentication token is invalid or expired, or the selected organization (for user tokens) has been deleted."
+				ret.Solution = "Please login again using `koyeb login`, or provide a valid token using the `--token` flag, or (if using a user token) switch to an existing organization."
 				ret.Orig = nil // the original error contains "401 Unauthorized" which is not very useful. Remove it.
 			} else {
 				ret.Why = fmt.Sprintf("the Koyeb API returned an error %d: %s", *genericErrModel.Status, genericErrModel.GetMessage())
