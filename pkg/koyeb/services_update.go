@@ -1,7 +1,9 @@
 package koyeb
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -9,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, updateService *koyeb.UpdateService) error {
+func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, updateService *koyeb.UpdateService, wait bool) error {
 	serviceName, err := h.parseServiceName(cmd, args[0])
 	if err != nil {
 		return err
@@ -34,8 +36,44 @@ func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []stri
 		res.Service.GetId()[:8],
 	)
 
-	full := GetBoolFlags(cmd, "full")
-	getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
-	ctx.Renderer.Render(getServiceReply)
+	defer func() {
+		res, _, err := ctx.Client.ServicesApi.GetService(ctx.Context, res.Service.GetId()).Execute()
+		if err != nil {
+			return
+		}
+		full := GetBoolFlags(cmd, "full")
+		getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+		ctx.Renderer.Render(getServiceReply)
+	}()
+
+	if wait {
+		ctxd, cancel := context.WithTimeout(ctx.Context, 5*time.Minute)
+		defer cancel()
+
+		for range ticker(ctxd, 2*time.Second) {
+			res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctxd, res.Service.GetLatestDeploymentId()).Execute()
+			if err != nil {
+				return errors.NewCLIErrorFromAPIError(
+					"Error while fetching deployment",
+					err,
+					resp,
+				)
+			}
+
+			if res.Deployment != nil && res.Deployment.Status != nil &&
+				*res.Deployment.Status != koyeb.DEPLOYMENTSTATUS_ALLOCATING &&
+				*res.Deployment.Status != koyeb.DEPLOYMENTSTATUS_PROVISIONING &&
+				*res.Deployment.Status != koyeb.DEPLOYMENTSTATUS_PENDING &&
+				*res.Deployment.Status != koyeb.DEPLOYMENTSTATUS_STARTING {
+				return nil
+			}
+		}
+
+		log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
+			res.Service.GetId()[:8],
+			res.Service.GetId()[:8],
+		)
+		return nil
+	}
 	return nil
 }
