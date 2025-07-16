@@ -15,6 +15,7 @@ func NewDeployCmd() *cobra.Command {
 	appHandler := NewAppHandler()
 	archiveHandler := NewArchiveHandler()
 	serviceHandler := NewServiceHandler()
+	wait := false
 
 	deployCmd := &cobra.Command{
 		Use:   "deploy <path> <app>/<service>",
@@ -85,7 +86,7 @@ func NewDeployCmd() *cobra.Command {
 				createService.SetDefinition(*createDefinition)
 
 				log.Infof("Creating the new service `%s`", serviceName)
-				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
+				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService, wait); err != nil {
 					return err
 				}
 			} else {
@@ -142,7 +143,7 @@ func NewDeployCmd() *cobra.Command {
 				updateService.SetDefinition(*updateDefinition)
 
 				log.Infof("Updating the existing service `%s`", serviceName)
-				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
+				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService, wait); err != nil {
 					return err
 				}
 			}
@@ -150,6 +151,8 @@ func NewDeployCmd() *cobra.Command {
 		}),
 	}
 	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
+	deployCmd.Flags().BoolVar(&wait, "wait", false, "Waits until the deployment is done")
+
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
 	return deployCmd
