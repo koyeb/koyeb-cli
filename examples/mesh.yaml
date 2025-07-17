@@ -1,0 +1,39 @@
+app:
+  name: demo-app
+
+services:
+  - definition:
+      name: demo
+      type: WEB
+      docker:
+        image: koyeb/demo
+      regions:
+        - fra
+      instance_types:
+        - scopes: ['region:fra']
+          type: 'nano'
+      scalings:
+        - scopes: ['region:fra']
+          min: 1
+          max: 1
+      ports:
+        - port: 8000
+      routes:
+        - port: 8000
+          path: "/"
+  - definition:
+      name: ping-demo
+      type: WORKER
+      docker:
+        image: curlimages/curl
+        command: sh
+        args: ['-c', 'while true; do curl demo:8000; sleep 30; done']
+      regions:
+        - fra
+      instance_types:
+        - scopes: ['region:fra']
+          type: 'nano'
+      scalings:
+        - scopes: ['region:fra']
+          min: 1
+          max: 1

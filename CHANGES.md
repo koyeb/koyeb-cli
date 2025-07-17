@@ -1,4 +1,7 @@
-## v5.6.0 (unreleased)
+## v5.7.0 (unreleased)
+
+## v5.6.0 (2025-07-17)
+* Add koyeb compose which is docker compose like functionality.
 
 - Changed the detailed view for the `databases` list and get subcommand, to display the compute time instead of the active time.
 
