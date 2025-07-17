@@ -46,9 +46,12 @@ func NewAppCmd() *cobra.Command {
 
 			createService.SetDefinition(*createDefinition)
 
-			return h.Init(ctx, cmd, args, createApp, createService)
+			wait, _ := cmd.Flags().GetBool("wait")
+
+			return h.Init(ctx, cmd, args, createApp, createService, wait)
 		}),
 	}
+	initAppCmd.Flags().Bool("wait", false, "Waits until app deployment is done")
 	appCmd.AddCommand(initAppCmd)
 	serviceHandler.addServiceDefinitionFlags(initAppCmd.Flags())
 
