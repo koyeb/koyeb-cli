@@ -23,7 +23,7 @@ func NewComposeLogsCmd() *cobra.Command {
 				return nil
 			}
 
-			appList, _, err := ctx.Client.AppsApi.ListApps(ctx.Context).Name(*composeFile.Name).Execute()
+			appList, _, err := ctx.Client.AppsApi.ListApps(ctx.Context).Name(*composeFile.App.Name).Execute()
 			if err != nil {
 				return err
 			}

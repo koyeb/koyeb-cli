@@ -7,7 +7,6 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +25,7 @@ func NewComposeDeleteCmd() *cobra.Command {
 				return nil
 			}
 
-			appList, _, err := ctx.Client.AppsApi.ListApps(ctx.Context).Name(*composeFile.Name).Execute()
+			appList, _, err := ctx.Client.AppsApi.ListApps(ctx.Context).Name(*composeFile.App.Name).Execute()
 			if err != nil {
 				return err
 			}
@@ -76,7 +75,7 @@ func monitorAppDelete(ctx *CLIContext, appId string) error {
 
 	fmt.Printf("\n")
 	if previousStatus == koyeb.APPSTATUS_DELETED {
-		log.Infof("Succcessfully deleted ✅♻️")
+		fmt.Println("Succcessfully deleted ✅♻️")
 	}
 
 	return nil
