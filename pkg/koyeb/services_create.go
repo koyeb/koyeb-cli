@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService, wait bool) error {
+func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
 	appID, err := h.parseAppName(cmd, args[0])
 	if err != nil {
 		return err
@@ -21,6 +21,9 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	if err != nil {
 		return err
 	}
+
+	wait, _ := cmd.Flags().GetBool("wait")
+	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
 
 	resApp, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, app).Execute()
 	if err != nil {
@@ -56,7 +59,7 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}()
 
 	if wait {
-		ctxd, cancel := context.WithTimeout(ctx.Context, 5*time.Minute)
+		ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
 		defer cancel()
 
 		for range ticker(ctxd, 2*time.Second) {
@@ -69,9 +72,15 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 				)
 			}
 
-			if res.Service != nil && res.Service.Status != nil &&
-				*res.Service.Status != koyeb.SERVICESTATUS_STARTING {
-				return nil
+			if res.Service != nil && res.Service.Status != nil {
+				switch status := *res.Service.Status; status {
+				case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
+					return fmt.Errorf("Service %s deployment ended in status: %s", res.Service.GetId()[:8], status)
+				case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
+					break
+				default:
+					return nil
+				}
 			}
 		}
 
@@ -79,7 +88,10 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 			res.Service.GetId()[:8],
 			res.Service.GetId()[:8],
 		)
-		return nil
+		return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
+			res.Service.GetId()[:8],
+			res.Service.GetId()[:8],
+		)
 	}
 
 	return nil

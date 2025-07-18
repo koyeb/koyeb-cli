@@ -1,6 +1,8 @@
 package koyeb
 
 import (
+	"time"
+
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/spf13/cobra"
 )
@@ -46,12 +48,11 @@ func NewAppCmd() *cobra.Command {
 
 			createService.SetDefinition(*createDefinition)
 
-			wait, _ := cmd.Flags().GetBool("wait")
-
-			return h.Init(ctx, cmd, args, createApp, createService, wait)
+			return h.Init(ctx, cmd, args, createApp, createService)
 		}),
 	}
 	initAppCmd.Flags().Bool("wait", false, "Waits until app deployment is done")
+	initAppCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	appCmd.AddCommand(initAppCmd)
 	serviceHandler.addServiceDefinitionFlags(initAppCmd.Flags())
 

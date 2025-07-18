@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
@@ -61,14 +62,13 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 			createDefinition.Name = koyeb.PtrString(serviceName)
 			createService.SetDefinition(*createDefinition)
 
-			wait, _ := cmd.Flags().GetBool("wait")
-
-			return h.Create(ctx, cmd, args, createService, wait)
+			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
 	h.addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	createServiceCmd.Flags().Bool("wait", false, "Waits until service deployment is done")
+	createServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	serviceCmd.AddCommand(createServiceCmd)
 
 	getServiceCmd := &cobra.Command{
@@ -224,9 +224,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			saveOnly, _ := cmd.Flags().GetBool("save-only")
 			updateService.SetSaveOnly(saveOnly)
 
-			wait, _ := cmd.Flags().GetBool("wait")
-
-			return h.Update(ctx, cmd, args, updateService, wait)
+			return h.Update(ctx, cmd, args, updateService)
 		}),
 	}
 	h.addServiceDefinitionFlags(updateServiceCmd.Flags())
@@ -236,6 +234,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	updateServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
 	updateServiceCmd.Flags().Bool("save-only", false, "Save the new configuration without deploying it")
 	updateServiceCmd.Flags().Bool("wait", false, "Waits until the service deployment is done")
+	updateServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{
@@ -247,6 +246,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	redeployServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	redeployServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
 	redeployServiceCmd.Flags().Bool("wait", false, "Waits until service deployment is done.")
+	redeployServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	serviceCmd.AddCommand(redeployServiceCmd)
 	redeployServiceCmd.Flags().Bool("use-cache", false, "Use cache to redeploy")
 

@@ -3,6 +3,7 @@ package koyeb
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -15,7 +16,6 @@ func NewDeployCmd() *cobra.Command {
 	appHandler := NewAppHandler()
 	archiveHandler := NewArchiveHandler()
 	serviceHandler := NewServiceHandler()
-	wait := false
 
 	deployCmd := &cobra.Command{
 		Use:   "deploy <path> <app>/<service>",
@@ -86,7 +86,7 @@ func NewDeployCmd() *cobra.Command {
 				createService.SetDefinition(*createDefinition)
 
 				log.Infof("Creating the new service `%s`", serviceName)
-				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService, wait); err != nil {
+				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
 					return err
 				}
 			} else {
@@ -143,7 +143,7 @@ func NewDeployCmd() *cobra.Command {
 				updateService.SetDefinition(*updateDefinition)
 
 				log.Infof("Updating the existing service `%s`", serviceName)
-				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService, wait); err != nil {
+				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
 					return err
 				}
 			}
@@ -151,7 +151,8 @@ func NewDeployCmd() *cobra.Command {
 		}),
 	}
 	deployCmd.Flags().String("app", "", "Service application. Can also be provided in the service name with the format <app>/<service>")
-	deployCmd.Flags().BoolVar(&wait, "wait", false, "Waits until the deployment is done")
+	deployCmd.Flags().Bool("wait", false, "Waits until the deployment is done")
+	deployCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
