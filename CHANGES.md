@@ -1,4 +1,8 @@
-## v5.7.0 (unreleased)
+## v5.8.0 (unreleased)
+
+## v5.7.0 (2025-07-18)
+* Add `--wait` and `--wait-timeout` to `app init`, `service create`, `service update`, `service redeploy` and `deploy`.
+  * By default the `--wait-timeout` duration will be 5 minutes, but can be changed by using like this: `--wait-timeout 1m`
 
 ## v5.6.0 (2025-07-17)
 * Add koyeb compose which is docker compose like functionality.
