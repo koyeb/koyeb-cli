@@ -1,6 +1,15 @@
 package koyeb
 
-import "github.com/spf13/cobra"
+import (
+	"time"
+
+	"github.com/spf13/cobra"
+)
+
+func GetDurationFlags(cmd *cobra.Command, name string) time.Duration {
+	val, _ := cmd.Flags().GetDuration(name)
+	return val
+}
 
 func GetBoolFlags(cmd *cobra.Command, name string) bool {
 	val, _ := cmd.Flags().GetBool(name)
