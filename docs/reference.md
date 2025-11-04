@@ -33,6 +33,7 @@ Koyeb CLI
 * [koyeb apps](#koyeb-apps)	 - Apps
 * [koyeb archives](#koyeb-archives)	 - Archives
 
+* [koyeb compose](#koyeb-compose)	 - Create Koyeb resources from a koyeb-compose.yaml file
 * [koyeb databases](#koyeb-databases)	 - Databases
 * [koyeb deploy](#koyeb-deploy)	 - Deploy a directory to Koyeb
 * [koyeb deployments](#koyeb-deployments)	 - Deployments
@@ -271,6 +272,9 @@ See examples of koyeb service create --help
       --archive-docker-dockerfile string         Dockerfile path
       --archive-docker-entrypoint strings        Docker entrypoint
       --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -284,9 +288,9 @@ See examples of koyeb service create --help
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
-      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+      --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
-                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --docker string                            Docker image
@@ -322,6 +326,9 @@ See examples of koyeb service create --help
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                  
       --privileged                               Whether the service container should run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
       --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                  To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                  If the region is not specified on service creation, the service is deployed in was
@@ -332,9 +339,11 @@ See examples of koyeb service create --help
                                                  
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-cache                               Whether to use the cache when building the service
-      --type string                              Service type, either "web" or "worker" (default "web")
+      --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
                                                  
+      --wait                                     Waits until app deployment is done
+      --wait-timeout duration                    Duration the wait will last until timeout (default 5m0s)
 ```
 
 ### Options inherited from parent commands
@@ -525,7 +534,10 @@ koyeb archives create NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for create
+  -h, --help                 help for create
+      --ignore-dir strings   Set directories to ignore when building the archive.
+                             To ignore multiple directories, use the flag multiple times.
+                             To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
 ```
 
 ### Options inherited from parent commands
@@ -567,6 +579,9 @@ koyeb deploy <path> <app>/<service> [flags]
       --archive-docker-dockerfile string         Dockerfile path
       --archive-docker-entrypoint strings        Docker entrypoint
       --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -580,9 +595,9 @@ koyeb deploy <path> <app>/<service> [flags]
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
-      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+      --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
-                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
@@ -598,6 +613,9 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                  
       --privileged                               Whether the service container should run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
       --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                  To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                  If the region is not specified on service creation, the service is deployed in was
@@ -608,9 +626,11 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-cache                               Whether to use the cache when building the service
-      --type string                              Service type, either "web" or "worker" (default "web")
+      --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
                                                  
+      --wait                                     Waits until the deployment is done
+      --wait-timeout duration                    Duration the wait will last until timeout (default 5m0s)
 ```
 
 ### Options inherited from parent commands
@@ -1372,6 +1392,9 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --archive-docker-dockerfile string         Dockerfile path
       --archive-docker-entrypoint strings        Docker entrypoint
       --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -1385,9 +1408,9 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
-      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+      --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
-                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --docker string                            Docker image
@@ -1423,6 +1446,9 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                  
       --privileged                               Whether the service container should run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
       --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                  To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                  If the region is not specified on service creation, the service is deployed in was
@@ -1433,9 +1459,11 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
                                                  
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-cache                               Whether to use the cache when building the service
-      --type string                              Service type, either "web" or "worker" (default "web")
+      --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
                                                  
+      --wait                                     Waits until service deployment is done
+      --wait-timeout duration                    Duration the wait will last until timeout (default 5m0s)
 ```
 
 ### Options inherited from parent commands
@@ -1634,9 +1662,15 @@ koyeb services logs NAME [flags]
 
 ```
   -a, --app string                Service application
+      --end-time string           Return logs before this date
   -h, --help                      help for logs
       --instance string           Instance
-      --since HumanFriendlyDate   Only return logs after this specific date (default 0001-01-01 00:00:00 +0000 UTC)
+      --order asc                 Order logs by asc or `desc` (default "asc")
+      --regex-search string       Filter logs returned with this regex
+      --since HumanFriendlyDate   DEPRECATED. Use --tail --start-time instead. (default 0001-01-01 00:00:00 +0000 UTC)
+      --start-time string         Return logs after this date
+      --tail                      Tail logs if no --end-time is provided.
+      --text-search string        Filter logs returned with this text
   -t, --type string               Type (runtime, build)
 ```
 
@@ -1702,10 +1736,12 @@ koyeb services redeploy NAME [flags]
 ### Options
 
 ```
-  -a, --app string   Service application
-  -h, --help         help for redeploy
-      --skip-build   If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
-      --use-cache    Use cache to redeploy
+  -a, --app string              Service application
+  -h, --help                    help for redeploy
+      --skip-build              If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
+      --use-cache               Use cache to redeploy
+      --wait                    Waits until service deployment is done.
+      --wait-timeout duration   Duration the wait will last until timeout (default 5m0s)
 ```
 
 ### Options inherited from parent commands
@@ -1829,6 +1865,9 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --archive-docker-dockerfile string         Dockerfile path
       --archive-docker-entrypoint strings        Docker entrypoint
       --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -1842,9 +1881,9 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --checks-grace-period strings              Set healthcheck grace period in seconds.
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
-      --config-file strings                      Mount a copy of local file as a file in the service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+      --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
-                                                 To delete a file mount, use !PATH, for example --config-file !/etc/data.yaml
+                                                 To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
       --docker string                            Docker image
@@ -1882,6 +1921,9 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
                                                  
       --privileged                               Whether the service container should run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
       --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
                                                  To update a service and remove a region, prefix the region name with '!', for example --region '!par'
                                                  If the region is not specified on service creation, the service is deployed in was
@@ -1894,9 +1936,11 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --scale int                                Set both min-scale and max-scale (default 1)
       --skip-build                               If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
       --skip-cache                               Whether to use the cache when building the service
-      --type string                              Service type, either "web" or "worker" (default "web")
+      --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
                                                  
+      --wait                                     Waits until the service deployment is done
+      --wait-timeout duration                    Duration the wait will last until timeout (default 5m0s)
 ```
 
 ### Options inherited from parent commands
@@ -2091,8 +2135,14 @@ koyeb deployments logs NAME [flags]
 ### Options
 
 ```
+  -e, --end-time string           Return logs before this date
   -h, --help                      help for logs
-      --since HumanFriendlyDate   Only return logs after this specific date (default 0001-01-01 00:00:00 +0000 UTC)
+      --order asc                 Order logs by asc or `desc` (default "asc")
+      --regex-search string       Filter logs returned with this regex
+      --since HumanFriendlyDate   DEPRECATED. Use --tail --start-time instead. (default 0001-01-01 00:00:00 +0000 UTC)
+  -s, --start-time string         Return logs after this date
+      --tail                      Tail logs if no --end-time is provided.
+      --text-search string        Filter logs returned with this text
   -t, --type string               Type of log (runtime, build)
 ```
 
@@ -2331,8 +2381,14 @@ koyeb instances logs NAME [flags]
 ### Options
 
 ```
+  -e, --end-time string           Return logs before this date
   -h, --help                      help for logs
-      --since HumanFriendlyDate   Only return logs after this specific date (default 0001-01-01 00:00:00 +0000 UTC)
+      --order asc                 Order logs by asc or `desc` (default "asc")
+      --regex-search string       Filter logs returned with this regex
+      --since HumanFriendlyDate   DEPRECATED. Use --tail --start-time instead. (default 0001-01-01 00:00:00 +0000 UTC)
+  -s, --start-time string         Return logs after this date
+      --tail                      Tail logs if no --end-time is provided.
+      --text-search string        Filter logs returned with this text
 ```
 
 ### Options inherited from parent commands
