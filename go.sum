@@ -170,6 +170,8 @@ github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/X
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/koyeb/koyeb-api-client-go v0.0.0-20250610134645-c3eef6519682 h1:fJFt3+hagUil/OZOPUJWorxb7uZk2qVa5DFQnjEGduY=
 github.com/koyeb/koyeb-api-client-go v0.0.0-20250610134645-c3eef6519682/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20251104125902-cb19b91bf1cf h1:wPPyrySEb1ND/ZVSCc9I1IDYET0qRy65ZeMJFz9WMjM=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20251104125902-cb19b91bf1cf/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=

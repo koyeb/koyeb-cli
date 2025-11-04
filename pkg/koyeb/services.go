@@ -324,7 +324,7 @@ func (h *ServiceHandler) addServiceDefinitionFlags(flags *pflag.FlagSet) {
 // Add the flags common to all sources: git, docker and archive
 func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.FlagSet) {
 	// Global flags
-	flags.String("type", "web", `Service type, either "web" or "worker"`)
+	flags.String("type", "web", `Service type, one of "web", "worker" or "sandbox"`)
 
 	flags.StringSlice(
 		"regions",
@@ -633,7 +633,7 @@ func (h *ServiceHandler) parseType(flags *pflag.FlagSet, currentType koyeb.Deplo
 			What: "Error while updating the service",
 			Why:  "the --type flag is not valid",
 			Additional: []string{
-				"The --type flag must be either \"web\" or \"worker\"",
+				"The --type flag must be one of \"web\", \"worker\" or \"sandbox\"",
 			},
 			Orig:     nil,
 			Solution: "Fix the --type flag and try again",
