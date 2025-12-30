@@ -1,4 +1,9 @@
-## v5.8.0 (unreleased)
+## v5.9.0 (unreleased)
+
+## v5.8.0 (2025-12-30)
+
+* Update the API version to include the new SANDBOX type
+* Add `--proxy-port` to support the TCP proxy functionality
 
 ## v5.7.0 (2025-07-18)
 * Add `--wait` and `--wait-timeout` to `app init`, `service create`, `service update`, `service redeploy` and `deploy`.
