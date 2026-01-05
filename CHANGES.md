@@ -1,4 +1,11 @@
-## v5.9.0 (unreleased)
+## v5.10.0 (unreleased)
+
+## v5.9.0 (2026-04-15)
+
+* Add lifecycle management flags to automatically delete apps and services:
+  * `--delete-when-empty` for `koyeb app create` and `koyeb app update` - Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.
+  * `--delete-after-delay` for `koyeb service create`, `koyeb service update`, and `koyeb deploy` - Automatically delete the service after a specified duration from creation (e.g., `--delete-after-delay 24h`).
+  * `--delete-after-inactivity-delay` for `koyeb service create`, `koyeb service update`, and `koyeb deploy` - Automatically delete the service after being inactive (sleeping) for a specified duration (e.g., `--delete-after-inactivity-delay 1h`).
 
 ## v5.8.0 (2025-12-30)
 
