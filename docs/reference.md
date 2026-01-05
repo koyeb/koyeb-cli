@@ -129,7 +129,8 @@ koyeb apps create NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for create
+      --delete-when-empty   Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.
+  -h, --help                help for create
 ```
 
 ### Options inherited from parent commands
@@ -291,8 +292,12 @@ See examples of koyeb service create --help
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-                                                 
+
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
+      --delete-after-delay duration              Automatically delete the service after this duration from creation.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -471,9 +476,10 @@ koyeb apps update NAME [flags]
 ### Options
 
 ```
-  -D, --domain string   Change the subdomain of the app (only specify the subdomain, skipping ".koyeb.app")
-  -h, --help            help for update
-  -n, --name string     Change the name of the app
+      --delete-when-empty   Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.
+  -D, --domain string       Change the subdomain of the app (only specify the subdomain, skipping ".koyeb.app")
+  -h, --help                help for update
+  -n, --name string         Change the name of the app
 ```
 
 ### Options inherited from parent commands
@@ -600,6 +606,10 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
+      --delete-after-delay duration              Automatically delete the service after this duration from creation.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
@@ -1411,8 +1421,12 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-                                                 
+
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
+      --delete-after-delay duration              Automatically delete the service after this duration from creation.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -1884,8 +1898,12 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-                                                 
+
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
+      --delete-after-delay duration              Automatically delete the service after this duration from creation.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
+                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.

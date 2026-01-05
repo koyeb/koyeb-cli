@@ -1,10 +1,13 @@
 package koyeb
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func NewAppCmd() *cobra.Command {
@@ -24,9 +27,17 @@ func NewAppCmd() *cobra.Command {
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			createApp := koyeb.NewCreateAppWithDefaults()
 			SyncFlags(cmd, args, createApp)
+
+			// Parse and set lifecycle
+			lifecycle := h.parseAppLifeCycle(cmd.Flags(), nil)
+			if lifecycle != nil {
+				createApp.SetLifeCycle(*lifecycle)
+			}
+
 			return h.Create(ctx, cmd, args, createApp)
 		}),
 	}
+	createAppCmd.Flags().Bool("delete-when-empty", false, "Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.")
 	appCmd.AddCommand(createAppCmd)
 
 	initAppCmd := &cobra.Command{
@@ -86,12 +97,40 @@ func NewAppCmd() *cobra.Command {
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			updateApp := koyeb.NewUpdateAppWithDefaults()
 			SyncFlags(cmd, args, updateApp)
+
+			// Get current app to access lifecycle
+			appId, err := h.ResolveAppArgs(ctx, args[0])
+			if err != nil {
+				return err
+			}
+
+			currentApp, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, appId).Execute()
+			if err != nil {
+				return errors.NewCLIErrorFromAPIError(
+					fmt.Sprintf("Error while fetching app `%s`", args[0]),
+					err,
+					resp,
+				)
+			}
+
+			// Parse and set lifecycle
+			var currentLifeCycle *koyeb.AppLifeCycle
+			if currentApp.App.HasLifeCycle() {
+				lc := currentApp.App.GetLifeCycle()
+				currentLifeCycle = &lc
+			}
+			lifecycle := h.parseAppLifeCycle(cmd.Flags(), currentLifeCycle)
+			if lifecycle != nil {
+				updateApp.SetLifeCycle(*lifecycle)
+			}
+
 			return h.Update(ctx, cmd, args, updateApp)
 		}),
 	}
-	appCmd.AddCommand(updateAppCmd)
 	updateAppCmd.Flags().StringP("name", "n", "", "Change the name of the app")
 	updateAppCmd.Flags().StringP("domain", "D", "", "Change the subdomain of the app (only specify the subdomain, skipping \".koyeb.app\")")
+	updateAppCmd.Flags().Bool("delete-when-empty", false, "Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.")
+	appCmd.AddCommand(updateAppCmd)
 
 	deleteAppCmd := &cobra.Command{
 		Use:   "delete NAME",
@@ -134,4 +173,26 @@ func (h *AppHandler) ResolveAppArgs(ctx *CLIContext, val string) (string, error)
 		return "", err
 	}
 	return id, nil
+}
+
+// Parse --delete-when-empty flag
+// Automatically delete the app after the last service is deleted.
+// Empty apps created without services are not deleted.
+func (h *AppHandler) parseAppLifeCycle(flags *pflag.FlagSet, currentLifeCycle *koyeb.AppLifeCycle) *koyeb.AppLifeCycle {
+	var lifecycle *koyeb.AppLifeCycle
+
+	if currentLifeCycle != nil {
+		lifecycle = currentLifeCycle
+	} else if flags.Lookup("delete-when-empty").Changed {
+		lifecycle = koyeb.NewAppLifeCycleWithDefaults()
+	} else {
+		return nil
+	}
+
+	if flags.Lookup("delete-when-empty").Changed {
+		deleteWhenEmpty, _ := flags.GetBool("delete-when-empty")
+		lifecycle.SetDeleteWhenEmpty(deleteWhenEmpty)
+	}
+
+	return lifecycle
 }

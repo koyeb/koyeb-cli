@@ -62,6 +62,11 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 			createDefinition.Name = koyeb.PtrString(serviceName)
 			createService.SetDefinition(*createDefinition)
 
+			lifecycle := h.parseLifeCycle(cmd.Flags(), nil)
+			if lifecycle != nil {
+				createService.SetLifeCycle(*lifecycle)
+			}
+
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
@@ -218,6 +223,25 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			}
 			updateService.SetDefinition(*updateDef)
 
+			currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, service).Execute()
+			if err != nil {
+				return errors.NewCLIErrorFromAPIError(
+					fmt.Sprintf("Error while fetching service `%s`", args[0]),
+					err,
+					resp,
+				)
+			}
+
+			var currentLifeCycle *koyeb.ServiceLifeCycle
+			if currentService.Service.HasLifeCycle() {
+				lc := currentService.Service.GetLifeCycle()
+				currentLifeCycle = &lc
+			}
+			lifecycle := h.parseLifeCycle(cmd.Flags(), currentLifeCycle)
+			if lifecycle != nil {
+				updateService.SetLifeCycle(*lifecycle)
+			}
+
 			skipBuild, _ := cmd.Flags().GetBool("skip-build")
 			updateService.SetSkipBuild(skipBuild)
 
@@ -355,6 +379,14 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.Int64("autoscaling-requests-response-time", 0, "Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.")
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 	flags.Bool("skip-cache", false, "Whether to use the cache when building the service")
+
+	// Lifecycle management flags
+	flags.Duration("delete-after-delay", 0,
+		"Automatically delete the service after this duration from creation. "+
+			"Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.")
+	flags.Duration("delete-after-inactivity-delay", 0,
+		"Automatically delete the service after being inactive (sleeping) for this duration. "+
+			"Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.")
 
 	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
@@ -640,6 +672,42 @@ func (h *ServiceHandler) parseType(flags *pflag.FlagSet, currentType koyeb.Deplo
 		}
 	}
 	return *ret, nil
+}
+
+// Parse --delete-after-delay and --delete-after-inactivity-delay
+func (h *ServiceHandler) parseLifeCycle(flags *pflag.FlagSet, currentLifeCycle *koyeb.ServiceLifeCycle) *koyeb.ServiceLifeCycle {
+	var lifecycle *koyeb.ServiceLifeCycle
+
+	if currentLifeCycle != nil {
+		lifecycle = currentLifeCycle
+	} else if flags.Lookup("delete-after-delay").Changed ||
+		flags.Lookup("delete-after-inactivity-delay").Changed {
+		lifecycle = koyeb.NewServiceLifeCycleWithDefaults()
+	} else {
+		return nil
+	}
+
+	if flags.Lookup("delete-after-delay").Changed {
+		duration, _ := flags.GetDuration("delete-after-delay")
+		if duration > 0 {
+			lifecycle.SetDeleteAfterCreate(int64(duration.Seconds()))
+		} else {
+			// Explicitly unset to disable
+			lifecycle.DeleteAfterCreate = nil
+		}
+	}
+
+	if flags.Lookup("delete-after-inactivity-delay").Changed {
+		duration, _ := flags.GetDuration("delete-after-inactivity-delay")
+		if duration > 0 {
+			lifecycle.SetDeleteAfterSleep(int64(duration.Seconds()))
+		} else {
+			// Explicitly unset to disable
+			lifecycle.DeleteAfterSleep = nil
+		}
+	}
+
+	return lifecycle
 }
 
 // Parse --instance-type
