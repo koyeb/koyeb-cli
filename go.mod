@@ -10,7 +10,7 @@ require (
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/iancoleman/strcase v0.2.0
-	github.com/koyeb/koyeb-api-client-go v0.0.0-20251104125902-cb19b91bf1cf
+	github.com/koyeb/koyeb-api-client-go v0.0.0-20251231135535-21b1a3f8d818
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -25,7 +25,6 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/term v0.30.0
-	gonum.org/v1/gonum v0.13.0
 )
 
 require (

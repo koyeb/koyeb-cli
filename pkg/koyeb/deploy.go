@@ -85,6 +85,12 @@ func NewDeployCmd() *cobra.Command {
 				}
 				createService.SetDefinition(*createDefinition)
 
+				// Parse and set lifecycle
+				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), nil)
+				if lifecycle != nil {
+					createService.SetLifeCycle(*lifecycle)
+				}
+
 				log.Infof("Creating the new service `%s`", serviceName)
 				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
 					return err
@@ -141,6 +147,27 @@ func NewDeployCmd() *cobra.Command {
 					return err
 				}
 				updateService.SetDefinition(*updateDefinition)
+
+				// Get current service to access lifecycle
+				currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceId).Execute()
+				if err != nil {
+					return errors.NewCLIErrorFromAPIError(
+						fmt.Sprintf("Error while fetching service `%s`", serviceName),
+						err,
+						resp,
+					)
+				}
+
+				// Parse and set lifecycle
+				var currentLifeCycle *koyeb.ServiceLifeCycle
+				if currentService.Service.HasLifeCycle() {
+					lc := currentService.Service.GetLifeCycle()
+					currentLifeCycle = &lc
+				}
+				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), currentLifeCycle)
+				if lifecycle != nil {
+					updateService.SetLifeCycle(*lifecycle)
+				}
 
 				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
