@@ -13,7 +13,6 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/dates"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -100,7 +99,7 @@ func (client *LogsAPIClient) PrintLogs(ctx *CLIContext, q LogsQuery) error {
 	start := end.Add(-5 * time.Minute)
 	if !q.Since.IsZero() {
 		if q.Output == "" {
-			logrus.Warn("--since is deprecated. Please use --tail --start-time.")
+			log.Warn("--since is deprecated. Please use --tail --start-time.")
 		}
 		q.Tail = true
 		start = q.Since

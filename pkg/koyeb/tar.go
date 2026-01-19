@@ -49,7 +49,7 @@ func Tar(src string, writers ...io.Writer) error {
 		}
 
 		// update the name to correctly reflect the desired destination when untaring
-		header.Name = strings.TrimPrefix(strings.Replace(file, src, "", -1), string(filepath.Separator))
+		header.Name = strings.TrimPrefix(strings.ReplaceAll(file, src, ""), string(filepath.Separator))
 		// this happens when we tar a single file
 		if header.Name == "" {
 			header.Name = filepath.Base(file)

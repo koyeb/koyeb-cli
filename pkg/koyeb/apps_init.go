@@ -88,7 +88,7 @@ func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, cr
 			if getServiceRes.Service != nil && getServiceRes.Service.Status != nil {
 				switch status := *getServiceRes.Service.Status; status {
 				case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
-					return fmt.Errorf("Service %s deployment ended in status: %s", serviceRes.Service.GetId()[:8], status)
+					return fmt.Errorf("service %s deployment ended in status: %s", serviceRes.Service.GetId()[:8], status)
 				case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
 					break
 				default:

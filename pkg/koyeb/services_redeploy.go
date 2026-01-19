@@ -61,7 +61,7 @@ func (h *ServiceHandler) ReDeploy(ctx *CLIContext, cmd *cobra.Command, args []st
 			if res.Deployment != nil && res.Deployment.Status != nil {
 				switch status := *res.Deployment.Status; status {
 				case koyeb.DEPLOYMENTSTATUS_ERROR, koyeb.DEPLOYMENTSTATUS_DEGRADED, koyeb.DEPLOYMENTSTATUS_UNHEALTHY, koyeb.DEPLOYMENTSTATUS_CANCELED, koyeb.DEPLOYMENTSTATUS_STOPPED, koyeb.DEPLOYMENTSTATUS_ERRORING:
-					return fmt.Errorf("Deployment %s update ended in status: %s", res.Deployment.GetId()[:8], status)
+					return fmt.Errorf("deployment %s update ended in status: %s", res.Deployment.GetId()[:8], status)
 				case koyeb.DEPLOYMENTSTATUS_STARTING, koyeb.DEPLOYMENTSTATUS_PENDING, koyeb.DEPLOYMENTSTATUS_PROVISIONING, koyeb.DEPLOYMENTSTATUS_ALLOCATING:
 					break
 				default:
