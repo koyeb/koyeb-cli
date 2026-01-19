@@ -70,31 +70,31 @@ func Archive(path string, ignoreDirectories []string) (*tarball, error) {
 
 		relativePath, err := filepath.Rel(basePath, file)
 		if err != nil {
-			return fmt.Errorf("Unable to get relative path for file '%s': %w", file, err)
+			return fmt.Errorf("unable to get relative path for file '%s': %w", file, err)
 		}
 
 		// Create header
 		header, err := tar.FileInfoHeader(fi, "")
 		if err != nil {
-			return fmt.Errorf("Unable to create header for file '%s': %w", file, err)
+			return fmt.Errorf("unable to create header for file '%s': %w", file, err)
 		}
 
 		header.Name = filepath.ToSlash(relativePath)
 
 		// Write header
 		if err := tarWriter.WriteHeader(header); err != nil {
-			return fmt.Errorf("Unable to write header for file '%s': %w", file, err)
+			return fmt.Errorf("unable to write header for file '%s': %w", file, err)
 		}
 
 		if header.Typeflag == tar.TypeReg {
 			data, err := os.Open(file)
 			if err != nil {
-				return fmt.Errorf("Unable to open file '%s': %w", file, err)
+				return fmt.Errorf("unable to open file '%s': %w", file, err)
 			}
 			defer data.Close()
 
 			if _, err := io.Copy(tarWriter, data); err != nil {
-				return fmt.Errorf("Unable to copy file '%s' into the tarball: %w", file, err)
+				return fmt.Errorf("unable to copy file '%s' into the tarball: %w", file, err)
 			}
 		}
 		return nil
