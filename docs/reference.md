@@ -292,12 +292,10 @@ See examples of koyeb service create --help
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -605,11 +603,9 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
@@ -1357,6 +1353,7 @@ Services
 * [koyeb services pause](#koyeb-services-pause)	 - Pause service
 * [koyeb services redeploy](#koyeb-services-redeploy)	 - Redeploy service
 * [koyeb services resume](#koyeb-services-resume)	 - Resume service
+* [koyeb services scale](#koyeb-services-scale)	 - Set manual scaling configuration for service (replaces existing configuration)
 * [koyeb services unapplied-changes](#koyeb-services-unapplied-changes)	 - Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment
 * [koyeb services update](#koyeb-services-update)	 - Update service
 
@@ -1421,12 +1418,10 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -1809,6 +1804,198 @@ koyeb services resume NAME [flags]
 
 * [koyeb services](#koyeb-services)	 - Services
 
+## koyeb services scale delete
+
+Delete manual scaling configuration for service
+
+```
+koyeb services scale delete NAME [flags]
+```
+
+### Examples
+
+```
+
+# Remove all manual scaling configuration from a service
+$> koyeb service scale delete app/podinfo
+
+```
+
+### Options
+
+```
+  -a, --app string   Service application
+  -h, --help         help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services scale](#koyeb-services-scale)	 - Set manual scaling configuration for service (replaces existing configuration)
+
+## koyeb services scale get
+
+Get manual scaling configuration for service
+
+```
+koyeb services scale get NAME [flags]
+```
+
+### Options
+
+```
+  -a, --app string   Service application
+  -h, --help         help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services scale](#koyeb-services-scale)	 - Set manual scaling configuration for service (replaces existing configuration)
+
+## koyeb services scale update
+
+Update manual scaling configuration for service (patches existing configuration)
+
+```
+koyeb services scale update NAME [flags]
+```
+
+### Examples
+
+```
+
+# Update instance count for specific regions, keeping other regions unchanged
+$> koyeb service scale update app/podinfo --scale fra:5
+
+# Update multiple regions
+$> koyeb service scale update app/podinfo --scale fra:3 --scale was:2
+
+# Remove scaling configuration for a specific region
+$> koyeb service scale update app/podinfo --scale '!fra'
+
+# Remove global scaling configuration
+$> koyeb service scale update app/podinfo --scale '!'
+
+# Remove scaling using --regions flag
+$> koyeb service scale update app/podinfo --regions '!par'
+
+# Update some regions and remove others
+$> koyeb service scale update app/podinfo --scale fra:5 --scale '!was'
+
+```
+
+### Options
+
+```
+  -a, --app string        Service application
+  -h, --help              help for update
+      --instances int     Number of instances to scale to (used with --regions or alone for all regions) (default 1)
+      --regions strings   Regions to apply --instances count to (e.g., 'fra', 'was') or '!region' to remove (e.g., '!fra')
+      --scale strings     Scale configuration per region in format 'region:instances' (e.g., 'fra:3') or '!region' to remove (e.g., '!fra'). Can be specified multiple times.
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services scale](#koyeb-services-scale)	 - Set manual scaling configuration for service (replaces existing configuration)
+
+## koyeb services scale
+
+Set manual scaling configuration for service (replaces existing configuration)
+
+```
+koyeb services scale NAME [flags]
+```
+
+### Examples
+
+```
+
+# Scale a service to 3 instances across all regions
+$> koyeb service scale app/podinfo --instances 3
+
+# Scale a service with different instance counts per region
+$> koyeb service scale app/podinfo --scale fra:3 --scale was:2
+
+# Scale a service in specific regions with same instance count (legacy syntax)
+$> koyeb service scale app/podinfo --instances 2 --regions fra --regions was
+
+# Set specific scaling per region
+$> koyeb service scale app/podinfo --scale fra:5 --scale was:3 --scale sin:2
+
+```
+
+### Options
+
+```
+  -a, --app string        Service application
+  -h, --help              help for scale
+      --instances int     Number of instances to scale to (used with --regions or alone for all regions) (default 1)
+      --regions strings   Regions to apply --instances count to (e.g., 'fra', 'was')
+      --scale strings     Scale configuration per region in format 'region:instances' (e.g., 'fra:3'). Can be specified multiple times.
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+* [koyeb services scale delete](#koyeb-services-scale-delete)	 - Delete manual scaling configuration for service
+* [koyeb services scale get](#koyeb-services-scale-get)	 - Get manual scaling configuration for service
+* [koyeb services scale update](#koyeb-services-scale-update)	 - Update manual scaling configuration for service (patches existing configuration)
+
 ## koyeb services unapplied-changes
 
 Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment
@@ -1898,12 +2085,10 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
