@@ -301,6 +301,84 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	resumeServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(resumeServiceCmd)
 
+	scaleCmd := &cobra.Command{
+		Use:   "scale NAME",
+		Short: "Set manual scaling configuration for service (replaces existing configuration)",
+		Args:  cobra.ExactArgs(1),
+		Example: `
+# Scale a service to 3 instances across all regions
+$> koyeb service scale app/podinfo --instances 3
+
+# Scale a service with different instance counts per region
+$> koyeb service scale app/podinfo --scale fra:3 --scale was:2
+
+# Scale a service in specific regions with same instance count (legacy syntax)
+$> koyeb service scale app/podinfo --instances 2 --regions fra --regions was
+
+# Set specific scaling per region
+$> koyeb service scale app/podinfo --scale fra:5 --scale was:3 --scale sin:2
+`,
+		RunE: WithCLIContext(h.Scale),
+	}
+	scaleCmd.Flags().StringP("app", "a", "", "Service application")
+	scaleCmd.Flags().StringSlice("scale", []string{}, "Scale configuration per region in format 'region:instances' (e.g., 'fra:3'). Can be specified multiple times.")
+	scaleCmd.Flags().Int64("instances", 1, "Number of instances to scale to (used with --regions or alone for all regions)")
+	scaleCmd.Flags().StringSlice("regions", []string{}, "Regions to apply --instances count to (e.g., 'fra', 'was')")
+	serviceCmd.AddCommand(scaleCmd)
+
+	scaleUpdateCmd := &cobra.Command{
+		Use:   "update NAME",
+		Short: "Update manual scaling configuration for service (patches existing configuration)",
+		Args:  cobra.ExactArgs(1),
+		Example: `
+# Update instance count for specific regions, keeping other regions unchanged
+$> koyeb service scale update app/podinfo --scale fra:5
+
+# Update multiple regions
+$> koyeb service scale update app/podinfo --scale fra:3 --scale was:2
+
+# Remove scaling configuration for a specific region
+$> koyeb service scale update app/podinfo --scale '!fra'
+
+# Remove global scaling configuration
+$> koyeb service scale update app/podinfo --scale '!'
+
+# Remove scaling using --regions flag
+$> koyeb service scale update app/podinfo --regions '!par'
+
+# Update some regions and remove others
+$> koyeb service scale update app/podinfo --scale fra:5 --scale '!was'
+`,
+		RunE: WithCLIContext(h.UpdateScale),
+	}
+	scaleUpdateCmd.Flags().StringP("app", "a", "", "Service application")
+	scaleUpdateCmd.Flags().StringSlice("scale", []string{}, "Scale configuration per region in format 'region:instances' (e.g., 'fra:3') or '!region' to remove (e.g., '!fra'). Can be specified multiple times.")
+	scaleUpdateCmd.Flags().Int64("instances", 1, "Number of instances to scale to (used with --regions or alone for all regions)")
+	scaleUpdateCmd.Flags().StringSlice("regions", []string{}, "Regions to apply --instances count to (e.g., 'fra', 'was') or '!region' to remove (e.g., '!fra')")
+	scaleCmd.AddCommand(scaleUpdateCmd)
+
+	scaleGetCmd := &cobra.Command{
+		Use:   "get NAME",
+		Short: "Get manual scaling configuration for service",
+		Args:  cobra.ExactArgs(1),
+		RunE:  WithCLIContext(h.GetScale),
+	}
+	scaleGetCmd.Flags().StringP("app", "a", "", "Service application")
+	scaleCmd.AddCommand(scaleGetCmd)
+
+	scaleDeleteCmd := &cobra.Command{
+		Use:   "delete NAME",
+		Short: "Delete manual scaling configuration for service",
+		Args:  cobra.ExactArgs(1),
+		Example: `
+# Remove all manual scaling configuration from a service
+$> koyeb service scale delete app/podinfo
+`,
+		RunE: WithCLIContext(h.DeleteScale),
+	}
+	scaleDeleteCmd.Flags().StringP("app", "a", "", "Service application")
+	scaleCmd.AddCommand(scaleDeleteCmd)
+
 	return serviceCmd
 }
 
