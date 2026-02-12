@@ -377,6 +377,12 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.Int64("autoscaling-requests-per-second", 0, "Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
 	flags.Int64("autoscaling-concurrent-requests", 0, "Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.")
 	flags.Int64("autoscaling-requests-response-time", 0, "Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.")
+	flags.Duration("light-sleep-delay", 0,
+		"Delay after which an idle service is put to light sleep. "+
+			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
+	flags.Duration("deep-sleep-delay", 0,
+		"Delay after which an idle service is put to deep sleep. "+
+			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 	flags.Bool("skip-cache", false, "Whether to use the cache when building the service")
 
@@ -1231,6 +1237,63 @@ func (h *ServiceHandler) setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb
 			cr.SetQuantile(95)
 			target.SetRequestsResponseTime(*cr)
 			newTargets = append(newTargets, *target)
+		}
+		scaling.Targets = newTargets
+	}
+
+	if flags.Lookup("light-sleep-delay").Changed || flags.Lookup("deep-sleep-delay").Changed {
+		lightSleepDuration, _ := flags.GetDuration("light-sleep-delay")
+		deepSleepDuration, _ := flags.GetDuration("deep-sleep-delay")
+		lightSleepChanged := flags.Lookup("light-sleep-delay").Changed
+		deepSleepChanged := flags.Lookup("deep-sleep-delay").Changed
+
+		newTargets := []koyeb.DeploymentScalingTarget{}
+		found := false
+
+		for _, target := range scaling.GetTargets() {
+			if target.HasSleepIdleDelay() {
+				found = true
+				sid := target.GetSleepIdleDelay()
+				if lightSleepChanged {
+					if lightSleepDuration > 0 {
+						sid.SetLightSleepValue(int64(lightSleepDuration.Seconds()))
+					} else {
+						sid.LightSleepValue = nil
+					}
+				}
+				if deepSleepChanged {
+					if deepSleepDuration > 0 {
+						sid.SetDeepSleepValue(int64(deepSleepDuration.Seconds()))
+					} else {
+						sid.DeepSleepValue = nil
+					}
+				}
+				// Remove the target entirely if both values are unset
+				if sid.LightSleepValue == nil && sid.DeepSleepValue == nil {
+					continue
+				}
+				target.SetSleepIdleDelay(sid)
+				newTargets = append(newTargets, target)
+			} else {
+				newTargets = append(newTargets, target)
+			}
+		}
+		if !found {
+			sid := koyeb.NewDeploymentScalingTargetSleepIdleDelay()
+			hasValue := false
+			if lightSleepChanged && lightSleepDuration > 0 {
+				sid.SetLightSleepValue(int64(lightSleepDuration.Seconds()))
+				hasValue = true
+			}
+			if deepSleepChanged && deepSleepDuration > 0 {
+				sid.SetDeepSleepValue(int64(deepSleepDuration.Seconds()))
+				hasValue = true
+			}
+			if hasValue {
+				target := koyeb.NewDeploymentScalingTarget()
+				target.SetSleepIdleDelay(*sid)
+				newTargets = append(newTargets, *target)
+			}
 		}
 		scaling.Targets = newTargets
 	}
