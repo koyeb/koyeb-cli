@@ -466,3 +466,153 @@ func TestSetDefaultPortsAndRoutes(t *testing.T) {
 		})
 	}
 }
+
+func TestSetSleepDelayFlags(t *testing.T) {
+	tests := map[string]struct {
+		args           []string
+		currentTargets []koyeb.DeploymentScalingTarget
+		expected       []koyeb.DeploymentScalingTarget
+	}{
+		"set light sleep delay on new service": {
+			args:           []string{"--light-sleep-delay", "5m"},
+			currentTargets: nil,
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+					},
+				},
+			},
+		},
+		"set deep sleep delay on new service": {
+			args:           []string{"--deep-sleep-delay", "30m"},
+			currentTargets: nil,
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						DeepSleepValue: koyeb.PtrInt64(1800),
+					},
+				},
+			},
+		},
+		"set both sleep delays on new service": {
+			args:           []string{"--light-sleep-delay", "1m", "--deep-sleep-delay", "10m"},
+			currentTargets: nil,
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(60),
+						DeepSleepValue:  koyeb.PtrInt64(600),
+					},
+				},
+			},
+		},
+		"update light sleep delay on existing service": {
+			args: []string{"--light-sleep-delay", "10m"},
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+						DeepSleepValue:  koyeb.PtrInt64(1800),
+					},
+				},
+			},
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(600),
+						DeepSleepValue:  koyeb.PtrInt64(1800),
+					},
+				},
+			},
+		},
+		"disable light sleep delay": {
+			args: []string{"--light-sleep-delay", "0"},
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+						DeepSleepValue:  koyeb.PtrInt64(1800),
+					},
+				},
+			},
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						DeepSleepValue: koyeb.PtrInt64(1800),
+					},
+				},
+			},
+		},
+		"disable both sleep delays removes target": {
+			args: []string{"--light-sleep-delay", "0", "--deep-sleep-delay", "0"},
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+						DeepSleepValue:  koyeb.PtrInt64(1800),
+					},
+				},
+			},
+			expected: []koyeb.DeploymentScalingTarget{},
+		},
+		"preserve other targets when setting sleep delay": {
+			args: []string{"--light-sleep-delay", "5m"},
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					AverageCpu: &koyeb.DeploymentScalingTargetAverageCPU{
+						Value: koyeb.PtrInt64(80),
+					},
+				},
+			},
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					AverageCpu: &koyeb.DeploymentScalingTargetAverageCPU{
+						Value: koyeb.PtrInt64(80),
+					},
+				},
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+					},
+				},
+			},
+		},
+		"no flags does not modify targets": {
+			args: []string{},
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+					},
+				},
+			},
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			cmd := &cobra.Command{}
+			h := NewServiceHandler()
+			h.addServiceDefinitionFlags(cmd.Flags())
+
+			err := cmd.ParseFlags(tc.args)
+			assert.NoError(t, err)
+
+			scaling := koyeb.NewDeploymentScalingWithDefaults()
+			scaling.SetMin(0)
+			scaling.SetMax(1)
+			scaling.Targets = tc.currentTargets
+
+			h.setScalingsTargets(cmd.Flags(), scaling)
+			assert.Equal(t, tc.expected, scaling.Targets)
+		})
+	}
+}
