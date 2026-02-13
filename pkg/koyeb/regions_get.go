@@ -21,8 +21,7 @@ func (h *RegionHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) 
 		)
 	}
 
-	full := GetBoolFlags(cmd, "full")
-	getRegionReply := NewGetRegionReply(res, full)
+	getRegionReply := NewGetRegionReply(res)
 
 	// For JSON/YAML output, use the standard renderer which includes instances
 	// in the serialized output. For table output, print a custom format.
@@ -44,13 +43,11 @@ func (h *RegionHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) 
 
 type GetRegionReply struct {
 	value *koyeb.GetRegionReply
-	full  bool
 }
 
-func NewGetRegionReply(value *koyeb.GetRegionReply, full bool) *GetRegionReply {
+func NewGetRegionReply(value *koyeb.GetRegionReply) *GetRegionReply {
 	return &GetRegionReply{
 		value: value,
-		full:  full,
 	}
 }
 

@@ -2689,6 +2689,172 @@ Manage persistent volumes
 * [koyeb volumes list](#koyeb-volumes-list)	 - List volumes
 * [koyeb volumes update](#koyeb-volumes-update)	 - Update a volume
 
+## koyeb volumes create
+
+Create a new volume
+
+```
+koyeb volumes create NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help              help for create
+      --read-only         Force the volume to be read-only
+      --region string     Region of the volume (default "was")
+      --size int          Size of the volume in GB (default -1)
+      --snapshot string   Specify a snapshot to use to create the volume from
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes delete
+
+Delete a volume
+
+```
+koyeb volumes delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes get
+
+Get a volume
+
+```
+koyeb volumes get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes list
+
+List volumes
+
+```
+koyeb volumes list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes update
+
+Update a volume
+
+```
+koyeb volumes update NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help          help for update
+      --name string   Change the volume name
+      --size int      Increase the volume size (default -1)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
 ## koyeb regions
 
 Regions
@@ -2782,4 +2948,463 @@ koyeb regions list [flags]
 
 
 * [koyeb regions](#koyeb-regions)	 - Regions
+
+## koyeb regional-deployments
+
+Regional deployments
+
+### Options
+
+```
+  -h, --help   help for regional-deployments
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb regional-deployments get](#koyeb-regional-deployments-get)	 - Get regional deployment
+* [koyeb regional-deployments list](#koyeb-regional-deployments-list)	 - List regional deployments
+
+## koyeb regional-deployments get
+
+Get regional deployment
+
+```
+koyeb regional-deployments get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+
+## koyeb regional-deployments list
+
+List regional deployments
+
+```
+koyeb regional-deployments list [flags]
+```
+
+### Options
+
+```
+      --deployment string   Limit the list to regional deployments of a specific deployment
+  -h, --help                help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+
+## koyeb metrics
+
+Metrics
+
+### Options
+
+```
+  -h, --help   help for metrics
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb metrics get](#koyeb-metrics-get)	 - Get metrics for a service or instance
+
+## koyeb metrics get
+
+Get metrics for a service or instance
+
+```
+koyeb metrics get [flags]
+```
+
+### Options
+
+```
+      --end string        End date for the metrics
+  -h, --help              help for get
+      --instance string   Instance name or ID
+      --service string    Service name or ID
+      --start string      Start date for the metrics
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb metrics](#koyeb-metrics)	 - Metrics
+
+## koyeb snapshots
+
+Manage snapshots
+
+### Options
+
+```
+  -h, --help   help for snapshots
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb snapshots create](#koyeb-snapshots-create)	 - Create a new snapshot
+* [koyeb snapshots delete](#koyeb-snapshots-delete)	 - Delete a snapshot
+* [koyeb snapshots get](#koyeb-snapshots-get)	 - Get a snapshot
+* [koyeb snapshots list](#koyeb-snapshots-list)	 - List snapshots
+* [koyeb snapshots update](#koyeb-snapshots-update)	 - Update a snapshot
+
+## koyeb snapshots create
+
+Create a new snapshot
+
+```
+koyeb snapshots create NAME PARENT_VOLUME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for create
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots delete
+
+Delete a snapshot
+
+```
+koyeb snapshots delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots get
+
+Get a snapshot
+
+```
+koyeb snapshots get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots list
+
+List snapshots
+
+```
+koyeb snapshots list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots update
+
+Update a snapshot
+
+```
+koyeb snapshots update NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help          help for update
+      --name string   Change the snapshot name
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb compose
+
+Create Koyeb resources from a koyeb-compose.yaml file
+
+```
+koyeb compose KOYEB_COMPOSE_FILE_PATH [flags]
+```
+
+### Examples
+
+```
+koyeb compose ./examples/mesh.yaml
+```
+
+### Options
+
+```
+  -h, --help      help for compose
+  -v, --verbose   Tails service logs to have more information about your deployment.
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb compose delete](#koyeb-compose-delete)	 - d
+* [koyeb compose logs](#koyeb-compose-logs)	 - l
+
+## koyeb compose delete
+
+d
+
+```
+koyeb compose delete [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb compose](#koyeb-compose)	 - Create Koyeb resources from a koyeb-compose.yaml file
+
+## koyeb compose logs
+
+l
+
+```
+koyeb compose logs [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for logs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb compose](#koyeb-compose)	 - Create Koyeb resources from a koyeb-compose.yaml file
 

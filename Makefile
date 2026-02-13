@@ -28,8 +28,17 @@ define gen-doc-in-dir
 	cat ./$1/koyeb_databases_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_version.md >> ./$1/reference.md
 	cat ./$1/koyeb_volumes.md >> ./$1/reference.md
+	cat ./$1/koyeb_volumes_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_regions.md >> ./$1/reference.md
 	cat ./$1/koyeb_regions_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_regional-deployments.md >> ./$1/reference.md
+	cat ./$1/koyeb_regional-deployments_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_metrics.md >> ./$1/reference.md
+	cat ./$1/koyeb_metrics_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_snapshots.md >> ./$1/reference.md
+	cat ./$1/koyeb_snapshots_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_compose.md >> ./$1/reference.md
+	cat ./$1/koyeb_compose_*.md >> ./$1/reference.md
 	find ./$1 -type f -not -name 'reference.md' -delete
 endef
 

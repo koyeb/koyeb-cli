@@ -40,21 +40,18 @@ func (h *RegionHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 		}
 	}
 
-	full := GetBoolFlags(cmd, "full")
-	listRegionsReply := NewListRegionsReply(&koyeb.ListRegionsReply{Regions: list}, full)
+	listRegionsReply := NewListRegionsReply(&koyeb.ListRegionsReply{Regions: list})
 	ctx.Renderer.Render(listRegionsReply)
 	return nil
 }
 
 type ListRegionsReply struct {
 	value *koyeb.ListRegionsReply
-	full  bool
 }
 
-func NewListRegionsReply(value *koyeb.ListRegionsReply, full bool) *ListRegionsReply {
+func NewListRegionsReply(value *koyeb.ListRegionsReply) *ListRegionsReply {
 	return &ListRegionsReply{
 		value: value,
-		full:  full,
 	}
 }
 
