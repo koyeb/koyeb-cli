@@ -67,7 +67,7 @@ func (r *ListRegionsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListRegionsReply) Headers() []string {
-	return []string{"id", "name", "scope", "volumes_enabled", "instances"}
+	return []string{"id", "name", "scope", "volumes_enabled"}
 }
 
 func (r *ListRegionsReply) Fields() []map[string]string {
@@ -80,7 +80,6 @@ func (r *ListRegionsReply) Fields() []map[string]string {
 			"name":            item.GetName(),
 			"scope":           item.GetScope(),
 			"volumes_enabled": strconv.FormatBool(item.GetVolumesEnabled()),
-			"instances":       strings.Join(item.GetInstances(), ", "),
 		}
 		resp = append(resp, fields)
 	}

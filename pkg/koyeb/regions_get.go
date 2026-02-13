@@ -3,7 +3,6 @@ package koyeb
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -47,7 +46,7 @@ func (r *GetRegionReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetRegionReply) Headers() []string {
-	return []string{"id", "name", "scope", "volumes_enabled", "instances"}
+	return []string{"id", "name", "scope", "volumes_enabled"}
 }
 
 func (r *GetRegionReply) Fields() []map[string]string {
@@ -57,7 +56,6 @@ func (r *GetRegionReply) Fields() []map[string]string {
 		"name":            item.GetName(),
 		"scope":           item.GetScope(),
 		"volumes_enabled": strconv.FormatBool(item.GetVolumesEnabled()),
-		"instances":       strings.Join(item.GetInstances(), ", "),
 	}
 
 	return []map[string]string{fields}
