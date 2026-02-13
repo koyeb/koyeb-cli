@@ -3,10 +3,10 @@ package koyeb
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,10 @@ func (h *RegionHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) 
 
 	full := GetBoolFlags(cmd, "full")
 	getRegionReply := NewGetRegionReply(res, full)
-	ctx.Renderer.Render(getRegionReply)
+	getRegionInstancesReply := NewGetRegionInstancesReply(res)
+	renderer.NewChainRenderer(ctx.Renderer).
+		Render(getRegionReply).
+		Render(getRegionInstancesReply)
 	return nil
 }
 
@@ -47,7 +50,7 @@ func (r *GetRegionReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetRegionReply) Headers() []string {
-	return []string{"id", "name", "scope", "volumes_enabled", "instances"}
+	return []string{"id", "name", "scope", "volumes_enabled"}
 }
 
 func (r *GetRegionReply) Fields() []map[string]string {
@@ -57,8 +60,43 @@ func (r *GetRegionReply) Fields() []map[string]string {
 		"name":            item.GetName(),
 		"scope":           item.GetScope(),
 		"volumes_enabled": strconv.FormatBool(item.GetVolumesEnabled()),
-		"instances":       strings.Join(item.GetInstances(), "\n"),
 	}
 
 	return []map[string]string{fields}
+}
+
+type GetRegionInstancesReply struct {
+	value *koyeb.GetRegionReply
+}
+
+func NewGetRegionInstancesReply(value *koyeb.GetRegionReply) *GetRegionInstancesReply {
+	return &GetRegionInstancesReply{
+		value: value,
+	}
+}
+
+func (GetRegionInstancesReply) Title() string {
+	return "Instances"
+}
+
+func (r *GetRegionInstancesReply) MarshalBinary() ([]byte, error) {
+	return r.value.GetRegion().MarshalJSON()
+}
+
+func (r *GetRegionInstancesReply) Headers() []string {
+	return []string{"instance"}
+}
+
+func (r *GetRegionInstancesReply) Fields() []map[string]string {
+	region := r.value.GetRegion()
+	instances := region.GetInstances()
+	resp := make([]map[string]string, 0, len(instances))
+
+	for _, inst := range instances {
+		resp = append(resp, map[string]string{
+			"instance": inst,
+		})
+	}
+
+	return resp
 }
