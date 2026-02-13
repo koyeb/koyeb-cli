@@ -27,7 +27,11 @@ func (h *RegionHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 				resp,
 			)
 		}
-		list = append(list, res.GetRegions()...)
+		for _, region := range res.GetRegions() {
+			if region.GetStatus() == "available" {
+				list = append(list, region)
+			}
+		}
 
 		page++
 		offset = page * limit
@@ -63,7 +67,7 @@ func (r *ListRegionsReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *ListRegionsReply) Headers() []string {
-	return []string{"id", "name", "status", "datacenters", "scope", "volumes_enabled", "instances"}
+	return []string{"id", "name", "scope", "volumes_enabled", "instances"}
 }
 
 func (r *ListRegionsReply) Fields() []map[string]string {
@@ -74,8 +78,6 @@ func (r *ListRegionsReply) Fields() []map[string]string {
 		fields := map[string]string{
 			"id":              item.GetId(),
 			"name":            item.GetName(),
-			"status":          item.GetStatus(),
-			"datacenters":     strings.Join(item.GetDatacenters(), ", "),
 			"scope":           item.GetScope(),
 			"volumes_enabled": strconv.FormatBool(item.GetVolumesEnabled()),
 			"instances":       strings.Join(item.GetInstances(), ", "),

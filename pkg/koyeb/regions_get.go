@@ -47,7 +47,7 @@ func (r *GetRegionReply) MarshalBinary() ([]byte, error) {
 }
 
 func (r *GetRegionReply) Headers() []string {
-	return []string{"id", "name", "status", "datacenters", "scope", "volumes_enabled", "instances"}
+	return []string{"id", "name", "scope", "volumes_enabled", "instances"}
 }
 
 func (r *GetRegionReply) Fields() []map[string]string {
@@ -55,8 +55,6 @@ func (r *GetRegionReply) Fields() []map[string]string {
 	fields := map[string]string{
 		"id":              item.GetId(),
 		"name":            item.GetName(),
-		"status":          item.GetStatus(),
-		"datacenters":     strings.Join(item.GetDatacenters(), ", "),
 		"scope":           item.GetScope(),
 		"volumes_enabled": strconv.FormatBool(item.GetVolumesEnabled()),
 		"instances":       strings.Join(item.GetInstances(), ", "),
