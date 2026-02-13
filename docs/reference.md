@@ -43,6 +43,7 @@ Koyeb CLI
 * [koyeb metrics](#koyeb-metrics)	 - Metrics
 * [koyeb organizations](#koyeb-organizations)	 - Organization
 * [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+* [koyeb regions](#koyeb-regions)	 - Regions
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
@@ -292,12 +293,10 @@ See examples of koyeb service create --help
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -605,11 +604,9 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
@@ -1421,12 +1418,10 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -1898,12 +1893,10 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -2695,4 +2688,98 @@ Manage persistent volumes
 * [koyeb volumes get](#koyeb-volumes-get)	 - Get a volume
 * [koyeb volumes list](#koyeb-volumes-list)	 - List volumes
 * [koyeb volumes update](#koyeb-volumes-update)	 - Update a volume
+
+## koyeb regions
+
+Regions
+
+### Options
+
+```
+  -h, --help   help for regions
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb regions get](#koyeb-regions-get)	 - Get region
+* [koyeb regions list](#koyeb-regions-list)	 - List regions
+
+## koyeb regions get
+
+Get region
+
+```
+koyeb regions get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regions](#koyeb-regions)	 - Regions
+
+## koyeb regions list
+
+List regions
+
+```
+koyeb regions list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regions](#koyeb-regions)	 - Regions
 
