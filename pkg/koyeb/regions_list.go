@@ -28,7 +28,7 @@ func (h *RegionHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 			)
 		}
 		for _, region := range res.GetRegions() {
-			if region.GetStatus() == "available" {
+			if strings.EqualFold(region.GetStatus(), "available") {
 				list = append(list, region)
 			}
 		}
