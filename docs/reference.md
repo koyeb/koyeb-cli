@@ -43,6 +43,7 @@ Koyeb CLI
 * [koyeb metrics](#koyeb-metrics)	 - Metrics
 * [koyeb organizations](#koyeb-organizations)	 - Organization
 * [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+* [koyeb regions](#koyeb-regions)	 - Regions
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
@@ -292,12 +293,11 @@ See examples of koyeb service create --help
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -324,6 +324,7 @@ See examples of koyeb service create --help
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for init
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
@@ -605,17 +606,17 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
                                                  
   -h, --help                                     help for deploy
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
@@ -1421,12 +1422,11 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -1453,6 +1453,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for create
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
@@ -1898,12 +1899,11 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-
+                                                 
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --delete-after-delay duration              Automatically delete the service after this duration from creation.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration.
-                                                 Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --docker string                            Docker image
       --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
@@ -1930,6 +1930,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for update
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --name string                              Specify to update the service name
@@ -2695,4 +2696,723 @@ Manage persistent volumes
 * [koyeb volumes get](#koyeb-volumes-get)	 - Get a volume
 * [koyeb volumes list](#koyeb-volumes-list)	 - List volumes
 * [koyeb volumes update](#koyeb-volumes-update)	 - Update a volume
+
+## koyeb volumes create
+
+Create a new volume
+
+```
+koyeb volumes create NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help              help for create
+      --read-only         Force the volume to be read-only
+      --region string     Region of the volume (default "was")
+      --size int          Size of the volume in GB (default -1)
+      --snapshot string   Specify a snapshot to use to create the volume from
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes delete
+
+Delete a volume
+
+```
+koyeb volumes delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes get
+
+Get a volume
+
+```
+koyeb volumes get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes list
+
+List volumes
+
+```
+koyeb volumes list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb volumes update
+
+Update a volume
+
+```
+koyeb volumes update NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help          help for update
+      --name string   Change the volume name
+      --size int      Increase the volume size (default -1)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+
+## koyeb regions
+
+Regions
+
+### Options
+
+```
+  -h, --help   help for regions
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb regions get](#koyeb-regions-get)	 - Get region
+* [koyeb regions list](#koyeb-regions-list)	 - List regions
+
+## koyeb regions get
+
+Get region
+
+```
+koyeb regions get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regions](#koyeb-regions)	 - Regions
+
+## koyeb regions list
+
+List regions
+
+```
+koyeb regions list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regions](#koyeb-regions)	 - Regions
+
+## koyeb regional-deployments
+
+Regional deployments
+
+### Options
+
+```
+  -h, --help   help for regional-deployments
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb regional-deployments get](#koyeb-regional-deployments-get)	 - Get regional deployment
+* [koyeb regional-deployments list](#koyeb-regional-deployments-list)	 - List regional deployments
+
+## koyeb regional-deployments get
+
+Get regional deployment
+
+```
+koyeb regional-deployments get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+
+## koyeb regional-deployments list
+
+List regional deployments
+
+```
+koyeb regional-deployments list [flags]
+```
+
+### Options
+
+```
+      --deployment string   Limit the list to regional deployments of a specific deployment
+  -h, --help                help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+
+## koyeb metrics
+
+Metrics
+
+### Options
+
+```
+  -h, --help   help for metrics
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb metrics get](#koyeb-metrics-get)	 - Get metrics for a service or instance
+
+## koyeb metrics get
+
+Get metrics for a service or instance
+
+```
+koyeb metrics get [flags]
+```
+
+### Options
+
+```
+      --end string        End date for the metrics
+  -h, --help              help for get
+      --instance string   Instance name or ID
+      --service string    Service name or ID
+      --start string      Start date for the metrics
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb metrics](#koyeb-metrics)	 - Metrics
+
+## koyeb snapshots
+
+Manage snapshots
+
+### Options
+
+```
+  -h, --help   help for snapshots
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb snapshots create](#koyeb-snapshots-create)	 - Create a new snapshot
+* [koyeb snapshots delete](#koyeb-snapshots-delete)	 - Delete a snapshot
+* [koyeb snapshots get](#koyeb-snapshots-get)	 - Get a snapshot
+* [koyeb snapshots list](#koyeb-snapshots-list)	 - List snapshots
+* [koyeb snapshots update](#koyeb-snapshots-update)	 - Update a snapshot
+
+## koyeb snapshots create
+
+Create a new snapshot
+
+```
+koyeb snapshots create NAME PARENT_VOLUME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for create
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots delete
+
+Delete a snapshot
+
+```
+koyeb snapshots delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots get
+
+Get a snapshot
+
+```
+koyeb snapshots get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots list
+
+List snapshots
+
+```
+koyeb snapshots list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb snapshots update
+
+Update a snapshot
+
+```
+koyeb snapshots update NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help          help for update
+      --name string   Change the snapshot name
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
+
+## koyeb compose
+
+Create Koyeb resources from a koyeb-compose.yaml file
+
+```
+koyeb compose KOYEB_COMPOSE_FILE_PATH [flags]
+```
+
+### Examples
+
+```
+koyeb compose ./examples/mesh.yaml
+```
+
+### Options
+
+```
+  -h, --help      help for compose
+  -v, --verbose   Tails service logs to have more information about your deployment.
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb compose delete](#koyeb-compose-delete)	 - d
+* [koyeb compose logs](#koyeb-compose-logs)	 - l
+
+## koyeb compose delete
+
+d
+
+```
+koyeb compose delete [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb compose](#koyeb-compose)	 - Create Koyeb resources from a koyeb-compose.yaml file
+
+## koyeb compose logs
+
+l
+
+```
+koyeb compose logs [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for logs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb compose](#koyeb-compose)	 - Create Koyeb resources from a koyeb-compose.yaml file
 
