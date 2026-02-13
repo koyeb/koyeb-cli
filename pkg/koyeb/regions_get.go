@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -22,10 +23,22 @@ func (h *RegionHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) 
 
 	full := GetBoolFlags(cmd, "full")
 	getRegionReply := NewGetRegionReply(res, full)
-	getRegionInstancesReply := NewGetRegionInstancesReply(res)
-	renderer.NewChainRenderer(ctx.Renderer).
-		Render(getRegionReply).
-		Render(getRegionInstancesReply)
+
+	// For JSON/YAML output, use the standard renderer which includes instances
+	// in the serialized output. For table output, print a custom format.
+	if _, ok := ctx.Renderer.(*renderer.TableRenderer); ok {
+		region := res.GetRegion()
+		fmt.Fprintf(os.Stdout, "ID:              %s\n", region.GetId())
+		fmt.Fprintf(os.Stdout, "Name:            %s\n", region.GetName())
+		fmt.Fprintf(os.Stdout, "Scope:           %s\n", region.GetScope())
+		fmt.Fprintf(os.Stdout, "Volumes enabled: %s\n", strconv.FormatBool(region.GetVolumesEnabled()))
+		fmt.Fprintf(os.Stdout, "\nInstances:\n")
+		for _, inst := range region.GetInstances() {
+			fmt.Fprintf(os.Stdout, "  - %s\n", inst)
+		}
+	} else {
+		ctx.Renderer.Render(getRegionReply)
+	}
 	return nil
 }
 
@@ -63,40 +76,4 @@ func (r *GetRegionReply) Fields() []map[string]string {
 	}
 
 	return []map[string]string{fields}
-}
-
-type GetRegionInstancesReply struct {
-	value *koyeb.GetRegionReply
-}
-
-func NewGetRegionInstancesReply(value *koyeb.GetRegionReply) *GetRegionInstancesReply {
-	return &GetRegionInstancesReply{
-		value: value,
-	}
-}
-
-func (GetRegionInstancesReply) Title() string {
-	return "Instances"
-}
-
-func (r *GetRegionInstancesReply) MarshalBinary() ([]byte, error) {
-	return r.value.GetRegion().MarshalJSON()
-}
-
-func (r *GetRegionInstancesReply) Headers() []string {
-	return []string{"instance"}
-}
-
-func (r *GetRegionInstancesReply) Fields() []map[string]string {
-	region := r.value.GetRegion()
-	instances := region.GetInstances()
-	resp := make([]map[string]string, 0, len(instances))
-
-	for _, inst := range instances {
-		resp = append(resp, map[string]string{
-			"instance": inst,
-		})
-	}
-
-	return resp
 }
