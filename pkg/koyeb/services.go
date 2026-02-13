@@ -377,6 +377,12 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.Int64("autoscaling-requests-per-second", 0, "Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
 	flags.Int64("autoscaling-concurrent-requests", 0, "Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.")
 	flags.Int64("autoscaling-requests-response-time", 0, "Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.")
+	flags.Duration("light-sleep-delay", 0,
+		"Delay after which an idle service is put to light sleep. "+
+			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
+	flags.Duration("deep-sleep-delay", 0,
+		"Delay after which an idle service is put to deep sleep. "+
+			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 	flags.Bool("skip-cache", false, "Whether to use the cache when building the service")
 
@@ -600,7 +606,11 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 	}
 
 	isFreeUsed := isFreeInstanceUsed(definition.GetInstanceTypes())
-	definition.SetScalings(h.parseScalings(isFreeUsed, flags, definition.Scalings))
+	scalings, err := h.parseScalings(isFreeUsed, flags, definition.Scalings)
+	if err != nil {
+		return err
+	}
+	definition.SetScalings(scalings)
 
 	healthchecks, err := h.parseChecks(definition.GetType(), flags, definition.HealthChecks)
 	if err != nil {
@@ -1023,7 +1033,7 @@ func (h *ServiceHandler) parseRegions(flags *pflag.FlagSet, currentRegions []str
 }
 
 // Parse --min-scale and --max-scale
-func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) []koyeb.DeploymentScaling {
+func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) ([]koyeb.DeploymentScaling, error) {
 	var minScale, maxScale int64
 
 	if flags.Lookup("min-scale").Changed {
@@ -1045,8 +1055,10 @@ func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, cu
 		scaling := koyeb.NewDeploymentScalingWithDefaults()
 		scaling.SetMin(minScale)
 		scaling.SetMax(maxScale)
-		h.setScalingsTargets(flags, scaling)
-		return []koyeb.DeploymentScaling{*scaling}
+		if err := h.setScalingsTargets(flags, scaling); err != nil {
+			return nil, err
+		}
+		return []koyeb.DeploymentScaling{*scaling}, nil
 	} else {
 		// Otherwise, update the current scaling configuration only if one of the scale flags has been provided
 		for idx := range currentScalings {
@@ -1056,10 +1068,12 @@ func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, cu
 			if flags.Lookup("scale").Changed || flags.Lookup("max-scale").Changed {
 				currentScalings[idx].SetMax(maxScale)
 			}
-			h.setScalingsTargets(flags, &currentScalings[idx])
+			if err := h.setScalingsTargets(flags, &currentScalings[idx]); err != nil {
+				return nil, err
+			}
 		}
 	}
-	return currentScalings
+	return currentScalings, nil
 }
 
 // setScalingsTargets updates the scaling targets in a koyeb.DeploymentScaling object based on the specified flags.
@@ -1080,7 +1094,7 @@ func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, cu
 // Note: there is no way to easily avoid the code duplication in this function
 // because NewDeploymentScalingTarget{AverageCPU,AverageMem,RequestsPerSecond,ConcurrentRequests,...}
 // do not implement a common interface.
-func (h *ServiceHandler) setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) {
+func (h *ServiceHandler) setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb.DeploymentScaling) error {
 	if scaling.Targets == nil || scaling.GetMin() == scaling.GetMax() {
 		scaling.Targets = []koyeb.DeploymentScalingTarget{}
 	}
@@ -1234,6 +1248,77 @@ func (h *ServiceHandler) setScalingsTargets(flags *pflag.FlagSet, scaling *koyeb
 		}
 		scaling.Targets = newTargets
 	}
+
+	if flags.Lookup("light-sleep-delay").Changed || flags.Lookup("deep-sleep-delay").Changed {
+		if scaling.GetMin() > 0 {
+			return &errors.CLIError{
+				What: "Error while configuring the service",
+				Why:  "--light-sleep-delay and --deep-sleep-delay can only be used when min-scale is 0",
+				Additional: []string{
+					"Sleep delays are only applicable to services that can scale to zero.",
+					"Set --min-scale 0 to enable scale-to-zero before configuring sleep delays.",
+				},
+				Orig:     nil,
+				Solution: "Add --min-scale 0 to your command and try again",
+			}
+		}
+
+		lightSleepDuration, _ := flags.GetDuration("light-sleep-delay")
+		deepSleepDuration, _ := flags.GetDuration("deep-sleep-delay")
+		lightSleepChanged := flags.Lookup("light-sleep-delay").Changed
+		deepSleepChanged := flags.Lookup("deep-sleep-delay").Changed
+
+		newTargets := []koyeb.DeploymentScalingTarget{}
+		found := false
+
+		for _, target := range scaling.GetTargets() {
+			if target.HasSleepIdleDelay() {
+				found = true
+				sid := target.GetSleepIdleDelay()
+				if lightSleepChanged {
+					if lightSleepDuration > 0 {
+						sid.SetLightSleepValue(int64(lightSleepDuration.Seconds()))
+					} else {
+						sid.LightSleepValue = nil
+					}
+				}
+				if deepSleepChanged {
+					if deepSleepDuration > 0 {
+						sid.SetDeepSleepValue(int64(deepSleepDuration.Seconds()))
+					} else {
+						sid.DeepSleepValue = nil
+					}
+				}
+				// Remove the target entirely if both values are unset
+				if sid.LightSleepValue == nil && sid.DeepSleepValue == nil {
+					continue
+				}
+				target.SetSleepIdleDelay(sid)
+				newTargets = append(newTargets, target)
+			} else {
+				newTargets = append(newTargets, target)
+			}
+		}
+		if !found {
+			sid := koyeb.NewDeploymentScalingTargetSleepIdleDelay()
+			hasValue := false
+			if lightSleepChanged && lightSleepDuration > 0 {
+				sid.SetLightSleepValue(int64(lightSleepDuration.Seconds()))
+				hasValue = true
+			}
+			if deepSleepChanged && deepSleepDuration > 0 {
+				sid.SetDeepSleepValue(int64(deepSleepDuration.Seconds()))
+				hasValue = true
+			}
+			if hasValue {
+				target := koyeb.NewDeploymentScalingTarget()
+				target.SetSleepIdleDelay(*sid)
+				newTargets = append(newTargets, *target)
+			}
+		}
+		scaling.Targets = newTargets
+	}
+	return nil
 }
 
 // Parse --git-* and --docker-* flags to set deployment.Git or deployment.Docker
