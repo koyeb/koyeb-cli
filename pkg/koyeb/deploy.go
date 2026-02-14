@@ -195,6 +195,11 @@ type DeployHandler struct {
 
 // Return the app id if it exists, otherwise return an empty string.
 func (h *DeployHandler) GetAppId(ctx *CLIContext, name string) (string, error) {
+	return getAppIdByName(ctx, name)
+}
+
+// getAppIdByName returns the app id if it exists, otherwise returns an empty string.
+func getAppIdByName(ctx *CLIContext, name string) (string, error) {
 	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)

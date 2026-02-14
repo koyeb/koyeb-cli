@@ -14,7 +14,7 @@ func genMarkdownDocumentation(outputDir string) {
 	rootCmd := koyeb.GetRootCommand()
 	linkHandler := func(name string) string {
 		base := strings.TrimSuffix(name, path.Ext(name))
-		return "#" + strings.Replace(strings.ToLower(base), "_", "-", -1)
+		return "#" + strings.ReplaceAll(strings.ToLower(base), "_", "-")
 	}
 
 	filePrepender := func(filename string) string {

@@ -2088,7 +2088,7 @@ func (s *DeploymentStrategy) Set(value string) error {
 	case "immediate":
 		*s = DeploymentStrategy(koyeb.DEPLOYMENTSTRATEGYTYPE_IMMEDIATE)
 	default:
-		return fmt.Errorf("invalid deployment strategy: %s. Valid values are: rolling, blue-green, immediate.", value)
+		return fmt.Errorf("invalid deployment strategy: %s, valid values are: rolling, blue-green, immediate", value)
 	}
 	return nil
 }

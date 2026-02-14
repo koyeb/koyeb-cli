@@ -16,7 +16,7 @@ func NewRegionsListFromFlags(values []string) ([]Flag[string], error) {
 
 		if strings.HasPrefix(value, "!") {
 			region.markedForDeletion = true
-			region.BaseFlag.cliValue = value[1:]
+			region.cliValue = value[1:]
 		}
 		ret = append(ret, region)
 	}
