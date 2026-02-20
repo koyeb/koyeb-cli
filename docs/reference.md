@@ -43,6 +43,7 @@ Koyeb CLI
 * [koyeb metrics](#koyeb-metrics)	 - Metrics
 * [koyeb organizations](#koyeb-organizations)	 - Organization
 * [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
+* [koyeb sandbox](#koyeb-sandbox) - Sandboxes
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
@@ -1043,6 +1044,131 @@ koyeb organizations switch [flags]
 
 
 * [koyeb organizations](#koyeb-organizations)	 - Organization
+
+## koyeb sandbox
+
+Sandboxes
+
+### Options
+
+```
+  - h, --help   help for sandboxes
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [create](#koyeb-sandbox-create) - Create a new sandbox
+* [expose-port](#koyeb-sandbox-expose-port) -Expose a port from the sandbox via TCP proxy
+* [fs](#koyeb-sandbox-fs) -Filesystem operations
+* [health](#koyeb-sandbox-health) - Check sandbox health status
+* [kill](#koyeb-sandbox-kill) - Kill a background process in the sandbox
+* [list](#koyeb-sandbox-list) -List sandboxes
+* [logs](#koyeb-sandbox-logs) - Stream logs from a background process
+* [ps](#koyeb-sandbox-ps) - List background processes in the sandbox
+* [run](#koyeb-sandbox-run) - Execute a command in the sandbox
+* [start](#koyeb-sandbox-start) - Start a background process in the sandbox
+* [unexpose-port](#koyeb-sandbox-unexpose-port) - Unexpose the currently exposed port
+
+### koyeb sandbox create
+
+Create a new sandbox
+
+```
+koyeb sandbox create [NAME] flags
+```
+
+### koyeb sandbox expose-port   
+
+Expose a port from the sandbox via TCP proxy
+
+```
+koyeb sandbox expose-port [NAME] flags
+```
+
+### koyeb sandbox fs          
+
+Filesystem operations
+
+```
+koyeb sandbox fs [NAME] flags
+```
+
+### koyeb sandbox health
+
+Check sandbox health status
+
+```
+koyeb sandbox health [NAME] flags
+```
+
+### koyeb sandbox kill   
+
+Kill a background process in the sandbox
+
+```
+koyeb sandbox kill [NAME] flags
+```
+
+### koyeb sandbox list
+
+List sandboxes
+
+```
+koyeb sandbox list [NAME] flags
+```
+
+### koyeb sandbox logs      
+
+Stream logs from a background process
+
+```
+koyeb sandbox logs [NAME] flags
+```
+
+### koyeb sandbox ps
+
+List background processes in the sandbox
+
+```
+koyeb sandbox ps [NAME] flags
+```
+
+### koyeb sandbox run
+
+Execute a command in the sandbox
+
+```
+koyeb sandbox run [NAME] flags
+```
+
+### koyeb sandbox start
+
+Start a background process in the sandbox
+
+```
+koyeb sandbox start [NAME] flags
+```
+
+### koyeb sandbox unexpose-port
+
+Unexpose the currently exposed port
+
+```
+koyeb sandbox unexpose-port [NAME] flags
+```
 
 ## koyeb secrets
 
