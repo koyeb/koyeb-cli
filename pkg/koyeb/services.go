@@ -521,6 +521,16 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"for example --config-file /etc/data.yaml:/etc/data.yaml:0644\n"+
 			"To delete a config file, use !PATH, for example --config-file !/etc/data.yaml\n",
 	)
+	flags.StringSlice(
+		"auth",
+		nil,
+		"Add security policies to all routes. Use --auth USERNAME:PASSWORD for basic auth, or --auth API_KEY for API key auth.\n"+
+			"You can reference secrets for passwords and API keys using the syntax {{secret.SECRET_NAME}},\n"+
+			"e.g. --auth 'admin:{{secret.my_pass}}' or --auth '{{secret.my_api_key}}'.\n"+
+			"The referenced secrets must exist before deployment, otherwise the deployment will fail.\n"+
+			"Can be specified multiple times to add multiple credentials.\n",
+	)
+	flags.Bool("auth-disable", false, "Remove all security policies from routes")
 
 	// Configure aliases: for example, allow user to use --port instead of --ports
 	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
@@ -727,6 +737,15 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 	}
 	definition.SetConfigFiles(files)
 
+	authChanged := flags.Lookup("auth") != nil && flags.Lookup("auth").Changed
+	authDisable, _ := flags.GetBool("auth-disable")
+	if authChanged || authDisable {
+		err = h.applyAuthToRoutes(flags, definition, authDisable)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -909,6 +928,84 @@ func (h *ServiceHandler) parseProxyPorts(type_ koyeb.DeploymentDefinitionType, f
 }
 
 // Parse --routes
+// applyAuthToRoutes parses the --auth and --auth-disable flags and applies security policies to all routes.
+// Format: --auth USERNAME:PASSWORD for basic auth, --auth API_KEY for API key auth.
+// Use --auth-disable to clear all security policies from routes.
+func (h *ServiceHandler) applyAuthToRoutes(flags *pflag.FlagSet, definition *koyeb.DeploymentDefinition, disable bool) error {
+	routes := definition.GetRoutes()
+	if len(routes) == 0 {
+		return &errors.CLIError{
+			What: "Error while configuring service authentication",
+			Why:  "no routes are configured for the service",
+			Additional: []string{
+				"Security policies are applied to routes. You must have at least one route configured.",
+				"Use --route to configure a route, for example --route /:8080",
+			},
+			Orig:     nil,
+			Solution: "Add a route to the service and try again",
+		}
+	}
+
+	// Clear all security policies
+	if disable {
+		for i := range routes {
+			routes[i].SecurityPolicies = nil
+		}
+		definition.SetRoutes(routes)
+		return nil
+	}
+
+	authValues, err := flags.GetStringSlice("auth")
+	if err != nil {
+		return err
+	}
+
+	var basicAuths []koyeb.BasicAuthPolicy
+	var apiKeys []string
+
+	for _, val := range authValues {
+		if val == "" {
+			continue
+		}
+		if strings.Contains(val, ":") {
+			// Basic auth: username:password
+			parts := strings.SplitN(val, ":", 2)
+			if parts[0] == "" || parts[1] == "" {
+				return &errors.CLIError{
+					What: "Error while configuring service authentication",
+					Why:  fmt.Sprintf("invalid basic auth format: %q", val),
+					Additional: []string{
+						"Basic auth must be specified as USERNAME:PASSWORD, where both username and password are non-empty",
+					},
+					Orig:     nil,
+					Solution: "Fix the --auth flag value and try again",
+				}
+			}
+			basicAuth := koyeb.NewBasicAuthPolicyWithDefaults()
+			basicAuth.SetUsername(parts[0])
+			basicAuth.SetPassword(parts[1])
+			basicAuths = append(basicAuths, *basicAuth)
+		} else {
+			// API key
+			apiKeys = append(apiKeys, val)
+		}
+	}
+
+	securityPolicies := koyeb.NewSecurityPoliciesWithDefaults()
+	if len(basicAuths) > 0 {
+		securityPolicies.SetBasicAuths(basicAuths)
+	}
+	if len(apiKeys) > 0 {
+		securityPolicies.SetApiKeys(apiKeys)
+	}
+
+	for i := range routes {
+		routes[i].SetSecurityPolicies(*securityPolicies)
+	}
+	definition.SetRoutes(routes)
+	return nil
+}
+
 func (h *ServiceHandler) parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
 	newRoutes, err := parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
 	if err != nil {
