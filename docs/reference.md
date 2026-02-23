@@ -43,7 +43,7 @@ Koyeb CLI
 * [koyeb metrics](#koyeb-metrics)	 - Metrics
 * [koyeb organizations](#koyeb-organizations)	 - Organization
 * [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
-* [koyeb sandbox](#koyeb-sandbox) - Sandboxes
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
 * [koyeb services](#koyeb-services)	 - Services
 * [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
@@ -277,6 +277,13 @@ See examples of koyeb service create --help
       --archive-ignore-dir strings               Set directories to ignore when building the archive.
                                                  To ignore multiple directories, use the flag multiple times.
                                                  To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
+      --auth strings                             Add security policies to all routes. Use --auth USERNAME:PASSWORD for basic auth, or --auth API_KEY for API key auth.
+                                                 You can reference secrets for passwords and API keys using the syntax {{secret.SECRET_NAME}},
+                                                 e.g. --auth 'admin:{{secret.my_pass}}' or --auth '{{secret.my_api_key}}'.
+                                                 The referenced secrets must exist before deployment, otherwise the deployment will fail.
+                                                 Can be specified multiple times to add multiple credentials.
+                                                 
+      --auth-disable                             Remove all security policies from routes
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -294,6 +301,7 @@ See examples of koyeb service create --help
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
@@ -323,6 +331,7 @@ See examples of koyeb service create --help
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for init
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
@@ -587,6 +596,13 @@ koyeb deploy <path> <app>/<service> [flags]
       --archive-ignore-dir strings               Set directories to ignore when building the archive.
                                                  To ignore multiple directories, use the flag multiple times.
                                                  To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
+      --auth strings                             Add security policies to all routes. Use --auth USERNAME:PASSWORD for basic auth, or --auth API_KEY for API key auth.
+                                                 You can reference secrets for passwords and API keys using the syntax {{secret.SECRET_NAME}},
+                                                 e.g. --auth 'admin:{{secret.my_pass}}' or --auth '{{secret.my_api_key}}'.
+                                                 The referenced secrets must exist before deployment, otherwise the deployment will fail.
+                                                 Can be specified multiple times to add multiple credentials.
+                                                 
+      --auth-disable                             Remove all security policies from routes
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -604,6 +620,7 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
@@ -613,6 +630,7 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  
   -h, --help                                     help for deploy
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
@@ -1045,131 +1063,6 @@ koyeb organizations switch [flags]
 
 * [koyeb organizations](#koyeb-organizations)	 - Organization
 
-## koyeb sandbox
-
-Sandboxes
-
-### Options
-
-```
-  - h, --help   help for sandboxes
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-```
-
-* [koyeb](#koyeb)	 - Koyeb CLI
-* [create](#koyeb-sandbox-create) - Create a new sandbox
-* [expose-port](#koyeb-sandbox-expose-port) -Expose a port from the sandbox via TCP proxy
-* [fs](#koyeb-sandbox-fs) -Filesystem operations
-* [health](#koyeb-sandbox-health) - Check sandbox health status
-* [kill](#koyeb-sandbox-kill) - Kill a background process in the sandbox
-* [list](#koyeb-sandbox-list) -List sandboxes
-* [logs](#koyeb-sandbox-logs) - Stream logs from a background process
-* [ps](#koyeb-sandbox-ps) - List background processes in the sandbox
-* [run](#koyeb-sandbox-run) - Execute a command in the sandbox
-* [start](#koyeb-sandbox-start) - Start a background process in the sandbox
-* [unexpose-port](#koyeb-sandbox-unexpose-port) - Unexpose the currently exposed port
-
-### koyeb sandbox create
-
-Create a new sandbox
-
-```
-koyeb sandbox create [NAME] flags
-```
-
-### koyeb sandbox expose-port   
-
-Expose a port from the sandbox via TCP proxy
-
-```
-koyeb sandbox expose-port [NAME] flags
-```
-
-### koyeb sandbox fs          
-
-Filesystem operations
-
-```
-koyeb sandbox fs [NAME] flags
-```
-
-### koyeb sandbox health
-
-Check sandbox health status
-
-```
-koyeb sandbox health [NAME] flags
-```
-
-### koyeb sandbox kill   
-
-Kill a background process in the sandbox
-
-```
-koyeb sandbox kill [NAME] flags
-```
-
-### koyeb sandbox list
-
-List sandboxes
-
-```
-koyeb sandbox list [NAME] flags
-```
-
-### koyeb sandbox logs      
-
-Stream logs from a background process
-
-```
-koyeb sandbox logs [NAME] flags
-```
-
-### koyeb sandbox ps
-
-List background processes in the sandbox
-
-```
-koyeb sandbox ps [NAME] flags
-```
-
-### koyeb sandbox run
-
-Execute a command in the sandbox
-
-```
-koyeb sandbox run [NAME] flags
-```
-
-### koyeb sandbox start
-
-Start a background process in the sandbox
-
-```
-koyeb sandbox start [NAME] flags
-```
-
-### koyeb sandbox unexpose-port
-
-Unexpose the currently exposed port
-
-```
-koyeb sandbox unexpose-port [NAME] flags
-```
-
 ## koyeb secrets
 
 Secrets
@@ -1528,6 +1421,13 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --archive-ignore-dir strings               Set directories to ignore when building the archive.
                                                  To ignore multiple directories, use the flag multiple times.
                                                  To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
+      --auth strings                             Add security policies to all routes. Use --auth USERNAME:PASSWORD for basic auth, or --auth API_KEY for API key auth.
+                                                 You can reference secrets for passwords and API keys using the syntax {{secret.SECRET_NAME}},
+                                                 e.g. --auth 'admin:{{secret.my_pass}}' or --auth '{{secret.my_api_key}}'.
+                                                 The referenced secrets must exist before deployment, otherwise the deployment will fail.
+                                                 Can be specified multiple times to add multiple credentials.
+                                                 
+      --auth-disable                             Remove all security policies from routes
       --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
       --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
@@ -1545,6 +1445,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
@@ -1574,6 +1475,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --git-workdir string                       Path to the sub-directory containing the code to build and deploy
   -h, --help                                     help for create
       --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
@@ -1930,6 +1832,240 @@ koyeb services resume NAME [flags]
 
 * [koyeb services](#koyeb-services)	 - Services
 
+## koyeb services unapplied-changes
+
+Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment
+
+```
+koyeb services unapplied-changes SERVICE_NAME [flags]
+```
+
+### Options
+
+```
+  -a, --app string   Service application
+  -h, --help         help for unapplied-changes
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+
+## koyeb services update
+
+Update service
+
+```
+koyeb services update NAME [flags]
+```
+
+### Examples
+
+```
+
+# Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
+$> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
+
+# Update the docker command of the service "myservice" in the app "myapp", equivalent to docker CMD ["nginx", "-g", "daemon off;"]
+$> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
+
+# Given a public service configured with the port 80:http and the route /:80, update it to make the service private, ie. only
+# accessible from the mesh, by changing the port's protocol and removing the route
+$> koyeb service update myapp/myservice --port 80:tcp --route '!/'
+
+```
+
+### Options
+
+```
+  -a, --app string                               Service application
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
+      --auth strings                             Add security policies to all routes. Use --auth USERNAME:PASSWORD for basic auth, or --auth API_KEY for API key auth.
+                                                 You can reference secrets for passwords and API keys using the syntax {{secret.SECRET_NAME}},
+                                                 e.g. --auth 'admin:{{secret.my_pass}}' or --auth '{{secret.my_api_key}}'.
+                                                 The referenced secrets must exist before deployment, otherwise the deployment will fail.
+                                                 Can be specified multiple times to add multiple credentials.
+                                                 
+      --auth-disable                             Remove all security policies from routes
+      --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
+      --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
+      --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
+      --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
+      --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --checks-grace-period strings              Set healthcheck grace period in seconds.
+                                                 Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
+                                                 
+      --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
+                                                 for example --config-file /etc/data.yaml:/etc/data.yaml:0644
+                                                 To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
+                                                 
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
+      --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
+      --docker string                            Docker image
+      --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
+      --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
+      --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
+      --docker-private-registry-secret string    Docker private registry secret
+      --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
+                                                 To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
+                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
+                                                 
+      --git string                               Git repository
+      --git-branch string                        Git branch (default "main")
+      --git-build-command string                 Buid command (legacy, prefer git-buildpack-build-command)
+      --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --git-buildpack-build-command string       Buid command
+      --git-buildpack-run-command string         Run command
+      --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
+      --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
+      --git-docker-dockerfile string             Dockerfile path
+      --git-docker-entrypoint strings            Docker entrypoint
+      --git-docker-target string                 Docker target
+      --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
+      --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
+      --git-sha string                           Git commit SHA to deploy
+      --git-workdir string                       Path to the sub-directory containing the code to build and deploy
+  -h, --help                                     help for update
+      --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
+      --max-scale int                            Max scale (default 1)
+      --min-scale int                            Min scale (default 1)
+      --name string                              Specify to update the service name
+      --override                                 Override the service configuration with the new configuration instead of merging them
+      --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the service container should run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
+      --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
+                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
+                                                 If the region is not specified on service creation, the service is deployed in was
+                                                 
+      --routes strings                           Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
+                                                 PORT defaults to 8000
+                                                 To delete a route, use '!PATH', for example --route '!/foo'
+                                                 
+      --save-only                                Save the new configuration without deploying it
+      --scale int                                Set both min-scale and max-scale (default 1)
+      --skip-build                               If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
+      --skip-cache                               Whether to use the cache when building the service
+      --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
+      --wait                                     Waits until the service deployment is done
+      --wait-timeout duration                    Duration the wait will last until timeout (default 5m0s)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+
+## koyeb services scale
+
+Set manual scaling configuration for service (replaces existing configuration)
+
+```
+koyeb services scale NAME [flags]
+```
+
+### Examples
+
+```
+
+# Scale a service to 3 instances across all regions
+$> koyeb service scale app/podinfo --instances 3
+
+# Scale a service with different instance counts per region
+$> koyeb service scale app/podinfo --scale fra:3 --scale was:2
+
+# Scale a service in specific regions with same instance count (legacy syntax)
+$> koyeb service scale app/podinfo --instances 2 --regions fra --regions was
+
+# Set specific scaling per region
+$> koyeb service scale app/podinfo --scale fra:5 --scale was:3 --scale sin:2
+
+```
+
+### Options
+
+```
+  -a, --app string        Service application
+  -h, --help              help for scale
+      --instances int     Number of instances to scale to (used with --regions or alone for all regions) (default 1)
+      --regions strings   Regions to apply --instances count to (e.g., 'fra', 'was')
+      --scale strings     Scale configuration per region in format 'region:instances' (e.g., 'fra:3'). Can be specified multiple times.
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb services](#koyeb-services)	 - Services
+* [koyeb services scale delete](#koyeb-services-scale-delete)	 - Delete manual scaling configuration for service
+* [koyeb services scale get](#koyeb-services-scale-get)	 - Get manual scaling configuration for service
+* [koyeb services scale update](#koyeb-services-scale-update)	 - Update manual scaling configuration for service (patches existing configuration)
+
 ## koyeb services scale delete
 
 Delete manual scaling configuration for service
@@ -2064,231 +2200,6 @@ $> koyeb service scale update app/podinfo --scale fra:5 --scale '!was'
 
 
 * [koyeb services scale](#koyeb-services-scale)	 - Set manual scaling configuration for service (replaces existing configuration)
-
-## koyeb services scale
-
-Set manual scaling configuration for service (replaces existing configuration)
-
-```
-koyeb services scale NAME [flags]
-```
-
-### Examples
-
-```
-
-# Scale a service to 3 instances across all regions
-$> koyeb service scale app/podinfo --instances 3
-
-# Scale a service with different instance counts per region
-$> koyeb service scale app/podinfo --scale fra:3 --scale was:2
-
-# Scale a service in specific regions with same instance count (legacy syntax)
-$> koyeb service scale app/podinfo --instances 2 --regions fra --regions was
-
-# Set specific scaling per region
-$> koyeb service scale app/podinfo --scale fra:5 --scale was:3 --scale sin:2
-
-```
-
-### Options
-
-```
-  -a, --app string        Service application
-  -h, --help              help for scale
-      --instances int     Number of instances to scale to (used with --regions or alone for all regions) (default 1)
-      --regions strings   Regions to apply --instances count to (e.g., 'fra', 'was')
-      --scale strings     Scale configuration per region in format 'region:instances' (e.g., 'fra:3'). Can be specified multiple times.
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb services](#koyeb-services)	 - Services
-* [koyeb services scale delete](#koyeb-services-scale-delete)	 - Delete manual scaling configuration for service
-* [koyeb services scale get](#koyeb-services-scale-get)	 - Get manual scaling configuration for service
-* [koyeb services scale update](#koyeb-services-scale-update)	 - Update manual scaling configuration for service (patches existing configuration)
-
-## koyeb services unapplied-changes
-
-Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment
-
-```
-koyeb services unapplied-changes SERVICE_NAME [flags]
-```
-
-### Options
-
-```
-  -a, --app string   Service application
-  -h, --help         help for unapplied-changes
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb services](#koyeb-services)	 - Services
-
-## koyeb services update
-
-Update service
-
-```
-koyeb services update NAME [flags]
-```
-
-### Examples
-
-```
-
-# Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
-$> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
-
-# Update the docker command of the service "myservice" in the app "myapp", equivalent to docker CMD ["nginx", "-g", "daemon off;"]
-$> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g' --docker-args 'daemon off;'
-
-# Given a public service configured with the port 80:http and the route /:80, update it to make the service private, ie. only
-# accessible from the mesh, by changing the port's protocol and removing the route
-$> koyeb service update myapp/myservice --port 80:tcp --route '!/'
-
-```
-
-### Options
-
-```
-  -a, --app string                               Service application
-      --archive string                           Archive ID to deploy
-      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
-      --archive-buildpack-build-command string   Buid command
-      --archive-buildpack-run-command string     Run command
-      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
-      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
-      --archive-docker-dockerfile string         Dockerfile path
-      --archive-docker-entrypoint strings        Docker entrypoint
-      --archive-docker-target string             Docker target
-      --archive-ignore-dir strings               Set directories to ignore when building the archive.
-                                                 To ignore multiple directories, use the flag multiple times.
-                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
-      --autoscaling-average-cpu int              Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.
-      --autoscaling-average-mem int              Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.
-      --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
-      --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
-      --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
-      --checks strings                           Update service healthchecks (available for services of type "web" only)
-                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
-                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
-                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
-                                                 
-      --checks-grace-period strings              Set healthcheck grace period in seconds.
-                                                 Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
-                                                 
-      --config-file strings                      Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]
-                                                 for example --config-file /etc/data.yaml:/etc/data.yaml:0644
-                                                 To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
-                                                 
-      --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
-      --deployment-strategy STRATEGY             Deployment strategy, either "rolling" (default), "blue-green" or "immediate".
-      --docker string                            Docker image
-      --docker-args strings                      Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.
-      --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
-      --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
-      --docker-private-registry-secret string    Docker private registry secret
-      --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
-                                                 To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
-                                                 To delete an environment variable, prefix its name with '!', for example --env '!FOO'
-                                                 
-      --git string                               Git repository
-      --git-branch string                        Git branch (default "main")
-      --git-build-command string                 Buid command (legacy, prefer git-buildpack-build-command)
-      --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
-      --git-buildpack-build-command string       Buid command
-      --git-buildpack-run-command string         Run command
-      --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
-      --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
-      --git-docker-dockerfile string             Dockerfile path
-      --git-docker-entrypoint strings            Docker entrypoint
-      --git-docker-target string                 Docker target
-      --git-no-deploy-on-push                    Disable new deployments creation when code changes are pushed on the configured branch
-      --git-run-command string                   Run command (legacy, prefer git-buildpack-run-command)
-      --git-sha string                           Git commit SHA to deploy
-      --git-workdir string                       Path to the sub-directory containing the code to build and deploy
-  -h, --help                                     help for update
-      --instance-type string                     Instance type (default "nano")
-      --max-scale int                            Max scale (default 1)
-      --min-scale int                            Min scale (default 1)
-      --name string                              Specify to update the service name
-      --override                                 Override the service configuration with the new configuration instead of merging them
-      --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
-                                                 To delete an exposed port, prefix its number with '!', for example --port '!80'
-                                                 
-      --privileged                               Whether the service container should run in privileged mode
-      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
-                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
-                                                 
-      --regions strings                          Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.
-                                                 To update a service and remove a region, prefix the region name with '!', for example --region '!par'
-                                                 If the region is not specified on service creation, the service is deployed in was
-                                                 
-      --routes strings                           Update service routes (available for services of type "web" only) using the format PATH[:PORT], for example '/foo:8080'
-                                                 PORT defaults to 8000
-                                                 To delete a route, use '!PATH', for example --route '!/foo'
-                                                 
-      --save-only                                Save the new configuration without deploying it
-      --scale int                                Set both min-scale and max-scale (default 1)
-      --skip-build                               If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.
-      --skip-cache                               Whether to use the cache when building the service
-      --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
-      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
-                                                 
-      --wait                                     Waits until the service deployment is done
-      --wait-timeout duration                    Duration the wait will last until timeout (default 5m0s)
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb services](#koyeb-services)	 - Services
 
 ## koyeb deployments
 
@@ -2941,6 +2852,744 @@ koyeb databases update NAME [flags]
 
 
 * [koyeb databases](#koyeb-databases)	 - Databases
+
+## koyeb sandbox
+
+Sandbox - interactive execution environments
+
+### Synopsis
+
+Sandbox commands for interacting with sandbox services.
+
+Sandboxes are created using 'koyeb service create --type=sandbox'.
+These commands provide additional functionality for running commands,
+managing processes, filesystem operations, and port exposure.
+
+### Options
+
+```
+  -h, --help   help for sandbox
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb sandbox create](#koyeb-sandbox-create)	 - Create a new sandbox
+* [koyeb sandbox expose-port](#koyeb-sandbox-expose-port)	 - Expose a port from the sandbox via TCP proxy
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+* [koyeb sandbox health](#koyeb-sandbox-health)	 - Check sandbox health status
+* [koyeb sandbox kill](#koyeb-sandbox-kill)	 - Kill a background process in the sandbox
+* [koyeb sandbox list](#koyeb-sandbox-list)	 - List sandboxes
+* [koyeb sandbox logs](#koyeb-sandbox-logs)	 - Stream logs from a background process
+* [koyeb sandbox ps](#koyeb-sandbox-ps)	 - List background processes in the sandbox
+* [koyeb sandbox run](#koyeb-sandbox-run)	 - Execute a command in the sandbox
+* [koyeb sandbox start](#koyeb-sandbox-start)	 - Start a background process in the sandbox
+* [koyeb sandbox unexpose-port](#koyeb-sandbox-unexpose-port)	 - Unexpose the currently exposed port
+
+## koyeb sandbox create
+
+Create a new sandbox
+
+```
+koyeb sandbox create NAME [flags]
+```
+
+### Examples
+
+```
+
+# Create a sandbox in an app
+$> koyeb sandbox create myapp/mysandbox
+
+# Create with a custom docker image
+$> koyeb sandbox create myapp/mysandbox --docker myregistry/myimage
+
+# Create with custom secret
+$> koyeb sandbox create myapp/mysandbox --env SANDBOX_SECRET=mysecret
+
+# Create and wait for deployment
+$> koyeb sandbox create myapp/mysandbox --wait
+
+```
+
+### Options
+
+```
+  -a, --app string                               Sandbox application
+      --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --delete-after-delay duration              Auto-delete after duration (e.g., '24h')
+      --delete-after-inactivity-delay duration   Auto-delete after inactivity (e.g., '1h')
+      --docker string                            Docker image (default: koyeb/sandbox)
+      --docker-args strings                      Docker command arguments
+      --docker-command string                    Docker command
+      --docker-entrypoint strings                Docker entrypoint
+      --docker-private-registry-secret string    Docker private registry secret
+      --env strings                              Environment variables (KEY=VALUE)
+  -h, --help                                     help for create
+      --instance-type string                     Instance type (default "nano")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
+      --min-scale int                            Min scale (default 1)
+      --privileged                               Run in privileged mode
+      --regions strings                          Deployment regions
+      --wait                                     Wait until sandbox deployment is done
+      --wait-timeout duration                    Wait timeout duration (default 5m0s)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox expose-port
+
+Expose a port from the sandbox via TCP proxy
+
+```
+koyeb sandbox expose-port NAME PORT [flags]
+```
+
+### Examples
+
+```
+
+# Expose port 8080
+$> koyeb sandbox expose-port myapp/mysandbox 8080
+
+```
+
+### Options
+
+```
+  -h, --help   help for expose-port
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox fs
+
+Filesystem operations
+
+### Options
+
+```
+  -h, --help   help for fs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
+* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
+* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
+* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
+* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
+* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
+* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
+
+## koyeb sandbox fs download
+
+Download a file from the sandbox
+
+```
+koyeb sandbox fs download NAME REMOTE_PATH LOCAL_PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for download
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs ls
+
+List directory contents in the sandbox
+
+```
+koyeb sandbox fs ls NAME [PATH] [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for ls
+  -l, --long   Use long listing format with details
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs mkdir
+
+Create a directory in the sandbox
+
+```
+koyeb sandbox fs mkdir NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for mkdir
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs read
+
+Read a file from the sandbox
+
+```
+koyeb sandbox fs read NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for read
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs rm
+
+Remove a file or directory from the sandbox
+
+```
+koyeb sandbox fs rm NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help        help for rm
+  -r, --recursive   Remove directories recursively
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs upload
+
+Upload a local file or directory to the sandbox (max 1G per file)
+
+```
+koyeb sandbox fs upload NAME LOCAL_PATH REMOTE_PATH [flags]
+```
+
+### Options
+
+```
+  -f, --force       Overwrite existing remote directory
+  -h, --help        help for upload
+  -r, --recursive   Upload directories recursively
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs write
+
+Write content to a file in the sandbox
+
+### Synopsis
+
+Write content to a file in the sandbox.
+Content can be provided as an argument or via stdin with -f flag.
+
+```
+koyeb sandbox fs write NAME PATH [CONTENT] [flags]
+```
+
+### Examples
+
+```
+
+# Write inline content
+$> koyeb sandbox fs write myapp/mysandbox /tmp/hello.txt "Hello World"
+
+# Write from local file
+$> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
+
+```
+
+### Options
+
+```
+  -f, --file string   Read content from local file
+  -h, --help          help for write
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox health
+
+Check sandbox health status
+
+```
+koyeb sandbox health NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for health
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox kill
+
+Kill a background process in the sandbox
+
+```
+koyeb sandbox kill NAME PROCESS_ID [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for kill
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox list
+
+List sandboxes
+
+```
+koyeb sandbox list [flags]
+```
+
+### Options
+
+```
+  -a, --app string    App
+  -h, --help          help for list
+  -n, --name string   Sandbox name
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox logs
+
+Stream logs from a background process
+
+```
+koyeb sandbox logs NAME PROCESS_ID [flags]
+```
+
+### Options
+
+```
+  -f, --follow   Follow log output (like tail -f)
+  -h, --help     help for logs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox ps
+
+List background processes in the sandbox
+
+```
+koyeb sandbox ps NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for ps
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox run
+
+Execute a command in the sandbox
+
+```
+koyeb sandbox run NAME COMMAND [ARGS...] [flags]
+```
+
+### Examples
+
+```
+
+# Run a simple command
+$> koyeb sandbox run myapp/mysandbox echo "Hello World"
+
+# Run a command with arguments
+$> koyeb sandbox run myapp/mysandbox ls -la /app
+
+# Run a python script
+$> koyeb sandbox run myapp/mysandbox python script.py
+
+# Run with custom working directory
+$> koyeb sandbox run myapp/mysandbox --cwd /app python main.py
+
+# Run with streaming output
+$> koyeb sandbox run myapp/mysandbox --stream long-running-command
+
+# Run with custom timeout (in seconds)
+$> koyeb sandbox run myapp/mysandbox --timeout 120 long-running-command
+
+```
+
+### Options
+
+```
+      --cwd string    Working directory for the command
+      --env strings   Environment variables (KEY=VALUE)
+  -h, --help          help for run
+      --stream        Stream output in real-time
+      --timeout int   Command timeout in seconds (default 30)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox start
+
+Start a background process in the sandbox
+
+```
+koyeb sandbox start NAME COMMAND [ARGS...] [flags]
+```
+
+### Examples
+
+```
+
+# Start a web server in background
+$> koyeb sandbox start myapp/mysandbox python -m http.server 8080
+
+# Start a process with custom working directory
+$> koyeb sandbox start myapp/mysandbox --cwd /app npm start
+
+```
+
+### Options
+
+```
+      --cwd string    Working directory for the process
+      --env strings   Environment variables (KEY=VALUE)
+  -h, --help          help for start
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox unexpose-port
+
+Unexpose the currently exposed port
+
+```
+koyeb sandbox unexpose-port NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for unexpose-port
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 
 ## koyeb version
 

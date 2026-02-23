@@ -168,8 +168,8 @@ github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLf
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
-github.com/koyeb/koyeb-api-client-go v0.0.0-20260204084353-bdcef71b7bcd h1:cA9pcvsP5JEWTx7t7Rs910R/NpT1h18X3XSLCNeTywI=
-github.com/koyeb/koyeb-api-client-go v0.0.0-20260204084353-bdcef71b7bcd/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20260220105029-a97ddcaa1e92 h1:M3sDodjP5akaa2xtQytg8XJHqIilnd34KPrkrUN9kPQ=
+github.com/koyeb/koyeb-api-client-go v0.0.0-20260220105029-a97ddcaa1e92/go.mod h1:+oQfFj2WL3gi9Pb+UHbob4D7xaT52mPfKyH1UvWa4PQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
