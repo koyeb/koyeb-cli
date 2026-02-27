@@ -551,7 +551,7 @@ func TestSetSleepDelayFlags(t *testing.T) {
 				},
 			},
 		},
-		"disable both sleep delays removes target": {
+		"error when disabling both sleep delays with min-scale zero": {
 			args:     []string{"--light-sleep-delay", "0", "--deep-sleep-delay", "0"},
 			minScale: 0,
 			currentTargets: []koyeb.DeploymentScalingTarget{
@@ -562,7 +562,7 @@ func TestSetSleepDelayFlags(t *testing.T) {
 					},
 				},
 			},
-			expected: []koyeb.DeploymentScalingTarget{},
+			expectedErr: true,
 		},
 		"preserve other targets when setting sleep delay": {
 			args:     []string{"--light-sleep-delay", "5m"},
@@ -618,6 +618,56 @@ func TestSetSleepDelayFlags(t *testing.T) {
 		"error when min-scale is not zero with both sleep delays": {
 			args:        []string{"--light-sleep-delay", "5m", "--deep-sleep-delay", "30m"},
 			minScale:    2,
+			expectedErr: true,
+		},
+		"error when min-scale is zero without sleep delays": {
+			args:           []string{"--min-scale", "0"},
+			minScale:       0,
+			currentTargets: nil,
+			expectedErr:    true,
+		},
+		"no error when min-scale is zero with existing sleep target and no flags changed": {
+			args:     []string{},
+			minScale: 0,
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+					},
+				},
+			},
+			expected: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(300),
+					},
+				},
+			},
+		},
+		"error when disabling deep sleep with zero-value light sleep from API": {
+			args:     []string{"--deep-sleep-delay", "0"},
+			minScale: 0,
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(0),
+						DeepSleepValue:  koyeb.PtrInt64(60),
+					},
+				},
+			},
+			expectedErr: true,
+		},
+		"error when disabling sleep delay with existing zero values": {
+			args:     []string{"--light-sleep-delay", "0"},
+			minScale: 0,
+			currentTargets: []koyeb.DeploymentScalingTarget{
+				{
+					SleepIdleDelay: &koyeb.DeploymentScalingTargetSleepIdleDelay{
+						LightSleepValue: koyeb.PtrInt64(0),
+						DeepSleepValue:  koyeb.PtrInt64(0),
+					},
+				},
+			},
 			expectedErr: true,
 		},
 	}

@@ -163,6 +163,35 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 		}
 	}
 
+	// Require at least one sleep delay when min-scale is 0 and the user explicitly
+	// changed either the scale or sleep delay flags.
+	sleepChanged := flags.Lookup("light-sleep-delay").Changed || flags.Lookup("deep-sleep-delay").Changed
+	if minScale == 0 && (flags.Lookup("min-scale").Changed || sleepChanged) {
+		hasSleepTarget := false
+		for _, target := range scaling.GetTargets() {
+			if target.HasSleepIdleDelay() {
+				sid := target.GetSleepIdleDelay()
+				if (sid.LightSleepValue != nil && *sid.LightSleepValue > 0) ||
+					(sid.DeepSleepValue != nil && *sid.DeepSleepValue > 0) {
+					hasSleepTarget = true
+					break
+				}
+			}
+		}
+		if !hasSleepTarget {
+			return &errors.CLIError{
+				What: "Error while configuring the sandbox",
+				Why:  "setting min-scale to 0 requires a sleep delay policy",
+				Additional: []string{
+					"When min-scale is 0, a sleep delay must be configured to define when the service scales to zero.",
+					"Use --light-sleep-delay and/or --deep-sleep-delay to set the sleep policy.",
+				},
+				Orig:     nil,
+				Solution: "Add --light-sleep-delay <duration> and/or --deep-sleep-delay <duration> to your command and try again",
+			}
+		}
+	}
+
 	def.SetScalings([]koyeb.DeploymentScaling{*scaling})
 
 	return nil
