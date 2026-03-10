@@ -1,6 +1,16 @@
-## v5.10.0 (unreleased)
+## v5.11.0 (unreleased)
 
-## v5.9.0 (2026-04-15)
+## v5.10.0 (2026-03-10)
+
+* Add `--auth` flag to `koyeb service create`, `koyeb service update`, and `koyeb deploy` to add security policies (basic auth or API key) to all routes. Supports referencing secrets with `{{secret.SECRET_NAME}}` syntax. Use `--auth-disable` to remove all security policies.
+
+## v5.9.1 (2026-01-19)
+
+* Add `koyeb sandbox` subcommand for managing interactive sandbox environments. Sandboxes are created with `koyeb service create --type=sandbox` and support running commands, managing processes, filesystem operations, and port exposure.
+* Add `koyeb service scale` commands (`get`, `update`, `delete`) for manual scaling of services, with support for per-region scaling using `--scale region:instances` format.
+* Add `--light-sleep-delay` and `--deep-sleep-delay` flags to `koyeb service create`, `koyeb service update`, and `koyeb deploy` to configure how long an idle service waits before entering light sleep or deep sleep mode. Set to `0` to disable. Only available when `--min-scale` is `0`.
+
+## v5.9.0 (2026-01-05)
 
 * Add lifecycle management flags to automatically delete apps and services:
   * `--delete-when-empty` for `koyeb app create` and `koyeb app update` - Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.
