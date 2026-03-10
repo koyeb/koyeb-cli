@@ -3009,6 +3009,41 @@ $> koyeb sandbox expose-port myapp/mysandbox 8080
 
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 
+## koyeb sandbox fs
+
+Filesystem operations
+
+### Options
+
+```
+  -h, --help   help for fs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
+* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
+* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
+* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
+* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
+* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
+* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
+
 ## koyeb sandbox fs download
 
 Download a file from the sandbox
@@ -3175,6 +3210,11 @@ koyeb sandbox fs rm NAME PATH [flags]
 
 Upload a local file or directory to the sandbox (max 1G per file)
 
+### Synopsis
+
+Upload a local file or directory to the sandbox.
+Parent directories on the sandbox must already exist (create them first with fs mkdir).
+
 ```
 koyeb sandbox fs upload NAME LOCAL_PATH REMOTE_PATH [flags]
 ```
@@ -3212,7 +3252,8 @@ Write content to a file in the sandbox
 ### Synopsis
 
 Write content to a file in the sandbox.
-Content can be provided as an argument or via stdin with -f flag.
+Content can be provided as an argument or from a local file with -f flag.
+Parent directories must already exist (create them first with fs mkdir).
 
 ```
 koyeb sandbox fs write NAME PATH [CONTENT] [flags]
@@ -3254,41 +3295,6 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
 
 
 * [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
-
-## koyeb sandbox fs
-
-Filesystem operations
-
-### Options
-
-```
-  -h, --help   help for fs
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
-* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
-* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
-* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
-* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
-* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
-* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
-* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
 
 ## koyeb sandbox health
 
