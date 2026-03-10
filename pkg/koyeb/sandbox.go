@@ -202,7 +202,8 @@ $> koyeb sandbox expose-port myapp/mysandbox 8080
 		Use:   "write NAME PATH [CONTENT]",
 		Short: "Write content to a file in the sandbox",
 		Long: `Write content to a file in the sandbox.
-Content can be provided as an argument or via stdin with -f flag.`,
+Content can be provided as an argument or from a local file with -f flag.
+Parent directories must already exist (create them first with fs mkdir).`,
 		Args: cobra.RangeArgs(2, 3),
 		Example: `
 # Write inline content
@@ -249,8 +250,10 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
 	fsUploadCmd := &cobra.Command{
 		Use:   "upload NAME LOCAL_PATH REMOTE_PATH",
 		Short: "Upload a local file or directory to the sandbox (max 1G per file)",
-		Args:  cobra.ExactArgs(3),
-		RunE:  WithCLIContext(h.FsUpload),
+		Long: `Upload a local file or directory to the sandbox.
+Parent directories on the sandbox must already exist (create them first with fs mkdir).`,
+		Args: cobra.ExactArgs(3),
+		RunE: WithCLIContext(h.FsUpload),
 	}
 	fsUploadCmd.Flags().BoolP("recursive", "r", false, "Upload directories recursively")
 	fsUploadCmd.Flags().BoolP("force", "f", false, "Overwrite existing remote directory")
