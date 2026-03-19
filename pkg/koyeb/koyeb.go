@@ -118,6 +118,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewSnapshotCmd())
 	rootCmd.AddCommand(NewComposeCmd())
 	rootCmd.AddCommand(NewSandboxCmd())
+	rootCmd.AddCommand(NewWhoAmICmd())
 	return rootCmd
 }
 
