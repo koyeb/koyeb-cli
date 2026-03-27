@@ -82,7 +82,7 @@ func GetRootCommand() *cobra.Command {
 
 	log.SetFormatter(&log.TextFormatter{})
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)")
 	rootCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (yaml,json,table)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "enable the debug output")
 	rootCmd.PersistentFlags().BoolVar(&debugFull, "debug-full", false, "do not hide sensitive information (tokens) in the debug output")
@@ -199,6 +199,9 @@ func initConfig(rootCmd *cobra.Command) error {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
+	} else if envConfig := os.Getenv("KOYEB_CONFIG"); envConfig != "" {
+		log.Debugf("Using config file from KOYEB_CONFIG environment variable: %s", envConfig)
+		viper.SetConfigFile(envConfig)
 	} else {
 		home, err := getHomeDir()
 		if err != nil {
