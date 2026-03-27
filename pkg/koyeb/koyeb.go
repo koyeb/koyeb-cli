@@ -99,7 +99,6 @@ func GetRootCommand() *cobra.Command {
 	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))               //nolint:errcheck
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))               //nolint:errcheck
 	viper.BindPFlag("organization", rootCmd.PersistentFlags().Lookup("organization")) //nolint:errcheck
-	viper.BindPFlag("project", rootCmd.PersistentFlags().Lookup("project"))           //nolint:errcheck
 	if err := rootCmd.RegisterFlagCompletionFunc("project", CompleteProjectArgs); err != nil {
 		panic(err)
 	}
@@ -272,6 +271,5 @@ func initConfig(rootCmd *cobra.Command) error {
 	token = viper.GetString("token")
 	debug = viper.GetBool("debug")
 	organization = viper.GetString("organization")
-	project = viper.GetString("project")
 	return nil
 }

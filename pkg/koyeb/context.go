@@ -66,6 +66,17 @@ func SetupCLIContext(cmd *cobra.Command, organization string, project string) er
 	if topLevel.Name() == "organizations" || topLevel.Name() == "projects" {
 		project = ""
 	}
+	if project == "" {
+		project, err = getOrganizationDefaultProjectID(&CLIContext{
+			Context:      ctx,
+			Client:       apiClient,
+			Token:        ctx.Value(koyeb.ContextAccessToken).(string),
+			Organization: organization,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	if project != "" {
 		projectMapper := idmapper.NewProjectMapper(ctx, apiClient)
 		activeProject, err = projectMapper.ResolveID(project)

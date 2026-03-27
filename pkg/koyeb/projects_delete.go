@@ -24,17 +24,8 @@ func (h *ProjectHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}
 
 	if ctx.Project != "" && ctx.Project == project {
-		if err := ClearProjectConfig(); err != nil {
-			return &errors.CLIError{
-				What: "Unable to clear the current project",
-				Why:  "the project was deleted, but we were unable to update the configuration file",
-				Additional: []string{
-					"The command `koyeb project delete` needs to update your configuration file, usually located in $HOME/.koyeb.yaml",
-					"Alternatively, you can manually edit the configuration file and clear the project field.",
-				},
-				Orig:     err,
-				Solution: "Fix the issue preventing the CLI to write the configuration file, or manually edit the configuration file",
-			}
+		if err := updateOrganizationDefaultProjectID(ctx, nil); err != nil {
+			return err
 		}
 	}
 
