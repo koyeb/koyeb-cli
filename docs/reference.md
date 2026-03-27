@@ -3663,3 +3663,35 @@ Manage persistent volumes
 * [koyeb volumes list](#koyeb-volumes-list)	 - List volumes
 * [koyeb volumes update](#koyeb-volumes-update)	 - Update a volume
 
+## koyeb whoami
+
+Show information about the currently authenticated user or organization
+
+```
+koyeb whoami [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for whoami
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+
