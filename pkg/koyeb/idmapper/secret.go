@@ -11,15 +11,17 @@ import (
 type SecretMapper struct {
 	ctx     context.Context
 	client  *koyeb.APIClient
+	project string
 	fetched bool
 	sidMap  *IDMap
 	nameMap *IDMap
 }
 
-func NewSecretMapper(ctx context.Context, client *koyeb.APIClient) *SecretMapper {
+func NewSecretMapper(ctx context.Context, client *koyeb.APIClient, project string) *SecretMapper {
 	return &SecretMapper{
 		ctx:     ctx,
 		client:  client,
+		project: project,
 		fetched: false,
 		sidMap:  NewIDMap(),
 		nameMap: NewIDMap(),
@@ -62,10 +64,13 @@ func (mapper *SecretMapper) fetch() error {
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := mapper.client.SecretsApi.ListSecrets(mapper.ctx).
+		req := mapper.client.SecretsApi.ListSecrets(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
-			Offset(strconv.FormatInt(offset, 10)).
-			Execute()
+			Offset(strconv.FormatInt(offset, 10))
+		if mapper.project != "" {
+			req = req.ProjectId(mapper.project)
+		}
+		res, resp, err := req.Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
 				"Error listing secrets to resolve the provided identifier to an object ID",

@@ -13,6 +13,7 @@ type Mapper struct {
 	deployment   *DeploymentMapper
 	regional     *RegionalDeploymentMapper
 	instance     *InstanceMapper
+	project      *ProjectMapper
 	secret       *SecretMapper
 	organization *OrganizationMapper
 	database     *DatabaseMapper
@@ -20,17 +21,18 @@ type Mapper struct {
 	snapshot     *SnapshotMapper
 }
 
-func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
-	appMapper := NewAppMapper(ctx, client)
-	domainMapper := NewDomainMapper(ctx, client)
-	serviceMapper := NewServiceMapper(ctx, client, appMapper)
+func NewMapper(ctx context.Context, client *koyeb.APIClient, project string) *Mapper {
+	projectMapper := NewProjectMapper(ctx, client)
+	appMapper := NewAppMapper(ctx, client, project)
+	domainMapper := NewDomainMapper(ctx, client, project)
+	serviceMapper := NewServiceMapper(ctx, client, appMapper, project)
 	deploymentMapper := NewDeploymentMapper(ctx, client)
 	regionalMapper := NewRegionalDeploymentMapper(ctx, client)
 	instanceMapper := NewInstanceMapper(ctx, client)
-	secretMapper := NewSecretMapper(ctx, client)
+	secretMapper := NewSecretMapper(ctx, client, project)
 	organizationMapper := NewOrganizationMapper(ctx, client)
 	databaseMapper := NewDatabaseMapper(ctx, client, appMapper)
-	volumeMapper := NewVolumeMapper(ctx, client)
+	volumeMapper := NewVolumeMapper(ctx, client, project)
 	snapshotMapper := NewSnapshotMapper(ctx, client)
 
 	return &Mapper{
@@ -40,6 +42,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 		deployment:   deploymentMapper,
 		regional:     regionalMapper,
 		instance:     instanceMapper,
+		project:      projectMapper,
 		secret:       secretMapper,
 		organization: organizationMapper,
 		database:     databaseMapper,
@@ -70,6 +73,10 @@ func (mapper *Mapper) RegionalDeployment() *RegionalDeploymentMapper {
 
 func (mapper *Mapper) Instance() *InstanceMapper {
 	return mapper.instance
+}
+
+func (mapper *Mapper) Project() *ProjectMapper {
+	return mapper.project
 }
 
 func (mapper *Mapper) Secret() *SecretMapper {

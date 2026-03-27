@@ -9,6 +9,7 @@ import (
 )
 
 func (h *VolumeHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createVolume *koyeb.CreatePersistentVolumeRequest) error {
+	applyProjectID(createVolume, ctx.Project)
 	res, resp, err := ctx.Client.PersistentVolumesApi.CreatePersistentVolume(ctx.Context).Body(*createVolume).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(

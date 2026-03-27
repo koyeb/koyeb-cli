@@ -80,6 +80,7 @@ func NewAppCmd() *cobra.Command {
 		Short: "List apps",
 		RunE:  WithCLIContext(h.List),
 	}
+	listAppCmd.Flags().Bool("all-projects", false, "List apps from all projects")
 	appCmd.AddCommand(listAppCmd)
 
 	describeAppCmd := &cobra.Command{

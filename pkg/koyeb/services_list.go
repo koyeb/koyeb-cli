@@ -32,6 +32,9 @@ func (h *ServiceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string
 		if name != "" {
 			req = req.Name(name)
 		}
+		if ctx.Project != "" {
+			req = req.ProjectId(ctx.Project)
+		}
 		res, resp, err := req.Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
 		if err != nil {
 			errTitle := "Error while listing services"

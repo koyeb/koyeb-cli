@@ -18,11 +18,20 @@ const (
 	ctx_mapper
 	ctx_renderer
 	ctx_organization
+	ctx_project
 )
+
+func topLevelCommand(cmd *cobra.Command) *cobra.Command {
+	current := cmd
+	for current.Parent() != nil && current.Parent().Parent() != nil {
+		current = current.Parent()
+	}
+	return current
+}
 
 // SetupCLIContext is called by the root command to setup the context for all subcommands.
 // When `organization` is not empty, it should contain the ID of the organization to switch the context to.
-func SetupCLIContext(cmd *cobra.Command, organization string) error {
+func SetupCLIContext(cmd *cobra.Command, organization string, project string) error {
 	apiClient, err := getApiClient()
 	if err != nil {
 		return err
@@ -43,6 +52,28 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 		cmd.SetContext(ctx)
 	}
 
+	activeProject := ""
+	topLevel := topLevelCommand(cmd)
+	if flag := cmd.Flags().Lookup("all-projects"); flag != nil {
+		allProjects, err := cmd.Flags().GetBool("all-projects")
+		if err != nil {
+			return err
+		}
+		if allProjects {
+			project = ""
+		}
+	}
+	if topLevel.Name() == "organizations" || topLevel.Name() == "projects" {
+		project = ""
+	}
+	if project != "" {
+		projectMapper := idmapper.NewProjectMapper(ctx, apiClient)
+		activeProject, err = projectMapper.ResolveID(project)
+		if err != nil {
+			return err
+		}
+	}
+
 	ctx = context.WithValue(ctx, ctx_client, apiClient)
 
 	logsApiClient, err := NewLogsAPIClient(apiClient, apiurl, ctx.Value(koyeb.ContextAccessToken).(string))
@@ -57,9 +88,10 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 	}
 	ctx = context.WithValue(ctx, ctx_exec_client, execApiClient)
 
-	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
+	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient, activeProject))
 	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
 	ctx = context.WithValue(ctx, ctx_organization, organization)
+	ctx = context.WithValue(ctx, ctx_project, activeProject)
 	cmd.SetContext(ctx)
 
 	return nil
@@ -74,6 +106,7 @@ type CLIContext struct {
 	Token        string
 	Renderer     renderer.Renderer
 	Organization string
+	Project      string
 }
 
 // GetCLIContext transforms the untyped context passed to cobra commands into a CLIContext.
@@ -87,6 +120,7 @@ func GetCLIContext(ctx context.Context) *CLIContext {
 		Token:        ctx.Value(koyeb.ContextAccessToken).(string),
 		Renderer:     ctx.Value(ctx_renderer).(renderer.Renderer),
 		Organization: ctx.Value(ctx_organization).(string),
+		Project:      ctx.Value(ctx_project).(string),
 	}
 }
 

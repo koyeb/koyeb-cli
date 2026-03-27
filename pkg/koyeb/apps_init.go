@@ -22,6 +22,7 @@ func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, cr
 
 	uid := uuid.Must(uuid.NewV4())
 	createService.SetAppId(uid.String())
+	applyProjectID(createService, ctx.Project)
 	_, resp, err := ctx.Client.ServicesApi.CreateService(ctx.Context).DryRun(true).Service(*createService).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
@@ -32,6 +33,7 @@ func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, cr
 	}
 
 	createApp.SetName(args[0])
+	applyProjectID(createApp, ctx.Project)
 	res, resp, err := ctx.Client.AppsApi.CreateApp(ctx.Context).App(*createApp).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
