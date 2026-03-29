@@ -24,6 +24,7 @@ Koyeb CLI
   -h, --help                  help for koyeb
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -42,6 +43,7 @@ Koyeb CLI
 * [koyeb login](#koyeb-login)	 - Login to your Koyeb account
 * [koyeb metrics](#koyeb-metrics)	 - Metrics
 * [koyeb organizations](#koyeb-organizations)	 - Organization
+* [koyeb projects](#koyeb-projects)	 - Projects
 * [koyeb regional-deployments](#koyeb-regional-deployments)	 - Regional deployments
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 * [koyeb secrets](#koyeb-secrets)	 - Secrets
@@ -49,6 +51,7 @@ Koyeb CLI
 * [koyeb snapshots](#koyeb-snapshots)	 - Manage snapshots
 * [koyeb version](#koyeb-version)	 - Get version
 * [koyeb volumes](#koyeb-volumes)	 - Manage persistent volumes
+* [koyeb whoami](#koyeb-whoami)	 - Show information about the currently authenticated user or organization
 
 ## koyeb login
 
@@ -74,6 +77,7 @@ koyeb login [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -102,6 +106,7 @@ Apps
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -144,6 +149,7 @@ koyeb apps create NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -176,6 +182,7 @@ koyeb apps delete NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -208,6 +215,7 @@ koyeb apps describe NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -240,6 +248,7 @@ koyeb apps get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -369,6 +378,7 @@ See examples of koyeb service create --help
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -388,7 +398,8 @@ koyeb apps list [flags]
 ### Options
 
 ```
-  -h, --help   help for list
+      --all-projects   List apps from all projects (overrides project filter)
+  -h, --help           help for list
 ```
 
 ### Options inherited from parent commands
@@ -401,6 +412,7 @@ koyeb apps list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -433,6 +445,7 @@ koyeb apps pause NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -465,6 +478,7 @@ koyeb apps resume NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -500,6 +514,7 @@ koyeb apps update NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -528,6 +543,7 @@ Archives
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -564,6 +580,7 @@ koyeb archives create NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -668,6 +685,7 @@ koyeb deploy <path> <app>/<service> [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -696,6 +714,7 @@ Domains
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -736,6 +755,7 @@ koyeb domains attach NAME APP [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -769,6 +789,7 @@ koyeb domains create NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -801,6 +822,7 @@ koyeb domains delete [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -833,6 +855,7 @@ koyeb domains describe [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -865,6 +888,7 @@ koyeb domains detach NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -897,6 +921,7 @@ koyeb domains get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -929,6 +954,7 @@ koyeb domains list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -961,6 +987,7 @@ koyeb domains refresh NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -989,6 +1016,7 @@ Organization
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1023,6 +1051,7 @@ koyeb organizations list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1055,6 +1084,7 @@ koyeb organizations switch [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1083,6 +1113,7 @@ Secrets
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1129,6 +1160,7 @@ koyeb secrets create NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1161,6 +1193,7 @@ koyeb secrets delete NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1193,6 +1226,7 @@ koyeb secrets describe NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1225,6 +1259,7 @@ koyeb secrets get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1257,6 +1292,7 @@ koyeb secrets list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1289,6 +1325,7 @@ koyeb secrets reveal NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1327,6 +1364,7 @@ koyeb secrets update NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1355,6 +1393,7 @@ Services
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1513,6 +1552,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1546,6 +1586,7 @@ koyeb services delete NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1579,6 +1620,7 @@ koyeb services describe NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1612,6 +1654,7 @@ koyeb services exec NAME CMD -- [args...] [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1645,6 +1688,7 @@ koyeb services get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1679,6 +1723,7 @@ koyeb services list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1721,6 +1766,7 @@ koyeb services logs NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1754,6 +1800,7 @@ koyeb services pause NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1791,6 +1838,7 @@ koyeb services redeploy NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1824,6 +1872,7 @@ koyeb services resume NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -1857,6 +1906,7 @@ koyeb services unapplied-changes SERVICE_NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2001,6 +2051,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2055,6 +2106,7 @@ $> koyeb service scale app/podinfo --scale fra:5 --scale was:3 --scale sin:2
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2100,6 +2152,7 @@ $> koyeb service scale delete app/podinfo
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2133,6 +2186,7 @@ koyeb services scale get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2193,6 +2247,7 @@ $> koyeb service scale update app/podinfo --scale fra:5 --scale '!was'
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2221,6 +2276,7 @@ Deployments
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2258,6 +2314,7 @@ koyeb deployments cancel NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2290,6 +2347,7 @@ koyeb deployments describe NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2322,6 +2380,7 @@ koyeb deployments get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2356,6 +2415,7 @@ koyeb deployments list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2396,6 +2456,7 @@ koyeb deployments logs NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2424,6 +2485,7 @@ Instances
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2472,6 +2534,7 @@ $> koyeb instance cp <instance_id>:/tmp/spreadsheet.csv .
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2504,6 +2567,7 @@ koyeb instances describe NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2536,6 +2600,7 @@ koyeb instances exec NAME CMD -- [args...] [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2568,6 +2633,7 @@ koyeb instances get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2602,6 +2668,7 @@ koyeb instances list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2641,6 +2708,7 @@ koyeb instances logs NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2669,6 +2737,7 @@ Databases
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2713,6 +2782,7 @@ koyeb databases create NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2745,6 +2815,7 @@ koyeb databases delete NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2778,6 +2849,7 @@ koyeb databases get NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2810,6 +2882,7 @@ koyeb databases list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2845,6 +2918,7 @@ koyeb databases update NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2881,6 +2955,7 @@ managing processes, filesystem operations, and port exposure.
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -2960,6 +3035,7 @@ $> koyeb sandbox create myapp/mysandbox --wait
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3001,6 +3077,7 @@ $> koyeb sandbox expose-port myapp/mysandbox 8080
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3008,41 +3085,6 @@ $> koyeb sandbox expose-port myapp/mysandbox 8080
 
 
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
-
-## koyeb sandbox fs
-
-Filesystem operations
-
-### Options
-
-```
-  -h, --help   help for fs
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-```
-
-
-
-* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
-* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
-* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
-* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
-* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
-* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
-* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
-* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
 
 ## koyeb sandbox fs download
 
@@ -3068,6 +3110,7 @@ koyeb sandbox fs download NAME REMOTE_PATH LOCAL_PATH [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3101,6 +3144,7 @@ koyeb sandbox fs ls NAME [PATH] [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3133,6 +3177,7 @@ koyeb sandbox fs mkdir NAME PATH [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3165,6 +3210,7 @@ koyeb sandbox fs read NAME PATH [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3198,6 +3244,7 @@ koyeb sandbox fs rm NAME PATH [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3237,6 +3284,7 @@ koyeb sandbox fs upload NAME LOCAL_PATH REMOTE_PATH [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3288,6 +3336,7 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3295,6 +3344,42 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
 
 
 * [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs
+
+Filesystem operations
+
+### Options
+
+```
+  -h, --help   help for fs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
+* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
+* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
+* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
+* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
+* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
+* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
 
 ## koyeb sandbox health
 
@@ -3320,6 +3405,7 @@ koyeb sandbox health NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3352,6 +3438,7 @@ koyeb sandbox kill NAME PROCESS_ID [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3386,6 +3473,7 @@ koyeb sandbox list [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3419,6 +3507,7 @@ koyeb sandbox logs NAME PROCESS_ID [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3451,6 +3540,7 @@ koyeb sandbox ps NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3511,6 +3601,7 @@ $> koyeb sandbox run myapp/mysandbox --timeout 120 long-running-command
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3557,6 +3648,7 @@ $> koyeb sandbox start myapp/mysandbox --cwd /app npm start
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3589,6 +3681,7 @@ koyeb sandbox unexpose-port NAME [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3621,6 +3714,7 @@ koyeb version [flags]
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3649,6 +3743,7 @@ Manage persistent volumes
       --full                  do not truncate output
       --organization string   organization ID
   -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
       --token string          API token
       --url string            url of the api (default "https://app.koyeb.com")
 ```
@@ -3661,4 +3756,274 @@ Manage persistent volumes
 * [koyeb volumes get](#koyeb-volumes-get)	 - Get a volume
 * [koyeb volumes list](#koyeb-volumes-list)	 - List volumes
 * [koyeb volumes update](#koyeb-volumes-update)	 - Update a volume
+
+## koyeb projects
+
+Projects
+
+### Options
+
+```
+  -h, --help   help for projects
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb](#koyeb)	 - Koyeb CLI
+* [koyeb projects create](#koyeb-projects-create)	 - Create project
+* [koyeb projects delete](#koyeb-projects-delete)	 - Delete project
+* [koyeb projects describe](#koyeb-projects-describe)	 - Describe project
+* [koyeb projects get](#koyeb-projects-get)	 - Get project
+* [koyeb projects list](#koyeb-projects-list)	 - List projects
+* [koyeb projects switch](#koyeb-projects-switch)	 - Switch the default project for the CLI context
+* [koyeb projects update](#koyeb-projects-update)	 - Update project
+
+## koyeb projects create
+
+Create project
+
+```
+koyeb projects create NAME [flags]
+```
+
+### Options
+
+```
+      --description string   Project description
+  -h, --help                 help for create
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
+
+## koyeb projects delete
+
+Delete project
+
+```
+koyeb projects delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
+
+## koyeb projects describe
+
+Describe project
+
+```
+koyeb projects describe NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for describe
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
+
+## koyeb projects get
+
+Get project
+
+```
+koyeb projects get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
+
+## koyeb projects list
+
+List projects
+
+```
+koyeb projects list [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
+
+## koyeb projects switch
+
+Switch the default project for the CLI context
+
+```
+koyeb projects switch NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for switch
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
+
+## koyeb projects update
+
+Update project
+
+```
+koyeb projects update NAME [flags]
+```
+
+### Options
+
+```
+      --description string   Project description
+  -h, --help                 help for update
+  -n, --name string          Project name
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        project ID
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+```
+
+
+
+* [koyeb projects](#koyeb-projects)	 - Projects
 

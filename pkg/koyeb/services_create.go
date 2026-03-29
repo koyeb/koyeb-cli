@@ -17,6 +17,16 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		return err
 	}
 
+	projectFlag, _ := cmd.Flags().GetString("project")
+	if projectFlag != "" {
+		projectHandler := NewProjectHandler()
+		projectID, err := projectHandler.ResolveProjectArgs(ctx, projectFlag)
+		if err != nil {
+			return err
+		}
+		createService.SetProjectId(projectID)
+	}
+
 	app, err := h.ResolveAppArgs(ctx, appID)
 	if err != nil {
 		return err

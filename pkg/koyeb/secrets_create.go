@@ -9,6 +9,16 @@ import (
 )
 
 func (h *SecretHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createSecret *koyeb.CreateSecret) error {
+	projectFlag, _ := cmd.Flags().GetString("project")
+	if projectFlag != "" {
+		projectHandler := NewProjectHandler()
+		projectID, err := projectHandler.ResolveProjectArgs(ctx, projectFlag)
+		if err != nil {
+			return err
+		}
+		createSecret.SetProjectId(projectID)
+	}
+
 	res, resp, err := ctx.Client.SecretsApi.CreateSecret(ctx.Context).Secret(*createSecret).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(

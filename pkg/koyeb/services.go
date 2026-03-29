@@ -72,6 +72,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	}
 	h.addServiceDefinitionFlags(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	createServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	createServiceCmd.Flags().Bool("wait", false, "Waits until service deployment is done")
 	createServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	serviceCmd.AddCommand(createServiceCmd)
@@ -83,6 +84,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 		RunE:  WithCLIContext(h.Get),
 	}
 	getServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	getServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	serviceCmd.AddCommand(getServiceCmd)
 
 	unappliedChangesCmd := &cobra.Command{
@@ -123,6 +125,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	}
 	serviceCmd.AddCommand(listServiceCmd)
 	listServiceCmd.Flags().StringP("app", "a", "", "App")
+	listServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	listServiceCmd.Flags().StringP("name", "n", "", "Service name")
 
 	describeServiceCmd := &cobra.Command{
@@ -132,6 +135,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 		RunE:  WithCLIContext(h.Describe),
 	}
 	describeServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	describeServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	serviceCmd.AddCommand(describeServiceCmd)
 
 	execServiceCmd := &cobra.Command{
@@ -142,6 +146,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 		RunE:    WithCLIContext(h.Exec),
 	}
 	execServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	execServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	serviceCmd.AddCommand(execServiceCmd)
 
 	updateServiceCmd := &cobra.Command{
@@ -253,6 +258,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	}
 	h.addServiceDefinitionFlags(updateServiceCmd.Flags())
 	updateServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	updateServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	updateServiceCmd.Flags().String("name", "", "Specify to update the service name")
 	updateServiceCmd.Flags().Bool("override", false, "Override the service configuration with the new configuration instead of merging them")
 	updateServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
@@ -268,6 +274,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 		RunE:  WithCLIContext(h.ReDeploy),
 	}
 	redeployServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	redeployServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	redeployServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
 	redeployServiceCmd.Flags().Bool("wait", false, "Waits until service deployment is done.")
 	redeployServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
@@ -281,6 +288,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 		RunE:  WithCLIContext(h.Delete),
 	}
 	deleteServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	deleteServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	serviceCmd.AddCommand(deleteServiceCmd)
 
 	pauseServiceCmd := &cobra.Command{
@@ -290,6 +298,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 		RunE:  WithCLIContext(h.Pause),
 	}
 	pauseServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	pauseServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	serviceCmd.AddCommand(pauseServiceCmd)
 
 	resumeServiceCmd := &cobra.Command{
@@ -299,6 +308,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 		RunE:  WithCLIContext(h.Resume),
 	}
 	resumeServiceCmd.Flags().StringP("app", "a", "", "Service application")
+	resumeServiceCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	serviceCmd.AddCommand(resumeServiceCmd)
 
 	scaleCmd := &cobra.Command{

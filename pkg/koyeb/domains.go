@@ -19,6 +19,7 @@ func NewDomainCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Get),
 	}
+	getDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(getDomainCmd)
 
 	createDomainCmd := &cobra.Command{
@@ -28,6 +29,7 @@ func NewDomainCmd() *cobra.Command {
 		RunE:  WithCLIContext(h.Create),
 	}
 	createDomainCmd.Flags().String("attach-to", "", "Upon creation, assign to given app")
+	createDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(createDomainCmd)
 
 	describeDomainCmd := &cobra.Command{
@@ -36,6 +38,7 @@ func NewDomainCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Describe),
 	}
+	describeDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(describeDomainCmd)
 
 	listDomainCmd := &cobra.Command{
@@ -43,6 +46,7 @@ func NewDomainCmd() *cobra.Command {
 		Short: "List domains",
 		RunE:  WithCLIContext(h.List),
 	}
+	listDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(listDomainCmd)
 
 	deleteDomainCmd := &cobra.Command{
@@ -50,6 +54,7 @@ func NewDomainCmd() *cobra.Command {
 		Short: "Delete domain",
 		RunE:  WithCLIContext(h.Delete),
 	}
+	deleteDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(deleteDomainCmd)
 
 	refreshDomainCmd := &cobra.Command{
@@ -58,6 +63,7 @@ func NewDomainCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Refresh),
 	}
+	refreshDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(refreshDomainCmd)
 
 	attachDomainCmd := &cobra.Command{
@@ -66,6 +72,7 @@ func NewDomainCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		RunE:  WithCLIContext(h.Attach),
 	}
+	attachDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(attachDomainCmd)
 
 	detachDomainCmd := &cobra.Command{
@@ -74,6 +81,7 @@ func NewDomainCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Detach),
 	}
+	detachDomainCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	domainCmd.AddCommand(detachDomainCmd)
 
 	return domainCmd

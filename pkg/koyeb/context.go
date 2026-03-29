@@ -18,11 +18,14 @@ const (
 	ctx_mapper
 	ctx_renderer
 	ctx_organization
+	ctx_project
 )
 
 // SetupCLIContext is called by the root command to setup the context for all subcommands.
 // When `organization` is not empty, it should contain the ID of the organization to switch the context to.
-func SetupCLIContext(cmd *cobra.Command, organization string) error {
+// When `project` is not empty, it should contain the ID of the project to use in the context.
+// If the project is invalid or doesn't exist in the current organization, it will be cleared.
+func SetupCLIContext(cmd *cobra.Command, organization string, project string) error {
 	apiClient, err := getApiClient()
 	if err != nil {
 		return err
@@ -60,6 +63,17 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 	ctx = context.WithValue(ctx, ctx_mapper, idmapper.NewMapper(ctx, apiClient))
 	ctx = context.WithValue(ctx, ctx_renderer, renderer.NewRenderer(outputFormat))
 	ctx = context.WithValue(ctx, ctx_organization, organization)
+
+	// Validate project exists in current organization. If not, clear it as fallback.
+	if project != "" {
+		projectMapper := idmapper.NewMapper(ctx, apiClient).Project()
+		if _, err := projectMapper.ResolveID(project); err != nil {
+			// Project is invalid or doesn't exist - clear it silently as fallback
+			project = ""
+		}
+	}
+
+	ctx = context.WithValue(ctx, ctx_project, project)
 	cmd.SetContext(ctx)
 
 	return nil
@@ -74,6 +88,7 @@ type CLIContext struct {
 	Token        string
 	Renderer     renderer.Renderer
 	Organization string
+	Project      string
 }
 
 // GetCLIContext transforms the untyped context passed to cobra commands into a CLIContext.
@@ -87,6 +102,7 @@ func GetCLIContext(ctx context.Context) *CLIContext {
 		Token:        ctx.Value(koyeb.ContextAccessToken).(string),
 		Renderer:     ctx.Value(ctx_renderer).(renderer.Renderer),
 		Organization: ctx.Value(ctx_organization).(string),
+		Project:      ctx.Value(ctx_project).(string),
 	}
 }
 
