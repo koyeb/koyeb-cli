@@ -25,6 +25,7 @@ func NewDatabaseCmd() *cobra.Command {
 		Short: "List databases",
 		RunE:  WithCLIContext(h.List),
 	}
+	listDbCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	databaseCmd.AddCommand(listDbCmd)
 
 	getDbCmd := &cobra.Command{
@@ -34,6 +35,7 @@ func NewDatabaseCmd() *cobra.Command {
 		RunE:  WithCLIContext(h.Get),
 	}
 	getDbCmd.Flags().String("app", "", "Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format `app-name/database-name`")
+	getDbCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	databaseCmd.AddCommand(getDbCmd)
 
 	createDbCmd := &cobra.Command{
@@ -58,6 +60,7 @@ func NewDatabaseCmd() *cobra.Command {
 		}),
 	}
 	addCreateDbServiceDefinitionFlags(createDbCmd.Flags())
+	createDbCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	databaseCmd.AddCommand(createDbCmd)
 
 	updateDbCmd := &cobra.Command{
@@ -113,6 +116,7 @@ func NewDatabaseCmd() *cobra.Command {
 		}),
 	}
 	addUpdateDbServiceDefinitionFlags(updateDbCmd.Flags())
+	updateDbCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	databaseCmd.AddCommand(updateDbCmd)
 
 	deleteDbCmd := &cobra.Command{
@@ -121,6 +125,7 @@ func NewDatabaseCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Delete),
 	}
+	deleteDbCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	databaseCmd.AddCommand(deleteDbCmd)
 
 	return databaseCmd

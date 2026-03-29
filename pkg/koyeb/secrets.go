@@ -132,6 +132,7 @@ func NewSecretCmd() *cobra.Command {
 	}
 	createSecretCmd.Flags().Var(&flagSecretType, "type", fmt.Sprintf("Secret type (%s)", strings.Join(SecretTypeAllValues(), ", ")))
 	addSecretFlags(createSecretCmd.Flags(), &flagSecretType)
+	createSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(createSecretCmd)
 
 	getSecretCmd := &cobra.Command{
@@ -140,6 +141,7 @@ func NewSecretCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Get),
 	}
+	getSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(getSecretCmd)
 
 	listSecretCmd := &cobra.Command{
@@ -147,6 +149,7 @@ func NewSecretCmd() *cobra.Command {
 		Short: "List secrets",
 		RunE:  WithCLIContext(h.List),
 	}
+	listSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(listSecretCmd)
 
 	describeSecretCmd := &cobra.Command{
@@ -155,6 +158,7 @@ func NewSecretCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Describe),
 	}
+	describeSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(describeSecretCmd)
 
 	updateSecretCmd := &cobra.Command{
@@ -208,6 +212,7 @@ func NewSecretCmd() *cobra.Command {
 		}),
 	}
 	addSecretFlags(updateSecretCmd.Flags(), &flagSecretType)
+	updateSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(updateSecretCmd)
 
 	deleteSecretCmd := &cobra.Command{
@@ -216,6 +221,7 @@ func NewSecretCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Delete),
 	}
+	deleteSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(deleteSecretCmd)
 
 	revealSecretCmd := &cobra.Command{
@@ -225,6 +231,7 @@ func NewSecretCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		RunE:    WithCLIContext(h.Reveal),
 	}
+	revealSecretCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	secretCmd.AddCommand(revealSecretCmd)
 
 	return secretCmd

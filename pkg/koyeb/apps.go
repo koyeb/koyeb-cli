@@ -38,6 +38,7 @@ func NewAppCmd() *cobra.Command {
 		}),
 	}
 	createAppCmd.Flags().Bool("delete-when-empty", false, "Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.")
+	createAppCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	appCmd.AddCommand(createAppCmd)
 
 	initAppCmd := &cobra.Command{
@@ -64,6 +65,7 @@ func NewAppCmd() *cobra.Command {
 	}
 	initAppCmd.Flags().Bool("wait", false, "Waits until app deployment is done")
 	initAppCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
+	initAppCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	appCmd.AddCommand(initAppCmd)
 	serviceHandler.addServiceDefinitionFlags(initAppCmd.Flags())
 
@@ -73,6 +75,7 @@ func NewAppCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Get),
 	}
+	getAppCmd.Flags().StringP("project", "p", "", "Project name or ID (optional context)")
 	appCmd.AddCommand(getAppCmd)
 
 	listAppCmd := &cobra.Command{
@@ -80,6 +83,8 @@ func NewAppCmd() *cobra.Command {
 		Short: "List apps",
 		RunE:  WithCLIContext(h.List),
 	}
+	listAppCmd.Flags().StringP("project", "p", "", "Project name or ID (filter apps by project)")
+	listAppCmd.Flags().Bool("all-projects", false, "List apps from all projects (overrides project filter)")
 	appCmd.AddCommand(listAppCmd)
 
 	describeAppCmd := &cobra.Command{
@@ -88,6 +93,7 @@ func NewAppCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Describe),
 	}
+	describeAppCmd.Flags().StringP("project", "p", "", "Project name or ID (optional context)")
 	appCmd.AddCommand(describeAppCmd)
 
 	updateAppCmd := &cobra.Command{
@@ -130,6 +136,7 @@ func NewAppCmd() *cobra.Command {
 	updateAppCmd.Flags().StringP("name", "n", "", "Change the name of the app")
 	updateAppCmd.Flags().StringP("domain", "D", "", "Change the subdomain of the app (only specify the subdomain, skipping \".koyeb.app\")")
 	updateAppCmd.Flags().Bool("delete-when-empty", false, "Automatically delete the app after the last service is deleted. Empty apps created without services are not deleted.")
+	updateAppCmd.Flags().StringP("project", "p", "", "Project name or ID (optional context)")
 	appCmd.AddCommand(updateAppCmd)
 
 	deleteAppCmd := &cobra.Command{
@@ -138,6 +145,7 @@ func NewAppCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  WithCLIContext(h.Delete),
 	}
+	deleteAppCmd.Flags().StringP("project", "p", "", "Project name or ID (optional context)")
 	appCmd.AddCommand(deleteAppCmd)
 
 	pauseServiceCmd := &cobra.Command{

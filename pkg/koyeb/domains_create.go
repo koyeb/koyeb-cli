@@ -13,6 +13,16 @@ func (h *DomainHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 	createDomainReq.SetName(args[0])
 	createDomainReq.SetType(koyeb.DOMAINTYPE_CUSTOM)
 
+	projectFlag, _ := cmd.Flags().GetString("project")
+	if projectFlag != "" {
+		projectHandler := NewProjectHandler()
+		projectID, err := projectHandler.ResolveProjectArgs(ctx, projectFlag)
+		if err != nil {
+			return err
+		}
+		createDomainReq.SetProjectId(projectID)
+	}
+
 	attachToApp := GetStringFlags(cmd, "attach-to")
 	if attachToApp != "" {
 		appID, err := ctx.Mapper.App().ResolveID(attachToApp)

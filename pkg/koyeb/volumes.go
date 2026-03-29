@@ -100,6 +100,7 @@ func NewVolumeCmd() *cobra.Command {
 	createVolumeCmd.Flags().Int64("size", -1, "Size of the volume in GB")
 	createVolumeCmd.Flags().Bool("read-only", false, "Force the volume to be read-only")
 	createVolumeCmd.Flags().String("snapshot", "", "Specify a snapshot to use to create the volume from")
+	createVolumeCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	volumeCmd.AddCommand(createVolumeCmd)
 
 	getVolumeCmd := &cobra.Command{
@@ -110,6 +111,7 @@ func NewVolumeCmd() *cobra.Command {
 			return h.Get(ctx, cmd, args)
 		}),
 	}
+	getVolumeCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	volumeCmd.AddCommand(getVolumeCmd)
 
 	listVolumeCmd := &cobra.Command{
@@ -119,6 +121,7 @@ func NewVolumeCmd() *cobra.Command {
 			return h.List(ctx, cmd, args)
 		}),
 	}
+	listVolumeCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	volumeCmd.AddCommand(listVolumeCmd)
 
 	updateVolumeCmd := &cobra.Command{
@@ -146,6 +149,7 @@ func NewVolumeCmd() *cobra.Command {
 	}
 	updateVolumeCmd.Flags().String("name", "", "Change the volume name")
 	updateVolumeCmd.Flags().Int64("size", -1, "Increase the volume size")
+	updateVolumeCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	volumeCmd.AddCommand(updateVolumeCmd)
 
 	deleteVolumeCmd := &cobra.Command{
@@ -156,6 +160,7 @@ func NewVolumeCmd() *cobra.Command {
 			return h.Delete(ctx, cmd, args)
 		}),
 	}
+	deleteVolumeCmd.Flags().StringP("project", "p", "", "Project name or ID")
 	volumeCmd.AddCommand(deleteVolumeCmd)
 
 	return volumeCmd
