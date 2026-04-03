@@ -46,6 +46,7 @@ func (h *ArchiveHandler) CreateArchive(ctx *CLIContext, path string) (*koyeb.Cre
 	// because the underlying type to store the size is uint64, which is not
 	// representable in JSON.
 	c.SetSize(fmt.Sprintf("%d", stat.Size()))
+	applyProjectID(c, ctx.Project)
 
 	res, resp, err := ctx.Client.ArchivesApi.CreateArchive(ctx.Context).Archive(*c).Execute()
 	if err != nil {

@@ -18,8 +18,13 @@ func (h *VolumeHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string)
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := ctx.Client.PersistentVolumesApi.ListPersistentVolumes(ctx.Context).
-			Limit(strconv.FormatInt(limit, 10)).Offset(strconv.FormatInt(offset, 10)).Execute()
+		req := ctx.Client.PersistentVolumesApi.ListPersistentVolumes(ctx.Context).
+			Limit(strconv.FormatInt(limit, 10)).
+			Offset(strconv.FormatInt(offset, 10))
+		if ctx.Project != "" {
+			req = req.ProjectId(ctx.Project)
+		}
+		res, resp, err := req.Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError("Error while listing secrets", err, resp)
 		}
