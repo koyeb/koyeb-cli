@@ -599,7 +599,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForGitSource(flags *pflag.Flag
 func (h *ServiceHandler) addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.Bool("skip-docker-verify", false, "Skip docker image verification")
+	flags.Bool("docker-skip-verify", false, "Skip docker image verification")
 	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
 	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
 	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
@@ -1605,7 +1605,7 @@ func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
 		source.SetImage(image)
-		skipVerify, _ := flags.GetBool("skip-docker-verify")
+		skipVerify, _ := flags.GetBool("docker-skip-verify")
 		if !skipVerify {
 			if err := h.checkDockerImage(ctx, source); err != nil {
 				return nil, err
