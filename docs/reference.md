@@ -311,6 +311,7 @@ See examples of koyeb service create --help
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
+      --docker-skip-verify                       Skip docker image verification
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
@@ -1455,6 +1456,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
+      --docker-skip-verify                       Skip docker image verification
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
@@ -1939,6 +1941,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --docker-command string                    Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.
       --docker-entrypoint strings                Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.
       --docker-private-registry-secret string    Docker private registry secret
+      --docker-skip-verify                       Skip docker image verification
       --env strings                              Update service environment variables using the format KEY=VALUE, for example --env FOO=bar
                                                  To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}
                                                  To delete an environment variable, prefix its name with '!', for example --env '!FOO'
