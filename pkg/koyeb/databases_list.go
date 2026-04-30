@@ -25,11 +25,14 @@ func (h *DatabaseHandler) List(ctx *CLIContext, cmd *cobra.Command, args []strin
 	offset := int64(0)
 	limit := int64(100)
 	for {
-		res, resp, err := ctx.Client.ServicesApi.ListServices(ctx.Context).
+		req := ctx.Client.ServicesApi.ListServices(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
-			Types([]string{"DATABASE"}).
-			Execute()
+			Types([]string{"DATABASE"})
+		if ctx.Project != "" {
+			req = req.ProjectId(ctx.Project)
+		}
+		res, resp, err := req.Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
 				"Error while listing database services",

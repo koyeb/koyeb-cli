@@ -12,6 +12,7 @@ func (h *DomainHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []strin
 	createDomainReq := koyeb.NewCreateDomainWithDefaults()
 	createDomainReq.SetName(args[0])
 	createDomainReq.SetType(koyeb.DOMAINTYPE_CUSTOM)
+	applyProjectID(createDomainReq, ctx.Project)
 
 	attachToApp := GetStringFlags(cmd, "attach-to")
 	if attachToApp != "" {

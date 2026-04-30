@@ -13,16 +13,18 @@ type ServiceMapper struct {
 	ctx       context.Context
 	client    *koyeb.APIClient
 	appMapper *AppMapper
+	project   string
 	fetched   bool
 	sidMap    *IDMap
 	slugMap   *IDMap
 }
 
-func NewServiceMapper(ctx context.Context, client *koyeb.APIClient, appMapper *AppMapper) *ServiceMapper {
+func NewServiceMapper(ctx context.Context, client *koyeb.APIClient, appMapper *AppMapper, project string) *ServiceMapper {
 	return &ServiceMapper{
 		ctx:       ctx,
 		client:    client,
 		appMapper: appMapper,
+		project:   project,
 		fetched:   false,
 		sidMap:    NewIDMap(),
 		slugMap:   NewIDMap(),
@@ -84,10 +86,13 @@ func (mapper *ServiceMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		res, resp, err := mapper.client.ServicesApi.ListServices(mapper.ctx).
+		req := mapper.client.ServicesApi.ListServices(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
-			Offset(strconv.FormatInt(offset, 10)).
-			Execute()
+			Offset(strconv.FormatInt(offset, 10))
+		if mapper.project != "" {
+			req = req.ProjectId(mapper.project)
+		}
+		res, resp, err := req.Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
 				"Error listing services to resolve the provided identifier to an object ID",

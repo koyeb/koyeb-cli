@@ -35,6 +35,7 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}
 
 	createService.SetAppId(resApp.App.GetId())
+	applyProjectID(createService, ctx.Project)
 	res, resp, err := ctx.Client.ServicesApi.CreateService(ctx.Context).Service(*createService).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(

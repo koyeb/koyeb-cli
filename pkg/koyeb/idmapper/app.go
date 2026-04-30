@@ -12,16 +12,18 @@ import (
 type AppMapper struct {
 	ctx           context.Context
 	client        *koyeb.APIClient
+	project       string
 	fetched       bool
 	sidMap        *IDMap
 	nameMap       *IDMap
 	autoDomainMap *IDMap
 }
 
-func NewAppMapper(ctx context.Context, client *koyeb.APIClient) *AppMapper {
+func NewAppMapper(ctx context.Context, client *koyeb.APIClient, project string) *AppMapper {
 	return &AppMapper{
 		ctx:           ctx,
 		client:        client,
+		project:       project,
 		fetched:       false,
 		sidMap:        NewIDMap(),
 		nameMap:       NewIDMap(),
@@ -67,7 +69,16 @@ func (mapper *AppMapper) GetName(id string) (string, error) {
 
 	name, ok := mapper.nameMap.GetValue(id)
 	if !ok {
-		return "", fmt.Errorf("app name not found for %q", id)
+		res, resp, err := mapper.client.AppsApi.GetApp(mapper.ctx, id).Execute()
+		if err != nil {
+			return "", errors.NewCLIErrorFromAPIError(
+				fmt.Sprintf("Error retrieving the application %q", id),
+				err,
+				resp,
+			)
+		}
+		app := res.GetApp()
+		return app.GetName(), nil
 	}
 
 	return name, nil
@@ -83,6 +94,27 @@ func (mapper *AppMapper) GetAutoDomain(id string) (string, error) {
 
 	name, ok := mapper.autoDomainMap.GetValue(id)
 	if !ok {
+		res, resp, err := mapper.client.AppsApi.GetApp(mapper.ctx, id).Execute()
+		if err != nil {
+			return "", errors.NewCLIErrorFromAPIError(
+				fmt.Sprintf("Error retrieving the application %q", id),
+				err,
+				resp,
+			)
+		}
+		app := res.GetApp()
+		for _, domain := range app.GetDomains() {
+			if domain.GetType() != koyeb.DOMAINTYPE_AUTOASSIGNED {
+				continue
+			}
+
+			if !domain.HasCloudflare() {
+				continue
+			}
+
+			return domain.GetId(), nil
+		}
+
 		return "", fmt.Errorf("app automatic domain not found for %q", id)
 	}
 
@@ -97,10 +129,13 @@ func (mapper *AppMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		res, resp, err := mapper.client.AppsApi.ListApps(mapper.ctx).
+		req := mapper.client.AppsApi.ListApps(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
-			Offset(strconv.FormatInt(offset, 10)).
-			Execute()
+			Offset(strconv.FormatInt(offset, 10))
+		if mapper.project != "" {
+			req = req.ProjectId(mapper.project)
+		}
+		res, resp, err := req.Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
 				"Error listing applications to resolve the provided identifier to an object ID",

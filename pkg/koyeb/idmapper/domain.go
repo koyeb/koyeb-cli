@@ -12,15 +12,17 @@ import (
 type DomainMapper struct {
 	ctx     context.Context
 	client  *koyeb.APIClient
+	project string
 	fetched bool
 	sidMap  *IDMap
 	nameMap *IDMap
 }
 
-func NewDomainMapper(ctx context.Context, client *koyeb.APIClient) *DomainMapper {
+func NewDomainMapper(ctx context.Context, client *koyeb.APIClient, project string) *DomainMapper {
 	return &DomainMapper{
 		ctx:     ctx,
 		client:  client,
+		project: project,
 		fetched: false,
 		sidMap:  NewIDMap(),
 		nameMap: NewIDMap(),
@@ -80,10 +82,13 @@ func (mapper *DomainMapper) fetch() error {
 	limit := int64(100)
 	for {
 
-		res, resp, err := mapper.client.DomainsApi.ListDomains(mapper.ctx).
+		req := mapper.client.DomainsApi.ListDomains(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
-			Offset(strconv.FormatInt(offset, 10)).
-			Execute()
+			Offset(strconv.FormatInt(offset, 10))
+		if mapper.project != "" {
+			req = req.ProjectId(mapper.project)
+		}
+		res, resp, err := req.Execute()
 		if err != nil {
 			return errors.NewCLIErrorFromAPIError(
 				"Error listing domains to resolve the provided identifier to an object ID",

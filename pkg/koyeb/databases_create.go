@@ -15,6 +15,7 @@ import (
 func TryCreateKoyebApplication(name string, ctx *CLIContext) error {
 	createApp := koyeb.NewCreateAppWithDefaults()
 	createApp.SetName(name)
+	applyProjectID(createApp, ctx.Project)
 
 	_, resp, err := ctx.Client.AppsApi.CreateApp(ctx.Context).App(*createApp).Execute()
 	if err != nil {
@@ -56,6 +57,7 @@ func (h *DatabaseHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []str
 	}
 
 	createService.SetAppId(appID)
+	applyProjectID(createService, ctx.Project)
 	res, resp, err := ctx.Client.ServicesApi.CreateService(ctx.Context).Service(*createService).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(

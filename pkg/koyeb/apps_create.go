@@ -22,6 +22,7 @@ func (h *AppHandler) CreateApp(ctx *CLIContext, payload *koyeb.CreateApp) (*koye
 
 func (h *AppHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createApp *koyeb.CreateApp) error {
 	createApp.SetName(args[0])
+	applyProjectID(createApp, ctx.Project)
 
 	res, err := h.CreateApp(ctx, createApp)
 	if err != nil {

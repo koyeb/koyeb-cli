@@ -31,6 +31,7 @@ var (
 	debugFull    bool
 	debug        bool
 	organization string
+	project      string
 
 	loginCmd = &cobra.Command{
 		Use:   "login",
@@ -76,7 +77,7 @@ func GetRootCommand() *cobra.Command {
 				return err
 			}
 			DetectUpdates()
-			return SetupCLIContext(cmd, organization)
+			return SetupCLIContext(cmd, organization, project)
 		},
 	}
 
@@ -91,33 +92,38 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().String("url", "https://app.koyeb.com", "url of the api")
 	rootCmd.PersistentFlags().String("token", "", "API token")
 	rootCmd.PersistentFlags().StringVar(&organization, "organization", "", "organization ID")
+	rootCmd.PersistentFlags().StringVarP(&project, "project", "p", "", "project ID or name")
 
 	// viper.BindPFlag returns an error only if the second argument is nil, which is never the case here, so we ignore the error
 	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))                   //nolint:errcheck
 	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))               //nolint:errcheck
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))               //nolint:errcheck
 	viper.BindPFlag("organization", rootCmd.PersistentFlags().Lookup("organization")) //nolint:errcheck
+	if err := rootCmd.RegisterFlagCompletionFunc("project", CompleteProjectArgs); err != nil {
+		panic(err)
+	}
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(completionCmd)
 
-	rootCmd.AddCommand(NewOrganizationCmd())
-	rootCmd.AddCommand(NewSecretCmd())
 	rootCmd.AddCommand(NewAppCmd())
-	rootCmd.AddCommand(NewDomainCmd())
-	rootCmd.AddCommand(NewServiceCmd())
-	rootCmd.AddCommand(NewInstanceCmd())
-	rootCmd.AddCommand(NewDeploymentCmd())
-	rootCmd.AddCommand(NewRegionalDeploymentCmd())
-	rootCmd.AddCommand(NewDatabaseCmd())
-	rootCmd.AddCommand(NewMetricsCmd())
 	rootCmd.AddCommand(NewArchiveCmd())
-	rootCmd.AddCommand(NewDeployCmd())
-	rootCmd.AddCommand(NewVolumeCmd())
-	rootCmd.AddCommand(NewSnapshotCmd())
 	rootCmd.AddCommand(NewComposeCmd())
+	rootCmd.AddCommand(NewDatabaseCmd())
+	rootCmd.AddCommand(NewDeployCmd())
+	rootCmd.AddCommand(NewDeploymentCmd())
+	rootCmd.AddCommand(NewDomainCmd())
+	rootCmd.AddCommand(NewInstanceCmd())
+	rootCmd.AddCommand(NewMetricsCmd())
+	rootCmd.AddCommand(NewOrganizationCmd())
+	rootCmd.AddCommand(NewProjectCmd())
+	rootCmd.AddCommand(NewRegionalDeploymentCmd())
 	rootCmd.AddCommand(NewSandboxCmd())
+	rootCmd.AddCommand(NewSecretCmd())
+	rootCmd.AddCommand(NewServiceCmd())
+	rootCmd.AddCommand(NewSnapshotCmd())
+	rootCmd.AddCommand(NewVolumeCmd())
 	rootCmd.AddCommand(NewWhoAmICmd())
 	return rootCmd
 }
