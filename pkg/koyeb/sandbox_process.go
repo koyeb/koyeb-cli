@@ -48,7 +48,7 @@ func (h *SandboxHandler) StartProcess(ctx *CLIContext, cmd *cobra.Command, args 
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	req := &ProcessRequest{
 		Cmd: command,
@@ -84,7 +84,7 @@ func (h *SandboxHandler) ListProcesses(ctx *CLIContext, cmd *cobra.Command, args
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	processes, err := client.ListProcesses(ctx.Context)
 	if err != nil {
@@ -118,7 +118,7 @@ func (h *SandboxHandler) KillProcess(ctx *CLIContext, cmd *cobra.Command, args [
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	err = client.KillProcess(ctx.Context, processID)
 	if err != nil {
@@ -155,7 +155,7 @@ func (h *SandboxHandler) ProcessLogs(ctx *CLIContext, cmd *cobra.Command, args [
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	if follow {
 		log.Info("Streaming logs (press Ctrl+C to stop)...")

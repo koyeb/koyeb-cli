@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"encoding/base64"
 	"fmt"
 	"strconv"
 	"strings"
@@ -286,6 +285,29 @@ type SandboxInfo struct {
 	Domain        string
 	SandboxSecret string
 	ProxyPort     string // The external proxy port (from health check)
+	// BaseURL, when non-empty, is the sandbox API base URL derived from
+	// DeploymentMetadata.Sandbox.PublicUrl (with the "/koyeb-sandbox" path
+	// appended). When set, it takes precedence over Domain for client
+	// construction.
+	BaseURL string
+	// RoutingKey, when non-empty, is the value of
+	// DeploymentMetadata.Sandbox.RoutingKey. It is sent as the X-Routing-Key
+	// header on every sandbox HTTP request, in addition to the Authorization
+	// Bearer token.
+	RoutingKey string
+}
+
+// NewClient creates a SandboxClient using the connection information in i.
+// When BaseURL is set (provided by the API via DeploymentMetadata.Sandbox),
+// it is used as-is and the RoutingKey is sent as the X-Routing-Key header.
+// Otherwise the legacy mechanism (https://{Domain}/koyeb-sandbox) is used.
+// In all cases the SandboxSecret is sent as a Bearer token in the
+// Authorization header.
+func (i *SandboxInfo) NewClient(opts ...SandboxClientOption) *SandboxClient {
+	if i.BaseURL != "" {
+		return newSandboxClientFromBaseURL(i.BaseURL, i.SandboxSecret, i.RoutingKey, opts...)
+	}
+	return NewSandboxClient(i.Domain, i.SandboxSecret, opts...)
 }
 
 // ValidatePort checks if a port number is valid
@@ -440,6 +462,10 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 	}
 
 	deployment := deploymentRes.GetDeployment()
+
+	// SANDBOX_SECRET is always required: it is sent as a Bearer token in the
+	// Authorization header on every sandbox HTTP request, regardless of
+	// whether DeploymentMetadata.Sandbox is provided by the API.
 	definition := deployment.GetDefinition()
 	envVars := definition.GetEnv()
 
@@ -460,19 +486,32 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 		}
 	}
 
-	// The API returns env var values base64-encoded
-	decoded, err := base64.StdEncoding.DecodeString(sandboxSecret)
-	if err != nil {
-		// If it's not valid base64, use the value as-is
-		decoded = []byte(sandboxSecret)
+	// When the API exposes DeploymentMetadata.Sandbox, prefer its values:
+	// PublicUrl provides the host to reach (the "/koyeb-sandbox" path is
+	// still appended), and RoutingKey is sent in the X-Routing-Key header in
+	// addition to the Bearer token above.
+	var (
+		baseURL    string
+		routingKey string
+	)
+	if deployment.HasMetadata() {
+		metadata := deployment.GetMetadata()
+		if metadata.HasSandbox() {
+			sandbox := metadata.GetSandbox()
+			if publicURL := sandbox.GetPublicUrl(); publicURL != "" {
+				baseURL = strings.TrimRight(publicURL, "/") + "/koyeb-sandbox"
+			}
+			routingKey = sandbox.GetRoutingKey()
+		}
 	}
-	sandboxSecret = string(decoded)
 
 	return &SandboxInfo{
 		ServiceID:     serviceID,
 		AppID:         appID,
 		Domain:        domain,
 		SandboxSecret: sandboxSecret,
+		BaseURL:       baseURL,
+		RoutingKey:    routingKey,
 	}, nil
 }
 
@@ -497,7 +536,7 @@ func (h *SandboxHandler) GetClientWithHealthCheck(ctx *CLIContext, sandboxName s
 		return nil, nil, err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	// Perform health check
 	health, err := client.Health(ctx.Context)
@@ -537,7 +576,7 @@ func (h *SandboxHandler) Health(ctx *CLIContext, cmd *cobra.Command, args []stri
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	health, err := client.Health(ctx.Context)
 	if err != nil {

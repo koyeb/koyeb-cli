@@ -73,10 +73,8 @@ func (h *SandboxHandler) Run(ctx *CLIContext, cmd *cobra.Command, args []string)
 		return err
 	}
 
-	client := NewSandboxClient(
-		info.Domain,
-		info.SandboxSecret,
-		WithTimeout(time.Duration(timeout)*time.Second),
+	client := info.NewClient(
+		WithTimeout(time.Duration(timeout) * time.Second),
 	)
 
 	req := &RunRequest{

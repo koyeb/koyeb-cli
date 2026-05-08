@@ -24,7 +24,7 @@ func (h *SandboxHandler) ExposePort(ctx *CLIContext, cmd *cobra.Command, args []
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	result, err := client.BindPort(ctx.Context, fmt.Sprintf("%d", port))
 	if err != nil {
@@ -77,7 +77,7 @@ func (h *SandboxHandler) UnexposePort(ctx *CLIContext, cmd *cobra.Command, args 
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	result, err := client.UnbindPort(ctx.Context)
 	if err != nil {

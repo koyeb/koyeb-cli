@@ -39,8 +39,15 @@ var _ SandboxClientInterface = (*SandboxClient)(nil)
 
 // SandboxClient provides HTTP client for sandbox API
 type SandboxClient struct {
-	baseURL       string
-	secret        string
+	baseURL string
+	// secret is sent as a Bearer token in the Authorization header. It is
+	// always read from the SANDBOX_SECRET environment variable on the
+	// sandbox.
+	secret string
+	// routingKey, when non-empty, is sent in the X-Routing-Key header in
+	// addition to the Authorization header. It is provided by the API via
+	// DeploymentMetadata.Sandbox.RoutingKey.
+	routingKey    string
 	httpClient    *http.Client
 	maxRetries    int
 	retryDelay    time.Duration
@@ -72,13 +79,34 @@ func WithStreamTimeout(timeout time.Duration) SandboxClientOption {
 	}
 }
 
-// NewSandboxClient creates a new sandbox client
+// NewSandboxClient creates a new sandbox client. The base URL is derived from
+// the given domain by appending the legacy "/koyeb-sandbox" path. The secret
+// is sent as a Bearer token in the Authorization header. This is the fallback
+// used when DeploymentMetadata.Sandbox is not provided by the API.
 func NewSandboxClient(domain, secret string, opts ...SandboxClientOption) *SandboxClient {
+	return newSandboxClient(fmt.Sprintf("https://%s/koyeb-sandbox", domain), secret, "", opts...)
+}
+
+// newSandboxClientFromBaseURL creates a sandbox client using an explicit base
+// URL provided by the API via DeploymentMetadata.Sandbox.PublicUrl. The
+// secret is still sent as a Bearer token in the Authorization header; the
+// routingKey, when non-empty, is sent in the X-Routing-Key header in addition
+// to the Authorization header.
+func newSandboxClientFromBaseURL(baseURL, secret, routingKey string, opts ...SandboxClientOption) *SandboxClient {
+	return newSandboxClient(baseURL, secret, routingKey, opts...)
+}
+
+func newSandboxClient(baseURL, secret, routingKey string, opts ...SandboxClientOption) *SandboxClient {
 	c := &SandboxClient{
-		baseURL: fmt.Sprintf("https://%s/koyeb-sandbox", domain),
-		secret:  secret,
+		baseURL:    strings.TrimRight(baseURL, "/"),
+		secret:     secret,
+		routingKey: routingKey,
 		httpClient: &http.Client{
 			Timeout: 2 * time.Minute,
+			// Wrap with DebugTransport so requests/responses to the
+			// sandbox base URL are dumped when the -d/--debug flag is set,
+			// matching the behavior of the main API client.
+			Transport: &DebugTransport{http.DefaultTransport},
 		},
 		maxRetries:    3,
 		retryDelay:    time.Second,
@@ -145,6 +173,9 @@ func (c *SandboxClient) doRequest(ctx context.Context, method, path string, body
 	}
 
 	req.Header.Set("Authorization", "Bearer "+c.secret)
+	if c.routingKey != "" {
+		req.Header.Set("X-Routing-Key", c.routingKey)
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	return c.httpClient.Do(req)
