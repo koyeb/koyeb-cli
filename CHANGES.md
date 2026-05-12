@@ -1,5 +1,9 @@
 ## v5.11.0 (unreleased)
 
+## v5.10.2 (2026-05-12)
+
+* Fix the sandbox subcommand: make use of the `public_base_url` and `routing_key` if provided in the deployment metadata.
+
 ## v5.10.1 (2026-03-19)
 
 * Add `whoami` subcommand to show info about the user/org you are currently logged into.
