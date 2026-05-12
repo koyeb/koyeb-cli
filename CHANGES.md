@@ -1,5 +1,9 @@
 ## v5.11.0 (unreleased)
 
+## v5.10.1 (2026-03-19)
+
+* Add `whoami` subcommand to show info about the user/org you are currently logged into.
+
 ## v5.10.0 (2026-03-10)
 
 * Add `--auth` flag to `koyeb service create`, `koyeb service update`, and `koyeb deploy` to add security policies (basic auth or API key) to all routes. Supports referencing secrets with `{{secret.SECRET_NAME}}` syntax. Use `--auth-disable` to remove all security policies.
