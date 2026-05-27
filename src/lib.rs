@@ -184,7 +184,7 @@ enum AppsCommand {
         delete_when_empty: bool,
     },
     #[command(about = "Create app and service")]
-    Init(InitAppArgs),
+    Init(Box<InitAppArgs>),
     #[command(about = "Get app")]
     Get { name: String },
     #[command(about = "List apps")]
@@ -1267,7 +1267,7 @@ impl ApiClient {
         if text.trim().is_empty() {
             Ok(Value::Null)
         } else {
-            Ok(serde_json::from_str(&text).unwrap_or_else(|_| Value::String(text)))
+            Ok(serde_json::from_str(&text).unwrap_or(Value::String(text)))
         }
     }
 
@@ -1861,19 +1861,22 @@ async fn handle_deployments(cfg: &Config, command: DeploymentsCommand) -> Result
             )
         }
         DeploymentsCommand::Logs(args) => {
+            let id = resolve(&api, "deployments", &args.name).await?;
             logs_query(
                 cfg,
                 &api,
-                "deployment_id",
-                &resolve(&api, "deployments", &args.name).await?,
-                args.instance,
-                args.log_type,
-                args.tail,
-                args.start_time,
-                args.end_time,
-                args.regex_search,
-                args.text_search,
-                args.order,
+                LogQuery {
+                    key: "deployment_id",
+                    id,
+                    instance: args.instance,
+                    log_type: args.log_type,
+                    tail: args.tail,
+                    start: args.start_time,
+                    end: args.end_time,
+                    regex: args.regex_search,
+                    text: args.text_search,
+                    order: args.order,
+                },
             )
             .await
         }
@@ -1940,19 +1943,22 @@ async fn handle_instances(cfg: &Config, command: InstancesCommand) -> Result<()>
             )
         }
         InstancesCommand::Logs(args) => {
+            let id = resolve(&api, "instances", &args.name).await?;
             logs_query(
                 cfg,
                 &api,
-                "instance_id",
-                &resolve(&api, "instances", &args.name).await?,
-                None,
-                args.log_type,
-                args.tail,
-                args.start_time,
-                args.end_time,
-                args.regex_search,
-                args.text_search,
-                args.order,
+                LogQuery {
+                    key: "instance_id",
+                    id,
+                    instance: None,
+                    log_type: args.log_type,
+                    tail: args.tail,
+                    start: args.start_time,
+                    end: args.end_time,
+                    regex: args.regex_search,
+                    text: args.text_search,
+                    order: args.order,
+                },
             )
             .await
         }
@@ -2214,7 +2220,15 @@ async fn handle_compose(cfg: &Config, args: ComposeArgs) -> Result<()> {
 async fn handle_sandbox(cfg: &Config, command: SandboxCommand) -> Result<()> {
     let api = auth_client(cfg)?;
     match command {
-        SandboxCommand::List { app, name } => { let mut q = vec![("type", "SANDBOX".into()), limit()]; if let Some(n) = name { q.push(("name", n)); } if let Some(app) = app { q.push(("app_id", resolve(&api, "apps", &app).await?)); } render(cfg, api.get("/v1/services", &q).await?) }
+        SandboxCommand::List { app, name } => {
+            let mut q = vec![("type", "SANDBOX".into()), limit()];
+            q.extend(name.map(|name| ("name", name)));
+
+            if let Some(app) = app {
+                q.push(("app_id", resolve(&api, "apps", &app).await?));
+            }
+            render(cfg, api.get("/v1/services", &q).await?)
+        }
         SandboxCommand::Create(args) => {
             let body = sandbox_body(args)?;
             let value = match api.post("/v1/sandboxes", body.clone()).await {
@@ -2863,25 +2877,25 @@ async fn service_logs(cfg: &Config, api: &ApiClient, args: LogsArgs) -> Result<(
     logs_query(
         cfg,
         api,
-        "service_id",
-        &service_id,
-        args.instance,
-        args.log_type,
-        args.tail,
-        args.start_time.or(args.since),
-        args.end_time,
-        args.regex_search,
-        args.text_search,
-        args.order,
+        LogQuery {
+            key: "service_id",
+            id: service_id,
+            instance: args.instance,
+            log_type: args.log_type,
+            tail: args.tail,
+            start: args.start_time.or(args.since),
+            end: args.end_time,
+            regex: args.regex_search,
+            text: args.text_search,
+            order: args.order,
+        },
     )
     .await
 }
 
-async fn logs_query(
-    cfg: &Config,
-    api: &ApiClient,
-    key: &str,
-    id: &str,
+struct LogQuery {
+    key: &'static str,
+    id: String,
     instance: Option<String>,
     log_type: Option<String>,
     tail: bool,
@@ -2890,27 +2904,29 @@ async fn logs_query(
     regex: Option<String>,
     text: Option<String>,
     order: String,
-) -> Result<()> {
-    let mut q = vec![(key, id.to_string()), ("order", order)];
-    if let Some(v) = instance {
+}
+
+async fn logs_query(cfg: &Config, api: &ApiClient, query: LogQuery) -> Result<()> {
+    let mut q = vec![(query.key, query.id), ("order", query.order)];
+    if let Some(v) = query.instance {
         q.push(("instance_id", v));
     }
-    if let Some(v) = log_type {
+    if let Some(v) = query.log_type {
         q.push(("type", v));
     }
-    if tail {
+    if query.tail {
         q.push(("tail", "true".into()));
     }
-    if let Some(v) = start {
+    if let Some(v) = query.start {
         q.push(("start_time", v));
     }
-    if let Some(v) = end {
+    if let Some(v) = query.end {
         q.push(("end_time", v));
     }
-    if let Some(v) = regex {
+    if let Some(v) = query.regex {
         q.push(("regex_search", v));
     }
-    if let Some(v) = text {
+    if let Some(v) = query.text {
         q.push(("text_search", v));
     }
     render(cfg, api.get("/v1/logs", &q).await?)
