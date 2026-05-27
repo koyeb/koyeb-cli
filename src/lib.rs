@@ -5,7 +5,7 @@ use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::fmt;
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, BufRead, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -104,7 +104,7 @@ enum Commands {
         #[command(subcommand)]
         command: ServicesCommand,
     },
-    #[command(about = "Deployments")]
+    #[command(visible_aliases = ["d", "dep", "depl", "deployment"], about = "Deployments")]
     Deployments {
         #[command(subcommand)]
         command: DeploymentsCommand,
@@ -114,7 +114,7 @@ enum Commands {
         #[command(subcommand)]
         command: RegionalDeploymentsCommand,
     },
-    #[command(about = "Instances")]
+    #[command(visible_aliases = ["i", "inst", "instance"], about = "Instances")]
     Instances {
         #[command(subcommand)]
         command: InstancesCommand,
@@ -194,7 +194,7 @@ enum AppsCommand {
     #[command(about = "Update app")]
     Update {
         name: String,
-        #[arg(short, long)]
+        #[arg(long = "name")]
         name_new: Option<String>,
         #[arg(short = 'D', long)]
         domain: Option<String>,
@@ -265,21 +265,7 @@ enum OrganizationsCommand {
 #[derive(Subcommand, Debug)]
 enum SecretsCommand {
     #[command(about = "Create secret")]
-    Create {
-        name: String,
-        #[arg(long = "type", value_enum, default_value_t = SecretKind::Simple)]
-        kind: SecretKind,
-        #[arg(long)]
-        value: Option<String>,
-        #[arg(long)]
-        filename: Option<PathBuf>,
-        #[arg(long = "registry-server")]
-        registry_server: Option<String>,
-        #[arg(long = "registry-username")]
-        registry_username: Option<String>,
-        #[arg(long = "registry-password")]
-        registry_password: Option<String>,
-    },
+    Create(SecretWriteArgs),
     #[command(about = "Get secret")]
     Get { name: String },
     #[command(about = "List secrets")]
@@ -287,23 +273,43 @@ enum SecretsCommand {
     #[command(about = "Describe secret")]
     Describe { name: String },
     #[command(about = "Update secret")]
-    Update {
-        name: String,
-        #[arg(long)]
-        value: Option<String>,
-        #[arg(long)]
-        filename: Option<PathBuf>,
-    },
+    Update(SecretWriteArgs),
     #[command(about = "Delete secret")]
     Delete { name: String },
     #[command(visible_alias = "show", about = "Show secret value")]
     Reveal { name: String },
 }
 
+#[derive(Debug, Args)]
+struct SecretWriteArgs {
+    name: String,
+    #[arg(long = "type", value_enum, default_value_t = SecretKind::Simple)]
+    kind: SecretKind,
+    #[arg(short, long)]
+    value: Option<String>,
+    #[arg(long = "value-from-stdin")]
+    value_from_stdin: bool,
+    #[arg(long, hide = true)]
+    filename: Option<PathBuf>,
+    #[arg(long = "registry-username")]
+    registry_username: Option<String>,
+    #[arg(long = "registry-url")]
+    registry_url: Option<String>,
+    #[arg(long = "registry-keyfile")]
+    registry_keyfile: Option<PathBuf>,
+    #[arg(long = "registry-name")]
+    registry_name: Option<String>,
+}
+
 #[derive(ValueEnum, Clone, Copy, Debug)]
 enum SecretKind {
     Simple,
-    Registry,
+    RegistryDockerhub,
+    RegistryPrivate,
+    RegistryDigitalOcean,
+    RegistryGitlab,
+    RegistryGcp,
+    RegistryAzure,
 }
 
 #[derive(Subcommand, Debug)]
@@ -429,26 +435,46 @@ struct ServiceDefinitionArgs {
     git_branch: Option<String>,
     #[arg(long = "git-sha")]
     git_sha: Option<String>,
+    #[arg(long = "git-no-deploy-on-push")]
+    git_no_deploy_on_push: bool,
+    #[arg(long = "git-workdir")]
+    git_workdir: Option<String>,
     #[arg(long = "git-builder")]
     git_builder: Option<String>,
     #[arg(long = "git-build-command")]
     git_build_command: Option<String>,
     #[arg(long = "git-run-command")]
     git_run_command: Option<String>,
+    #[arg(long = "git-buildpack-build-command")]
+    git_buildpack_build_command: Option<String>,
+    #[arg(long = "git-buildpack-run-command")]
+    git_buildpack_run_command: Option<String>,
     #[arg(long = "git-privileged")]
     git_privileged: bool,
     #[arg(long = "git-docker-dockerfile")]
     git_docker_dockerfile: Option<String>,
     #[arg(long = "git-docker-entrypoint")]
     git_docker_entrypoint: Vec<String>,
-    #[arg(long = "git-docker-args")]
+    #[arg(long = "git-docker-command")]
+    git_docker_command: Option<String>,
+    #[arg(long = "git-docker-args", alias = "git-docker-arg")]
     git_docker_args: Vec<String>,
+    #[arg(long = "git-docker-target")]
+    git_docker_target: Option<String>,
+
     #[arg(long)]
     docker: Option<String>,
+    #[arg(long = "docker-private-registry-secret")]
+    docker_private_registry_secret: Option<String>,
+    #[arg(long = "docker-skip-verify")]
+    docker_skip_verify: bool,
     #[arg(long = "docker-entrypoint")]
     docker_entrypoint: Vec<String>,
-    #[arg(long = "docker-args")]
+    #[arg(long = "docker-command")]
+    docker_command: Option<String>,
+    #[arg(long = "docker-args", alias = "docker-arg")]
     docker_args: Vec<String>,
+
     #[arg(long)]
     archive: Option<String>,
     #[arg(long = "archive-builder")]
@@ -457,50 +483,78 @@ struct ServiceDefinitionArgs {
     archive_build_command: Option<String>,
     #[arg(long = "archive-run-command")]
     archive_run_command: Option<String>,
+    #[arg(long = "archive-buildpack-build-command")]
+    archive_buildpack_build_command: Option<String>,
+    #[arg(long = "archive-buildpack-run-command")]
+    archive_buildpack_run_command: Option<String>,
     #[arg(long = "archive-docker-dockerfile")]
     archive_docker_dockerfile: Option<String>,
     #[arg(long = "archive-docker-entrypoint")]
     archive_docker_entrypoint: Vec<String>,
-    #[arg(long = "archive-docker-args")]
+    #[arg(long = "archive-docker-command")]
+    archive_docker_command: Option<String>,
+    #[arg(long = "archive-docker-args", alias = "archive-docker-arg")]
     archive_docker_args: Vec<String>,
+    #[arg(long = "archive-docker-target")]
+    archive_docker_target: Option<String>,
     #[arg(long = "archive-ignore-dir", default_values_t = vec![".git".to_string(), "node_modules".to_string(), "vendor".to_string()])]
     archive_ignore_dir: Vec<String>,
+
+    #[arg(long = "type")]
+    service_type: Option<String>,
+    #[arg(long = "deployment-strategy", alias = "strategy")]
+    deployment_strategy: Option<String>,
     #[arg(long = "instance-type")]
     instance_type: Option<String>,
-    #[arg(long = "regions")]
+    #[arg(long = "regions", visible_alias = "region")]
     regions: Vec<String>,
-    #[arg(long = "ports")]
-    ports: Vec<String>,
-    #[arg(long = "routes")]
-    routes: Vec<String>,
     #[arg(long = "env")]
     env: Vec<String>,
     #[arg(long = "env-file")]
     env_file: Vec<PathBuf>,
-    #[arg(long = "secret")]
-    secrets: Vec<String>,
+    #[arg(long = "ports", visible_alias = "port")]
+    ports: Vec<String>,
+    #[arg(long = "routes", visible_alias = "route")]
+    routes: Vec<String>,
+    #[arg(long = "volumes", visible_alias = "volume")]
+    volumes: Vec<String>,
     #[arg(long = "config-file")]
     config_file: Vec<String>,
-    #[arg(long = "volumes")]
-    volumes: Vec<String>,
-    #[arg(long = "checks")]
+    #[arg(long = "secret")]
+    secrets: Vec<String>,
+    #[arg(long = "checks", aliases = ["check", "healthcheck", "health-check", "healthchecks", "health-checks"])]
     checks: Vec<String>,
-    #[arg(long = "checks-grace-period")]
+    #[arg(long = "checks-grace-period", aliases = ["healthcheck-grace", "healthcheck-grace-period", "health-check-grace", "health-check-grace-period", "healthchecks-grace", "healthchecks-grace-period", "health-checks-graee", "health-checks-grace-period"])]
     checks_grace_period: Vec<String>,
-    #[arg(long = "proxy-ports")]
+    #[arg(long = "proxy-ports", aliases = ["proxy"])]
     proxy_ports: Vec<String>,
+    #[arg(long = "auth")]
+    auth: Vec<String>,
+    #[arg(long = "auth-disable")]
+    auth_disable: bool,
     #[arg(long = "privileged")]
     privileged: bool,
     #[arg(long = "skip-cache")]
     skip_cache: bool,
+
     #[arg(long = "scale")]
     scale: Vec<String>,
     #[arg(long = "min-scale")]
     min_scale: Option<i64>,
     #[arg(long = "max-scale")]
     max_scale: Option<i64>,
-    #[arg(long = "autoscaling-target")]
+    #[arg(long = "autoscaling-target", hide = true)]
     autoscaling_target: Option<i64>,
+    #[arg(long = "autoscaling-average-cpu")]
+    autoscaling_average_cpu: Option<i64>,
+    #[arg(long = "autoscaling-average-mem")]
+    autoscaling_average_mem: Option<i64>,
+    #[arg(long = "autoscaling-requests-per-second")]
+    autoscaling_requests_per_second: Option<i64>,
+    #[arg(long = "autoscaling-concurrent-requests")]
+    autoscaling_concurrent_requests: Option<i64>,
+    #[arg(long = "autoscaling-requests-response-time")]
+    autoscaling_requests_response_time: Option<i64>,
     #[arg(long = "light-sleep-delay", default_value = "0s")]
     light_sleep_delay: HumanDuration,
     #[arg(long = "deep-sleep-delay", default_value = "0s")]
@@ -596,13 +650,15 @@ enum DeploymentsCommand {
     Describe { name: String },
     #[command(about = "Cancel deployment")]
     Cancel { name: String },
-    #[command(about = "Get deployment logs")]
+    #[command(visible_aliases = ["l", "log"], about = "Get deployment logs")]
     Logs(DeploymentLogsArgs),
 }
 
 #[derive(Debug, Args)]
 struct DeploymentLogsArgs {
     name: String,
+    #[arg(long)]
+    since: Option<String>,
     #[arg(long)]
     instance: Option<String>,
     #[arg(short = 't', long = "type")]
@@ -649,9 +705,10 @@ enum InstancesCommand {
     Get { name: String },
     #[command(about = "Describe instance")]
     Describe { name: String },
-    #[command(about = "Get instance logs")]
+    #[command(visible_aliases = ["l", "log"], about = "Get instance logs")]
     Logs(InstanceLogsArgs),
     #[command(
+        visible_aliases = ["run", "attach"],
         about = "Run a command in the context of an instance",
         trailing_var_arg = true
     )]
@@ -660,13 +717,18 @@ enum InstancesCommand {
         cmd: String,
         args: Vec<String>,
     },
-    #[command(about = "Copy files and directories to and from instances.")]
+    #[command(
+        visible_alias = "copy",
+        about = "Copy files and directories to and from instances."
+    )]
     Cp { source: String, destination: String },
 }
 
 #[derive(Debug, Args)]
 struct InstanceLogsArgs {
     name: String,
+    #[arg(long)]
+    since: Option<String>,
     #[arg(short = 't', long = "type")]
     log_type: Option<String>,
     #[arg(long)]
@@ -704,6 +766,8 @@ enum DatabasesCommand {
 #[derive(Debug, Args)]
 struct DatabaseCreateArgs {
     name: String,
+    #[arg(long = "name")]
+    flag_name: Option<String>,
     #[arg(long)]
     app: Option<String>,
     #[arg(long = "pg-version")]
@@ -721,6 +785,8 @@ struct DatabaseCreateArgs {
 #[derive(Debug, Args)]
 struct DatabaseUpdateArgs {
     name: String,
+    #[arg(long)]
+    app: Option<String>,
     #[arg(long = "name")]
     new_name: Option<String>,
     #[arg(long = "pg-version")]
@@ -884,20 +950,34 @@ enum SandboxCommand {
 #[derive(Debug, Args)]
 struct SandboxCreateArgs {
     name: String,
+    #[arg(short, long)]
+    app: Option<String>,
+    #[arg(long)]
+    wait: bool,
     #[arg(long = "wait-timeout", default_value = "5m")]
     wait_timeout: HumanDuration,
     #[arg(long = "docker")]
     docker: Option<String>,
+    #[arg(long = "docker-private-registry-secret")]
+    docker_private_registry_secret: Option<String>,
     #[arg(long = "docker-entrypoint")]
     docker_entrypoint: Vec<String>,
-    #[arg(long = "docker-args")]
+    #[arg(long = "docker-command")]
+    docker_command: Option<String>,
+    #[arg(long = "docker-args", alias = "docker-arg")]
     docker_args: Vec<String>,
-    #[arg(long = "regions")]
+    #[arg(long = "regions", alias = "region")]
     regions: Vec<String>,
     #[arg(long = "env")]
     env: Vec<String>,
     #[arg(long = "config-file")]
     config_file: Vec<String>,
+    #[arg(long = "instance-type")]
+    instance_type: Option<String>,
+    #[arg(long = "min-scale")]
+    min_scale: Option<i64>,
+    #[arg(long = "privileged")]
+    privileged: bool,
     #[arg(long = "delete-after-delay", default_value = "0s")]
     delete_after_delay: HumanDuration,
     #[arg(long = "delete-after-inactivity-delay", default_value = "0s")]
@@ -1533,23 +1613,8 @@ async fn handle_organizations(cfg: &Config, command: OrganizationsCommand) -> Re
 async fn handle_secrets(cfg: &Config, command: SecretsCommand) -> Result<()> {
     let api = auth_client(cfg)?;
     match command {
-        SecretsCommand::Create {
-            name,
-            kind,
-            value,
-            filename,
-            registry_server,
-            registry_username,
-            registry_password,
-        } => {
-            let mut secret = json!({"name": name});
-            match kind {
-                SecretKind::Simple => secret["value"] = json!(read_secret_value(value, filename)?),
-                SecretKind::Registry => {
-                    secret["type"] = json!("REGISTRY");
-                    secret["docker_hub_registry"] = json!({"server": registry_server, "username": registry_username, "password": registry_password});
-                }
-            }
+        SecretsCommand::Create(args) => {
+            let secret = secret_body(args)?;
             render(
                 cfg,
                 api.post("/v1/secrets", json!({"secret": secret})).await?,
@@ -1564,17 +1629,14 @@ async fn handle_secrets(cfg: &Config, command: SecretsCommand) -> Result<()> {
             )
         }
         SecretsCommand::List => render(cfg, api.get("/v1/secrets", &[limit()]).await?),
-        SecretsCommand::Update {
-            name,
-            value,
-            filename,
-        } => {
-            let id = resolve(&api, "secrets", &name).await?;
+        SecretsCommand::Update(args) => {
+            let id = resolve(&api, "secrets", &args.name).await?;
+            let secret = secret_body(args)?;
             render(
                 cfg,
                 api.patch(
                     &format!("/v1/secrets/{}", encode(&id)),
-                    json!({"secret": {"value": read_secret_value(value, filename)?}}),
+                    json!({"secret": secret}),
                 )
                 .await?,
             )
@@ -1871,7 +1933,7 @@ async fn handle_deployments(cfg: &Config, command: DeploymentsCommand) -> Result
                     instance: args.instance,
                     log_type: args.log_type,
                     tail: args.tail,
-                    start: args.start_time,
+                    start: args.start_time.or(args.since),
                     end: args.end_time,
                     regex: args.regex_search,
                     text: args.text_search,
@@ -1953,7 +2015,7 @@ async fn handle_instances(cfg: &Config, command: InstancesCommand) -> Result<()>
                     instance: None,
                     log_type: args.log_type,
                     tail: args.tail,
-                    start: args.start_time,
+                    start: args.start_time.or(args.since),
                     end: args.end_time,
                     regex: args.regex_search,
                     text: args.text_search,
@@ -1995,6 +2057,7 @@ async fn handle_databases(cfg: &Config, command: DatabasesCommand) -> Result<()>
             )
         }
         DatabasesCommand::Create(args) => {
+            let name = args.flag_name.unwrap_or(args.name);
             let app_id = match args.app.as_deref() {
                 Some(app) => Some(ensure_app(&api, app).await?),
                 None => None,
@@ -2004,7 +2067,7 @@ async fn handle_databases(cfg: &Config, command: DatabasesCommand) -> Result<()>
                 api.post(
                     "/v1/services",
                     database_body(
-                        args.name,
+                        name,
                         app_id,
                         args.pg_version,
                         args.region,
@@ -2017,7 +2080,13 @@ async fn handle_databases(cfg: &Config, command: DatabasesCommand) -> Result<()>
             )
         }
         DatabasesCommand::Update(args) => {
-            let id = resolve(&api, "services", &args.name).await?;
+            let id = resolve_scoped(
+                &api,
+                "services",
+                &args.name,
+                args.app.as_deref().map(|a| (a, "app_id")),
+            )
+            .await?;
             render(
                 cfg,
                 api.patch(
@@ -2230,11 +2299,16 @@ async fn handle_sandbox(cfg: &Config, command: SandboxCommand) -> Result<()> {
             render(cfg, api.get("/v1/services", &q).await?)
         }
         SandboxCommand::Create(args) => {
-            let body = sandbox_body(args)?;
+            let wait = args.wait;
+            let wait_timeout = args.wait_timeout.0;
+            let body = sandbox_body(&api, args).await?;
             let value = match api.post("/v1/sandboxes", body.clone()).await {
                 Ok(value) => value,
                 Err(_) => api.post("/v1/services", body).await?,
             };
+            if wait {
+                wait_for_service(&api, &value, wait_timeout).await?;
+            }
             render(cfg, value)
         }
         SandboxCommand::Run { name, command, args, cwd, env, timeout, stream } => sandbox_rpc(cfg, &api, &name, "run", json!({"command": command, "args": args, "cwd": cwd, "env": parse_key_values(env)?, "timeout": timeout, "stream": stream})).await,
@@ -2555,6 +2629,12 @@ fn service_body(
     if let Some(app_id) = app_id {
         service["app_id"] = json!(app_id);
     }
+    if let Some(v) = args.service_type {
+        service["type"] = json!(v.to_ascii_uppercase());
+    }
+    if let Some(v) = args.deployment_strategy {
+        service["deployment_strategy"] = json!(v);
+    }
     if let Some(v) = args.instance_type {
         service["instance_type"] = json!(v);
     }
@@ -2606,8 +2686,14 @@ fn service_body(
     if !args.proxy_ports.is_empty() {
         service["proxy_ports"] = json!(args.proxy_ports);
     }
+    if !args.auth.is_empty() {
+        service["auth"] = json!(args.auth);
+    }
+    if args.auth_disable {
+        service["auth"] = json!([]);
+    }
     if !args.scale.is_empty() {
-        service["scaling"] = scaling_body(args.scale, 1, vec![]);
+        service["scaling"] = scaling_body(args.scale.clone(), 1, vec![]);
     }
     if let Some(v) = args.min_scale {
         service["min_scale"] = json!(v);
@@ -2617,6 +2703,16 @@ fn service_body(
     }
     if let Some(v) = args.autoscaling_target {
         service["autoscaling_target"] = json!(v);
+    }
+    let autoscaling_targets = autoscaling_targets(
+        args.autoscaling_average_cpu,
+        args.autoscaling_average_mem,
+        args.autoscaling_requests_per_second,
+        args.autoscaling_concurrent_requests,
+        args.autoscaling_requests_response_time,
+    );
+    if !autoscaling_targets.is_empty() {
+        service["autoscaling_targets"] = json!(autoscaling_targets);
     }
     if args.light_sleep_delay.0.as_secs() > 0 {
         service["light_sleep_delay"] = json!(args.light_sleep_delay.0.as_secs());
@@ -2632,17 +2728,46 @@ fn service_body(
             json!(args.delete_after_inactivity_delay.0.as_secs());
     }
     let mut definition = json!({});
+    if args.skip_cache {
+        definition["skip_cache"] = json!(true);
+    }
     if let Some(git) = args.git {
-        definition["git"] = json!({"repository": git, "branch": args.git_branch, "sha": args.git_sha, "builder": args.git_builder, "build_command": args.git_build_command, "run_command": args.git_run_command, "privileged": args.git_privileged, "docker": compact(json!({"dockerfile": args.git_docker_dockerfile, "entrypoint": args.git_docker_entrypoint, "args": args.git_docker_args}))});
+        definition["git"] = json!({"repository": git, "branch": args.git_branch, "sha": args.git_sha, "no_deploy_on_push": args.git_no_deploy_on_push, "workdir": args.git_workdir, "builder": args.git_builder, "build_command": args.git_buildpack_build_command.or(args.git_build_command), "run_command": args.git_buildpack_run_command.or(args.git_run_command), "privileged": args.git_privileged, "docker": compact(json!({"dockerfile": args.git_docker_dockerfile, "entrypoint": args.git_docker_entrypoint, "command": args.git_docker_command, "args": args.git_docker_args, "target": args.git_docker_target}))});
     }
     if let Some(docker) = args.docker {
-        definition["docker"] = json!({"image": docker, "entrypoint": args.docker_entrypoint, "args": args.docker_args});
+        definition["docker"] = json!({"image": docker, "private_registry_secret": args.docker_private_registry_secret, "skip_verify": args.docker_skip_verify, "entrypoint": args.docker_entrypoint, "command": args.docker_command, "args": args.docker_args});
     }
     if let Some(archive) = args.archive {
-        definition["archive"] = json!({"id": archive, "builder": args.archive_builder, "build_command": args.archive_build_command, "run_command": args.archive_run_command, "docker": compact(json!({"dockerfile": args.archive_docker_dockerfile, "entrypoint": args.archive_docker_entrypoint, "args": args.archive_docker_args}))});
+        definition["archive"] = json!({"id": archive, "builder": args.archive_builder, "build_command": args.archive_buildpack_build_command.or(args.archive_build_command), "run_command": args.archive_buildpack_run_command.or(args.archive_run_command), "docker": compact(json!({"dockerfile": args.archive_docker_dockerfile, "entrypoint": args.archive_docker_entrypoint, "command": args.archive_docker_command, "args": args.archive_docker_args, "target": args.archive_docker_target}))});
     }
     service["definition"] = compact(definition);
     Ok(json!({"service": compact(service), "override": override_}))
+}
+
+fn autoscaling_targets(
+    average_cpu: Option<i64>,
+    average_mem: Option<i64>,
+    requests_per_second: Option<i64>,
+    concurrent_requests: Option<i64>,
+    requests_response_time: Option<i64>,
+) -> Vec<Value> {
+    let mut targets = Vec::new();
+    if let Some(value) = average_cpu {
+        targets.push(json!({"average_cpu": {"value": value}}));
+    }
+    if let Some(value) = average_mem {
+        targets.push(json!({"average_mem": {"value": value}}));
+    }
+    if let Some(value) = requests_per_second {
+        targets.push(json!({"requests_per_second": {"value": value}}));
+    }
+    if let Some(value) = concurrent_requests {
+        targets.push(json!({"concurrent_requests": {"value": value}}));
+    }
+    if let Some(value) = requests_response_time {
+        targets.push(json!({"requests_response_time": {"value": value, "quantile": 95}}));
+    }
+    targets
 }
 
 fn compact(mut v: Value) -> Value {
@@ -2747,6 +2872,58 @@ fn scaling_body(scale: Vec<String>, instances: i64, regions: Vec<String>) -> Val
     }
 }
 
+fn secret_body(args: SecretWriteArgs) -> Result<Value> {
+    let mut secret = json!({"name": args.name});
+    match args.kind {
+        SecretKind::Simple => {
+            secret["value"] = json!(read_secret_value(
+                args.value,
+                args.filename,
+                args.value_from_stdin,
+            )?)
+        }
+        SecretKind::RegistryDockerhub => {
+            secret["type"] = json!("REGISTRY");
+            secret["docker_hub_registry"] = registry_credentials(args);
+        }
+        SecretKind::RegistryPrivate => {
+            secret["type"] = json!("REGISTRY");
+            secret["private_registry"] = registry_credentials(args);
+        }
+        SecretKind::RegistryDigitalOcean => {
+            secret["type"] = json!("REGISTRY");
+            secret["digital_ocean_registry"] = registry_credentials(args);
+        }
+        SecretKind::RegistryGitlab => {
+            secret["type"] = json!("REGISTRY");
+            secret["gitlab_registry"] = registry_credentials(args);
+        }
+        SecretKind::RegistryGcp => {
+            secret["type"] = json!("REGISTRY");
+            secret["gcp_container_registry"] = json!({
+                "url": args.registry_url,
+                "keyfile_content": args.registry_keyfile.map(|path| fs::read(path).map(|data| base64::Engine::encode(&base64::engine::general_purpose::STANDARD, data))).transpose()?,
+            });
+        }
+        SecretKind::RegistryAzure => {
+            secret["type"] = json!("REGISTRY");
+            let mut registry = registry_credentials(args);
+            registry["name"] = registry["registry_name"].take();
+            secret["azure_container_registry"] = registry;
+        }
+    }
+    Ok(compact(secret))
+}
+
+fn registry_credentials(args: SecretWriteArgs) -> Value {
+    compact(json!({
+        "username": args.registry_username,
+        "password": read_secret_value(args.value, args.filename, args.value_from_stdin).ok(),
+        "url": args.registry_url,
+        "registry_name": args.registry_name,
+    }))
+}
+
 fn database_body(
     name: String,
     app_id: Option<String>,
@@ -2761,39 +2938,68 @@ fn database_body(
     )
 }
 
-fn sandbox_body(args: SandboxCreateArgs) -> Result<Value> {
+async fn sandbox_body(api: &ApiClient, args: SandboxCreateArgs) -> Result<Value> {
     let mut def = ServiceDefinitionArgs {
         docker: args.docker,
+        docker_private_registry_secret: args.docker_private_registry_secret,
         docker_entrypoint: args.docker_entrypoint,
+        docker_command: args.docker_command,
         docker_args: args.docker_args,
         regions: args.regions,
         env: args.env,
         config_file: args.config_file,
+        instance_type: args.instance_type,
+        min_scale: args.min_scale,
+        privileged: args.privileged,
         delete_after_delay: args.delete_after_delay,
         delete_after_inactivity_delay: args.delete_after_inactivity_delay,
         light_sleep_delay: args.light_sleep_delay,
         deep_sleep_delay: args.deep_sleep_delay,
         ..Default::default()
     };
-    let _ = args.wait_timeout;
+    let app_id = match args.app.as_deref() {
+        Some(app) => Some(ensure_app(api, app).await?),
+        None => None,
+    };
     if def.docker.is_none() {
         def.docker = Some("ubuntu:latest".into());
     }
-    let mut body = service_body(&args.name, def, None, false)?;
+    let mut body = service_body(&args.name, def, app_id, false)?;
     body["service"]["type"] = json!("SANDBOX");
     Ok(body)
 }
 
-fn read_secret_value(value: Option<String>, filename: Option<PathBuf>) -> Result<String> {
-    match (value, filename) {
-        (Some(v), None) => Ok(v),
-        (_, Some(path)) => Ok(fs::read_to_string(path)?.trim_end().to_string()),
-        (None, None) => {
-            let mut s = String::new();
-            io::stdin().read_to_string(&mut s)?;
-            Ok(s.trim_end().to_string())
-        }
+fn read_secret_value(
+    value: Option<String>,
+    filename: Option<PathBuf>,
+    from_stdin: bool,
+) -> Result<String> {
+    if value.is_some() && from_stdin {
+        bail!("you can't provide both --value and --value-from-stdin at the same time");
     }
+    if let Some(value) = value {
+        return Ok(value);
+    }
+    if let Some(path) = filename {
+        return Ok(fs::read_to_string(path)?.trim_end().to_string());
+    }
+
+    let mut s = String::new();
+    if from_stdin {
+        for line in io::stdin().lock().lines() {
+            let line = line?;
+            if line.is_empty() {
+                break;
+            }
+            if !s.is_empty() {
+                s.push('\n');
+            }
+            s.push_str(&line);
+        }
+    } else {
+        io::stdin().read_to_string(&mut s)?;
+    }
+    Ok(s.trim_end().to_string())
 }
 
 fn read_yaml(path: &Path) -> Result<Value> {
