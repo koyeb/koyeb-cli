@@ -5,43 +5,25 @@ name: Release
 jobs:
   check:
     runs-on: ubuntu-latest
-    if: startswith(github.ref, 'refs/heads') # Only run on branches
+    if: startswith(github.ref, 'refs/heads')
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          go-version: "1.26"
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-      - name: "Run tests"
-        run: |
-          make test
+          components: rustfmt, clippy
+      - name: Run tests
+        run: make test
   build:
     name: Upload Release Asset
     runs-on: ubuntu-latest
-    if: startswith(github.ref, 'refs/tags/v') # Push events to matching v*, i.e. v1.0, v20.15.10
-    env:
-      GO111MODULE: "on"
-      GOPATH: ${{ github.workspace }}
+    if: startswith(github.ref, 'refs/tags/v')
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: ./src/github.com/${{ github.repository }}
-      - name: Login to Docker Package Registry
-        shell: bash
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-      - uses: actions/setup-go@v2
-        with:
-          go-version: "1.26"
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: goreleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          workdir: ./src/github.com/${{ github.repository }}
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

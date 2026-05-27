@@ -1,50 +1,23 @@
 version: 2
 builds:
-  - id: default
-    main: ./cmd/koyeb
+  - id: koyeb
+    builder: rust
     binary: koyeb
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - darwin
-      - linux
-    ignore:
-      - goos: darwin
-        goarch: "386"
-      - goos: linux
-        goarch: "386"
-    ldflags:
-      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.BuildDate={{ .Date }}
-      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Version={{ .Version }}
-      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Commit={{ .ShortCommit }}
-  - id: windows
-    main: ./cmd/koyeb
-    binary: koyeb
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - windows
-    ignore:
-      - goos: windows
-        goarch: "386"
-    ldflags:
-      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.BuildDate={{ .Date }}
-      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Version={{ .Version }}
-      - -X github.com/koyeb/koyeb-cli/pkg/koyeb.Commit={{ .ShortCommit }}
-
+    targets:
+      - x86_64-unknown-linux-gnu
+      - aarch64-unknown-linux-gnu
+      - x86_64-apple-darwin
+      - aarch64-apple-darwin
+      - x86_64-pc-windows-msvc
 archives:
-  - id: windows
-    builds:
-      - windows
-    wrap_in_directory: false
-    format: zip
   - id: default
-    builds:
-      - default
-    files: [only-the-binary*]
+    builds: [koyeb]
     wrap_in_directory: false
-    format: tar.gz
-
+    formats: [tar.gz]
+  - id: windows
+    builds: [koyeb]
+    wrap_in_directory: false
+    formats: [zip]
 release:
   prerelease: auto
   header: |
@@ -53,21 +26,10 @@ release:
     Welcome to this new release!
     Check the changelog in [CHANGES.md](https://github.com/koyeb/koyeb-cli/blob/master/CHANGES.md) for more details.
     For upgrade instructions, see [README.md](https://github.com/koyeb/koyeb-cli/blob/master/README.md).
-
-dockers:
-  - goos: linux
-    goarch: amd64
-    image_templates:
-      - "koyeb/koyeb-cli:latest"
-      - "koyeb/koyeb-cli:v{{ .Version }}"
-    skip_push: auto
-
 checksum:
   name_template: "checksums.txt"
-
 snapshot:
   version_template: "{{.Branch}}-{{.ShortCommit}}"
-
 brews:
   - repository:
       owner: koyeb

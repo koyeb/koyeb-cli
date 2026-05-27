@@ -26,14 +26,13 @@ brew upgrade koyeb
 
 ### Living at the Edge
 
-To install the latest `koyeb` binary with go, simply run:
+To build the latest `koyeb` binary from source, install Rust and run:
 
 ```shell
-go get github.com/koyeb/koyeb-cli/cmd/koyeb
-go install github.com/koyeb/koyeb-cli/cmd/koyeb
+cargo install --git https://github.com/koyeb/koyeb-cli koyeb-cli
 ```
 
-If you need a go environment, follow the [official Go installation documentation](https://golang.org/doc/install).
+If you need a Rust environment, follow the [official Rust installation documentation](https://www.rust-lang.org/tools/install).
 
 
 ## Getting started
