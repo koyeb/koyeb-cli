@@ -891,7 +891,7 @@ enum SandboxCommand {
         name: Option<String>,
     },
     #[command(about = "Create a new sandbox")]
-    Create(SandboxCreateArgs),
+    Create(Box<SandboxCreateArgs>),
     #[command(about = "Execute a command in the sandbox", trailing_var_arg = true)]
     Run {
         name: String,
@@ -2299,6 +2299,7 @@ async fn handle_sandbox(cfg: &Config, command: SandboxCommand) -> Result<()> {
             render(cfg, api.get("/v1/services", &q).await?)
         }
         SandboxCommand::Create(args) => {
+            let args = *args;
             let wait = args.wait;
             let wait_timeout = args.wait_timeout.0;
             let body = sandbox_body(&api, args).await?;
