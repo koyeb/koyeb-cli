@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"bufio"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -122,7 +121,7 @@ func NewSecretCmd() *cobra.Command {
 				abort, err = parseAzureRegistry(cmd.Flags(), cfg)
 				secret.SetAzureContainerRegistry(*cfg)
 			default:
-				panic("Unkown secret type:" + flagSecretType)
+				panic("Unknown secret type: " + flagSecretType)
 			}
 			if abort || err != nil {
 				return err
@@ -170,7 +169,7 @@ func NewSecretCmd() *cobra.Command {
 			res, resp, err := ctx.Client.SecretsApi.GetSecret(ctx.Context, secretID).Execute()
 			if err != nil {
 				return errors.NewCLIErrorFromAPIError(
-					fmt.Sprintf("Error while creating the secret `%s`", args[0]),
+					fmt.Sprintf("Error while retrieving the secret `%s`", args[0]),
 					err,
 					resp,
 				)
@@ -197,7 +196,7 @@ func NewSecretCmd() *cobra.Command {
 					abort, err = parseAzureRegistry(cmd.Flags(), registry)
 				}
 			default:
-				panic("Unkown secret type: " + res.Secret.GetType())
+				panic("Unknown secret type: " + res.Secret.GetType())
 			}
 
 			if abort || err != nil {
@@ -255,19 +254,17 @@ func getSecretValue(flags *pflag.FlagSet) (string, bool, error) {
 		password, _ := flags.GetString("value")
 		return password, false, nil
 	} else if flags.Lookup("value-from-stdin").Changed {
-		var input []string
-
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			scanner.Scan()
-			text := scanner.Text()
-			if len(text) != 0 {
-				input = append(input, text)
-			} else {
-				break
+		data, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return "", false, &errors.CLIError{
+				What:       "Invalid arguments to create a secret",
+				Why:        "unable to read the secret from stdin",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Make sure stdin is readable and try again",
 			}
 		}
-		return strings.Join(input, "\n"), false, nil
+		return strings.TrimRight(string(data), "\r\n"), false, nil
 	}
 	prompt := promptui.Prompt{
 		Label: "Enter your secret",
