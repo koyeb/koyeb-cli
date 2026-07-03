@@ -648,6 +648,9 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 		"Delay after which an idle service is put to deep sleep. "+
 			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
 
+	// Network policy flags
+	addNetworkPolicyFlags(flags)
+
 	// Other compatible flags
 	flags.Bool("privileged", false, "Run in privileged mode")
 }

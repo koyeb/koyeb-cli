@@ -91,6 +91,21 @@ func NewDeployCmd() *cobra.Command {
 					createService.SetLifeCycle(*lifecycle)
 				}
 
+				// Parse and set network policy (on the definition — any change creates a new deployment)
+				var currentNetworkPolicy *koyeb.NetworkPolicy
+				if createDefinition.HasNetworkPolicy() {
+					np := createDefinition.GetNetworkPolicy()
+					currentNetworkPolicy = &np
+				}
+				networkPolicy, networkPolicyChanged, err := serviceHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+				if err != nil {
+					return err
+				}
+				if networkPolicyChanged && networkPolicy != nil {
+					createDefinition.SetNetworkPolicy(*networkPolicy)
+					createService.SetDefinition(*createDefinition)
+				}
+
 				log.Infof("Creating the new service `%s`", serviceName)
 				if err := serviceHandler.Create(ctx, cmd, []string{args[1]}, createService); err != nil {
 					return err
@@ -167,6 +182,20 @@ func NewDeployCmd() *cobra.Command {
 				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), currentLifeCycle)
 				if lifecycle != nil {
 					updateService.SetLifeCycle(*lifecycle)
+				}
+
+				var currentNetworkPolicy *koyeb.NetworkPolicy
+				if updateDefinition.HasNetworkPolicy() {
+					np := updateDefinition.GetNetworkPolicy()
+					currentNetworkPolicy = &np
+				}
+				networkPolicy, networkPolicyChanged, err := serviceHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+				if err != nil {
+					return err
+				}
+				if networkPolicyChanged && networkPolicy != nil {
+					updateDefinition.SetNetworkPolicy(*networkPolicy)
+					updateService.SetDefinition(*updateDefinition)
 				}
 
 				log.Infof("Updating the existing service `%s`", serviceName)

@@ -69,6 +69,20 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		createService.SetLifeCycle(*lifecycle)
 	}
 
+	// Parse network policy flags using ServiceHandler method
+	var currentNetworkPolicy *koyeb.NetworkPolicy
+	if createDefinition.HasNetworkPolicy() {
+		np := createDefinition.GetNetworkPolicy()
+		currentNetworkPolicy = &np
+	}
+	networkPolicy, networkPolicyChanged, err := svcHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+	if err != nil {
+		return err
+	}
+	if networkPolicyChanged && networkPolicy != nil {
+		createDefinition.SetNetworkPolicy(*networkPolicy)
+	}
+
 	createService.SetDefinition(*createDefinition)
 
 	// Delegate to ServiceHandler.Create for API call

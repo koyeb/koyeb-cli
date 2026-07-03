@@ -60,12 +60,26 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 			}
 
 			createDefinition.Name = koyeb.PtrString(serviceName)
-			createService.SetDefinition(*createDefinition)
 
 			lifecycle := h.parseLifeCycle(cmd.Flags(), nil)
 			if lifecycle != nil {
 				createService.SetLifeCycle(*lifecycle)
 			}
+
+			var currentNetworkPolicy *koyeb.NetworkPolicy
+			if createDefinition.HasNetworkPolicy() {
+				np := createDefinition.GetNetworkPolicy()
+				currentNetworkPolicy = &np
+			}
+			networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+			if err != nil {
+				return err
+			}
+			if changed && networkPolicy != nil {
+				createDefinition.SetNetworkPolicy(*networkPolicy)
+			}
+
+			createService.SetDefinition(*createDefinition)
 
 			return h.Create(ctx, cmd, args, createService)
 		}),
@@ -221,6 +235,20 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			if err != nil {
 				return err
 			}
+
+			var currentNetworkPolicy *koyeb.NetworkPolicy
+			if updateDef.HasNetworkPolicy() {
+				np := updateDef.GetNetworkPolicy()
+				currentNetworkPolicy = &np
+			}
+			networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+			if err != nil {
+				return err
+			}
+			if changed && networkPolicy != nil {
+				updateDef.SetNetworkPolicy(*networkPolicy)
+			}
+
 			updateService.SetDefinition(*updateDef)
 
 			currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, service).Execute()
@@ -471,6 +499,8 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	flags.Duration("delete-after-inactivity-delay", 0,
 		"Automatically delete the service after being inactive (sleeping) for this duration. "+
 			"Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.")
+
+	addNetworkPolicyFlags(flags)
 
 	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
@@ -816,6 +846,107 @@ func (h *ServiceHandler) parseLifeCycle(flags *pflag.FlagSet, currentLifeCycle *
 	}
 
 	return lifecycle
+}
+
+// Network policy flags, shared by `service create/update`, `deploy` and
+// `sandbox create` (the policy lives on DeploymentDefinition — any change
+// creates a new deployment).
+func addNetworkPolicyFlags(flags *pflag.FlagSet) {
+	flags.Bool("block-network", false,
+		"Block all outbound network traffic from the service. "+
+			"Mutually exclusive with --outbound-allowlist and --no-network-policy.")
+	flags.StringSlice("outbound-allowlist", nil,
+		"Allow outbound traffic only to the listed destinations (deny-by-default). "+
+			"Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). "+
+			"Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). "+
+			"Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). "+
+			"Mutually exclusive with --block-network and --no-network-policy.")
+	flags.Bool("no-network-policy", false,
+		"Revert to the platform default network policy. "+
+			"Mutually exclusive with --block-network and --outbound-allowlist.")
+}
+
+// parseNetworkPolicy turns the --block-network / --outbound-allowlist /
+// --no-network-policy flags into a NetworkPolicy (the egress dimension of
+// which is the only one configurable from the CLI today). Callers attach
+// the result to the DeploymentDefinition via SetNetworkPolicy.
+//
+// Returns (policy, changed, error):
+//   - changed=false (and policy=nil) ⇒ no network policy flag was provided;
+//     leave the service's existing network policy unchanged.
+//
+// On the update path, currentPolicy is the network policy already set on
+// the service (nil if there is none); its other fields are preserved.
+// --outbound-allowlist uses the same add/remove idiom as --env / --ports /
+// --routes: bare entries are added, "!ENTRY" entries are removed.
+func (h *ServiceHandler) parseNetworkPolicy(flags *pflag.FlagSet, currentPolicy *koyeb.NetworkPolicy) (*koyeb.NetworkPolicy, bool, error) {
+	blockSet := flags.Lookup("block-network").Changed
+	allowSet := flags.Lookup("outbound-allowlist").Changed
+	clearSet := flags.Lookup("no-network-policy").Changed
+
+	count := 0
+	for _, b := range []bool{blockSet, allowSet, clearSet} {
+		if b {
+			count++
+		}
+	}
+	if count == 0 {
+		return nil, false, nil
+	}
+	if count > 1 {
+		return nil, true, fmt.Errorf(
+			"--block-network, --outbound-allowlist, and --no-network-policy are mutually exclusive",
+		)
+	}
+
+	egress := koyeb.NewEgressPolicyWithDefaults()
+
+	switch {
+	case clearSet:
+		clear, _ := flags.GetBool("no-network-policy")
+		if !clear {
+			return nil, false, nil
+		}
+		mode := koyeb.EGRESSPOLICYMODE_DEFAULT
+		egress.Mode = &mode
+		egress.AllowList = []koyeb.NetworkPolicyDestination{}
+
+	case blockSet:
+		blocked, _ := flags.GetBool("block-network")
+		if !blocked {
+			return nil, false, nil
+		}
+		// --block-network drops any existing allow-list (unambiguous intent).
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		egress.Mode = &mode
+		egress.AllowList = []koyeb.NetworkPolicyDestination{}
+
+	case allowSet:
+		values, _ := flags.GetStringSlice("outbound-allowlist")
+		listFlags, err := flags_list.NewNetworkPolicyAllowlistFromFlags(values)
+		if err != nil {
+			return nil, true, err
+		}
+		currentRules := []koyeb.NetworkPolicyDestination{}
+		if currentPolicy != nil && currentPolicy.HasEgress() {
+			currentEgress := currentPolicy.GetEgress()
+			if currentEgress.Mode != nil && *currentEgress.Mode == koyeb.EGRESSPOLICYMODE_DENY_ALL {
+				currentRules = currentEgress.AllowList
+			}
+		}
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		egress.Mode = &mode
+		egress.AllowList = flags_list.ParseListFlags(listFlags, currentRules)
+	}
+
+	// Preserve any other fields on an existing network policy; only egress
+	// is configurable from the CLI today.
+	networkPolicy := koyeb.NewNetworkPolicyWithDefaults()
+	if currentPolicy != nil {
+		networkPolicy = currentPolicy
+	}
+	networkPolicy.SetEgress(*egress)
+	return networkPolicy, true, nil
 }
 
 // Parse --instance-type
