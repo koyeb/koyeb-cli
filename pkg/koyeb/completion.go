@@ -52,7 +52,7 @@ $ koyeb completion fish > ~/.config/fish/completions/koyeb.fish
 		case "fish":
 			return cmd.Root().GenFishCompletion(os.Stdout, true)
 		case "powershell":
-			return cmd.Root().GenPowerShellCompletion(os.Stdout)
+			return cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
 		}
 		return nil
 	},
