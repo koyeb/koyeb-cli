@@ -80,3 +80,4 @@ brews:
       system "#{bin}/koyeb version"
     install: |
       bin.install "koyeb"
+      generate_completions_from_executable(bin/"koyeb", "completion", shells: [:bash, :zsh, :fish])
