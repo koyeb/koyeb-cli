@@ -8,7 +8,7 @@ require (
 	github.com/briandowns/spinner v1.23.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.3.0+incompatible
-	github.com/gorilla/websocket v1.5.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/iancoleman/strcase v0.2.0
 	github.com/koyeb/koyeb-api-client-go v0.0.0-20260827144107-2a9d2516b114
 	github.com/logrusorgru/aurora v2.0.3+incompatible
