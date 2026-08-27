@@ -59,6 +59,9 @@ func NewAppCmd() *cobra.Command {
 
 			createService.SetDefinition(*createDefinition)
 
+			// Service account ID is a service-level attribute, set at creation time only.
+			serviceHandler.parseServiceAccountId(cmd.Flags(), createService)
+
 			return h.Init(ctx, cmd, args, createApp, createService)
 		}),
 	}
@@ -66,6 +69,7 @@ func NewAppCmd() *cobra.Command {
 	initAppCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	appCmd.AddCommand(initAppCmd)
 	serviceHandler.addServiceDefinitionFlags(initAppCmd.Flags())
+	serviceHandler.addServiceAccountIdFlag(initAppCmd.Flags())
 
 	getAppCmd := &cobra.Command{
 		Use:   "get NAME",

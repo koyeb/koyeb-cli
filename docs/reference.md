@@ -290,6 +290,7 @@ See examples of koyeb service create --help
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -336,6 +337,8 @@ See examples of koyeb service create --help
       --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
                                                  PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
@@ -353,6 +356,8 @@ See examples of koyeb service create --help
                                                  To delete a route, use '!PATH', for example --route '!/foo'
                                                  
       --scale int                                Set both min-scale and max-scale (default 1)
+      --service-account-id string                The service account ID to associate with the service.
+                                                 Set at creation time only; immutable afterwards.
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
@@ -610,6 +615,7 @@ koyeb deploy <path> <app>/<service> [flags]
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -635,6 +641,8 @@ koyeb deploy <path> <app>/<service> [flags]
       --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
                                                  PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
@@ -652,6 +660,8 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  To delete a route, use '!PATH', for example --route '!/foo'
                                                  
       --scale int                                Set both min-scale and max-scale (default 1)
+      --service-account-id string                The service account ID to associate with the service.
+                                                 Set at creation time only; immutable afterwards.
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
@@ -1435,6 +1445,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -1481,6 +1492,8 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
                                                  PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                  To delete an exposed port, prefix its number with '!', for example --port '!80'
@@ -1498,6 +1511,8 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
                                                  To delete a route, use '!PATH', for example --route '!/foo'
                                                  
       --scale int                                Set both min-scale and max-scale (default 1)
+      --service-account-id string                The service account ID to associate with the service.
+                                                 Set at creation time only; immutable afterwards.
       --skip-cache                               Whether to use the cache when building the service
       --type string                              Service type, one of "web", "worker" or "sandbox" (default "web")
       --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
@@ -1920,6 +1935,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --autoscaling-concurrent-requests int      Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.
       --autoscaling-requests-per-second int      Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.
       --autoscaling-requests-response-time int   Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --checks strings                           Update service healthchecks (available for services of type "web" only)
                                                  For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
                                                  For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
@@ -1967,6 +1983,8 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --max-scale int                            Max scale (default 1)
       --min-scale int                            Min scale (default 1)
       --name string                              Specify to update the service name
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --override                                 Override the service configuration with the new configuration instead of merging them
       --ports strings                            Update service ports (available for services of type "web" only) using the format PORT[:PROTOCOL], for example --port 8080:http
                                                  PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
@@ -2934,6 +2952,7 @@ $> koyeb sandbox create myapp/mysandbox --wait
 
 ```
   -a, --app string                               Sandbox application
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Auto-delete after duration (e.g., '24h')
@@ -2948,6 +2967,8 @@ $> koyeb sandbox create myapp/mysandbox --wait
       --instance-type string                     Instance type (default "nano")
       --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --min-scale int                            Min scale (default 1)
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --privileged                               Run in privileged mode
       --regions strings                          Deployment regions
       --wait                                     Wait until sandbox deployment is done

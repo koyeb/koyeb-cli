@@ -85,6 +85,9 @@ func NewDeployCmd() *cobra.Command {
 				}
 				createService.SetDefinition(*createDefinition)
 
+				// Service account ID is a service-level attribute, set at creation time only.
+				serviceHandler.parseServiceAccountId(cmd.Flags(), createService)
+
 				// Parse and set lifecycle
 				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), nil)
 				if lifecycle != nil {
@@ -163,6 +166,14 @@ func NewDeployCmd() *cobra.Command {
 				}
 				updateService.SetDefinition(*updateDefinition)
 
+				// The service account ID is immutable after creation: warn and ignore on update.
+				if cmd.Flags().Lookup("service-account-id") != nil && cmd.Flags().Lookup("service-account-id").Changed {
+					serviceAccountId, _ := cmd.Flags().GetString("service-account-id")
+					if serviceAccountId != "" {
+						log.Warnf("--service-account-id is immutable after creation, ignoring the provided value `%s`", serviceAccountId)
+					}
+				}
+
 				// Get current service to access lifecycle
 				currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceId).Execute()
 				if err != nil {
@@ -212,6 +223,7 @@ func NewDeployCmd() *cobra.Command {
 
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
+	serviceHandler.addServiceAccountIdFlag(deployCmd.Flags())
 	return deployCmd
 }
 

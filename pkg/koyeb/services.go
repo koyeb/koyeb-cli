@@ -81,10 +81,14 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 
 			createService.SetDefinition(*createDefinition)
 
+			// Service account ID is a service-level attribute, set at creation time only.
+			h.parseServiceAccountId(cmd.Flags(), createService)
+
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
 	h.addServiceDefinitionFlags(createServiceCmd.Flags())
+	h.addServiceAccountIdFlag(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	createServiceCmd.Flags().Bool("wait", false, "Waits until service deployment is done")
 	createServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
@@ -965,6 +969,31 @@ func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstance
 	value, _ := flags.GetString("instance-type")
 	ret.SetType(value)
 	return []koyeb.DeploymentInstanceType{*ret}
+}
+
+// addServiceAccountIdFlag registers the --service-account-id flag. Unlike the
+// definition flags, this is a service-level attribute set at creation time only
+// and immutable afterwards, so it is registered on create paths only.
+func (h *ServiceHandler) addServiceAccountIdFlag(flags *pflag.FlagSet) {
+	flags.String(
+		"service-account-id",
+		"",
+		"The service account ID to associate with the service.\n"+
+			"Set at creation time only; immutable afterwards.",
+	)
+}
+
+// parseServiceAccountId sets the service account ID on the given CreateService
+// when the --service-account-id flag is provided. No-op if the flag is unset.
+func (h *ServiceHandler) parseServiceAccountId(flags *pflag.FlagSet, createService *koyeb.CreateService) {
+	flag := flags.Lookup("service-account-id")
+	if flag == nil || !flag.Changed {
+		return
+	}
+	serviceAccountId, _ := flags.GetString("service-account-id")
+	if serviceAccountId != "" {
+		createService.SetServiceAccountId(serviceAccountId)
+	}
 }
 
 // Parse --deployment-strategy
