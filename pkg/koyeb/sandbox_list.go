@@ -12,6 +12,10 @@ import (
 
 // List lists all sandbox services
 func (h *SandboxHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	list := []koyeb.ServiceListItem{}
 
 	// Parse flags once before the loop

@@ -13,6 +13,7 @@ func NewDeploymentCmd() *cobra.Command {
 		Aliases: []string{"d", "dep", "depl", "deployment"},
 		Short:   "Deployments",
 	}
+	deploymentCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
 
 	listDeploymentCmd := &cobra.Command{
 		Use:   "list",
@@ -54,6 +55,9 @@ func NewDeploymentCmd() *cobra.Command {
 		Short:   "Get deployment logs",
 		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			return h.Logs(ctx, cmd, since.Time, args)
 		}),
 	}

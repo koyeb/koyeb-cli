@@ -11,6 +11,10 @@ import (
 )
 
 func (h *DomainHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	list := []koyeb.Domain{}
 
 	page := int64(0)

@@ -16,6 +16,7 @@ func NewOrganizationCmd() *cobra.Command {
 		Aliases: []string{"organizations", "organization", "orgas", "orga", "orgs", "org", "organisations", "organisation"},
 		Short:   "Organization",
 	}
+	rootCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List organizations",

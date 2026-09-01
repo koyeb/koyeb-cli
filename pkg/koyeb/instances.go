@@ -13,6 +13,7 @@ func NewInstanceCmd() *cobra.Command {
 		Aliases: []string{"i", "inst", "instance"},
 		Short:   "Instances",
 	}
+	instanceCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
 
 	listInstanceCmd := &cobra.Command{
 		Use:   "list",
@@ -65,6 +66,9 @@ func NewInstanceCmd() *cobra.Command {
 		Short:   "Get instance logs",
 		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			return instanceHandler.Logs(ctx, cmd, since.Time, args)
 		}),
 	}

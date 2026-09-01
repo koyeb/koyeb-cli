@@ -9,6 +9,10 @@ import (
 )
 
 func (h *SnapshotHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, snapshot *koyeb.UpdateSnapshotRequest) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	id, err := ResolveSnapshotArgs(ctx, args[0])
 	if err != nil {
 		return err

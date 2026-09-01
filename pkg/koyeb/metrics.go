@@ -16,6 +16,7 @@ func NewMetricsCmd() *cobra.Command {
 		Aliases: []string{"metric"},
 		Short:   "Metrics",
 	}
+	metricsCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
 
 	getMetricsCmd := &cobra.Command{
 		Use:   "get",

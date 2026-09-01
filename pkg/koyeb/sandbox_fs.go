@@ -19,6 +19,10 @@ const (
 
 // FsRead reads a file from the sandbox
 func (h *SandboxHandler) FsRead(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	path := args[1]
 
@@ -47,6 +51,10 @@ func (h *SandboxHandler) FsRead(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 // FsWrite writes content to a file in the sandbox
 func (h *SandboxHandler) FsWrite(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	path := args[1]
 
@@ -110,6 +118,10 @@ func (h *SandboxHandler) FsWrite(ctx *CLIContext, cmd *cobra.Command, args []str
 
 // FsLs lists directory contents in the sandbox
 func (h *SandboxHandler) FsLs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	path := "."
 	if len(args) >= 2 {
@@ -185,6 +197,10 @@ func (h *SandboxHandler) FsLs(ctx *CLIContext, cmd *cobra.Command, args []string
 
 // FsMkdir creates a directory in the sandbox
 func (h *SandboxHandler) FsMkdir(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	path := args[1]
 
@@ -212,6 +228,10 @@ func (h *SandboxHandler) FsMkdir(ctx *CLIContext, cmd *cobra.Command, args []str
 
 // FsRm removes a file or directory from the sandbox
 func (h *SandboxHandler) FsRm(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	path := args[1]
 
@@ -264,6 +284,10 @@ func (h *SandboxHandler) FsRm(ctx *CLIContext, cmd *cobra.Command, args []string
 
 // FsUpload uploads a local file or directory to the sandbox
 func (h *SandboxHandler) FsUpload(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	localPath := args[1]
 	remotePath := args[2]
@@ -440,6 +464,10 @@ func (h *SandboxHandler) uploadDirectory(ctx context.Context, client *SandboxCli
 
 // FsDownload downloads a file from the sandbox
 func (h *SandboxHandler) FsDownload(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	remotePath := args[1]
 	localPath := args[2]

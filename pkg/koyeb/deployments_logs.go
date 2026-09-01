@@ -9,6 +9,10 @@ import (
 )
 
 func (h *DeploymentHandler) Logs(ctx *CLIContext, cmd *cobra.Command, since time.Time, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	deployment, err := h.ResolveDeploymentArgs(ctx, args[0])
 	if err != nil {
 		return err

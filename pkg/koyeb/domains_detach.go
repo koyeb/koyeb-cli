@@ -9,6 +9,10 @@ import (
 )
 
 func (h *DomainHandler) Detach(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	domainID, err := ctx.Mapper.Domain().ResolveID(args[0])
 	if err != nil {
 		return err

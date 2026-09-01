@@ -11,6 +11,10 @@ import (
 )
 
 func (h *InstanceHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	query, err := h.getListQuery(ctx, cmd)
 	if err != nil {
 		return err

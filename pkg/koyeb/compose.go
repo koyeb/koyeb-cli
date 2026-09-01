@@ -20,6 +20,9 @@ func NewComposeCmd() *cobra.Command {
 		Example: "koyeb compose ./examples/mesh.yaml",
 		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			verbose := GetBoolFlags(cmd, "verbose")
 
 			composeFile, err := parseComposeFile(args[0])
@@ -31,6 +34,7 @@ func NewComposeCmd() *cobra.Command {
 		}),
 	}
 	cmd.Flags().BoolP("verbose", "v", false, "Tails service logs to have more information about your deployment.")
+	cmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
 
 	cmd.AddCommand(NewComposeLogsCmd())
 	cmd.AddCommand(NewComposeDeleteCmd())

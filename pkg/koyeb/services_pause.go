@@ -9,6 +9,10 @@ import (
 )
 
 func (h *ServiceHandler) Pause(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	serviceName, err := h.parseServiceName(cmd, args[0])
 	if err != nil {
 		return err

@@ -14,6 +14,10 @@ import (
 
 // Run executes a command in the sandbox
 func (h *SandboxHandler) Run(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	command := strings.Join(args[1:], " ")
 

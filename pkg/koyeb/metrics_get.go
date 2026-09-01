@@ -13,6 +13,10 @@ import (
 )
 
 func (h *MetricsHandler) GetForInstance(ctx *CLIContext, cmd *cobra.Command, instance string, start *time.Time, end *time.Time) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	instanceId, err := h.ResolveInstanceArgs(ctx, instance)
 	if err != nil {
 		return err
@@ -24,6 +28,10 @@ func (h *MetricsHandler) GetForInstance(ctx *CLIContext, cmd *cobra.Command, ins
 }
 
 func (h *MetricsHandler) GetForService(ctx *CLIContext, cmd *cobra.Command, service string, start *time.Time, end *time.Time) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	serviceId, err := h.ResolveServiceArgs(ctx, service)
 	if err != nil {
 		return err
@@ -43,6 +51,10 @@ func (h *MetricsHandler) GetForService(ctx *CLIContext, cmd *cobra.Command, serv
 
 // Implementation of the `get` command. Do not call this function directly, use `GetForInstance` or `GetForService` instead.
 func (h *MetricsHandler) get(ctx *CLIContext, cmd *cobra.Command, metrics [][]string, serviceId string, instanceId string, start *time.Time, end *time.Time) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	full := GetBoolFlags(cmd, "full")
 	renderer := renderer.NewChainRenderer(ctx.Renderer)
 

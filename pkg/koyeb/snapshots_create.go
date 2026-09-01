@@ -9,6 +9,10 @@ import (
 )
 
 func (h *SnapshotHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createSnapshot *koyeb.CreateSnapshotRequest) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	res, resp, err := ctx.Client.SnapshotsApi.CreateSnapshot(ctx.Context).Body(*createSnapshot).Execute()
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
