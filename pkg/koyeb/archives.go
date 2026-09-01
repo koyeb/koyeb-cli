@@ -14,7 +14,8 @@ func NewArchiveCmd() *cobra.Command {
 		Aliases: []string{"archive"},
 		Short:   "Archives",
 	}
-	archiveCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	archiveCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	archiveCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createArchiveCmd := &cobra.Command{
 		Use:   "create NAME",

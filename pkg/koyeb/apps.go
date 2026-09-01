@@ -19,7 +19,8 @@ func NewAppCmd() *cobra.Command {
 		Aliases: []string{"a", "app"},
 		Short:   "Apps",
 	}
-	appCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	appCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	appCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createAppCmd := &cobra.Command{
 		Use:   "create NAME",
@@ -66,6 +67,9 @@ func NewAppCmd() *cobra.Command {
 
 			createService.SetDefinition(*createDefinition)
 
+			// Service account ID is a service-level attribute, set at creation time only.
+			serviceHandler.parseServiceAccountId(cmd.Flags(), createService)
+
 			return h.Init(ctx, cmd, args, createApp, createService)
 		}),
 	}
@@ -73,6 +77,7 @@ func NewAppCmd() *cobra.Command {
 	initAppCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
 	appCmd.AddCommand(initAppCmd)
 	serviceHandler.addServiceDefinitionFlags(initAppCmd.Flags())
+	serviceHandler.addServiceAccountIdFlag(initAppCmd.Flags())
 
 	getAppCmd := &cobra.Command{
 		Use:   "get NAME",

@@ -24,7 +24,8 @@ func NewServiceCmd() *cobra.Command {
 		Aliases: []string{"s", "svc", "service"},
 		Short:   "Services",
 	}
-	serviceCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	serviceCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	serviceCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createServiceCmd := &cobra.Command{
 		Use:   "create NAME",
@@ -64,17 +65,35 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 			}
 
 			createDefinition.Name = koyeb.PtrString(serviceName)
-			createService.SetDefinition(*createDefinition)
 
 			lifecycle := h.parseLifeCycle(cmd.Flags(), nil)
 			if lifecycle != nil {
 				createService.SetLifeCycle(*lifecycle)
 			}
 
+			var currentNetworkPolicy *koyeb.NetworkPolicy
+			if createDefinition.HasNetworkPolicy() {
+				np := createDefinition.GetNetworkPolicy()
+				currentNetworkPolicy = &np
+			}
+			networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+			if err != nil {
+				return err
+			}
+			if changed && networkPolicy != nil {
+				createDefinition.SetNetworkPolicy(*networkPolicy)
+			}
+
+			createService.SetDefinition(*createDefinition)
+
+			// Service account ID is a service-level attribute, set at creation time only.
+			h.parseServiceAccountId(cmd.Flags(), createService)
+
 			return h.Create(ctx, cmd, args, createService)
 		}),
 	}
 	h.addServiceDefinitionFlags(createServiceCmd.Flags())
+	h.addServiceAccountIdFlag(createServiceCmd.Flags())
 	createServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	createServiceCmd.Flags().Bool("wait", false, "Waits until service deployment is done")
 	createServiceCmd.Flags().Duration("wait-timeout", 5*time.Minute, "Duration the wait will last until timeout")
@@ -231,6 +250,20 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			if err != nil {
 				return err
 			}
+
+			var currentNetworkPolicy *koyeb.NetworkPolicy
+			if updateDef.HasNetworkPolicy() {
+				np := updateDef.GetNetworkPolicy()
+				currentNetworkPolicy = &np
+			}
+			networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+			if err != nil {
+				return err
+			}
+			if changed && networkPolicy != nil {
+				updateDef.SetNetworkPolicy(*networkPolicy)
+			}
+
 			updateService.SetDefinition(*updateDef)
 
 			currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, service).Execute()
@@ -482,6 +515,8 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 		"Automatically delete the service after being inactive (sleeping) for this duration. "+
 			"Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.")
 
+	addNetworkPolicyFlags(flags)
+
 	// Global flags, only for services with the type "web" (not "worker")
 	flags.StringSlice(
 		"routes",
@@ -609,6 +644,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForGitSource(flags *pflag.Flag
 func (h *ServiceHandler) addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
 	flags.String("docker", "", "Docker image")
 	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
+	flags.Bool("docker-skip-verify", false, "Skip docker image verification")
 	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
 	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
 	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
@@ -827,6 +863,107 @@ func (h *ServiceHandler) parseLifeCycle(flags *pflag.FlagSet, currentLifeCycle *
 	return lifecycle
 }
 
+// Network policy flags, shared by `service create/update`, `deploy` and
+// `sandbox create` (the policy lives on DeploymentDefinition — any change
+// creates a new deployment).
+func addNetworkPolicyFlags(flags *pflag.FlagSet) {
+	flags.Bool("block-network", false,
+		"Block all outbound network traffic from the service. "+
+			"Mutually exclusive with --outbound-allowlist and --no-network-policy.")
+	flags.StringSlice("outbound-allowlist", nil,
+		"Allow outbound traffic only to the listed destinations (deny-by-default). "+
+			"Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). "+
+			"Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). "+
+			"Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). "+
+			"Mutually exclusive with --block-network and --no-network-policy.")
+	flags.Bool("no-network-policy", false,
+		"Revert to the platform default network policy. "+
+			"Mutually exclusive with --block-network and --outbound-allowlist.")
+}
+
+// parseNetworkPolicy turns the --block-network / --outbound-allowlist /
+// --no-network-policy flags into a NetworkPolicy (the egress dimension of
+// which is the only one configurable from the CLI today). Callers attach
+// the result to the DeploymentDefinition via SetNetworkPolicy.
+//
+// Returns (policy, changed, error):
+//   - changed=false (and policy=nil) ⇒ no network policy flag was provided;
+//     leave the service's existing network policy unchanged.
+//
+// On the update path, currentPolicy is the network policy already set on
+// the service (nil if there is none); its other fields are preserved.
+// --outbound-allowlist uses the same add/remove idiom as --env / --ports /
+// --routes: bare entries are added, "!ENTRY" entries are removed.
+func (h *ServiceHandler) parseNetworkPolicy(flags *pflag.FlagSet, currentPolicy *koyeb.NetworkPolicy) (*koyeb.NetworkPolicy, bool, error) {
+	blockSet := flags.Lookup("block-network").Changed
+	allowSet := flags.Lookup("outbound-allowlist").Changed
+	clearSet := flags.Lookup("no-network-policy").Changed
+
+	count := 0
+	for _, b := range []bool{blockSet, allowSet, clearSet} {
+		if b {
+			count++
+		}
+	}
+	if count == 0 {
+		return nil, false, nil
+	}
+	if count > 1 {
+		return nil, true, fmt.Errorf(
+			"--block-network, --outbound-allowlist, and --no-network-policy are mutually exclusive",
+		)
+	}
+
+	egress := koyeb.NewEgressPolicyWithDefaults()
+
+	switch {
+	case clearSet:
+		clear, _ := flags.GetBool("no-network-policy")
+		if !clear {
+			return nil, false, nil
+		}
+		mode := koyeb.EGRESSPOLICYMODE_DEFAULT
+		egress.Mode = &mode
+		egress.AllowList = []koyeb.NetworkPolicyDestination{}
+
+	case blockSet:
+		blocked, _ := flags.GetBool("block-network")
+		if !blocked {
+			return nil, false, nil
+		}
+		// --block-network drops any existing allow-list (unambiguous intent).
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		egress.Mode = &mode
+		egress.AllowList = []koyeb.NetworkPolicyDestination{}
+
+	case allowSet:
+		values, _ := flags.GetStringSlice("outbound-allowlist")
+		listFlags, err := flags_list.NewNetworkPolicyAllowlistFromFlags(values)
+		if err != nil {
+			return nil, true, err
+		}
+		currentRules := []koyeb.NetworkPolicyDestination{}
+		if currentPolicy != nil && currentPolicy.HasEgress() {
+			currentEgress := currentPolicy.GetEgress()
+			if currentEgress.Mode != nil && *currentEgress.Mode == koyeb.EGRESSPOLICYMODE_DENY_ALL {
+				currentRules = currentEgress.AllowList
+			}
+		}
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		egress.Mode = &mode
+		egress.AllowList = flags_list.ParseListFlags(listFlags, currentRules)
+	}
+
+	// Preserve any other fields on an existing network policy; only egress
+	// is configurable from the CLI today.
+	networkPolicy := koyeb.NewNetworkPolicyWithDefaults()
+	if currentPolicy != nil {
+		networkPolicy = currentPolicy
+	}
+	networkPolicy.SetEgress(*egress)
+	return networkPolicy, true, nil
+}
+
 // Parse --instance-type
 func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.DeploymentInstanceType) []koyeb.DeploymentInstanceType {
 	if !flags.Lookup("instance-type").Changed {
@@ -843,6 +980,31 @@ func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstance
 	value, _ := flags.GetString("instance-type")
 	ret.SetType(value)
 	return []koyeb.DeploymentInstanceType{*ret}
+}
+
+// addServiceAccountIdFlag registers the --service-account-id flag. Unlike the
+// definition flags, this is a service-level attribute set at creation time only
+// and immutable afterwards, so it is registered on create paths only.
+func (h *ServiceHandler) addServiceAccountIdFlag(flags *pflag.FlagSet) {
+	flags.String(
+		"service-account-id",
+		"",
+		"The service account ID to associate with the service.\n"+
+			"Set at creation time only; immutable afterwards.",
+	)
+}
+
+// parseServiceAccountId sets the service account ID on the given CreateService
+// when the --service-account-id flag is provided. No-op if the flag is unset.
+func (h *ServiceHandler) parseServiceAccountId(flags *pflag.FlagSet, createService *koyeb.CreateService) {
+	flag := flags.Lookup("service-account-id")
+	if flag == nil || !flag.Changed {
+		return
+	}
+	serviceAccountId, _ := flags.GetString("service-account-id")
+	if serviceAccountId != "" {
+		createService.SetServiceAccountId(serviceAccountId)
+	}
 }
 
 // Parse --deployment-strategy
@@ -1614,8 +1776,11 @@ func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet
 	if flags.Lookup("docker").Changed {
 		image, _ := flags.GetString("docker")
 		source.SetImage(image)
-		if err := h.checkDockerImage(ctx, source); err != nil {
-			return nil, err
+		skipVerify, _ := flags.GetBool("docker-skip-verify")
+		if !skipVerify {
+			if err := h.checkDockerImage(ctx, source); err != nil {
+				return nil, err
+			}
 		}
 	}
 	if flags.Lookup("docker-args").Changed {

@@ -21,7 +21,8 @@ func NewVolumeCmd() *cobra.Command {
 		Aliases: []string{"vol", "volume"},
 		Short:   "Manage persistent volumes",
 	}
-	volumeCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	volumeCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	volumeCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createVolumeCmd := &cobra.Command{
 		Use:   "create NAME",

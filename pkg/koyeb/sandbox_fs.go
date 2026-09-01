@@ -31,7 +31,7 @@ func (h *SandboxHandler) FsRead(ctx *CLIContext, cmd *cobra.Command, args []stri
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	content, err := client.ReadFile(ctx.Context, path)
 	if err != nil {
@@ -99,7 +99,7 @@ func (h *SandboxHandler) FsWrite(ctx *CLIContext, cmd *cobra.Command, args []str
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	err = client.WriteFile(ctx.Context, path, content)
 	if err != nil {
@@ -143,7 +143,7 @@ func (h *SandboxHandler) FsLs(ctx *CLIContext, cmd *cobra.Command, args []string
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	entries, err := client.ListDir(ctx.Context, path)
 	if err != nil {
@@ -209,7 +209,7 @@ func (h *SandboxHandler) FsMkdir(ctx *CLIContext, cmd *cobra.Command, args []str
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	err = client.MakeDir(ctx.Context, path)
 	if err != nil {
@@ -260,7 +260,7 @@ func (h *SandboxHandler) FsRm(ctx *CLIContext, cmd *cobra.Command, args []string
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	if recursive {
 		err = client.DeleteDir(ctx.Context, path)
@@ -310,7 +310,7 @@ func (h *SandboxHandler) FsUpload(ctx *CLIContext, cmd *cobra.Command, args []st
 	if err != nil {
 		return err
 	}
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	if fileInfo.IsDir() {
 		if !recursive {
@@ -503,7 +503,7 @@ func (h *SandboxHandler) FsDownload(ctx *CLIContext, cmd *cobra.Command, args []
 		return err
 	}
 
-	client := NewSandboxClient(info.Domain, info.SandboxSecret)
+	client := info.NewClient()
 
 	content, err := client.ReadFile(ctx.Context, remotePath)
 	if err != nil {

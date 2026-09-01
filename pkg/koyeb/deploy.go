@@ -88,10 +88,28 @@ func NewDeployCmd() *cobra.Command {
 				}
 				createService.SetDefinition(*createDefinition)
 
+				// Service account ID is a service-level attribute, set at creation time only.
+				serviceHandler.parseServiceAccountId(cmd.Flags(), createService)
+
 				// Parse and set lifecycle
 				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), nil)
 				if lifecycle != nil {
 					createService.SetLifeCycle(*lifecycle)
+				}
+
+				// Parse and set network policy (on the definition — any change creates a new deployment)
+				var currentNetworkPolicy *koyeb.NetworkPolicy
+				if createDefinition.HasNetworkPolicy() {
+					np := createDefinition.GetNetworkPolicy()
+					currentNetworkPolicy = &np
+				}
+				networkPolicy, networkPolicyChanged, err := serviceHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+				if err != nil {
+					return err
+				}
+				if networkPolicyChanged && networkPolicy != nil {
+					createDefinition.SetNetworkPolicy(*networkPolicy)
+					createService.SetDefinition(*createDefinition)
 				}
 
 				log.Infof("Creating the new service `%s`", serviceName)
@@ -151,6 +169,14 @@ func NewDeployCmd() *cobra.Command {
 				}
 				updateService.SetDefinition(*updateDefinition)
 
+				// The service account ID is immutable after creation: warn and ignore on update.
+				if cmd.Flags().Lookup("service-account-id") != nil && cmd.Flags().Lookup("service-account-id").Changed {
+					serviceAccountId, _ := cmd.Flags().GetString("service-account-id")
+					if serviceAccountId != "" {
+						log.Warnf("--service-account-id is immutable after creation, ignoring the provided value `%s`", serviceAccountId)
+					}
+				}
+
 				// Get current service to access lifecycle
 				currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceId).Execute()
 				if err != nil {
@@ -172,6 +198,20 @@ func NewDeployCmd() *cobra.Command {
 					updateService.SetLifeCycle(*lifecycle)
 				}
 
+				var currentNetworkPolicy *koyeb.NetworkPolicy
+				if updateDefinition.HasNetworkPolicy() {
+					np := updateDefinition.GetNetworkPolicy()
+					currentNetworkPolicy = &np
+				}
+				networkPolicy, networkPolicyChanged, err := serviceHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+				if err != nil {
+					return err
+				}
+				if networkPolicyChanged && networkPolicy != nil {
+					updateDefinition.SetNetworkPolicy(*networkPolicy)
+					updateService.SetDefinition(*updateDefinition)
+				}
+
 				log.Infof("Updating the existing service `%s`", serviceName)
 				if err := serviceHandler.Update(ctx, cmd, []string{args[1]}, updateService); err != nil {
 					return err
@@ -186,7 +226,9 @@ func NewDeployCmd() *cobra.Command {
 
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
-	deployCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	serviceHandler.addServiceAccountIdFlag(deployCmd.Flags())
+	deployCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	deployCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 	return deployCmd
 }
 

@@ -34,7 +34,8 @@ func NewComposeCmd() *cobra.Command {
 		}),
 	}
 	cmd.Flags().BoolP("verbose", "v", false, "Tails service logs to have more information about your deployment.")
-	cmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	cmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	cmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	cmd.AddCommand(NewComposeLogsCmd())
 	cmd.AddCommand(NewComposeDeleteCmd())

@@ -13,7 +13,8 @@ func NewDeploymentCmd() *cobra.Command {
 		Aliases: []string{"d", "dep", "depl", "deployment"},
 		Short:   "Deployments",
 	}
-	deploymentCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	deploymentCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	deploymentCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	listDeploymentCmd := &cobra.Command{
 		Use:   "list",

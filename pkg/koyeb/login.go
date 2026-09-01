@@ -17,6 +17,9 @@ func Login(cmd *cobra.Command, args []string) error {
 	configPath := ""
 	if cfgFile != "" {
 		configPath = cfgFile
+	} else if envConfig := os.Getenv("KOYEB_CONFIG"); envConfig != "" {
+		log.Debugf("Using config file from KOYEB_CONFIG environment variable: %s", envConfig)
+		configPath = envConfig
 	} else {
 		home, err := getHomeDir()
 		if err != nil {

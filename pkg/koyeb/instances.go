@@ -13,7 +13,8 @@ func NewInstanceCmd() *cobra.Command {
 		Aliases: []string{"i", "inst", "instance"},
 		Short:   "Instances",
 	}
-	instanceCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	instanceCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	instanceCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	listInstanceCmd := &cobra.Command{
 		Use:   "list",

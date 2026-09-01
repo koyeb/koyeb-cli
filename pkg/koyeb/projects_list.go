@@ -60,7 +60,7 @@ func NewListProjectsReply(mapper *idmapper.Mapper, value *koyeb.ListProjectsRepl
 }
 
 func (ListProjectsReply) Title() string {
-	return "Projects"
+	return "Workspaces"
 }
 
 func (r *ListProjectsReply) MarshalBinary() ([]byte, error) {

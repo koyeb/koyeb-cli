@@ -15,7 +15,8 @@ func NewSnapshotCmd() *cobra.Command {
 		Aliases: []string{"vol", "snapshot"},
 		Short:   "Manage snapshots",
 	}
-	snapshotCmd.PersistentFlags().StringP("project", "p", "", "Project ID or name")
+	snapshotCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	snapshotCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createSnapshotCmd := &cobra.Command{
 		Use:   "create NAME PARENT_VOLUME",

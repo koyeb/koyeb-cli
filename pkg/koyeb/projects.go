@@ -8,14 +8,14 @@ func NewProjectCmd() *cobra.Command {
 	h := NewProjectHandler()
 
 	projectCmd := &cobra.Command{
-		Use:     "projects ACTION",
-		Aliases: []string{"project"},
-		Short:   "Projects",
+		Use:     "workspaces ACTION",
+		Aliases: []string{"workspace", "projects", "project"},
+		Short:   "Workspaces",
 	}
 
 	listCmd := &cobra.Command{
 		Use:   "list",
-		Short: "List projects",
+		Short: "List workspaces",
 		RunE:  WithCLIContext(h.List),
 	}
 	projectCmd.AddCommand(listCmd)
@@ -38,11 +38,14 @@ func (h *ProjectHandler) ResolveProjectArgs(ctx *CLIContext, val string) (string
 	return id, nil
 }
 
-// setProjectHeader resolves the --project flag (if set) and sets the
-// x-koyeb-project-id header on the API client config so all subsequent
-// requests are scoped to that project.
+// setProjectHeader resolves the --project/--workspace flag (if set) and sets
+// the x-koyeb-project-id header on the API client config so all subsequent
+// requests are scoped to that workspace.
 func setProjectHeader(ctx *CLIContext, cmd *cobra.Command) error {
 	projectFlag := GetStringFlags(cmd, "project")
+	if projectFlag == "" {
+		projectFlag = GetStringFlags(cmd, "workspace")
+	}
 	if projectFlag == "" {
 		return nil
 	}

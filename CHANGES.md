@@ -1,4 +1,16 @@
-## v5.11.0 (unreleased)
+## v5.12.0 (unreleased)
+
+## v5.11.0 (2025-08-27)
+
+* Add `--service-account-id` flag to `koyeb deploy`, `koyeb service create`, and `koyeb apps init` to associate a service account with the service at creation time. The service account ID is immutable after creation.
+
+## v5.10.2 (2026-05-12)
+
+* Fix the sandbox subcommand: make use of the `public_base_url` and `routing_key` if provided in the deployment metadata.
+
+## v5.10.1 (2026-03-19)
+
+* Add `whoami` subcommand to show info about the user/org you are currently logged into.
 
 ## v5.10.0 (2026-03-10)
 

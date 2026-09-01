@@ -13,6 +13,8 @@ import (
 
 const DevVersion = "develop"
 
+var detectLatestRelease = selfupdate.DetectLatest
+
 func DetectUpdates() {
 	if Version == DevVersion {
 		return
@@ -32,9 +34,9 @@ func DetectUpdates() {
 			return
 		}
 	}
-	latest, found, err := selfupdate.DetectLatest(GithubRepo)
+	latest, found, err := detectLatestRelease(GithubRepo)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Debugf("unable to detect latest version: %v", err)
 		return
 	}
 	if !found {
