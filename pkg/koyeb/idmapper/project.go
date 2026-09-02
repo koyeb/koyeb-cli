@@ -74,9 +74,10 @@ func (mapper *ProjectMapper) GetName(id string) (string, error) {
 func (mapper *ProjectMapper) fetch() error {
 	radix := NewRadixTree()
 
-	page := int64(0)
 	offset := int64(0)
 	limit := int64(100)
+	page := int64(0)
+
 	for {
 		res, resp, err := mapper.client.ProjectsApi.ListProjects(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
