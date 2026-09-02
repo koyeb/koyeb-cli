@@ -12,6 +12,10 @@ import (
 )
 
 func (h *VolumeHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	list := []koyeb.PersistentVolume{}
 
 	page := int64(0)

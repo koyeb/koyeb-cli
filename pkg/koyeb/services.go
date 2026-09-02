@@ -24,6 +24,8 @@ func NewServiceCmd() *cobra.Command {
 		Aliases: []string{"s", "svc", "service"},
 		Short:   "Services",
 	}
+	serviceCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	serviceCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createServiceCmd := &cobra.Command{
 		Use:   "create NAME",
@@ -46,6 +48,9 @@ $> koyeb service create myservice --app myapp --git github.com/org/name --git-br
 $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			createService := koyeb.NewCreateServiceWithDefaults()
 			createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 
@@ -119,6 +124,9 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 		Short:   "Get the service logs",
 		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			return h.Logs(ctx, cmd, since.Time, args)
 		}),
 	}
@@ -178,6 +186,9 @@ $> koyeb service update myapp/myservice --docker-command nginx --docker-args '-g
 $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			serviceName, err := h.parseServiceName(cmd, args[0])
 			if err != nil {
 				return err

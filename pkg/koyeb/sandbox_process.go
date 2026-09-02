@@ -13,6 +13,10 @@ import (
 
 // StartProcess starts a background process in the sandbox
 func (h *SandboxHandler) StartProcess(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	command := strings.Join(args[1:], " ")
 
@@ -77,6 +81,10 @@ func (h *SandboxHandler) StartProcess(ctx *CLIContext, cmd *cobra.Command, args 
 
 // ListProcesses lists background processes in the sandbox
 func (h *SandboxHandler) ListProcesses(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 
 	info, err := h.GetSandboxInfo(ctx, sandboxName)
@@ -110,6 +118,10 @@ func (h *SandboxHandler) ListProcesses(ctx *CLIContext, cmd *cobra.Command, args
 
 // KillProcess kills a background process in the sandbox
 func (h *SandboxHandler) KillProcess(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	processID := args[1]
 
@@ -137,6 +149,10 @@ func (h *SandboxHandler) KillProcess(ctx *CLIContext, cmd *cobra.Command, args [
 
 // ProcessLogs streams logs from a background process
 func (h *SandboxHandler) ProcessLogs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	processID := args[1]
 

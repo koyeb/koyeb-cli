@@ -22,6 +22,9 @@ func NewDeployCmd() *cobra.Command {
 		Short: "Deploy a directory to Koyeb",
 		Args:  cobra.ExactArgs(2),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			if err := setProjectHeader(ctx, cmd); err != nil {
+				return err
+			}
 			appName, err := serviceHandler.parseAppName(cmd, args[1])
 			if err != nil {
 				return err
@@ -224,6 +227,8 @@ func NewDeployCmd() *cobra.Command {
 	serviceHandler.addServiceDefinitionFlagsForAllSources(deployCmd.Flags())
 	serviceHandler.addServiceDefinitionFlagsForArchiveSource(deployCmd.Flags())
 	serviceHandler.addServiceAccountIdFlag(deployCmd.Flags())
+	deployCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	deployCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 	return deployCmd
 }
 

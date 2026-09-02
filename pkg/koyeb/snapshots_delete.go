@@ -9,6 +9,10 @@ import (
 )
 
 func (h *SnapshotHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	snapshot, err := ResolveSnapshotArgs(ctx, args[0])
 	if err != nil {
 		return err

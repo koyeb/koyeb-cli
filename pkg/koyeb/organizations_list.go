@@ -29,6 +29,10 @@ func getCurrentUserId(ctx *CLIContext) (string, error) {
 }
 
 func (h *OrganizationHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	userId, err := getCurrentUserId(ctx)
 	if err != nil {
 		return err

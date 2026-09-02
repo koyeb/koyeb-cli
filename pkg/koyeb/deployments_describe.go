@@ -12,6 +12,10 @@ import (
 )
 
 func (h *DeploymentHandler) Describe(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	deployment, err := h.ResolveDeploymentArgs(ctx, args[0])
 	if err != nil {
 		return err

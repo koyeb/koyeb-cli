@@ -38,6 +38,10 @@ func (h *InstanceHandler) ExtractFileSpec(ctx *CLIContext, target string) (*File
 }
 
 func (h *InstanceHandler) Cp(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	src, dst := args[0], args[1]
 
 	srcSpec, err := h.ExtractFileSpec(ctx, src)

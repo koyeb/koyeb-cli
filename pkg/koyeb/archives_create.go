@@ -63,6 +63,10 @@ func (h *ArchiveHandler) CreateArchive(ctx *CLIContext, path string) (*koyeb.Cre
 }
 
 func (h *ArchiveHandler) Create(ctx *CLIContext, cmd *cobra.Command, path string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	res, err := h.CreateArchive(ctx, path)
 	if err != nil {
 		return err

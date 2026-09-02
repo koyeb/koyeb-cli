@@ -12,6 +12,8 @@ func NewRegionalDeploymentCmd() *cobra.Command {
 		Aliases: []string{"rd", "rdep", "rdepl", "rdeploy", "rdeployment", "regional-deployment"},
 		Short:   "Regional deployments",
 	}
+	regionalDeploymentCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	regionalDeploymentCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	listRegionalDeploymentCmd := &cobra.Command{
 		Use:   "list",

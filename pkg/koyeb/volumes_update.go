@@ -9,6 +9,10 @@ import (
 )
 
 func (h *VolumeHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []string, volume *koyeb.UpdatePersistentVolumeRequest) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	id, err := ResolveVolumeArgs(ctx, args[0])
 	if err != nil {
 		return err

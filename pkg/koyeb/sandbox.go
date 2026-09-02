@@ -34,6 +34,8 @@ Sandboxes are created using 'koyeb service create --type=sandbox'.
 These commands provide additional functionality for running commands,
 managing processes, filesystem operations, and port exposure.`,
 	}
+	sandboxCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	sandboxCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	// list command - list all sandboxes
 	listSandboxCmd := &cobra.Command{

@@ -11,6 +11,10 @@ import (
 )
 
 func (h *AppHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
+
 	list := []koyeb.AppListItem{}
 
 	page := int64(0)

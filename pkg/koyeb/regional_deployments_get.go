@@ -11,6 +11,10 @@ import (
 )
 
 func (h *RegionalDeploymentHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	regionalDeployment, err := h.ResolveRegionalDeploymentArgs(ctx, args[0])
 	if err != nil {
 		return err

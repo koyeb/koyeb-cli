@@ -12,6 +12,8 @@ func NewDomainCmd() *cobra.Command {
 		Aliases: []string{"dom", "domain"},
 		Short:   "Domains",
 	}
+	domainCmd.PersistentFlags().StringP("project", "p", "", "Workspace ID or name")
+	domainCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	getDomainCmd := &cobra.Command{
 		Use:   "get NAME",

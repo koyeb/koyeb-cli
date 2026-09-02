@@ -9,6 +9,10 @@ import (
 )
 
 func (h *DomainHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	domain, err := h.ResolveDomainArgs(ctx, args[0])
 	if err != nil {
 		return err

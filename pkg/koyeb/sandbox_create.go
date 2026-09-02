@@ -12,6 +12,10 @@ import (
 
 // Create creates a new sandbox service with appropriate defaults
 func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	createService := koyeb.NewCreateServiceWithDefaults()
 	createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 

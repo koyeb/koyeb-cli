@@ -10,6 +10,10 @@ import (
 
 // ExposePort binds a port to the TCP proxy
 func (h *SandboxHandler) ExposePort(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 	portStr := args[1]
 
@@ -70,6 +74,10 @@ func (h *SandboxHandler) ExposePort(ctx *CLIContext, cmd *cobra.Command, args []
 
 // UnexposePort unbinds the current port from the TCP proxy
 func (h *SandboxHandler) UnexposePort(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
 	sandboxName := args[0]
 
 	info, err := h.GetSandboxInfo(ctx, sandboxName)
