@@ -1,4 +1,6 @@
-## v5.12.0 (unreleased)
+## v5.12.0 (2026-09-10)
+
+* Add `workspaces list` subcommand and `--project`/`--workspace` global flags.
 
 ## v5.11.0 (2025-08-27)
 
