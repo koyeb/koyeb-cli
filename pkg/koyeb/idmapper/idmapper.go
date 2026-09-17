@@ -19,6 +19,7 @@ type Mapper struct {
 	volume       *VolumeMapper
 	snapshot     *SnapshotMapper
 	project      *ProjectMapper
+	pool         *PoolMapper
 }
 
 func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
@@ -34,6 +35,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 	volumeMapper := NewVolumeMapper(ctx, client)
 	snapshotMapper := NewSnapshotMapper(ctx, client)
 	projectMapper := NewProjectMapper(ctx, client)
+	poolMapper := NewPoolMapper(ctx, client)
 
 	return &Mapper{
 		app:          appMapper,
@@ -48,6 +50,7 @@ func NewMapper(ctx context.Context, client *koyeb.APIClient) *Mapper {
 		volume:       volumeMapper,
 		snapshot:     snapshotMapper,
 		project:      projectMapper,
+		pool:         poolMapper,
 	}
 }
 
@@ -97,4 +100,8 @@ func (mapper *Mapper) Snapshot() *SnapshotMapper {
 
 func (mapper *Mapper) Project() *ProjectMapper {
 	return mapper.project
+}
+
+func (mapper *Mapper) Pool() *PoolMapper {
+	return mapper.pool
 }

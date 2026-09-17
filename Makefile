@@ -30,6 +30,8 @@ define gen-doc-in-dir
 	cat ./$1/koyeb_databases_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_sandbox.md >> ./$1/reference.md
 	cat ./$1/koyeb_sandbox_*.md >> ./$1/reference.md
+	cat ./$1/koyeb_pool.md >> ./$1/reference.md
+	cat ./$1/koyeb_pool_*.md >> ./$1/reference.md
 	cat ./$1/koyeb_version.md >> ./$1/reference.md
 	cat ./$1/koyeb_volumes.md >> ./$1/reference.md
 	cat ./$1/koyeb_whoami.md >> ./$1/reference.md
