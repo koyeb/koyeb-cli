@@ -3152,6 +3152,43 @@ $> koyeb sandbox expose-port myapp/mysandbox 8080
 
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 
+## koyeb sandbox fs
+
+Filesystem operations
+
+### Options
+
+```
+  -h, --help   help for fs
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
+* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
+* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
+* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
+* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
+* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
+* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
+
 ## koyeb sandbox fs download
 
 Download a file from the sandbox
@@ -3417,43 +3454,6 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
 
 
 * [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
-
-## koyeb sandbox fs
-
-Filesystem operations
-
-### Options
-
-```
-  -h, --help   help for fs
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-  -p, --project string        Workspace ID or name
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-      --workspace string      Workspace ID or name (alias for --project)
-```
-
-
-
-* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
-* [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
-* [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
-* [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
-* [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
-* [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
-* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
-* [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
 
 ## koyeb sandbox health
 
@@ -3864,6 +3864,38 @@ $> koyeb pool claim my-pool --request-id my-request-id
 
 * [koyeb pool](#koyeb-pool)	 - Manage service pools
 
+## koyeb pool claims
+
+Manage pool claims
+
+### Options
+
+```
+  -h, --help   help for claims
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+  -w, --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb pool](#koyeb-pool)	 - Manage service pools
+* [koyeb pool claims get](#koyeb-pool-claims-get)	 - Get a pool claim
+* [koyeb pool claims list](#koyeb-pool-claims-list)	 - List claims of a service pool
+
 ## koyeb pool claims get
 
 Get a pool claim
@@ -3934,38 +3966,6 @@ koyeb pool claims list POOL [flags]
 
 
 * [koyeb pool claims](#koyeb-pool-claims)	 - Manage pool claims
-
-## koyeb pool claims
-
-Manage pool claims
-
-### Options
-
-```
-  -h, --help   help for claims
-```
-
-### Options inherited from parent commands
-
-```
-  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
-  -d, --debug                 enable the debug output
-      --debug-full            do not hide sensitive information (tokens) in the debug output
-      --force-ascii           only output ascii characters (no unicode emojis)
-      --full                  do not truncate output
-      --organization string   organization ID
-  -o, --output output         output format (yaml,json,table)
-  -p, --project string        Workspace ID or name
-      --token string          API token
-      --url string            url of the api (default "https://app.koyeb.com")
-  -w, --workspace string      Workspace ID or name (alias for --project)
-```
-
-
-
-* [koyeb pool](#koyeb-pool)	 - Manage service pools
-* [koyeb pool claims get](#koyeb-pool-claims-get)	 - Get a pool claim
-* [koyeb pool claims list](#koyeb-pool-claims-list)	 - List claims of a service pool
 
 ## koyeb pool create
 
