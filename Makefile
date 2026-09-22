@@ -1,5 +1,10 @@
 TEST_OPTS=-v -test.timeout 300s
 
+# Glob order in the doc pipeline must be platform-independent: macOS and
+# Linux collate filenames differently, which made the generated reference.md
+# differ across machines and the CI doc check fail.
+export LC_ALL := C
+
 define gen-doc-in-dir
 	rm -f ./$1/*
 	go run cmd/gen-doc/gen-doc.go $1
@@ -61,6 +66,7 @@ test: tidy lint
         go test $(TEST_OPTS) ./...; \
     } || { \
         echo >&2 "make gen-doc has a diff"; \
+        exit 1; \
 	}
 	@rm -rf ./.temp;
 
