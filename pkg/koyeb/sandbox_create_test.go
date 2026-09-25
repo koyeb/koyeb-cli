@@ -465,7 +465,8 @@ func TestCreateSandboxRendersOnSuccess(t *testing.T) {
 	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 
-	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
+	require.NoError(t, createSandbox(
+		sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
 	assert.Equal(t, []string{"323e4567-e89b-42d3-a456-426614174000"}, fake.servicesFetched,
 		"the final state must be fetched for rendering")
@@ -484,7 +485,8 @@ func TestCreateSandboxWiresFullSnapshot(t *testing.T) {
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("snapshot", "snap-123"))
 
-	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
+	require.NoError(t, createSandbox(
+		sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
 	req := fake.createServiceReq
 	require.NotNil(t, req)
@@ -498,7 +500,8 @@ func TestCreateSandboxWiresExposedPortProtocol(t *testing.T) {
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "http2"))
 
-	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
+	require.NoError(t, createSandbox(
+		sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
 	def := fake.createServiceReq.GetDefinition()
 	ports := def.GetPorts()
@@ -513,7 +516,8 @@ func TestCreateSandboxWiresSandboxSecret(t *testing.T) {
 	require.NoError(t, cmd.Flags().Set("sandbox-secret", "flag-secret"))
 	require.NoError(t, cmd.Flags().Set("env", "SANDBOX_SECRET=env-secret"))
 
-	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
+	require.NoError(t, createSandbox(
+		sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
 	var secrets []string
 	def := fake.createServiceReq.GetDefinition()
@@ -559,7 +563,8 @@ func TestCreateSandboxKeepsAppAfterSuccess(t *testing.T) {
 	fake := &fakeAPI{createdAppID: "app-created"}
 	cmd := sandboxCreateCmd(t)
 
-	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
+	require.NoError(t, createSandbox(
+		sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 	assert.Equal(t, []string{"myapp"}, fake.createdApps)
 	assert.Empty(t, fake.deletedApps, "the auto-created app must be kept on success")
 }

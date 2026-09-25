@@ -111,7 +111,12 @@ func (f *fakeSandboxClient) Run(_ context.Context, req *RunRequest) (*RunRespons
 	return &RunResponse{}, nil
 }
 
-func (f *fakeSandboxClient) RunStreaming(_ context.Context, _ *RunRequest, _ func(string, string), _ func(int, bool)) error {
+func (f *fakeSandboxClient) RunStreaming(
+	_ context.Context,
+	_ *RunRequest,
+	_ func(string, string),
+	_ func(int, bool),
+) error {
 	return nil
 }
 

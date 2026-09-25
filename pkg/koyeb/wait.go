@@ -90,12 +90,17 @@ func waitPollInterval(cmd *cobra.Command) time.Duration {
 
 // serviceWaitTimedOut logs and returns the shared --wait timeout error.
 func serviceWaitTimedOut(id, logCmd string) error {
+	// The log line is capitalized; the error keeps its historical lowercase.
 	log.Infof(
-		"Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb %s %s -t build`. For the runtime logs, run `koyeb %s %s`",
+		"Service deployment still in progress, --wait timed out. "+
+			"To access the build logs, run: `koyeb %s %s -t build`. "+
+			"For the runtime logs, run `koyeb %s %s`",
 		logCmd, id[:8], logCmd, id[:8],
 	)
 	return fmt.Errorf(
-		"service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb %s %s -t build`. For the runtime logs, run `koyeb %s %s`",
+		"service deployment still in progress, --wait timed out. "+
+			"To access the build logs, run: `koyeb %s %s -t build`. "+
+			"For the runtime logs, run `koyeb %s %s`",
 		logCmd, id[:8], logCmd, id[:8],
 	)
 }
@@ -108,7 +113,8 @@ func deploymentWaitDone(status koyeb.ServiceStatus) (done, failed bool) {
 	switch status {
 	case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
 		return true, true
-	case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
+	case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING,
+		koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
 		return false, false
 	default:
 		return true, false
@@ -171,7 +177,9 @@ func deploymentUpdateProbe(ctx *CLIContext, deploymentID string) waitProbe {
 		}
 		done, failed := deploymentUpdateWaitDone(*res.Deployment.Status)
 		if failed {
-			return false, fmt.Errorf("deployment %s update ended in status: %s", res.Deployment.GetId()[:8], *res.Deployment.Status)
+			return false, fmt.Errorf(
+				"deployment %s update ended in status: %s",
+				res.Deployment.GetId()[:8], *res.Deployment.Status)
 		}
 		return done, nil
 	}
@@ -179,7 +187,11 @@ func deploymentUpdateProbe(ctx *CLIContext, deploymentID string) waitProbe {
 
 // failClosedServiceProbe builds a probe with the SDKs' fail-closed
 // classification; transient fetch errors retry until the timeout.
-func failClosedServiceProbe(getStatus serviceStatusGetter, serviceID string, terminalErr func(koyeb.ServiceStatus) error) waitProbe {
+func failClosedServiceProbe(
+	getStatus serviceStatusGetter,
+	serviceID string,
+	terminalErr func(koyeb.ServiceStatus) error,
+) waitProbe {
 	return func(c context.Context) (bool, error) {
 		status, err := getStatus(c, serviceID)
 		if err != nil {

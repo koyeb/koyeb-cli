@@ -79,10 +79,8 @@ func TestClassifyServiceStatus(t *testing.T) {
 	}
 }
 
-func statusFunc(
-	statuses []koyeb.ServiceStatus,
-	calls *int,
-) func(context.Context, string) (koyeb.ServiceStatus, error) {
+func statusFunc(statuses []koyeb.ServiceStatus, calls *int) func(context.Context, string) (
+	koyeb.ServiceStatus, error) {
 	return func(context.Context, string) (koyeb.ServiceStatus, error) {
 		i := *calls
 		(*calls)++

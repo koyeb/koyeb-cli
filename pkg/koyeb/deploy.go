@@ -126,7 +126,8 @@ func NewDeployCmd() *cobra.Command {
 					}
 				}
 
-				if err := serviceHandler.applyUpdateServiceFlags(ctx, cmd, serviceId, serviceName, updateDefinition, updateService); err != nil {
+				if err := serviceHandler.applyUpdateServiceFlags(
+					ctx, cmd, serviceId, serviceName, updateDefinition, updateService); err != nil {
 					return err
 				}
 

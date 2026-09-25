@@ -658,7 +658,10 @@ func serviceCreateCmdForTest(t *testing.T) *cobra.Command {
 func TestApplyCreateServiceFlags(t *testing.T) {
 	t.Run("wires lifecycle, network policy and definition", func(t *testing.T) {
 		cmd := serviceCreateCmdForTest(t)
-		require.NoError(t, cmd.Flags().Parse([]string{"--delete-after-delay", "1h", "--block-network", "--service-account-id", "sa-123"}))
+		require.NoError(t, cmd.Flags().Parse([]string{
+			"--delete-after-delay", "1h",
+			"--block-network", "--service-account-id", "sa-123",
+		}))
 
 		def := koyeb.NewDeploymentDefinitionWithDefaults()
 		def.SetName("my-svc")

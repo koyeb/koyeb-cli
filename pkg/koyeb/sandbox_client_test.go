@@ -21,7 +21,8 @@ func writeChecked(w http.ResponseWriter, body string) {
 
 // executorServer spins up an httptest server standing in for the sandbox
 // executor and returns a client pointed at it.
-func executorServer(t *testing.T, secret, routingKey string, handler http.HandlerFunc, opts ...SandboxClientOption) (*SandboxClient, *httptest.Server) {
+func executorServer(t *testing.T, secret, routingKey string, handler http.HandlerFunc, opts ...SandboxClientOption) (
+	*SandboxClient, *httptest.Server) {
 	t.Helper()
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
@@ -95,7 +96,10 @@ func TestSandboxClientRunRequestShape(t *testing.T) {
 		writeChecked(w, `{"stdout":"hello\n","stderr":"","code":0}`)
 	}, WithRetries(0, time.Millisecond))
 
-	res, err := client.Run(context.Background(), &RunRequest{Cmd: "echo hello", Cwd: "/app", Env: map[string]string{"K": "V"}, Timeout: 30})
+	res, err := client.Run(context.Background(), &RunRequest{
+		Cmd: "echo hello", Cwd: "/app",
+		Env: map[string]string{"K": "V"}, Timeout: 30,
+	})
 	require.NoError(t, err)
 	assert.Equal(t, "hello\n", res.Stdout)
 	assert.Equal(t, 0, res.Code)

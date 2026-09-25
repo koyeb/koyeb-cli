@@ -48,7 +48,8 @@ func (f *fakeAPI) GetService(_ context.Context, serviceID string) (*koyeb.GetSer
 	return &koyeb.GetServiceReply{Service: f.service}, nil, nil
 }
 
-func (f *fakeAPI) CreateService(_ context.Context, req koyeb.CreateService) (*koyeb.CreateServiceReply, *http.Response, error) {
+func (f *fakeAPI) CreateService(_ context.Context, req koyeb.CreateService) (
+	*koyeb.CreateServiceReply, *http.Response, error) {
 	stored := req
 	f.createServiceReq = &stored
 	if f.createServiceErr != nil {
@@ -93,18 +94,21 @@ func (f *fakeAPI) DeleteService(_ context.Context, serviceID string) (*http.Resp
 	return nil, nil
 }
 
-func (f *fakeAPI) GetDeployment(_ context.Context, deploymentID string) (*koyeb.GetDeploymentReply, *http.Response, error) {
+func (f *fakeAPI) GetDeployment(_ context.Context, deploymentID string) (
+	*koyeb.GetDeploymentReply, *http.Response, error) {
 	if d, ok := f.deployments[deploymentID]; ok {
 		return &koyeb.GetDeploymentReply{Deployment: &d}, nil, nil
 	}
 	return &koyeb.GetDeploymentReply{}, nil, nil
 }
 
-func (f *fakeAPI) ListDeploymentsByService(_ context.Context, _, _ string) (*koyeb.ListDeploymentsReply, *http.Response, error) {
+func (f *fakeAPI) ListDeploymentsByService(_ context.Context, _, _ string) (
+	*koyeb.ListDeploymentsReply, *http.Response, error) {
 	return &koyeb.ListDeploymentsReply{}, nil, nil
 }
 
-func (f *fakeAPI) GetInstanceSnapshot(_ context.Context, _ string) (*koyeb.GetInstanceSnapshotReply, *http.Response, error) {
+func (f *fakeAPI) GetInstanceSnapshot(_ context.Context, _ string) (
+	*koyeb.GetInstanceSnapshotReply, *http.Response, error) {
 	f.snapshotCalls++
 	if f.snapshotErr != nil {
 		return nil, nil, f.snapshotErr
@@ -115,7 +119,8 @@ func (f *fakeAPI) GetInstanceSnapshot(_ context.Context, _ string) (*koyeb.GetIn
 	return &koyeb.GetInstanceSnapshotReply{InstanceSnapshot: f.snapshot}, nil, nil
 }
 
-func (f *fakeAPI) ListInstanceSnapshotsByName(_ context.Context, _ string) (*koyeb.ListInstanceSnapshotsReply, *http.Response, error) {
+func (f *fakeAPI) ListInstanceSnapshotsByName(_ context.Context, _ string) (
+	*koyeb.ListInstanceSnapshotsReply, *http.Response, error) {
 	return &koyeb.ListInstanceSnapshotsReply{InstanceSnapshots: f.snapshots}, nil, nil
 }
 
@@ -219,11 +224,12 @@ func TestWithSandboxClient(t *testing.T) {
 
 		var gotInfo *SandboxInfo
 		var clientType SandboxClientInterface
-		err := withSandboxClient(ctx, "323e4567-e89b-42d3-a456-426614174000", func(client SandboxClientInterface, info *SandboxInfo) error {
-			clientType = client
-			gotInfo = info
-			return nil
-		})
+		err := withSandboxClient(ctx, "323e4567-e89b-42d3-a456-426614174000",
+			func(client SandboxClientInterface, info *SandboxInfo) error {
+				clientType = client
+				gotInfo = info
+				return nil
+			})
 		require.NoError(t, err)
 		assert.NotNil(t, clientType, "the operation receives an executor client")
 		assert.Equal(t, "https://myapp-myapp.koyeb.app/koyeb-sandbox", gotInfo.BaseURL)
@@ -235,18 +241,20 @@ func TestWithSandboxClient(t *testing.T) {
 		fake.service.Type = &webType
 		ctx := sandboxTestContext(fake)
 
-		err := withSandboxClient(ctx, "323e4567-e89b-42d3-a456-426614174000", func(SandboxClientInterface, *SandboxInfo) error {
-			return nil
-		})
+		err := withSandboxClient(ctx, "323e4567-e89b-42d3-a456-426614174000",
+			func(SandboxClientInterface, *SandboxInfo) error {
+				return nil
+			})
 		require.Error(t, err)
 	})
 
 	t.Run("operation errors propagate", func(t *testing.T) {
 		ctx := sandboxTestContext(sandboxFixtureAPI())
 
-		err := withSandboxClient(ctx, "323e4567-e89b-42d3-a456-426614174000", func(SandboxClientInterface, *SandboxInfo) error {
-			return fmt.Errorf("op failed")
-		})
+		err := withSandboxClient(ctx, "323e4567-e89b-42d3-a456-426614174000",
+			func(SandboxClientInterface, *SandboxInfo) error {
+				return fmt.Errorf("op failed")
+			})
 		require.EqualError(t, err, "op failed")
 	})
 }
