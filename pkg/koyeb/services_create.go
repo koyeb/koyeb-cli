@@ -3,6 +3,7 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -79,11 +80,13 @@ func renderServiceState(ctx *CLIContext, cmd *cobra.Command, serviceID string) {
 }
 
 // waitForServiceDeployment polls the service until it reaches a steady state
-// or --wait-timeout elapses.
+// or --wait-timeout elapses. Unlike the SDK-parity sandbox wait, the
+// services wait keeps its historical fail-open classification
+// (deploymentWaitDone below).
 func waitForServiceDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
-	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
-	if waitTimeout <= 0 {
-		waitTimeout = 5 * time.Minute
+	waitTimeout, err := waitTimeoutFlag(cmd)
+	if err != nil {
+		return err
 	}
 	ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
 	defer cancel()
@@ -116,12 +119,29 @@ func waitForServiceDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID str
 	)
 }
 
+// waitTimeoutFlag returns --wait-timeout, rejecting non-positive values
+// that would otherwise produce a nonsensical immediate timeout.
+func waitTimeoutFlag(cmd *cobra.Command) (time.Duration, error) {
+	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
+	if waitTimeout <= 0 {
+		return 0, &errors.CLIError{
+			What:     "Invalid --wait-timeout",
+			Why:      "--wait-timeout must be a positive duration",
+			Orig:     nil,
+			Solution: "Pass a positive duration, e.g. --wait-timeout 5m",
+		}
+	}
+	return waitTimeout, nil
+}
+
 // waitPollInterval returns the --wait polling interval: --poll-interval when
 // the command registers it (sandbox create), 2s otherwise (services).
+// Non-finite values fall back to the flag default — NaN would panic
+// time.NewTicker and Inf would never tick.
 func waitPollInterval(cmd *cobra.Command) time.Duration {
 	if f := cmd.Flags().Lookup("poll-interval"); f != nil {
 		seconds, err := cmd.Flags().GetFloat64("poll-interval")
-		if err != nil || seconds <= 0 {
+		if err != nil || seconds <= 0 || math.IsNaN(seconds) || math.IsInf(seconds, 0) {
 			seconds = 0.5
 		}
 		return time.Duration(seconds * float64(time.Second))
@@ -130,7 +150,10 @@ func waitPollInterval(cmd *cobra.Command) time.Duration {
 }
 
 // deploymentWaitDone reports whether a --wait polling loop should stop for
-// status, and whether that status means the deployment failed.
+// status, and whether that status means the deployment failed. It is the
+// historical services classification (fail-open on unknown statuses);
+// sandbox and claim waits use the SDKs' fail-closed classifyServiceStatus
+// instead — do not consolidate the two.
 func deploymentWaitDone(status koyeb.ServiceStatus) (done, failed bool) {
 	switch status {
 	case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
