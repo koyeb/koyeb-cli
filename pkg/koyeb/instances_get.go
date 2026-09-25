@@ -13,9 +13,6 @@ import (
 
 func (h *InstanceHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 
-	if err := setProjectHeader(ctx, cmd); err != nil {
-		return err
-	}
 	instance, err := h.ResolveInstanceArgs(ctx, args[0])
 	if err != nil {
 		return err

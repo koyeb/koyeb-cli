@@ -10,9 +10,6 @@ import (
 
 func (h *VolumeHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 
-	if err := setProjectHeader(ctx, cmd); err != nil {
-		return err
-	}
 	volume, err := ResolveVolumeArgs(ctx, args[0])
 	if err != nil {
 		return err

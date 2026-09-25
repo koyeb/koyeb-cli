@@ -93,9 +93,15 @@ func GetCLIContext(ctx context.Context) *CLIContext {
 	}
 }
 
-// WithCLIContext is a decorator that provides a CLIContext to cobra commands.
+// WithCLIContext is a decorator that provides a CLIContext to cobra
+// commands. It resolves --project/--workspace scoping once, up front, so
+// no handler has to remember to do it before its first API call.
 func WithCLIContext(fn func(ctx *CLIContext, cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		return fn(GetCLIContext(cmd.Context()), cmd, args)
+		ctx := GetCLIContext(cmd.Context())
+		if err := setProjectHeader(ctx, cmd); err != nil {
+			return err
+		}
+		return fn(ctx, cmd, args)
 	}
 }

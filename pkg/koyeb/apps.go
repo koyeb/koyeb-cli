@@ -27,9 +27,6 @@ func NewAppCmd() *cobra.Command {
 		Short: "Create app",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			createApp := koyeb.NewCreateAppWithDefaults()
 			SyncFlags(cmd, args, createApp)
 
@@ -51,9 +48,6 @@ func NewAppCmd() *cobra.Command {
 		Example: "See examples of koyeb service create --help",
 		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			createApp := koyeb.NewCreateAppWithDefaults()
 
 			createService := koyeb.NewCreateServiceWithDefaults()
@@ -107,9 +101,6 @@ func NewAppCmd() *cobra.Command {
 		Short: "Update app",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			updateApp := koyeb.NewUpdateAppWithDefaults()
 			SyncFlags(cmd, args, updateApp)
 

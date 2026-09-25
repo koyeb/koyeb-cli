@@ -116,9 +116,6 @@ $> koyeb pool claim my-pool
 $> koyeb pool claim my-pool --request-id my-request-id
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			poolID, err := ResolvePoolArgs(ctx, args[0])
 			if err != nil {
 				return err

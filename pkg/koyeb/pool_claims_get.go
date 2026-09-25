@@ -13,10 +13,6 @@ func newPoolClaimsGetCmd() *cobra.Command {
 		Short: "Get a pool claim",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
-
 			res, resp, err := ctx.Client.PoolClaimsApi.GetClaim(ctx.Context, args[0]).Execute()
 			if err != nil {
 				return errors.NewCLIErrorFromAPIError(
