@@ -3067,6 +3067,7 @@ $> koyeb sandbox create myapp/mysandbox --wait
 ```
   -a, --app string                               Sandbox application
       --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
+      --cleanup-on-failure                       Delete the sandbox when --wait fails or times out (default true)
       --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Auto-delete after duration (e.g., '24h')
@@ -3076,16 +3077,22 @@ $> koyeb sandbox create myapp/mysandbox --wait
       --docker-command string                    Docker command
       --docker-entrypoint strings                Docker entrypoint
       --docker-private-registry-secret string    Docker private registry secret
+      --enable-mesh                              Enable mesh for this sandbox (tri-state: unset=AUTO, true=ENABLED, false=DISABLED)
+      --enable-tcp-proxy                         Expose port 3031 via TCP proxy at create time
       --env strings                              Environment variables (KEY=VALUE)
+      --exposed-port-protocol string             Protocol for the exposed application port 3031 (http or http2) (default "http")
   -h, --help                                     help for create
-      --instance-type string                     Instance type (default "nano")
+      --instance-type string                     Instance type (default "micro")
       --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --min-scale int                            Min scale (default 1)
       --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
       --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
+      --poll-interval float                      Seconds between readiness polls when --wait is set (default 0.5)
       --privileged                               Run in privileged mode
       --regions strings                          Deployment regions
-      --wait                                     Wait until sandbox deployment is done
+      --sandbox-secret string                    Explicit sandbox secret (defaults to a generated one)
+      --snapshot string                          Instance snapshot ID or name to boot the sandbox from
+      --wait                                     Wait until the sandbox deployment is ready (opt-in; the Koyeb SDKs wait by default)
       --wait-timeout duration                    Wait timeout duration (default 5m0s)
 ```
 
@@ -3182,9 +3189,14 @@ Filesystem operations
 
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 * [koyeb sandbox fs download](#koyeb-sandbox-fs-download)	 - Download a file from the sandbox
+* [koyeb sandbox fs exists](#koyeb-sandbox-fs-exists)	 - Check if a path exists in the sandbox
+* [koyeb sandbox fs is-dir](#koyeb-sandbox-fs-is-dir)	 - Check if a path is a directory in the sandbox
+* [koyeb sandbox fs is-file](#koyeb-sandbox-fs-is-file)	 - Check if a path is a regular file in the sandbox
 * [koyeb sandbox fs ls](#koyeb-sandbox-fs-ls)	 - List directory contents in the sandbox
 * [koyeb sandbox fs mkdir](#koyeb-sandbox-fs-mkdir)	 - Create a directory in the sandbox
+* [koyeb sandbox fs move](#koyeb-sandbox-fs-move)	 - Move a file to a different directory in the sandbox
 * [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
+* [koyeb sandbox fs rename](#koyeb-sandbox-fs-rename)	 - Rename a file or directory in the sandbox
 * [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
 * [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
 * [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
@@ -3201,6 +3213,108 @@ koyeb sandbox fs download NAME REMOTE_PATH LOCAL_PATH [flags]
 
 ```
   -h, --help   help for download
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs exists
+
+Check if a path exists in the sandbox
+
+```
+koyeb sandbox fs exists NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for exists
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs is-dir
+
+Check if a path is a directory in the sandbox
+
+```
+koyeb sandbox fs is-dir NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for is-dir
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs is-file
+
+Check if a path is a regular file in the sandbox
+
+```
+koyeb sandbox fs is-file NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for is-file
 ```
 
 ### Options inherited from parent commands
@@ -3292,6 +3406,40 @@ koyeb sandbox fs mkdir NAME PATH [flags]
 
 * [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
 
+## koyeb sandbox fs move
+
+Move a file to a different directory in the sandbox
+
+```
+koyeb sandbox fs move NAME SOURCE_PATH DESTINATION_PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for move
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
 ## koyeb sandbox fs read
 
 Read a file from the sandbox
@@ -3304,6 +3452,40 @@ koyeb sandbox fs read NAME PATH [flags]
 
 ```
   -h, --help   help for read
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs rename
+
+Rename a file or directory in the sandbox
+
+```
+koyeb sandbox fs rename NAME OLD_PATH NEW_PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for rename
 ```
 
 ### Options inherited from parent commands
@@ -3842,6 +4024,7 @@ $> koyeb pool claim my-pool --request-id my-request-id
 ```
   -h, --help                help for claim
       --request-id string   Claim request ID (defaults to a generated UUID v4)
+      --wait                Wait until the claimed service is ready (timeout 5m, poll 2s)
 ```
 
 ### Options inherited from parent commands
@@ -4010,7 +4193,7 @@ $> koyeb pool create my-pool --project my-project
       --docker-private-registry-secret string   Docker private registry secret
       --env strings                             Environment variables (KEY=VALUE)
   -h, --help                                    help for create
-      --instance-type string                    Instance type (default "nano")
+      --instance-type string                    Instance type (default "micro")
       --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --min-scale int                           Min scale (default 1)
       --regions strings                         Deployment regions
