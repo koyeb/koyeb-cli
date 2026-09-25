@@ -77,14 +77,9 @@ func TestParseSandboxDefinitionFlags_EnableMeshTriState(t *testing.T) {
 	}
 }
 
-func TestParseSandboxDefinitionFlags_ExposedPortProtocol(t *testing.T) {
-	_, err := parseSandboxDefinition(t, []string{"--exposed-port-protocol", "http2"})
-	require.NoError(t, err)
-}
-
 func TestConfigureSandboxPortsAndRoutes_ExposedPortProtocol(t *testing.T) {
 	def := koyeb.NewDeploymentDefinitionWithDefaults()
-	configureSandboxPortsAndRoutes(def, "http2", false, false)
+	configureSandboxPortsAndRoutes(def, "http2")
 
 	ports := def.GetPorts()
 	require.Len(t, ports, 2)
@@ -140,37 +135,41 @@ func TestSandboxCreateInstanceTypeDefaultsToMicro(t *testing.T) {
 	assert.Equal(t, "micro", instanceTypes[0].GetType())
 }
 
+func parseSandboxSecret(t *testing.T, args []string) (*cobra.Command, *koyeb.DeploymentDefinition) {
+	t.Helper()
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Parse(args))
+	def := koyeb.NewDeploymentDefinitionWithDefaults()
+	require.NoError(t, parseSandboxDefinitionFlags(&CLIContext{}, cmd, def, NewServiceHandler()))
+	return cmd, def
+}
+
 func TestApplySandboxSecretFlag(t *testing.T) {
 	tests := []struct {
-		name      string
-		args      []string
-		wantEnv   map[string]string
-		generated bool
+		name    string
+		args    []string
+		wantEnv string
 	}{
 		{
 			name:    "explicit flag wins over --env",
 			args:    []string{"--sandbox-secret", "flag-secret", "--env", "SANDBOX_SECRET=env-secret"},
-			wantEnv: map[string]string{"SANDBOX_SECRET": "flag-secret"},
+			wantEnv: "flag-secret",
 		},
 		{
 			name:    "flag without --env",
 			args:    []string{"--sandbox-secret", "flag-secret"},
-			wantEnv: map[string]string{"SANDBOX_SECRET": "flag-secret"},
+			wantEnv: "flag-secret",
 		},
 		{
 			name:    "no flag keeps --env value",
 			args:    []string{"--env", "SANDBOX_SECRET=env-secret"},
-			wantEnv: map[string]string{"SANDBOX_SECRET": "env-secret"},
+			wantEnv: "env-secret",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := sandboxCreateCmd(t)
-			require.NoError(t, cmd.Flags().Parse(tt.args))
-
-			def, err := parseSandboxDefinition(t, tt.args)
-			require.NoError(t, err)
+			cmd, def := parseSandboxSecret(t, tt.args)
 
 			applySandboxSecretFlag(cmd.Flags(), def)
 			ensureSandboxSecret(def)
@@ -182,27 +181,38 @@ func TestApplySandboxSecretFlag(t *testing.T) {
 				}
 			}
 			require.Len(t, found, 1, "SANDBOX_SECRET must appear exactly once")
-			assert.Equal(t, tt.wantEnv[SandboxSecretKey], found[0])
+			assert.Equal(t, tt.wantEnv, found[0])
 		})
 	}
 }
 
-func TestEnsureSandboxSecretGeneratesWhenNoFlagAndNoEnv(t *testing.T) {
-	def, err := parseSandboxDefinition(t, nil)
-	require.NoError(t, err)
-
-	applySandboxSecretFlag(sandboxCreateCmd(t).Flags(), def)
-	ensureSandboxSecret(def)
-
+func sandboxSecretValues(def *koyeb.DeploymentDefinition) []string {
 	var found []string
 	for _, env := range def.GetEnv() {
 		if env.GetKey() == SandboxSecretKey {
 			found = append(found, env.GetValue())
 		}
 	}
+	return found
+}
+
+func TestEnsureSandboxSecretGeneratesWhenNoFlagAndNoEnv(t *testing.T) {
+	_, def := parseSandboxSecret(t, nil)
+	ensureSandboxSecret(def)
+
+	found := sandboxSecretValues(def)
 	require.Len(t, found, 1)
 	// 32 random bytes, URL-safe base64: 43 chars
 	assert.Len(t, found[0], 43)
+}
+
+func TestEnsureSandboxSecretGenerationsAreUnique(t *testing.T) {
+	first := koyeb.NewDeploymentDefinitionWithDefaults()
+	ensureSandboxSecret(first)
+	second := koyeb.NewDeploymentDefinitionWithDefaults()
+	ensureSandboxSecret(second)
+
+	assert.NotEqual(t, sandboxSecretValues(first)[0], sandboxSecretValues(second)[0])
 }
 
 func instanceSnapshot(id, name string, snapshotType koyeb.InstanceSnapshotType) *koyeb.InstanceSnapshot {
@@ -327,6 +337,14 @@ func TestWaitPollInterval(t *testing.T) {
 		assert.Equal(t, 500*time.Millisecond, waitPollInterval(cmd))
 	})
 
+	t.Run("non-finite poll intervals fall back to the flag default", func(t *testing.T) {
+		for _, value := range []string{"nan", "inf", "-inf"} {
+			cmd := sandboxCreateCmd(t)
+			require.NoError(t, cmd.Flags().Set("poll-interval", value))
+			assert.Equal(t, 500*time.Millisecond, waitPollInterval(cmd), "--poll-interval %s must not reach time.NewTicker", value)
+		}
+	})
+
 	t.Run("commands without the flag poll at 2s", func(t *testing.T) {
 		cmd, _, err := NewServiceCmd().Find([]string{"create"})
 		require.NoError(t, err)
@@ -370,4 +388,185 @@ func TestPoolCreateInstanceTypeDefaultsToMicro(t *testing.T) {
 	instanceTypes := def.GetInstanceTypes()
 	require.Len(t, instanceTypes, 1)
 	assert.Equal(t, "micro", instanceTypes[0].GetType())
+}
+
+// fakeSandboxCreate captures the API seams of the create flow so the
+// wiring — snapshot, protocol, secret ordering, cleanup — is pinned
+// without a live client.
+type fakeSandboxCreate struct {
+	existingAppID string
+	createdAppID  string
+	snapshotID    string
+	snapshotType  koyeb.InstanceSnapshotType
+	serviceID     string
+	createErr     error
+	waitErr       error
+
+	createdApps     []string
+	deletedApps     []string
+	deletedServices []string
+	rendered        []string
+	createReq       *koyeb.CreateService
+}
+
+func (f *fakeSandboxCreate) deps() sandboxCreateDeps {
+	return sandboxCreateDeps{
+		getAppID: func(*CLIContext, string) (string, error) { return f.existingAppID, nil },
+		createApp: func(_ *CLIContext, name string) (string, error) {
+			f.createdApps = append(f.createdApps, name)
+			return f.createdAppID, nil
+		},
+		resolveSnapshot: func(*CLIContext, string) (string, koyeb.InstanceSnapshotType) {
+			return f.snapshotID, f.snapshotType
+		},
+		createService: func(_ *CLIContext, _ *cobra.Command, _ []string, req *koyeb.CreateService) (*koyeb.Service, error) {
+			f.createReq = req
+			if f.createErr != nil {
+				return nil, f.createErr
+			}
+			id := f.serviceID
+			return &koyeb.Service{Id: &id}, nil
+		},
+		waitForService: func(*CLIContext, *cobra.Command, string) error { return f.waitErr },
+		deleteApp: func(_ *CLIContext, appID string) {
+			f.deletedApps = append(f.deletedApps, appID)
+		},
+		deleteService: func(_ *CLIContext, serviceID string) {
+			f.deletedServices = append(f.deletedServices, serviceID)
+		},
+		renderService: func(_ *CLIContext, _ *cobra.Command, serviceID string) {
+			f.rendered = append(f.rendered, serviceID)
+		},
+	}
+}
+
+func TestCreateSandboxCleansUpAutoCreatedAppOnCreateFailure(t *testing.T) {
+	fake := &fakeSandboxCreate{createdAppID: "app-123", serviceID: "svc-123", createErr: fmt.Errorf("api down")}
+	cmd := sandboxCreateCmd(t)
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Equal(t, []string{"myapp"}, fake.createdApps, "missing app must be auto-created")
+	assert.Equal(t, []string{"app-123"}, fake.deletedApps, "auto-created app must be deleted on create failure")
+	assert.Empty(t, fake.deletedServices)
+	assert.Empty(t, fake.rendered)
+}
+
+func TestCreateSandboxCleansUpAutoCreatedAppOnFlagValidationFailure(t *testing.T) {
+	fake := &fakeSandboxCreate{createdAppID: "app-123", serviceID: "svc-123"}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "ftp"))
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Equal(t, []string{"app-123"}, fake.deletedApps, "validation failure after app creation must clean the app up")
+	assert.Nil(t, fake.createReq, "no service create request may be sent")
+}
+
+func TestCreateSandboxKeepsExistingAppOnCreateFailure(t *testing.T) {
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123", createErr: fmt.Errorf("api down")}
+	cmd := sandboxCreateCmd(t)
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Empty(t, fake.createdApps, "existing app must not be re-created")
+	assert.Empty(t, fake.deletedApps, "an app this command did not create must never be deleted")
+}
+
+func TestCreateSandboxServiceCleanupOnWaitFailure(t *testing.T) {
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123", waitErr: fmt.Errorf("timed out")}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("wait", "true"))
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Equal(t, []string{"svc-123"}, fake.deletedServices, "default cleanup deletes the sandbox on wait failure")
+	assert.Empty(t, fake.rendered, "a failed sandbox is not rendered after cleanup")
+}
+
+func TestCreateSandboxNoServiceCleanupWhenFlagDisabled(t *testing.T) {
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123", waitErr: fmt.Errorf("timed out")}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("wait", "true"))
+	require.NoError(t, cmd.Flags().Set("cleanup-on-failure", "false"))
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Empty(t, fake.deletedServices)
+}
+
+func TestCreateSandboxRendersOnSuccess(t *testing.T) {
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	cmd := sandboxCreateCmd(t)
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.NoError(t, err)
+	assert.Equal(t, []string{"svc-123"}, fake.rendered)
+	assert.Empty(t, fake.deletedApps)
+	assert.Empty(t, fake.deletedServices)
+}
+
+func TestCreateSandboxWiresFullSnapshot(t *testing.T) {
+	fake := &fakeSandboxCreate{
+		existingAppID: "app-existing",
+		serviceID:     "svc-123",
+		snapshotID:    "snap-123",
+		snapshotType:  koyeb.INSTANCESNAPSHOTTYPE_FULL,
+	}
+	cmd := sandboxCreateCmd(t)
+
+	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+
+	req := fake.createReq
+	require.NotNil(t, req)
+	assert.Equal(t, "snap-123", req.GetInstanceSnapshotId())
+	assert.False(t, req.HasDefinition(), "FULL snapshot: the API infers the definition")
+	assert.Equal(t, "mysbx", req.GetName())
+}
+
+func TestCreateSandboxWiresExposedPortProtocol(t *testing.T) {
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "http2"))
+
+	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+
+	def := fake.createReq.GetDefinition()
+	ports := def.GetPorts()
+	require.Len(t, ports, 2)
+	assert.Equal(t, "http", ports[0].GetProtocol())
+	assert.Equal(t, "http2", ports[1].GetProtocol())
+}
+
+func TestCreateSandboxWiresSandboxSecret(t *testing.T) {
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("sandbox-secret", "flag-secret"))
+	require.NoError(t, cmd.Flags().Set("env", "SANDBOX_SECRET=env-secret"))
+
+	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+
+	secrets := []string{}
+	def := fake.createReq.GetDefinition()
+	for _, env := range def.GetEnv() {
+		if env.GetKey() == SandboxSecretKey {
+			secrets = append(secrets, env.GetValue())
+		}
+	}
+	require.Len(t, secrets, 1)
+	assert.Equal(t, "flag-secret", secrets[0], "--sandbox-secret must win over --env")
+}
+
+func TestWaitTimeoutFlagRejectsNonPositiveValues(t *testing.T) {
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("wait-timeout", "0"))
+
+	_, err := waitTimeoutFlag(cmd)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "positive")
+
+	require.NoError(t, cmd.Flags().Set("wait-timeout", "1m"))
+	timeout, err := waitTimeoutFlag(cmd)
+	require.NoError(t, err)
+	assert.Equal(t, time.Minute, timeout)
 }

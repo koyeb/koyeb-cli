@@ -15,81 +15,115 @@ import (
 
 // Create creates a new sandbox service with appropriate defaults
 func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
 	if err := setProjectHeader(ctx, cmd); err != nil {
 		return err
 	}
-	createService := koyeb.NewCreateServiceWithDefaults()
-	createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
+	return createSandbox(ctx, cmd, args, defaultSandboxCreateDeps())
+}
 
-	// Use ServiceHandler for parsing common flags - reuse existing methods to avoid duplication
+// sandboxCreateDeps carries the API-touching steps of the create flow as
+// seams so the wiring is testable without a live client.
+type sandboxCreateDeps struct {
+	getAppID        func(ctx *CLIContext, name string) (string, error)
+	createApp       func(ctx *CLIContext, name string) (string, error)
+	resolveSnapshot func(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType)
+	createService   func(ctx *CLIContext, cmd *cobra.Command, args []string, req *koyeb.CreateService) (*koyeb.Service, error)
+	waitForService  func(ctx *CLIContext, cmd *cobra.Command, serviceID string) error
+	deleteApp       func(ctx *CLIContext, appID string)
+	deleteService   func(ctx *CLIContext, serviceID string)
+	renderService   func(ctx *CLIContext, cmd *cobra.Command, serviceID string)
+}
+
+func defaultSandboxCreateDeps() sandboxCreateDeps {
+	return sandboxCreateDeps{
+		getAppID: getAppIdByName,
+		createApp: func(ctx *CLIContext, name string) (string, error) {
+			createApp := koyeb.NewCreateAppWithDefaults()
+			createApp.SetName(name)
+			lifecycle := koyeb.NewAppLifeCycleWithDefaults()
+			lifecycle.SetDeleteWhenEmpty(true)
+			createApp.SetLifeCycle(*lifecycle)
+			reply, err := NewAppHandler().CreateApp(ctx, createApp)
+			if err != nil {
+				return "", err
+			}
+			app := reply.GetApp()
+			return app.GetId(), nil
+		},
+		resolveSnapshot: resolveSnapshotFlags,
+		createService: func(ctx *CLIContext, cmd *cobra.Command, args []string, req *koyeb.CreateService) (*koyeb.Service, error) {
+			return NewServiceHandler().createService(ctx, cmd, args, req)
+		},
+		waitForService: waitForSandboxDeployment,
+		deleteApp:      deleteAppBestEffort,
+		deleteService:  deleteServiceBestEffort,
+		renderService:  renderServiceState,
+	}
+}
+
+// createSandbox runs the create flow against the seams in deps. Cleanup is
+// phase-aware like the Python SDK: any failure before the service exists
+// removes the app this command auto-created (_delete_created_app), and a
+// wait failure deletes the service when --cleanup-on-failure is set.
+func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sandboxCreateDeps) error {
 	svcHandler := NewServiceHandler()
 
-	// Auto-create app if it doesn't exist
 	appName, err := svcHandler.parseAppName(cmd, args[0])
 	if err != nil {
 		return err
 	}
 
-	appId, err := getAppIdByName(ctx, appName)
+	appID, err := deps.getAppID(ctx, appName)
 	if err != nil {
 		return err
 	}
 
 	createdAppID := ""
-	if appId == "" {
+	if appID == "" {
 		log.Infof("Application `%s` does not exist, creating it", appName)
-		createApp := koyeb.NewCreateAppWithDefaults()
-		createApp.SetName(appName)
-		lifecycle := koyeb.NewAppLifeCycleWithDefaults()
-		lifecycle.SetDeleteWhenEmpty(true)
-		createApp.SetLifeCycle(*lifecycle)
-		appHandler := NewAppHandler()
-		reply, err := appHandler.CreateApp(ctx, createApp)
+		createdAppID, err = deps.createApp(ctx, appName)
 		if err != nil {
 			return err
 		}
-		app := reply.GetApp()
-		createdAppID = app.GetId()
 	}
+	appCleanup := createdAppID != ""
+	defer func() {
+		if appCleanup {
+			deps.deleteApp(ctx, createdAppID)
+		}
+	}()
 
-	// Resolve the snapshot reference before building the definition: a FULL
-	// snapshot boots without one.
-	snapshotID, snapshotType := resolveSnapshotFlags(ctx, cmd)
-
-	// Parse sandbox-compatible flags using ServiceHandler methods
+	createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 	if err := parseSandboxDefinitionFlags(ctx, cmd, createDefinition, svcHandler); err != nil {
 		return err
 	}
-
-	// Force type to SANDBOX
 	createDefinition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX)
 
 	// Ensure SANDBOX_SECRET exists - explicit flag value, then --env, then generated
 	applySandboxSecretFlag(cmd.Flags(), createDefinition)
 	ensureSandboxSecret(createDefinition)
 
-	// Configure sandbox-specific ports and routes (always use defaults for sandbox)
 	exposedPortProtocol, err := cmd.Flags().GetString("exposed-port-protocol")
 	if err != nil {
 		return err
 	}
-	configureSandboxPortsAndRoutes(createDefinition, exposedPortProtocol, false, false)
+	configureSandboxPortsAndRoutes(createDefinition, exposedPortProtocol)
 
-	// Set service name
 	serviceName, err := svcHandler.parseServiceNameWithoutApp(cmd, args[0])
 	if err != nil {
 		return err
 	}
 	createDefinition.SetName(serviceName)
 
-	// Parse lifecycle flags using ServiceHandler method
-	lifecycle := svcHandler.parseLifeCycle(cmd.Flags(), nil)
-	if lifecycle != nil {
+	// Resolve the snapshot only after flag validation so invalid flags do
+	// not pay lookup round-trips; a FULL snapshot boots without a definition.
+	snapshotID, snapshotType := deps.resolveSnapshot(ctx, GetStringFlags(cmd, "snapshot"))
+
+	createService := koyeb.NewCreateServiceWithDefaults()
+	if lifecycle := svcHandler.parseLifeCycle(cmd.Flags(), nil); lifecycle != nil {
 		createService.SetLifeCycle(*lifecycle)
 	}
 
-	// Parse network policy flags using ServiceHandler method
 	var currentNetworkPolicy *koyeb.NetworkPolicy
 	if createDefinition.HasNetworkPolicy() {
 		np := createDefinition.GetNetworkPolicy()
@@ -104,33 +138,67 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}
 
 	createService.SetDefinition(*createDefinition)
-
 	if snapshotID != "" {
 		wireSnapshot(createService, snapshotID, snapshotType, serviceName)
 	}
 
-	// The sandbox flow owns create and wait so cleanup can react to which
-	// phase failed (Python: app cleanup on create failure, service cleanup
-	// gated by cleanup_on_failure on wait failure).
-	service, err := svcHandler.createService(ctx, cmd, args, createService)
+	service, err := deps.createService(ctx, cmd, args, createService)
 	if err != nil {
-		if createdAppID != "" {
-			deleteAppBestEffort(ctx, createdAppID)
-		}
 		return err
 	}
-	defer renderServiceState(ctx, cmd, service.GetId())
+	appCleanup = false
 
 	if wait := GetBoolFlags(cmd, "wait"); wait {
-		if err := waitForServiceDeployment(ctx, cmd, service.GetId()); err != nil {
+		if err := deps.waitForService(ctx, cmd, service.GetId()); err != nil {
 			if GetBoolFlags(cmd, "cleanup-on-failure") {
-				deleteServiceBestEffort(ctx, service.GetId())
+				deps.deleteService(ctx, service.GetId())
 			}
 			return err
 		}
 	}
 
+	deps.renderService(ctx, cmd, service.GetId())
 	return nil
+}
+
+// waitForSandboxDeployment polls the created service until it is ready,
+// using the SDKs' fail-closed classification: HEALTHY/DEGRADED are ready,
+// STARTING/RESUMING are in progress, and anything else — including PAUSED
+// and unknown values — will not become ready. Transient GetService errors
+// are retried until the timeout, like the SDKs' wait loops.
+func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
+	waitTimeout, err := waitTimeoutFlag(cmd)
+	if err != nil {
+		return err
+	}
+
+	getStatus := func(c context.Context, id string) (koyeb.ServiceStatus, error) {
+		res, _, err := ctx.Client.ServicesApi.GetService(c, id).Execute()
+		if err != nil {
+			return "", err
+		}
+		service := res.GetService()
+		if !service.HasStatus() {
+			return "", fmt.Errorf("service %s has no status", id)
+		}
+		return service.GetStatus(), nil
+	}
+	terminalErr := func(status koyeb.ServiceStatus) error {
+		return &errors.CLIError{
+			What:     "Sandbox deployment failed",
+			Why:      fmt.Sprintf("Service '%s' reached terminal state '%s' and will not become ready.", serviceID, status),
+			Solution: errors.CLIErrorSolution("Inspect the sandbox with `koyeb service logs " + serviceID + " -t build`"),
+		}
+	}
+	timeoutErr := func() error {
+		return &errors.CLIError{
+			What:     "Timed out waiting for the sandbox deployment",
+			Why:      fmt.Sprintf("service %s did not become ready within %s", serviceID, waitTimeout),
+			Solution: errors.CLIErrorSolution("Check the service status with `koyeb service get " + serviceID + "`, or raise --wait-timeout"),
+		}
+	}
+
+	return waitForServiceStatus(ctx.Context, serviceID, waitTimeout, waitPollInterval(cmd), getStatus, terminalErr, timeoutErr)
 }
 
 // deleteAppBestEffort removes an app auto-created by this command after a
@@ -152,11 +220,10 @@ func deleteServiceBestEffort(ctx *CLIContext, serviceID string) {
 	}
 }
 
-// resolveSnapshotFlags resolves --snapshot to an instance snapshot ID and
-// type. An empty flag returns empty values; otherwise the reference is
-// resolved like the Python SDK: ID first, then name, then raw string.
-func resolveSnapshotFlags(ctx *CLIContext, cmd *cobra.Command) (string, koyeb.InstanceSnapshotType) {
-	ref := GetStringFlags(cmd, "snapshot")
+// resolveSnapshotFlags resolves a snapshot reference to an instance
+// snapshot ID and type, like the Python SDK: ID first, then name, then raw
+// string. An empty reference returns empty values.
+func resolveSnapshotFlags(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType) {
 	if ref == "" {
 		return "", ""
 	}
@@ -371,62 +438,41 @@ func setSandboxSecretValue(def *koyeb.DeploymentDefinition, value string) {
 	def.SetEnv(append(filtered, *newEnv))
 }
 
-// ensureSandboxSecret adds SANDBOX_SECRET env var if not already present
+// ensureSandboxSecret adds SANDBOX_SECRET if not already present, generating
+// a URL-safe random secret (32 bytes, unpadded base64 — token_urlsafe parity).
 func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
-	envVars := def.GetEnv()
-
-	// Check if SANDBOX_SECRET already exists
-	for _, env := range envVars {
+	for _, env := range def.GetEnv() {
 		if env.GetKey() == SandboxSecretKey {
 			return // Already set by user
 		}
 	}
 
-	// Generate secure random secret (32 bytes, URL-safe base64)
 	secretBytes := make([]byte, 32)
 	rand.Read(secretBytes)
-	secret := base64.RawURLEncoding.EncodeToString(secretBytes)
-
-	// Create new env var
-	newEnv := koyeb.NewDeploymentEnvWithDefaults()
-	newEnv.SetKey(SandboxSecretKey)
-	newEnv.SetValue(secret)
-
-	// Copy scopes from existing env vars if present
-	if len(envVars) > 0 && len(envVars[0].GetScopes()) > 0 {
-		newEnv.SetScopes(envVars[0].GetScopes())
-	}
-
-	def.SetEnv(append(envVars, *newEnv))
+	setSandboxSecretValue(def, base64.RawURLEncoding.EncodeToString(secretBytes))
 }
 
-// configureSandboxPortsAndRoutes sets up default sandbox ports and routes
-// Port 3030: Management interface at /koyeb-sandbox/
-// Port 3031: Application endpoint at / (protocol: exposedPortProtocol)
-func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, exposedPortProtocol string, portsExplicitlySet, routesExplicitlySet bool) {
-	// Set sandbox default ports unless user explicitly set --ports flag
-	if !portsExplicitlySet {
-		port3030 := koyeb.NewDeploymentPortWithDefaults()
-		port3030.SetPort(3030)
-		port3030.SetProtocol("http")
+// configureSandboxPortsAndRoutes sets up the sandbox default ports and
+// routes: port 3030 (management interface at /koyeb-sandbox/, always http)
+// and port 3031 (application endpoint at /, protocol: exposedPortProtocol).
+func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, exposedPortProtocol string) {
+	port3030 := koyeb.NewDeploymentPortWithDefaults()
+	port3030.SetPort(3030)
+	port3030.SetProtocol("http")
 
-		port3031 := koyeb.NewDeploymentPortWithDefaults()
-		port3031.SetPort(3031)
-		port3031.SetProtocol(exposedPortProtocol)
+	port3031 := koyeb.NewDeploymentPortWithDefaults()
+	port3031.SetPort(3031)
+	port3031.SetProtocol(exposedPortProtocol)
 
-		def.SetPorts([]koyeb.DeploymentPort{*port3030, *port3031})
-	}
+	def.SetPorts([]koyeb.DeploymentPort{*port3030, *port3031})
 
-	// Set sandbox default routes unless user explicitly set --routes flag
-	if !routesExplicitlySet {
-		routeManagement := koyeb.NewDeploymentRouteWithDefaults()
-		routeManagement.SetPort(3030)
-		routeManagement.SetPath("/koyeb-sandbox/")
+	routeManagement := koyeb.NewDeploymentRouteWithDefaults()
+	routeManagement.SetPort(3030)
+	routeManagement.SetPath("/koyeb-sandbox/")
 
-		routeApp := koyeb.NewDeploymentRouteWithDefaults()
-		routeApp.SetPort(3031)
-		routeApp.SetPath("/")
+	routeApp := koyeb.NewDeploymentRouteWithDefaults()
+	routeApp.SetPort(3031)
+	routeApp.SetPath("/")
 
-		def.SetRoutes([]koyeb.DeploymentRoute{*routeManagement, *routeApp})
-	}
+	def.SetRoutes([]koyeb.DeploymentRoute{*routeManagement, *routeApp})
 }

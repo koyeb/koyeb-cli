@@ -481,12 +481,12 @@ func testCommand(expression, path string) string {
 
 // FsRename renames a file or directory in the sandbox
 func (h *SandboxHandler) FsRename(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsMovePath(ctx, cmd, "rename", args[0], args[1], args[2])
+	return h.fsMovePath(ctx, cmd, "renaming", args[0], args[1], args[2])
 }
 
 // FsMove moves a file to a different directory in the sandbox
 func (h *SandboxHandler) FsMove(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsMovePath(ctx, cmd, "move", args[0], args[1], args[2])
+	return h.fsMovePath(ctx, cmd, "moving", args[0], args[1], args[2])
 }
 
 // fsMovePath renames or moves a path in the sandbox via mv, mirroring the
@@ -506,7 +506,7 @@ func (h *SandboxHandler) fsMovePath(ctx *CLIContext, cmd *cobra.Command, action,
 	result, err := client.Run(ctx.Context, &RunRequest{Cmd: mvCommand(source, destination)})
 	if err != nil {
 		return &errors.CLIError{
-			What:       fmt.Sprintf("Error while %sing file in sandbox", action),
+			What:       fmt.Sprintf("Error while %s file in sandbox", action),
 			Why:        "the sandbox API request failed",
 			Orig:       err,
 			Solution:   "Check that the sandbox is running and accessible",
@@ -516,7 +516,7 @@ func (h *SandboxHandler) fsMovePath(ctx *CLIContext, cmd *cobra.Command, action,
 
 	if result.Code != 0 {
 		return &errors.CLIError{
-			What:     fmt.Sprintf("Error while %sing file in sandbox", action),
+			What:     fmt.Sprintf("Error while %s file in sandbox", action),
 			Why:      strings.TrimSpace(result.Stderr),
 			Orig:     nil,
 			Solution: "Check that the source path exists and the destination is writable",

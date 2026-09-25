@@ -19,6 +19,9 @@ const (
 	DefaultClaimPollInterval = 2 * time.Second
 )
 
+// serviceStatusGetter fetches a service status for the shared wait loop.
+type serviceStatusGetter func(ctx context.Context, serviceID string) (koyeb.ServiceStatus, error)
+
 // serviceStatusClass classifies a service status for claim readiness.
 type serviceStatusClass int
 
@@ -30,7 +33,9 @@ const (
 
 // classifyServiceStatus fails closed like the SDKs: HEALTHY/DEGRADED are
 // ready, STARTING/RESUMING are in progress, everything else — including
-// unknown forward-compat values — is terminal.
+// unknown forward-compat values — is terminal. The services wait keeps
+// its historical fail-open classification (deploymentWaitDone) — do not
+// consolidate the two.
 func classifyServiceStatus(status koyeb.ServiceStatus) serviceStatusClass {
 	switch status {
 	case koyeb.SERVICESTATUS_HEALTHY, koyeb.SERVICESTATUS_DEGRADED:
@@ -42,11 +47,14 @@ func classifyServiceStatus(status koyeb.ServiceStatus) serviceStatusClass {
 	}
 }
 
-// waitClaimReady polls the claimed service until it is ready, mirroring
-// the SDKs' wait_claim_ready: transient GetService failures are treated as
-// in progress and retried until the timeout, terminal states error out.
-func waitClaimReady(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
-	getStatus func(context.Context, string) (koyeb.ServiceStatus, error),
+// waitForServiceStatus polls getStatus until the service is ready, a
+// terminal state, the timeout, or context cancellation. Transient
+// getStatus failures count as in progress and retry until the timeout,
+// mirroring the SDKs' wait loops.
+func waitForServiceStatus(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
+	getStatus serviceStatusGetter,
+	terminalErr func(koyeb.ServiceStatus) error,
+	timeoutErr func() error,
 ) error {
 	deadline := time.Now().Add(timeout)
 
@@ -57,20 +65,12 @@ func waitClaimReady(ctx context.Context, serviceID string, timeout, pollInterval
 			case serviceStatusReady:
 				return nil
 			case serviceStatusTerminal:
-				return &errors.CLIError{
-					What:     "Claimed service reached a terminal state",
-					Why:      fmt.Sprintf("Service '%s' reached terminal state '%s' and will not become ready.", serviceID, status),
-					Solution: errors.CLIErrorSolution("Check the service logs with `koyeb service logs " + serviceID + "`"),
-				}
+				return terminalErr(status)
 			}
 		}
 
 		if !time.Now().Before(deadline) {
-			return &errors.CLIError{
-				What:     "Timed out waiting for the claimed service",
-				Why:      fmt.Sprintf("service %s did not become ready within %s", serviceID, timeout),
-				Solution: errors.CLIErrorSolution("Check the service status with `koyeb service get " + serviceID + "`"),
-			}
+			return timeoutErr()
 		}
 
 		select {
@@ -79,6 +79,30 @@ func waitClaimReady(ctx context.Context, serviceID string, timeout, pollInterval
 			return ctx.Err()
 		}
 	}
+}
+
+// waitClaimReady polls the claimed service until it is ready, mirroring
+// the SDKs' wait_claim_ready: transient GetService failures are treated as
+// in progress and retried until the timeout, terminal states error out.
+func waitClaimReady(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
+	getStatus serviceStatusGetter,
+) error {
+	return waitForServiceStatus(ctx, serviceID, timeout, pollInterval, getStatus,
+		func(status koyeb.ServiceStatus) error {
+			return &errors.CLIError{
+				What:     "Claimed service reached a terminal state",
+				Why:      fmt.Sprintf("Service '%s' reached terminal state '%s' and will not become ready.", serviceID, status),
+				Solution: errors.CLIErrorSolution("Check the service logs with `koyeb service logs " + serviceID + "`"),
+			}
+		},
+		func() error {
+			return &errors.CLIError{
+				What:     "Timed out waiting for the claimed service",
+				Why:      fmt.Sprintf("service %s did not become ready within %s", serviceID, timeout),
+				Solution: errors.CLIErrorSolution("Check the service status with `koyeb service get " + serviceID + "`"),
+			}
+		},
+	)
 }
 
 // generateRequestID returns a UUID v7 used when --request-id is not given.
@@ -141,12 +165,15 @@ $> koyeb pool claim my-pool --request-id my-request-id
 			ctx.Renderer.Render(claimReply)
 
 			if GetBoolFlags(cmd, "wait") {
-				if serviceID := res.GetServiceId(); serviceID != "" {
-					if err := waitClaimedService(ctx, serviceID); err != nil {
-						return err
-					}
-					log.Infof("Claimed service %s is ready", serviceID)
+				serviceID := res.GetServiceId()
+				if serviceID == "" {
+					log.Warnf("Claim reply has no service ID; skipping --wait")
+					return nil
 				}
+				if err := waitClaimedService(ctx, serviceID); err != nil {
+					return err
+				}
+				log.Infof("Claimed service %s is ready", serviceID)
 			}
 			return nil
 		}),

@@ -141,6 +141,19 @@ func TestWaitClaimReady(t *testing.T) {
 		assert.Contains(t, err.Error(), "did not become ready")
 	})
 
+	t.Run("transient errors are retried until the timeout", func(t *testing.T) {
+		calls := 0
+		getStatus := func(context.Context, string) (koyeb.ServiceStatus, error) {
+			calls++
+			return "", fmt.Errorf("still provisioning")
+		}
+
+		err := waitClaimReady(context.Background(), serviceID, 20*time.Millisecond, 5*time.Millisecond, getStatus)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "did not become ready")
+		assert.Greater(t, calls, 1, "getter must be retried, not failed fast")
+	})
+
 	t.Run("context cancellation stops the wait", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
