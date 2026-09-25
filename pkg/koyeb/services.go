@@ -66,28 +66,9 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 
 			createDefinition.Name = koyeb.PtrString(serviceName)
 
-			lifecycle := h.parseLifeCycle(cmd.Flags(), nil)
-			if lifecycle != nil {
-				createService.SetLifeCycle(*lifecycle)
-			}
-
-			var currentNetworkPolicy *koyeb.NetworkPolicy
-			if createDefinition.HasNetworkPolicy() {
-				np := createDefinition.GetNetworkPolicy()
-				currentNetworkPolicy = &np
-			}
-			networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
-			if err != nil {
+			if err := h.applyCreateServiceFlags(cmd, createDefinition, createService); err != nil {
 				return err
 			}
-			if changed && networkPolicy != nil {
-				createDefinition.SetNetworkPolicy(*networkPolicy)
-			}
-
-			createService.SetDefinition(*createDefinition)
-
-			// Service account ID is a service-level attribute, set at creation time only.
-			h.parseServiceAccountId(cmd.Flags(), createService)
 
 			return h.Create(ctx, cmd, args, createService)
 		}),
@@ -200,43 +181,11 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			}
 
 			updateService := koyeb.NewUpdateServiceWithDefaults()
-			latestDeploy, resp, err := ctx.Client.DeploymentsApi.
-				ListDeployments(ctx.Context).
-				Limit("1").
-				ServiceId(service).
-				Execute()
-
-			if err != nil {
-				return errors.NewCLIErrorFromAPIError(
-					fmt.Sprintf("Error while updating the service `%s`", args[0]),
-					err,
-					resp,
-				)
-			}
-			if len(latestDeploy.GetDeployments()) == 0 {
-				return &errors.CLIError{
-					What: "Error while updating the service",
-					Why:  "we couldn't find the latest deployment of your service",
-					Additional: []string{
-						"When you create a service for the first time, it can take a few seconds for the first deployment to be created.",
-						"We need to fetch the configuration of this latest deployment to update your service.",
-					},
-					Orig:     nil,
-					Solution: "Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new",
-				}
-			}
-
-			var updateDef *koyeb.DeploymentDefinition
-
-			// If the --override flag is set, we start from a new deployment
-			// definition with default values. Otherwise, we start from the
-			// latest deployment definition.
 			override, _ := cmd.Flags().GetBool("override")
-			if override {
-				updateDef = koyeb.NewDeploymentDefinitionWithDefaults()
-				updateDef.Name = latestDeploy.GetDeployments()[0].Definition.Name
-			} else {
-				updateDef = latestDeploy.GetDeployments()[0].Definition
+			updateDef, err := h.latestDeploymentDefinition(ctx, service, args[0], override,
+				"Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new")
+			if err != nil {
+				return err
 			}
 
 			if updateDef.Git != nil && updateDef.Git.GetSha() != "" && !cmd.Flags().Lookup("git-sha").Changed {
@@ -246,43 +195,12 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 				)
 			}
 
-			err = h.parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDef)
-			if err != nil {
+			if err := h.parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDef); err != nil {
 				return err
 			}
 
-			var currentNetworkPolicy *koyeb.NetworkPolicy
-			if updateDef.HasNetworkPolicy() {
-				np := updateDef.GetNetworkPolicy()
-				currentNetworkPolicy = &np
-			}
-			networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
-			if err != nil {
+			if err := h.applyUpdateServiceFlags(ctx, cmd, service, args[0], updateDef, updateService); err != nil {
 				return err
-			}
-			if changed && networkPolicy != nil {
-				updateDef.SetNetworkPolicy(*networkPolicy)
-			}
-
-			updateService.SetDefinition(*updateDef)
-
-			currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, service).Execute()
-			if err != nil {
-				return errors.NewCLIErrorFromAPIError(
-					fmt.Sprintf("Error while fetching service `%s`", args[0]),
-					err,
-					resp,
-				)
-			}
-
-			var currentLifeCycle *koyeb.ServiceLifeCycle
-			if currentService.Service.HasLifeCycle() {
-				lc := currentService.Service.GetLifeCycle()
-				currentLifeCycle = &lc
-			}
-			lifecycle := h.parseLifeCycle(cmd.Flags(), currentLifeCycle)
-			if lifecycle != nil {
-				updateService.SetLifeCycle(*lifecycle)
 			}
 
 			skipBuild, _ := cmd.Flags().GetBool("skip-build")
@@ -992,6 +910,102 @@ func (h *ServiceHandler) addServiceAccountIdFlag(flags *pflag.FlagSet) {
 		"The service account ID to associate with the service.\n"+
 			"Set at creation time only; immutable afterwards.",
 	)
+}
+
+// applyCreateServiceFlags wires a create request from the definition flags:
+// lifecycle, network policy, the definition itself, and the service account.
+func (h *ServiceHandler) applyCreateServiceFlags(cmd *cobra.Command, def *koyeb.DeploymentDefinition, createService *koyeb.CreateService) error {
+	if lifecycle := h.parseLifeCycle(cmd.Flags(), nil); lifecycle != nil {
+		createService.SetLifeCycle(*lifecycle)
+	}
+	if err := h.applyNetworkPolicyFlags(cmd, def); err != nil {
+		return err
+	}
+	createService.SetDefinition(*def)
+	h.parseServiceAccountId(cmd.Flags(), createService)
+	return nil
+}
+
+// applyNetworkPolicyFlags merges the network-policy flags into the
+// definition's current policy, if any.
+func (h *ServiceHandler) applyNetworkPolicyFlags(cmd *cobra.Command, def *koyeb.DeploymentDefinition) error {
+	var currentNetworkPolicy *koyeb.NetworkPolicy
+	if def.HasNetworkPolicy() {
+		np := def.GetNetworkPolicy()
+		currentNetworkPolicy = &np
+	}
+	networkPolicy, changed, err := h.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+	if err != nil {
+		return err
+	}
+	if changed && networkPolicy != nil {
+		def.SetNetworkPolicy(*networkPolicy)
+	}
+	return nil
+}
+
+// applyUpdateServiceFlags wires an update request: network policy, the
+// definition, then the lifecycle merged with the service's current one.
+func (h *ServiceHandler) applyUpdateServiceFlags(ctx *CLIContext, cmd *cobra.Command, serviceID, serviceName string, def *koyeb.DeploymentDefinition, updateService *koyeb.UpdateService) error {
+	if err := h.applyNetworkPolicyFlags(cmd, def); err != nil {
+		return err
+	}
+	updateService.SetDefinition(*def)
+
+	currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceID).Execute()
+	if err != nil {
+		return errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while fetching service `%s`", serviceName),
+			err,
+			resp,
+		)
+	}
+
+	var currentLifeCycle *koyeb.ServiceLifeCycle
+	if currentService.Service.HasLifeCycle() {
+		lc := currentService.Service.GetLifeCycle()
+		currentLifeCycle = &lc
+	}
+	if lifecycle := h.parseLifeCycle(cmd.Flags(), currentLifeCycle); lifecycle != nil {
+		updateService.SetLifeCycle(*lifecycle)
+	}
+	return nil
+}
+
+// latestDeploymentDefinition fetches the service's latest deployment to use
+// as the update base, honoring --override. notFoundSolution builds the
+// caller-specific error when no deployment exists yet.
+func (h *ServiceHandler) latestDeploymentDefinition(ctx *CLIContext, serviceID, name string, override bool, notFoundSolution errors.CLIErrorSolution) (*koyeb.DeploymentDefinition, error) {
+	latestDeploy, resp, err := ctx.Client.DeploymentsApi.
+		ListDeployments(ctx.Context).
+		Limit("1").
+		ServiceId(serviceID).
+		Execute()
+	if err != nil {
+		return nil, errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while updating the service `%s`", name),
+			err,
+			resp,
+		)
+	}
+	if len(latestDeploy.GetDeployments()) == 0 {
+		return nil, &errors.CLIError{
+			What: "Error while updating the service",
+			Why:  "we couldn't find the latest deployment of your service",
+			Additional: []string{
+				"When you create a service for the first time, it can take a few seconds for the first deployment to be created.",
+				"We need to fetch the configuration of this latest deployment to update your service.",
+			},
+			Orig:     nil,
+			Solution: notFoundSolution,
+		}
+	}
+	if override {
+		updateDef := koyeb.NewDeploymentDefinitionWithDefaults()
+		updateDef.Name = latestDeploy.GetDeployments()[0].Definition.Name
+		return updateDef, nil
+	}
+	return latestDeploy.GetDeployments()[0].Definition, nil
 }
 
 // parseServiceAccountId sets the service account ID on the given CreateService

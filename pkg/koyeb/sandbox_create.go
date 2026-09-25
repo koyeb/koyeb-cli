@@ -129,24 +129,9 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 	}
 
 	createService := koyeb.NewCreateServiceWithDefaults()
-	if lifecycle := svcHandler.parseLifeCycle(cmd.Flags(), nil); lifecycle != nil {
-		createService.SetLifeCycle(*lifecycle)
-	}
-
-	var currentNetworkPolicy *koyeb.NetworkPolicy
-	if createDefinition.HasNetworkPolicy() {
-		np := createDefinition.GetNetworkPolicy()
-		currentNetworkPolicy = &np
-	}
-	networkPolicy, networkPolicyChanged, err := svcHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
-	if err != nil {
+	if err := svcHandler.applyCreateServiceFlags(cmd, createDefinition, createService); err != nil {
 		return err
 	}
-	if networkPolicyChanged && networkPolicy != nil {
-		createDefinition.SetNetworkPolicy(*networkPolicy)
-	}
-
-	createService.SetDefinition(*createDefinition)
 	if snapshotID != "" {
 		wireSnapshot(createService, snapshotID, snapshotType, serviceName)
 	}

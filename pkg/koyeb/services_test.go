@@ -6,6 +6,7 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetGitSourceBuilder(t *testing.T) {
@@ -645,4 +646,57 @@ func TestSetSleepDelayFlags(t *testing.T) {
 			}
 		})
 	}
+}
+
+func serviceCreateCmdForTest(t *testing.T) *cobra.Command {
+	t.Helper()
+	cmd, _, err := NewServiceCmd().Find([]string{"create"})
+	require.NoError(t, err)
+	return cmd
+}
+
+func TestApplyCreateServiceFlags(t *testing.T) {
+	t.Run("wires lifecycle, network policy and definition", func(t *testing.T) {
+		cmd := serviceCreateCmdForTest(t)
+		require.NoError(t, cmd.Flags().Parse([]string{"--delete-after-delay", "1h", "--block-network", "--service-account-id", "sa-123"}))
+
+		def := koyeb.NewDeploymentDefinitionWithDefaults()
+		def.SetName("my-svc")
+		createService := koyeb.NewCreateServiceWithDefaults()
+
+		require.NoError(t, NewServiceHandler().applyCreateServiceFlags(cmd, def, createService))
+
+		assert.True(t, createService.HasLifeCycle(), "lifecycle flags must be wired")
+		assert.True(t, def.HasNetworkPolicy(), "network policy flags must merge into the definition")
+		policy := def.GetNetworkPolicy()
+		assert.True(t, policy.HasEgress())
+		reqDef := createService.GetDefinition()
+		assert.Equal(t, "my-svc", reqDef.GetName(), "the definition must be carried on the request")
+		assert.Equal(t, "sa-123", createService.GetServiceAccountId())
+	})
+
+	t.Run("no flags leave the request untouched", func(t *testing.T) {
+		cmd := serviceCreateCmdForTest(t)
+
+		def := koyeb.NewDeploymentDefinitionWithDefaults()
+		createService := koyeb.NewCreateServiceWithDefaults()
+
+		require.NoError(t, NewServiceHandler().applyCreateServiceFlags(cmd, def, createService))
+
+		assert.False(t, createService.HasLifeCycle())
+		assert.False(t, def.HasNetworkPolicy())
+		assert.True(t, createService.HasDefinition())
+	})
+}
+
+func TestApplyNetworkPolicyFlags(t *testing.T) {
+	t.Run("keeps an existing policy when no flags changed", func(t *testing.T) {
+		cmd := serviceCreateCmdForTest(t)
+		def := koyeb.NewDeploymentDefinitionWithDefaults()
+		existing := koyeb.NewNetworkPolicyWithDefaults()
+		def.SetNetworkPolicy(*existing)
+
+		require.NoError(t, NewServiceHandler().applyNetworkPolicyFlags(cmd, def))
+		assert.True(t, def.HasNetworkPolicy())
+	})
 }
