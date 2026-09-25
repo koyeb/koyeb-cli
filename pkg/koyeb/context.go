@@ -68,6 +68,7 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 type CLIContext struct {
 	Context      context.Context
 	Client       *koyeb.APIClient
+	API          koyebAPI
 	LogsClient   *LogsAPIClient
 	ExecClient   *ExecAPIClient
 	Mapper       *idmapper.Mapper
@@ -78,9 +79,11 @@ type CLIContext struct {
 
 // GetCLIContext transforms the untyped context passed to cobra commands into a CLIContext.
 func GetCLIContext(ctx context.Context) *CLIContext {
+	client := ctx.Value(ctx_client).(*koyeb.APIClient)
 	return &CLIContext{
 		Context:      ctx,
-		Client:       ctx.Value(ctx_client).(*koyeb.APIClient),
+		Client:       client,
+		API:          apiPort{client: client},
 		LogsClient:   ctx.Value(ctx_logs_client).(*LogsAPIClient),
 		ExecClient:   ctx.Value(ctx_exec_client).(*ExecAPIClient),
 		Mapper:       ctx.Value(ctx_mapper).(*idmapper.Mapper),

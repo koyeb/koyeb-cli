@@ -393,136 +393,100 @@ func TestPoolCreateInstanceTypeDefaultsToMicro(t *testing.T) {
 	assert.Equal(t, "micro", instanceTypes[0].GetType())
 }
 
-// fakeSandboxCreate captures the API seams of the create flow so the
-// wiring — snapshot, protocol, secret ordering, cleanup — is pinned
-// without a live client.
-type fakeSandboxCreate struct {
-	existingAppID string
-	createdAppID  string
-	snapshotID    string
-	snapshotType  koyeb.InstanceSnapshotType
-	serviceID     string
-	createErr     error
-	waitErr       error
-
-	createdApps     []string
-	deletedApps     []string
-	deletedServices []string
-	rendered        []string
-	createReq       *koyeb.CreateService
+// sandboxWithStatus builds a CLIContext over the fake port whose GetService
+// reports the given status.
+func sandboxCtxWithStatus(fake *fakeAPI, status koyeb.ServiceStatus) *CLIContext {
+	serviceID := "323e4567-e89b-42d3-a456-426614174000"
+	fake.service = &koyeb.Service{Id: &serviceID, Status: &status}
+	return sandboxTestContext(fake)
 }
 
-func (f *fakeSandboxCreate) deps() sandboxCreateDeps {
-	return sandboxCreateDeps{
-		getAppID: func(*CLIContext, string) (string, error) { return f.existingAppID, nil },
-		createApp: func(_ *CLIContext, name string) (string, error) {
-			f.createdApps = append(f.createdApps, name)
-			return f.createdAppID, nil
-		},
-		resolveSnapshot: func(*CLIContext, string) (string, koyeb.InstanceSnapshotType) {
-			return f.snapshotID, f.snapshotType
-		},
-		createService: func(_ *CLIContext, _ *cobra.Command, _ []string, req *koyeb.CreateService) (*koyeb.Service, error) {
-			f.createReq = req
-			if f.createErr != nil {
-				return nil, f.createErr
-			}
-			id := f.serviceID
-			return &koyeb.Service{Id: &id}, nil
-		},
-		waitForService: func(*CLIContext, *cobra.Command, string) error { return f.waitErr },
-		deleteApp: func(_ *CLIContext, appID string) {
-			f.deletedApps = append(f.deletedApps, appID)
-		},
-		deleteService: func(_ *CLIContext, serviceID string) {
-			f.deletedServices = append(f.deletedServices, serviceID)
-		},
-		renderService: func(_ *CLIContext, _ *cobra.Command, serviceID string) {
-			f.rendered = append(f.rendered, serviceID)
-		},
-	}
+func existingApp(id string) koyeb.App {
+	return koyeb.App{Id: &id, Name: koyeb.PtrString("myapp")}
 }
 
 func TestCreateSandboxCleansUpAutoCreatedAppOnCreateFailure(t *testing.T) {
-	fake := &fakeSandboxCreate{createdAppID: "app-123", serviceID: "svc-123", createErr: fmt.Errorf("api down")}
+	fake := &fakeAPI{createdAppID: "app-123", createServiceErr: fmt.Errorf("api down")}
 	cmd := sandboxCreateCmd(t)
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxTestContext(fake), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
 	assert.Equal(t, []string{"myapp"}, fake.createdApps, "missing app must be auto-created")
 	assert.Equal(t, []string{"app-123"}, fake.deletedApps, "auto-created app must be deleted on create failure")
 	assert.Empty(t, fake.deletedServices)
-	assert.Empty(t, fake.rendered)
+	assert.Empty(t, fake.servicesFetched, "nothing to render on failure")
 }
 
 func TestCreateSandboxCleansUpAutoCreatedAppOnFlagValidationFailure(t *testing.T) {
-	fake := &fakeSandboxCreate{createdAppID: "app-123", serviceID: "svc-123"}
+	fake := &fakeAPI{createdAppID: "app-123"}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "ftp"))
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxTestContext(fake), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
 	assert.Equal(t, []string{"app-123"}, fake.deletedApps, "validation failure after app creation must clean the app up")
-	assert.Nil(t, fake.createReq, "no service create request may be sent")
+	assert.Nil(t, fake.createServiceReq, "no service create request may be sent")
 }
 
 func TestCreateSandboxKeepsExistingAppOnCreateFailure(t *testing.T) {
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123", createErr: fmt.Errorf("api down")}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}, createServiceErr: fmt.Errorf("api down")}
 	cmd := sandboxCreateCmd(t)
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxTestContext(fake), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
 	assert.Empty(t, fake.createdApps, "existing app must not be re-created")
 	assert.Empty(t, fake.deletedApps, "an app this command did not create must never be deleted")
 }
 
 func TestCreateSandboxServiceCleanupOnWaitFailure(t *testing.T) {
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123", waitErr: fmt.Errorf("timed out")}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("wait", "true"))
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_UNHEALTHY), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
-	assert.Equal(t, []string{"svc-123"}, fake.deletedServices, "default cleanup deletes the sandbox on wait failure")
-	assert.Empty(t, fake.rendered, "a failed sandbox is not rendered after cleanup")
+	assert.Equal(t, []string{"323e4567-e89b-42d3-a456-426614174000"}, fake.deletedServices,
+		"default cleanup deletes the sandbox on wait failure")
 	assert.Contains(t, err.Error(), "The sandbox was deleted", "the deletion is surfaced in the error, like the SDKs")
 }
 
 func TestCreateSandboxNoServiceCleanupWhenFlagDisabled(t *testing.T) {
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123", waitErr: fmt.Errorf("timed out")}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("wait", "true"))
 	require.NoError(t, cmd.Flags().Set("cleanup-on-failure", "false"))
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_UNHEALTHY), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
 	assert.Empty(t, fake.deletedServices)
 }
 
 func TestCreateSandboxRendersOnSuccess(t *testing.T) {
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
-	require.NoError(t, err)
-	assert.Equal(t, []string{"svc-123"}, fake.rendered)
+	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
+
+	assert.Equal(t, []string{"323e4567-e89b-42d3-a456-426614174000"}, fake.servicesFetched,
+		"the final state must be fetched for rendering")
 	assert.Empty(t, fake.deletedApps)
 	assert.Empty(t, fake.deletedServices)
-	assert.False(t, fake.createReq.HasInstanceSnapshotId(), "no --snapshot flag means no snapshot on the request")
+	assert.False(t, fake.createServiceReq.HasInstanceSnapshotId(), "no --snapshot flag means no snapshot on the request")
 }
 
 func TestCreateSandboxWiresFullSnapshot(t *testing.T) {
-	fake := &fakeSandboxCreate{
-		existingAppID: "app-existing",
-		serviceID:     "svc-123",
-		snapshotID:    "snap-123",
-		snapshotType:  koyeb.INSTANCESNAPSHOTTYPE_FULL,
+	snapshotID := "snap-123"
+	snapshotType := koyeb.INSTANCESNAPSHOTTYPE_FULL
+	fake := &fakeAPI{
+		apps:     []koyeb.App{existingApp("app-existing")},
+		snapshot: &koyeb.InstanceSnapshot{Id: &snapshotID, Type: &snapshotType},
 	}
 	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("snapshot", "snap-123"))
 
-	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
-	req := fake.createReq
+	req := fake.createServiceReq
 	require.NotNil(t, req)
 	assert.Equal(t, "snap-123", req.GetInstanceSnapshotId())
 	assert.False(t, req.HasDefinition(), "FULL snapshot: the API infers the definition")
@@ -530,13 +494,13 @@ func TestCreateSandboxWiresFullSnapshot(t *testing.T) {
 }
 
 func TestCreateSandboxWiresExposedPortProtocol(t *testing.T) {
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "http2"))
 
-	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
-	def := fake.createReq.GetDefinition()
+	def := fake.createServiceReq.GetDefinition()
 	ports := def.GetPorts()
 	require.Len(t, ports, 2)
 	assert.Equal(t, "http", ports[0].GetProtocol())
@@ -544,15 +508,15 @@ func TestCreateSandboxWiresExposedPortProtocol(t *testing.T) {
 }
 
 func TestCreateSandboxWiresSandboxSecret(t *testing.T) {
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("sandbox-secret", "flag-secret"))
 	require.NoError(t, cmd.Flags().Set("env", "SANDBOX_SECRET=env-secret"))
 
-	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 
-	secrets := []string{}
-	def := fake.createReq.GetDefinition()
+	var secrets []string
+	def := fake.createServiceReq.GetDefinition()
 	for _, env := range def.GetEnv() {
 		if env.GetKey() == SandboxSecretKey {
 			secrets = append(secrets, env.GetValue())
@@ -578,36 +542,36 @@ func TestWaitTimeoutFlagRejectsNonPositiveValues(t *testing.T) {
 
 func TestCreateSandboxValidatesWaitTimeoutBeforeCreating(t *testing.T) {
 	// A flag typo must not create-then-delete the sandbox.
-	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	fake := &fakeAPI{apps: []koyeb.App{existingApp("app-existing")}}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("wait", "true"))
 	require.NoError(t, cmd.Flags().Set("wait-timeout", "0"))
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxTestContext(fake), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
-	assert.Nil(t, fake.createReq, "no service create request may be sent on an invalid --wait-timeout")
+	assert.Nil(t, fake.createServiceReq, "no service create request may be sent on an invalid --wait-timeout")
 	assert.Empty(t, fake.deletedServices)
-	assert.Empty(t, fake.rendered)
+	assert.Empty(t, fake.servicesFetched)
 }
 
 func TestCreateSandboxKeepsAppAfterSuccess(t *testing.T) {
 	// Pins the cleanup disarm: success must not trigger the deferred app delete.
-	fake := &fakeSandboxCreate{createdAppID: "app-created", serviceID: "svc-123"}
+	fake := &fakeAPI{createdAppID: "app-created"}
 	cmd := sandboxCreateCmd(t)
 
-	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+	require.NoError(t, createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_HEALTHY), cmd, []string{"myapp/mysbx"}))
 	assert.Equal(t, []string{"myapp"}, fake.createdApps)
 	assert.Empty(t, fake.deletedApps, "the auto-created app must be kept on success")
 }
 
 func TestCreateSandboxWaitFailureCleansServiceNotApp(t *testing.T) {
 	// Pins the phase split: after the service exists, only the service is cleaned up.
-	fake := &fakeSandboxCreate{createdAppID: "app-created", serviceID: "svc-123", waitErr: fmt.Errorf("timed out")}
+	fake := &fakeAPI{createdAppID: "app-created"}
 	cmd := sandboxCreateCmd(t)
 	require.NoError(t, cmd.Flags().Set("wait", "true"))
 
-	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	err := createSandbox(sandboxCtxWithStatus(fake, koyeb.SERVICESTATUS_UNHEALTHY), cmd, []string{"myapp/mysbx"})
 	require.Error(t, err)
-	assert.Equal(t, []string{"svc-123"}, fake.deletedServices)
+	assert.Equal(t, []string{"323e4567-e89b-42d3-a456-426614174000"}, fake.deletedServices)
 	assert.Empty(t, fake.deletedApps, "the app must not be deleted after the service was created")
 }

@@ -952,7 +952,7 @@ func (h *ServiceHandler) applyUpdateServiceFlags(ctx *CLIContext, cmd *cobra.Com
 	}
 	updateService.SetDefinition(*def)
 
-	currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceID).Execute()
+	currentService, resp, err := ctx.API.GetService(ctx.Context, serviceID)
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while fetching service `%s`", serviceName),
@@ -976,11 +976,7 @@ func (h *ServiceHandler) applyUpdateServiceFlags(ctx *CLIContext, cmd *cobra.Com
 // as the update base, honoring --override. notFoundSolution builds the
 // caller-specific error when no deployment exists yet.
 func (h *ServiceHandler) latestDeploymentDefinition(ctx *CLIContext, serviceID, name string, override bool, notFoundSolution errors.CLIErrorSolution) (*koyeb.DeploymentDefinition, error) {
-	latestDeploy, resp, err := ctx.Client.DeploymentsApi.
-		ListDeployments(ctx.Context).
-		Limit("1").
-		ServiceId(serviceID).
-		Execute()
+	latestDeploy, resp, err := ctx.API.ListDeploymentsByService(ctx.Context, serviceID, "1")
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while updating the service `%s`", name),

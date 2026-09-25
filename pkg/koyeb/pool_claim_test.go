@@ -8,8 +8,6 @@ import (
 	"uuid"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
-	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -199,64 +197,41 @@ func TestClaimWaitFlow(t *testing.T) {
 		return &koyeb.PoolClaimReply{ClaimId: &serviceID, ServiceId: &serviceID}
 	}
 
-	t.Run("without --wait the wait func is not invoked", func(t *testing.T) {
-		waited := false
+	t.Run("without --wait the service is not fetched", func(t *testing.T) {
+		fake := &fakeAPI{}
 		cmd := newPoolClaimCmd()
-		ctx := &CLIContext{
-			Mapper:   idmapper.NewMapper(context.Background(), nil),
-			Renderer: renderer.NewRenderer(renderer.JSONFormat),
-		}
 
-		require.NoError(t, claimWaitFlow(ctx, cmd, newReply(serviceID), func(*CLIContext, string) error {
-			waited = true
-			return nil
-		}))
-		assert.False(t, waited)
+		require.NoError(t, claimWaitFlow(sandboxTestContext(fake), cmd, newReply(serviceID)))
+		assert.Empty(t, fake.servicesFetched)
 	})
 
 	t.Run("with --wait the claimed service is awaited", func(t *testing.T) {
-		var waitedFor string
+		status := koyeb.SERVICESTATUS_HEALTHY
+		fake := &fakeAPI{service: &koyeb.Service{Id: &serviceID, Status: &status}}
 		cmd := newPoolClaimCmd()
 		require.NoError(t, cmd.Flags().Set("wait", "true"))
-		ctx := &CLIContext{
-			Mapper:   idmapper.NewMapper(context.Background(), nil),
-			Renderer: renderer.NewRenderer(renderer.JSONFormat),
-		}
 
-		require.NoError(t, claimWaitFlow(ctx, cmd, newReply(serviceID), func(_ *CLIContext, id string) error {
-			waitedFor = id
-			return nil
-		}))
-		assert.Equal(t, serviceID, waitedFor)
+		require.NoError(t, claimWaitFlow(sandboxTestContext(fake), cmd, newReply(serviceID)))
+		assert.Equal(t, []string{serviceID}, fake.servicesFetched)
 	})
 
-	t.Run("wait errors propagate", func(t *testing.T) {
+	t.Run("terminal wait states propagate", func(t *testing.T) {
+		status := koyeb.SERVICESTATUS_DELETED
+		fake := &fakeAPI{service: &koyeb.Service{Id: &serviceID, Status: &status}}
 		cmd := newPoolClaimCmd()
 		require.NoError(t, cmd.Flags().Set("wait", "true"))
-		ctx := &CLIContext{
-			Mapper:   idmapper.NewMapper(context.Background(), nil),
-			Renderer: renderer.NewRenderer(renderer.JSONFormat),
-		}
 
-		err := claimWaitFlow(ctx, cmd, newReply(serviceID), func(*CLIContext, string) error {
-			return fmt.Errorf("terminal")
-		})
+		err := claimWaitFlow(sandboxTestContext(fake), cmd, newReply(serviceID))
 		require.Error(t, err)
+		assert.Contains(t, err.Error(), "reached terminal state")
 	})
 
 	t.Run("empty service ID skips the wait", func(t *testing.T) {
-		waited := false
+		fake := &fakeAPI{}
 		cmd := newPoolClaimCmd()
 		require.NoError(t, cmd.Flags().Set("wait", "true"))
-		ctx := &CLIContext{
-			Mapper:   idmapper.NewMapper(context.Background(), nil),
-			Renderer: renderer.NewRenderer(renderer.JSONFormat),
-		}
 
-		require.NoError(t, claimWaitFlow(ctx, cmd, koyeb.NewPoolClaimReply(), func(*CLIContext, string) error {
-			waited = true
-			return nil
-		}))
-		assert.False(t, waited, "a claim reply without service ID must skip --wait")
+		require.NoError(t, claimWaitFlow(sandboxTestContext(fake), cmd, koyeb.NewPoolClaimReply()))
+		assert.Empty(t, fake.servicesFetched, "a claim reply without service ID must skip --wait")
 	})
 }
