@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -29,7 +28,6 @@ func (h *ServiceHandler) ReDeploy(ctx *CLIContext, cmd *cobra.Command, args []st
 	useCache := GetBoolFlags(cmd, "use-cache")
 	skipBuild := GetBoolFlags(cmd, "skip-build")
 	wait := GetBoolFlags(cmd, "wait")
-	waitTimeout := GetDurationFlags(cmd, "wait-timeout")
 
 	redeployBody := *koyeb.NewRedeployRequestInfoWithDefaults()
 	redeployBody.UseCache = &useCache
@@ -49,39 +47,16 @@ func (h *ServiceHandler) ReDeploy(ctx *CLIContext, cmd *cobra.Command, args []st
 	)
 
 	if wait {
-		ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
-		defer cancel()
-
-		for range ticker(ctxd, 2*time.Second) {
-			res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctxd, res.Deployment.GetId()).Execute()
-			if err != nil {
-				return errors.NewCLIErrorFromAPIError(
-					"Error while fetching deployment",
-					err,
-					resp,
-				)
-			}
-
-			if res.Deployment != nil && res.Deployment.Status != nil {
-				switch status := *res.Deployment.Status; status {
-				case koyeb.DEPLOYMENTSTATUS_ERROR, koyeb.DEPLOYMENTSTATUS_DEGRADED, koyeb.DEPLOYMENTSTATUS_UNHEALTHY, koyeb.DEPLOYMENTSTATUS_CANCELED, koyeb.DEPLOYMENTSTATUS_STOPPED, koyeb.DEPLOYMENTSTATUS_ERRORING:
-					return fmt.Errorf("deployment %s update ended in status: %s", res.Deployment.GetId()[:8], status)
-				case koyeb.DEPLOYMENTSTATUS_STARTING, koyeb.DEPLOYMENTSTATUS_PENDING, koyeb.DEPLOYMENTSTATUS_PROVISIONING, koyeb.DEPLOYMENTSTATUS_ALLOCATING:
-					break
-				default:
-					return nil
-				}
-			}
+		waitTimeout, err := waitTimeoutFlag(cmd)
+		if err != nil {
+			return err
 		}
-
-		log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb deployment logs %s -t build`. For the runtime logs, run `koyeb deployment logs %s`",
-			res.Deployment.GetId()[:8],
-			res.Deployment.GetId()[:8],
-		)
-		return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb deployment logs %s -t build`. For the runtime logs, run `koyeb deployment logs %s`",
-			res.Deployment.GetId()[:8],
-			res.Deployment.GetId()[:8],
-		)
+		if err := waitEngine(ctx.Context, waitTimeout, 2*time.Second,
+			deploymentUpdateProbe(ctx, res.Deployment.GetId()),
+			func() error { return serviceWaitTimedOut(res.Deployment.GetId(), "deployment logs") },
+		); err != nil {
+			return err
+		}
 	}
 
 	log.Infof("Service %s redeployed.", serviceName)

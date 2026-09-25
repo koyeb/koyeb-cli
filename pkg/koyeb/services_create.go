@@ -1,11 +1,7 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
-	"math"
-	"strconv"
-	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -88,86 +84,14 @@ func renderServiceState(ctx *CLIContext, cmd *cobra.Command, serviceID string) {
 // waitForServiceDeployment polls the service until it reaches a steady state
 // or --wait-timeout elapses. Unlike the SDK-parity sandbox wait, the
 // services wait keeps its historical fail-open classification
-// (deploymentWaitDone below).
+// (deploymentWaitDone).
 func waitForServiceDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
 	waitTimeout, err := waitTimeoutFlag(cmd)
 	if err != nil {
 		return err
 	}
-	ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
-	defer cancel()
-
-	for range ticker(ctxd, waitPollInterval(cmd)) {
-		res, resp, err := ctx.Client.ServicesApi.GetService(ctxd, serviceID).Execute()
-		if err != nil {
-			return errors.NewCLIErrorFromAPIError(
-				"Error while fetching service",
-				err,
-				resp,
-			)
-		}
-
-		if res.Service != nil && res.Service.Status != nil {
-			if done, failed := deploymentWaitDone(*res.Service.Status); done {
-				if failed {
-					return fmt.Errorf("service %s deployment ended in status: %s", serviceID[:8], *res.Service.Status)
-				}
-				return nil
-			}
-		}
-	}
-
-	log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-		serviceID[:8], serviceID[:8],
+	return waitEngine(ctx.Context, waitTimeout, waitPollInterval(cmd),
+		serviceDeploymentProbe(ctx, serviceID),
+		func() error { return serviceWaitTimedOut(serviceID, "service logs") },
 	)
-	return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-		serviceID[:8], serviceID[:8],
-	)
-}
-
-// waitTimeoutFlag returns --wait-timeout, rejecting non-positive values
-// that would otherwise produce a nonsensical immediate timeout.
-func waitTimeoutFlag(cmd *cobra.Command) (time.Duration, error) {
-	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
-	if waitTimeout <= 0 {
-		return 0, &errors.CLIError{
-			What:     "Invalid --wait-timeout",
-			Why:      "--wait-timeout must be a positive duration",
-			Orig:     nil,
-			Solution: "Pass a positive duration, e.g. --wait-timeout 5m",
-		}
-	}
-	return waitTimeout, nil
-}
-
-// waitPollInterval returns the --wait polling interval: --poll-interval when
-// the command registers it (sandbox create), 2s otherwise (services).
-// Unusable values fall back to the registered flag default — NaN would
-// panic time.NewTicker and Inf would never tick.
-func waitPollInterval(cmd *cobra.Command) time.Duration {
-	f := cmd.Flags().Lookup("poll-interval")
-	if f == nil {
-		return 2 * time.Second
-	}
-	seconds, err := cmd.Flags().GetFloat64("poll-interval")
-	if err != nil || seconds <= 0 || math.IsNaN(seconds) || math.IsInf(seconds, 0) {
-		seconds, _ = strconv.ParseFloat(f.DefValue, 64)
-	}
-	return time.Duration(seconds * float64(time.Second))
-}
-
-// deploymentWaitDone reports whether a --wait polling loop should stop for
-// status, and whether that status means the deployment failed. It is the
-// historical services classification (fail-open on unknown statuses);
-// sandbox and claim waits use the SDKs' fail-closed classifyServiceStatus
-// instead — do not consolidate the two.
-func deploymentWaitDone(status koyeb.ServiceStatus) (done, failed bool) {
-	switch status {
-	case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
-		return true, true
-	case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
-		return false, false
-	default:
-		return true, false
-	}
 }

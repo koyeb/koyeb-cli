@@ -61,58 +61,20 @@ func classifyServiceStatus(status koyeb.ServiceStatus) serviceStatusClass {
 	}
 }
 
-// waitForServiceStatus polls getStatus until ready, a terminal state, the
-// timeout, or cancellation. Transient failures retry until the timeout.
-func waitForServiceStatus(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
-	getStatus serviceStatusGetter,
-	terminalErr func(koyeb.ServiceStatus) error,
-	timeoutErr func() error,
-) error {
-	deadline := time.Now().Add(timeout)
-
-	for {
-		status, err := getStatus(ctx, serviceID)
-		if err == nil {
-			switch classifyServiceStatus(status) {
-			case serviceStatusReady:
-				return nil
-			case serviceStatusTerminal:
-				return terminalErr(status)
-			}
-		}
-
-		if !time.Now().Before(deadline) {
-			return timeoutErr()
-		}
-
-		// Never sleep past the deadline: a huge poll interval must not
-		// postpone the timeout check.
-		sleepFor := pollInterval
-		if remaining := time.Until(deadline); remaining < sleepFor {
-			sleepFor = remaining
-		}
-		select {
-		case <-time.After(sleepFor):
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-	}
-}
-
 // waitClaimReady polls the claimed service until it is ready, mirroring
 // the SDKs' wait_claim_ready: transient GetService failures are treated as
 // in progress and retried until the timeout, terminal states error out.
 func waitClaimReady(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
 	getStatus serviceStatusGetter,
 ) error {
-	return waitForServiceStatus(ctx, serviceID, timeout, pollInterval, getStatus,
-		func(status koyeb.ServiceStatus) error {
+	return waitEngine(ctx, timeout, pollInterval,
+		failClosedServiceProbe(getStatus, serviceID, func(status koyeb.ServiceStatus) error {
 			return &errors.CLIError{
 				What:     "Claimed service reached a terminal state",
 				Why:      fmt.Sprintf("Service '%s' reached terminal state '%s' and will not become ready.", serviceID, status),
 				Solution: errors.CLIErrorSolution("Check the service logs with `koyeb service logs " + serviceID + "`"),
 			}
-		},
+		}),
 		func() error {
 			return &errors.CLIError{
 				What:     "Timed out waiting for the claimed service",

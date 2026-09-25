@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -15,10 +14,6 @@ import (
 
 func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, createApp *koyeb.CreateApp, createService *koyeb.CreateService) error {
 	wait, _ := cmd.Flags().GetBool("wait")
-	waitTimeout, err := cmd.Flags().GetDuration("wait-timeout")
-	if err != nil {
-		return err
-	}
 
 	uid := uuid.Must(uuid.NewV4())
 	createService.SetAppId(uid.String())
@@ -72,39 +67,17 @@ func (h *AppHandler) Init(ctx *CLIContext, cmd *cobra.Command, args []string, cr
 			serviceRes.Service.GetId()[:8],
 		)
 
-		ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
-		defer cancel()
-
-		for range ticker(ctxd, 2*time.Second) {
-			getServiceRes, resp, err := ctx.Client.ServicesApi.GetService(ctxd, serviceRes.Service.GetId()).Execute()
-			if err != nil {
-				return errors.NewCLIErrorFromAPIError(
-					"Error while fetching service",
-					err,
-					resp,
-				)
-			}
-
-			if getServiceRes.Service != nil && getServiceRes.Service.Status != nil {
-				switch status := *getServiceRes.Service.Status; status {
-				case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
-					return fmt.Errorf("service %s deployment ended in status: %s", serviceRes.Service.GetId()[:8], status)
-				case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
-					break
-				default:
-					return nil
-				}
-			}
+		waitTimeout, err := waitTimeoutFlag(cmd)
+		if err != nil {
+			return err
+		}
+		if err := waitEngine(ctx.Context, waitTimeout, 2*time.Second,
+			serviceDeploymentProbe(ctx, serviceRes.Service.GetId()),
+			func() error { return serviceWaitTimedOut(serviceRes.Service.GetId(), "service logs") },
+		); err != nil {
+			return err
 		}
 
-		log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-			serviceRes.Service.GetId()[:8],
-			serviceRes.Service.GetId()[:8],
-		)
-		return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-			serviceRes.Service.GetId()[:8],
-			serviceRes.Service.GetId()[:8],
-		)
 	}
 
 	return nil
