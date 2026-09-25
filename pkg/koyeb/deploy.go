@@ -173,11 +173,7 @@ func getAppIdByName(ctx *CLIContext, name string) (string, error) {
 
 	// Consume paginated results until the application is found or the end of the list is reached.
 	for {
-		res, resp, err := ctx.Client.AppsApi.ListApps(ctx.Context).
-			Name(name).
-			Offset(strconv.FormatInt(offset, 10)).
-			Limit(strconv.FormatInt(limit, 10)).
-			Execute()
+		res, resp, err := ctx.API.ListApps(ctx.Context, name, strconv.FormatInt(offset, 10), strconv.FormatInt(limit, 10))
 
 		if err != nil {
 			return "", errors.NewCLIErrorFromAPIError(

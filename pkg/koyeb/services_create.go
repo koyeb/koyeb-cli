@@ -69,10 +69,30 @@ func (h *ServiceHandler) createService(
 	return res.Service, nil
 }
 
+// createServiceInApp creates the service in the given app via the port and
+// logs the standard deployment hint. Callers own waiting and rendering.
+func (h *ServiceHandler) createServiceInApp(ctx *CLIContext, appID string, req koyeb.CreateService) (*koyeb.Service, error) {
+	req.SetAppId(appID)
+	res, _, err := ctx.API.CreateService(ctx.Context, req)
+	if err != nil {
+		return nil, errors.NewCLIErrorFromAPIError(
+			"Error while creating the service",
+			err,
+			nil,
+		)
+	}
+	log.Infof(
+		"Service deployment in progress. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
+		res.Service.GetId()[:8],
+		res.Service.GetId()[:8],
+	)
+	return res.Service, nil
+}
+
 // renderServiceState fetches the service and renders its current state —
 // used after create and after an optional wait to show the final status.
 func renderServiceState(ctx *CLIContext, cmd *cobra.Command, serviceID string) {
-	res, _, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceID).Execute()
+	res, _, err := ctx.API.GetService(ctx.Context, serviceID)
 	if err != nil {
 		return
 	}

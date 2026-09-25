@@ -135,7 +135,7 @@ func deploymentUpdateWaitDone(status koyeb.DeploymentStatus) (done, failed bool)
 // fail-open classification; fetch errors are fatal.
 func serviceDeploymentProbe(ctx *CLIContext, serviceID string) waitProbe {
 	return func(c context.Context) (bool, error) {
-		res, resp, err := ctx.Client.ServicesApi.GetService(c, serviceID).Execute()
+		res, resp, err := ctx.API.GetService(c, serviceID)
 		if err != nil {
 			return false, errors.NewCLIErrorFromAPIError(
 				"Error while fetching service",
@@ -158,7 +158,7 @@ func serviceDeploymentProbe(ctx *CLIContext, serviceID string) waitProbe {
 // fetch errors are fatal.
 func deploymentUpdateProbe(ctx *CLIContext, deploymentID string) waitProbe {
 	return func(c context.Context) (bool, error) {
-		res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(c, deploymentID).Execute()
+		res, resp, err := ctx.API.GetDeployment(c, deploymentID)
 		if err != nil {
 			return false, errors.NewCLIErrorFromAPIError(
 				"Error while fetching deployment",

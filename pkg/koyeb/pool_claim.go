@@ -26,7 +26,7 @@ type serviceStatusGetter func(ctx context.Context, serviceID string) (koyeb.Serv
 // are transient input the shared wait loop retries until its timeout.
 func serviceStatusFromClient(ctx *CLIContext) serviceStatusGetter {
 	return func(c context.Context, id string) (koyeb.ServiceStatus, error) {
-		res, _, err := ctx.Client.ServicesApi.GetService(c, id).Execute()
+		res, _, err := ctx.API.GetService(c, id)
 		if err != nil {
 			return "", err
 		}
@@ -131,7 +131,7 @@ $> koyeb pool claim my-pool --request-id my-request-id
 
 			req := buildPoolClaimRequest(poolID, requestID)
 
-			res, resp, err := ctx.Client.PoolClaimsApi.Claim(ctx.Context).Body(req).Execute()
+			res, resp, err := ctx.API.Claim(ctx.Context, req)
 			if err != nil {
 				return errors.NewCLIErrorFromAPIError(
 					fmt.Sprintf("Error while claiming an instance from the pool `%s`", args[0]),
@@ -140,7 +140,7 @@ $> koyeb pool claim my-pool --request-id my-request-id
 				)
 			}
 
-			return claimWaitFlow(ctx, cmd, res, waitClaimedService)
+			return claimWaitFlow(ctx, cmd, res)
 		}),
 	}
 	cmd.Flags().String("request-id", "", "Claim request ID (defaults to a generated UUID v4)")
@@ -150,13 +150,8 @@ $> koyeb pool claim my-pool --request-id my-request-id
 }
 
 // claimWaitFlow renders the claim and waits for the claimed service when
-// --wait is set. The wait func is a seam for tests.
-func claimWaitFlow(
-	ctx *CLIContext,
-	cmd *cobra.Command,
-	res *koyeb.PoolClaimReply,
-	wait func(ctx *CLIContext, serviceID string) error,
-) error {
+// --wait is set.
+func claimWaitFlow(ctx *CLIContext, cmd *cobra.Command, res *koyeb.PoolClaimReply) error {
 	full := GetBoolFlags(cmd, "full")
 	claimReply := NewClaimReply(ctx.Mapper, res, full)
 	ctx.Renderer.Render(claimReply)
@@ -171,7 +166,7 @@ func claimWaitFlow(
 		return nil
 	}
 
-	if err := wait(ctx, serviceID); err != nil {
+	if err := waitClaimedService(ctx, serviceID); err != nil {
 		return err
 	}
 	log.Infof("Claimed service %s is ready", serviceID)

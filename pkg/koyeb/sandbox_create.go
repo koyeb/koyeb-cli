@@ -18,55 +18,13 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	if err := setProjectHeader(ctx, cmd); err != nil {
 		return err
 	}
-	return createSandbox(ctx, cmd, args, defaultSandboxCreateDeps())
+	return createSandbox(ctx, cmd, args)
 }
 
-// sandboxCreateDeps carries the API-touching steps of the create flow as
-// seams so the wiring is testable without a live client.
-type sandboxCreateDeps struct {
-	getAppID        func(ctx *CLIContext, name string) (string, error)
-	createApp       func(ctx *CLIContext, name string) (string, error)
-	resolveSnapshot func(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType)
-	createService   func(ctx *CLIContext, cmd *cobra.Command, args []string,
-		req *koyeb.CreateService) (*koyeb.Service, error)
-	waitForService func(ctx *CLIContext, cmd *cobra.Command, serviceID string) error
-	deleteApp      func(ctx *CLIContext, appID string)
-	deleteService  func(ctx *CLIContext, serviceID string)
-	renderService  func(ctx *CLIContext, cmd *cobra.Command, serviceID string)
-}
-
-func defaultSandboxCreateDeps() sandboxCreateDeps {
-	return sandboxCreateDeps{
-		getAppID: getAppIdByName,
-		createApp: func(ctx *CLIContext, name string) (string, error) {
-			createApp := koyeb.NewCreateAppWithDefaults()
-			createApp.SetName(name)
-			lifecycle := koyeb.NewAppLifeCycleWithDefaults()
-			lifecycle.SetDeleteWhenEmpty(true)
-			createApp.SetLifeCycle(*lifecycle)
-			reply, err := NewAppHandler().CreateApp(ctx, createApp)
-			if err != nil {
-				return "", err
-			}
-			app := reply.GetApp()
-			return app.GetId(), nil
-		},
-		resolveSnapshot: resolveSnapshotFlags,
-		createService: func(ctx *CLIContext, cmd *cobra.Command, args []string,
-			req *koyeb.CreateService) (*koyeb.Service, error) {
-			return NewServiceHandler().createService(ctx, cmd, args, req)
-		},
-		waitForService: waitForSandboxDeployment,
-		deleteApp:      deleteAppBestEffort,
-		deleteService:  deleteServiceBestEffort,
-		renderService:  renderServiceState,
-	}
-}
-
-// createSandbox runs the create flow against the seams in deps. Cleanup is
-// phase-aware like the Python SDK: failures before the service exists remove
-// the auto-created app; a wait failure deletes the service when the flag is set.
-func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sandboxCreateDeps) error {
+// createSandbox runs the create flow. Cleanup is phase-aware like the
+// Python SDK: failures before the service exists remove the auto-created
+// app; a wait failure deletes the service when the flag is set.
+func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	svcHandler := NewServiceHandler()
 
 	appName, err := svcHandler.parseAppName(cmd, args[0])
@@ -74,7 +32,7 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 		return err
 	}
 
-	appID, err := deps.getAppID(ctx, appName)
+	appID, err := getAppIdByName(ctx, appName)
 	if err != nil {
 		return err
 	}
@@ -82,15 +40,16 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 	createdAppID := ""
 	if appID == "" {
 		log.Infof("Application `%s` does not exist, creating it", appName)
-		createdAppID, err = deps.createApp(ctx, appName)
+		createdAppID, err = createSandboxApp(ctx, appName)
 		if err != nil {
 			return err
 		}
+		appID = createdAppID
 	}
 	appCleanup := createdAppID != ""
 	defer func() {
 		if appCleanup {
-			deps.deleteApp(ctx, createdAppID)
+			deleteAppBestEffort(ctx, createdAppID)
 		}
 	}()
 
@@ -118,7 +77,7 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 
 	// Resolve the snapshot only after flag validation so invalid flags do
 	// not pay lookup round-trips; a FULL snapshot boots without a definition.
-	snapshotID, snapshotType := deps.resolveSnapshot(ctx, GetStringFlags(cmd, "snapshot"))
+	snapshotID, snapshotType := resolveSnapshotFlags(ctx, GetStringFlags(cmd, "snapshot"))
 
 	// Validate the wait settings before creating anything: a flag typo
 	// must not create a sandbox that cleanup would then delete.
@@ -136,16 +95,16 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 		wireSnapshot(createService, snapshotID, snapshotType, serviceName)
 	}
 
-	service, err := deps.createService(ctx, cmd, args, createService)
+	service, err := svcHandler.createServiceInApp(ctx, appID, *createService)
 	if err != nil {
 		return err
 	}
 	appCleanup = false
 
 	if wait := GetBoolFlags(cmd, "wait"); wait {
-		if err := deps.waitForService(ctx, cmd, service.GetId()); err != nil {
+		if err := waitForSandboxDeployment(ctx, cmd, service.GetId()); err != nil {
 			if GetBoolFlags(cmd, "cleanup-on-failure") {
-				deps.deleteService(ctx, service.GetId())
+				deleteServiceBestEffort(ctx, service.GetId())
 				// Python appends the deletion note so the user knows why
 				// the sandbox is gone.
 				return fmt.Errorf("%w. The sandbox was deleted", err)
@@ -154,8 +113,29 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 		}
 	}
 
-	deps.renderService(ctx, cmd, service.GetId())
+	renderServiceState(ctx, cmd, service.GetId())
 	return nil
+}
+
+// createSandboxApp creates the sandbox's host app with delete-when-empty so
+// the platform reaps it once empty.
+func createSandboxApp(ctx *CLIContext, name string) (string, error) {
+	createApp := koyeb.NewCreateAppWithDefaults()
+	createApp.SetName(name)
+	lifecycle := koyeb.NewAppLifeCycleWithDefaults()
+	lifecycle.SetDeleteWhenEmpty(true)
+	createApp.SetLifeCycle(*lifecycle)
+
+	reply, _, err := ctx.API.CreateApp(ctx.Context, *createApp)
+	if err != nil {
+		return "", errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while creating the app `%s`", name),
+			err,
+			nil,
+		)
+	}
+	app := reply.GetApp()
+	return app.GetId(), nil
 }
 
 // waitForSandboxDeployment polls the created service until ready with the
@@ -193,7 +173,7 @@ func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID str
 // deleteAppBestEffort removes an app auto-created by this command; cleanup
 // failures are logged, never raised, so the original error reaches the user.
 func deleteAppBestEffort(ctx *CLIContext, appID string) {
-	_, _, err := ctx.Client.AppsApi.DeleteApp(ctx.Context, appID).Execute()
+	_, err := ctx.API.DeleteApp(ctx.Context, appID)
 	if err != nil {
 		log.Warnf("Failed to delete app `%s` after sandbox creation failure", appID)
 	}
@@ -202,36 +182,36 @@ func deleteAppBestEffort(ctx *CLIContext, appID string) {
 // deleteServiceBestEffort removes a sandbox whose wait failed; cleanup
 // failures are logged, never raised, so the original error reaches the user.
 func deleteServiceBestEffort(ctx *CLIContext, serviceID string) {
-	_, _, err := ctx.Client.ServicesApi.DeleteService(ctx.Context, serviceID).Execute()
+	_, err := ctx.API.DeleteService(ctx.Context, serviceID)
 	if err != nil {
 		log.Warnf("Failed to delete service `%s` after sandbox wait failure", serviceID)
 	}
 }
 
-// resolveSnapshotFlags resolves a snapshot reference to ID and type: ID
-// lookup first, then name, then the raw string. Empty stays empty.
+// resolveSnapshotFlags resolves a snapshot reference to an instance
+// snapshot ID and type, like the Python SDK: ID first, then name, then raw
+// string. An empty reference returns empty values.
 func resolveSnapshotFlags(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType) {
 	if ref == "" {
 		return "", ""
 	}
-
-	get := func(c context.Context, id string) (*koyeb.InstanceSnapshot, error) {
-		reply, _, err := ctx.Client.InstanceSnapshotsApi.GetInstanceSnapshot(c, id).Execute()
-		if err != nil {
-			return nil, err
-		}
-		snapshot := reply.GetInstanceSnapshot()
-		return &snapshot, nil
-	}
-	list := func(c context.Context) ([]koyeb.InstanceSnapshot, error) {
-		reply, _, err := ctx.Client.InstanceSnapshotsApi.ListInstanceSnapshots(c).Name(ref).Execute()
-		if err != nil {
-			return nil, err
-		}
-		return reply.GetInstanceSnapshots(), nil
-	}
-
-	return resolveSnapshotRef(ctx.Context, ref, get, list)
+	return resolveSnapshotRef(ctx.Context, ref,
+		func(c context.Context, id string) (*koyeb.InstanceSnapshot, error) {
+			reply, _, err := ctx.API.GetInstanceSnapshot(c, id)
+			if err != nil {
+				return nil, err
+			}
+			snapshot := reply.GetInstanceSnapshot()
+			return &snapshot, nil
+		},
+		func(c context.Context) ([]koyeb.InstanceSnapshot, error) {
+			reply, _, err := ctx.API.ListInstanceSnapshotsByName(c, ref)
+			if err != nil {
+				return nil, err
+			}
+			return reply.GetInstanceSnapshots(), nil
+		},
+	)
 }
 
 // resolveSnapshotRef mirrors the Python SDK's resolution order: ID lookup
