@@ -20,37 +20,28 @@ const (
 
 // FsRead reads a file from the sandbox
 func (h *SandboxHandler) FsRead(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	path := args[1]
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	content, err := client.ReadFile(ctx.Context, path)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while reading file from sandbox",
-			Why:        fmt.Sprintf("failed to read file: %s", path),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the file exists and is readable",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		content, err := client.ReadFile(ctx.Context, path)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while reading file from sandbox",
+				Why:        fmt.Sprintf("failed to read file: %s", path),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the file exists and is readable",
+			}
 		}
-	}
 
-	// Write binary-safe content to stdout
-	os.Stdout.Write(content)
-	return nil
+		// Write binary-safe content to stdout
+		os.Stdout.Write(content)
+		return nil
+	})
 }
 
 // FsWrite writes content to a file in the sandbox
 func (h *SandboxHandler) FsWrite(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	path := args[1]
 
 	var content []byte
@@ -89,32 +80,25 @@ func (h *SandboxHandler) FsWrite(ctx *CLIContext, cmd *cobra.Command, args []str
 		}
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	err = client.WriteFile(ctx.Context, path, content)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while writing file to sandbox",
-			Why:        fmt.Sprintf("failed to write file: %s", path),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the path is valid and the directory exists",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		err := client.WriteFile(ctx.Context, path, content)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while writing file to sandbox",
+				Why:        fmt.Sprintf("failed to write file: %s", path),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the path is valid and the directory exists",
+			}
 		}
-	}
 
-	log.Infof("File written: %s (%d bytes)", path, len(content))
-	return nil
+		log.Infof("File written: %s (%d bytes)", path, len(content))
+		return nil
+	})
 }
 
 // FsLs lists directory contents in the sandbox
 func (h *SandboxHandler) FsLs(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	path := "."
 	if len(args) >= 2 {
 		path = args[1]
@@ -130,95 +114,81 @@ func (h *SandboxHandler) FsLs(ctx *CLIContext, cmd *cobra.Command, args []string
 		}
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	entries, err := client.ListDir(ctx.Context, path)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while listing directory in sandbox",
-			Why:        fmt.Sprintf("failed to list directory: %s", path),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the directory exists",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		entries, err := client.ListDir(ctx.Context, path)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while listing directory in sandbox",
+				Why:        fmt.Sprintf("failed to list directory: %s", path),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the directory exists",
+			}
 		}
-	}
 
-	if longFormat {
-		// Long format with details
-		for _, entry := range entries {
-			typeChar := "-"
-			if entry.IsDir {
-				typeChar = "d"
+		if longFormat {
+			// Long format with details
+			for _, entry := range entries {
+				typeChar := "-"
+				if entry.IsDir {
+					typeChar = "d"
+				}
+
+				mode := entry.Mode
+				if mode == "" {
+					mode = "------"
+				}
+
+				size := fmt.Sprintf("%8d", entry.Size)
+				if entry.IsDir {
+					size = "       -"
+				}
+
+				modTime := entry.ModTime
+				if modTime == "" {
+					modTime = "-"
+				}
+
+				fmt.Printf("%s%s %s %s %s\n", typeChar, mode, size, modTime, entry.Name)
 			}
-
-			mode := entry.Mode
-			if mode == "" {
-				mode = "------"
+		} else {
+			// Simple format
+			for _, entry := range entries {
+				name := entry.Name
+				if entry.IsDir {
+					name = name + "/"
+				}
+				fmt.Println(name)
 			}
-
-			size := fmt.Sprintf("%8d", entry.Size)
-			if entry.IsDir {
-				size = "       -"
-			}
-
-			modTime := entry.ModTime
-			if modTime == "" {
-				modTime = "-"
-			}
-
-			fmt.Printf("%s%s %s %s %s\n", typeChar, mode, size, modTime, entry.Name)
 		}
-	} else {
-		// Simple format
-		for _, entry := range entries {
-			name := entry.Name
-			if entry.IsDir {
-				name = name + "/"
-			}
-			fmt.Println(name)
-		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 // FsMkdir creates a directory in the sandbox
 func (h *SandboxHandler) FsMkdir(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	path := args[1]
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	err = client.MakeDir(ctx.Context, path)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while creating directory in sandbox",
-			Why:        fmt.Sprintf("failed to create directory: %s", path),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the path is valid",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		err := client.MakeDir(ctx.Context, path)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while creating directory in sandbox",
+				Why:        fmt.Sprintf("failed to create directory: %s", path),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the path is valid",
+			}
 		}
-	}
 
-	log.Infof("Directory created: %s", path)
-	return nil
+		log.Infof("Directory created: %s", path)
+		return nil
+	})
 }
 
 // FsRm removes a file or directory from the sandbox
 func (h *SandboxHandler) FsRm(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	path := args[1]
 
 	// Prevent removing root
@@ -241,37 +211,30 @@ func (h *SandboxHandler) FsRm(ctx *CLIContext, cmd *cobra.Command, args []string
 		}
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	if recursive {
-		err = client.DeleteDir(ctx.Context, path)
-	} else {
-		err = client.DeleteFile(ctx.Context, path)
-	}
-
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while removing file/directory from sandbox",
-			Why:        fmt.Sprintf("failed to remove: %s", path),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the path exists. Use -r flag for directories.",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		if recursive {
+			err = client.DeleteDir(ctx.Context, path)
+		} else {
+			err = client.DeleteFile(ctx.Context, path)
 		}
-	}
 
-	log.Infof("Removed: %s", path)
-	return nil
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while removing file/directory from sandbox",
+				Why:        fmt.Sprintf("failed to remove: %s", path),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the path exists. Use -r flag for directories.",
+			}
+		}
+
+		log.Infof("Removed: %s", path)
+		return nil
+	})
 }
 
 // FsUpload uploads a local file or directory to the sandbox
 func (h *SandboxHandler) FsUpload(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	localPath := args[1]
 	remotePath := args[2]
 
@@ -289,28 +252,24 @@ func (h *SandboxHandler) FsUpload(ctx *CLIContext, cmd *cobra.Command, args []st
 		}
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-	client := info.NewClient()
-
-	if fileInfo.IsDir() {
-		if !recursive {
-			return &errors.CLIError{
-				What:     "Error while uploading to sandbox",
-				Why:      fmt.Sprintf("'%s' is a directory", localPath),
-				Solution: "Use -r/--recursive flag to upload directories",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		if fileInfo.IsDir() {
+			if !recursive {
+				return &errors.CLIError{
+					What:     "Error while uploading to sandbox",
+					Why:      fmt.Sprintf("'%s' is a directory", localPath),
+					Solution: "Use -r/--recursive flag to upload directories",
+				}
 			}
+			return h.uploadDirectory(ctx.Context, client, localPath, remotePath, force)
 		}
-		return h.uploadDirectory(ctx.Context, client, localPath, remotePath, force)
-	}
 
-	return h.uploadFile(ctx.Context, client, localPath, remotePath, fileInfo)
+		return h.uploadFile(ctx.Context, client, localPath, remotePath, fileInfo)
+	})
 }
 
 // uploadFile uploads a single file to the sandbox
-func (h *SandboxHandler) uploadFile(ctx context.Context, client *SandboxClient, localPath, remotePath string, fileInfo fs.FileInfo) error {
+func (h *SandboxHandler) uploadFile(ctx context.Context, client SandboxClientInterface, localPath, remotePath string, fileInfo fs.FileInfo) error {
 	if fileInfo.Size() > MaxUploadSize {
 		return &errors.CLIError{
 			What:     "Error while uploading file to sandbox",
@@ -350,7 +309,7 @@ func (h *SandboxHandler) uploadFile(ctx context.Context, client *SandboxClient, 
 }
 
 // uploadDirectory uploads a directory recursively to the sandbox
-func (h *SandboxHandler) uploadDirectory(ctx context.Context, client *SandboxClient, localPath, remotePath string, force bool) error {
+func (h *SandboxHandler) uploadDirectory(ctx context.Context, client SandboxClientInterface, localPath, remotePath string, force bool) error {
 	_, err := client.StatFile(ctx, remotePath)
 	if err == nil {
 		// Remote path exists
@@ -463,24 +422,21 @@ func testCommand(expression, path string) string {
 
 // FsRename renames a file or directory in the sandbox
 func (h *SandboxHandler) FsRename(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsMovePath(ctx, cmd, "renaming", args[0], args[1], args[2])
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		return h.fsMovePath(ctx, client, "renaming", args[1], args[2])
+	})
 }
 
 // FsMove moves a file to a different directory in the sandbox
 func (h *SandboxHandler) FsMove(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsMovePath(ctx, cmd, "moving", args[0], args[1], args[2])
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		return h.fsMovePath(ctx, client, "moving", args[1], args[2])
+	})
 }
 
 // fsMovePath renames or moves a path in the sandbox via mv, mirroring the
 // Python SDK's rename_file/move_file.
-func (h *SandboxHandler) fsMovePath(ctx *CLIContext, cmd *cobra.Command, action, sandboxName, source, destination string) error {
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
+func (h *SandboxHandler) fsMovePath(ctx *CLIContext, client SandboxClientInterface, action, source, destination string) error {
 	result, err := client.Run(ctx.Context, &RunRequest{Cmd: mvCommand(source, destination)})
 	if err != nil {
 		return &errors.CLIError{
@@ -507,29 +463,29 @@ func (h *SandboxHandler) fsMovePath(ctx *CLIContext, cmd *cobra.Command, action,
 
 // FsExists checks if a path exists in the sandbox
 func (h *SandboxHandler) FsExists(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsTestPath(ctx, cmd, "-e", args[0], args[1])
+	return h.fsTestPath(ctx, args[0], args[1], "-e")
 }
 
 // FsIsFile checks if a path is a regular file in the sandbox
 func (h *SandboxHandler) FsIsFile(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsTestPath(ctx, cmd, "-f", args[0], args[1])
+	return h.fsTestPath(ctx, args[0], args[1], "-f")
 }
 
 // FsIsDir checks if a path is a directory in the sandbox
 func (h *SandboxHandler) FsIsDir(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	return h.fsTestPath(ctx, cmd, "-d", args[0], args[1])
+	return h.fsTestPath(ctx, args[0], args[1], "-d")
 }
 
 // fsTestPath runs a sandbox-side test expression and prints the boolean
 // result, mirroring the Python SDK's exists/is_file/is_dir.
-func (h *SandboxHandler) fsTestPath(ctx *CLIContext, cmd *cobra.Command, expression, sandboxName, path string) error {
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
+func (h *SandboxHandler) fsTestPath(ctx *CLIContext, sandboxName, path, expression string) error {
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		return fsTest(ctx, client, path, expression)
+	})
+}
 
-	client := info.NewClient()
-
+// fsTest runs one sandbox-side test expression and prints the boolean result.
+func fsTest(ctx *CLIContext, client SandboxClientInterface, path, expression string) error {
 	result, err := client.Run(ctx.Context, &RunRequest{Cmd: testCommand(expression, path)})
 	if err != nil {
 		return &errors.CLIError{
@@ -546,8 +502,6 @@ func (h *SandboxHandler) fsTestPath(ctx *CLIContext, cmd *cobra.Command, express
 
 // FsDownload downloads a file from the sandbox
 func (h *SandboxHandler) FsDownload(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-
-	sandboxName := args[0]
 	remotePath := args[1]
 	localPath := args[2]
 
@@ -577,35 +531,30 @@ func (h *SandboxHandler) FsDownload(ctx *CLIContext, cmd *cobra.Command, args []
 		}
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	content, err := client.ReadFile(ctx.Context, remotePath)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while downloading file from sandbox",
-			Why:        fmt.Sprintf("failed to read remote file: %s", remotePath),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the remote file exists",
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		content, err := client.ReadFile(ctx.Context, remotePath)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while downloading file from sandbox",
+				Why:        fmt.Sprintf("failed to read remote file: %s", remotePath),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the remote file exists",
+			}
 		}
-	}
 
-	err = os.WriteFile(localPath, content, 0644)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while downloading file from sandbox",
-			Why:        fmt.Sprintf("failed to write local file: %s", localPath),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the local path is writable",
+		err = os.WriteFile(localPath, content, 0644)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while downloading file from sandbox",
+				Why:        fmt.Sprintf("failed to write local file: %s", localPath),
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the local path is writable",
+			}
 		}
-	}
 
-	log.Infof("Downloaded %s to %s (%d bytes)", remotePath, localPath, len(content))
-	return nil
+		log.Infof("Downloaded %s to %s (%d bytes)", remotePath, localPath, len(content))
+		return nil
+	})
 }

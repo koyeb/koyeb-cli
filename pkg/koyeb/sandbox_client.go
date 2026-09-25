@@ -25,6 +25,7 @@ type SandboxClientInterface interface {
 	MakeDir(ctx context.Context, path string) error
 	DeleteDir(ctx context.Context, path string) error
 	ListDir(ctx context.Context, path string) ([]DirEntry, error)
+	StatFile(ctx context.Context, path string) (*DirEntry, error)
 	BindPort(ctx context.Context, port string) (*PortResponse, error)
 	UnbindPort(ctx context.Context) (*PortResponse, error)
 	StartProcess(ctx context.Context, req *ProcessRequest) (*StartProcessResponse, error)

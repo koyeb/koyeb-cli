@@ -414,13 +414,26 @@ func ValidateTimeout(timeout int) int {
 	return timeout
 }
 
+// sandboxOp is one executor operation against a resolved sandbox connection.
+type sandboxOp func(client SandboxClientInterface, info *SandboxInfo) error
+
+// withSandboxClient resolves the sandbox connection, builds an executor
+// client, and runs op against it.
+func withSandboxClient(ctx *CLIContext, sandboxName string, op sandboxOp, opts ...SandboxClientOption) error {
+	info, err := fetchSandboxInfo(ctx, sandboxName)
+	if err != nil {
+		return err
+	}
+	return op(info.NewClient(opts...), info)
+}
+
 // GetSandboxInfo resolves sandbox name to connection info
 func (h *SandboxHandler) GetSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
-	return h.fetchSandboxInfo(ctx, name)
+	return fetchSandboxInfo(ctx, name)
 }
 
 // fetchSandboxInfo retrieves sandbox info from the API
-func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
+func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 	// Resolve service ID
 	serviceMapper := ctx.Mapper.Service()
 	serviceID, err := serviceMapper.ResolveID(name)
@@ -435,7 +448,7 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 	}
 
 	// Get service details
-	serviceRes, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceID).Execute()
+	serviceRes, resp, err := ctx.API.GetService(ctx.Context, serviceID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving sandbox '%s'", name),
@@ -459,7 +472,7 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 	appID := service.GetAppId()
 
 	// Get app to find domain
-	appRes, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, appID).Execute()
+	appRes, resp, err := ctx.API.GetApp(ctx.Context, appID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving application for sandbox '%s'", name),
@@ -497,7 +510,7 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 		}
 	}
 
-	deploymentRes, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, deploymentID).Execute()
+	deploymentRes, resp, err := ctx.API.GetDeployment(ctx.Context, deploymentID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving deployment for sandbox '%s'", name),
@@ -574,85 +587,38 @@ func selectBestDomain(domains []koyeb.Domain) string {
 	return domains[0].GetName()
 }
 
-// GetClientWithHealthCheck creates a client and verifies sandbox is healthy
-func (h *SandboxHandler) GetClientWithHealthCheck(ctx *CLIContext, sandboxName string) (*SandboxClient, *SandboxInfo, error) {
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	client := info.NewClient()
-
-	// Perform health check
-	health, err := client.Health(ctx.Context)
-	if err != nil {
-		return nil, nil, &errors.CLIError{
-			What:       "Error while connecting to sandbox",
-			Why:        "failed to reach sandbox",
-			Additional: []string{fmt.Sprintf("Domain: %s", info.Domain)},
-			Orig:       err,
-			Solution:   "Check that the sandbox is running and accessible",
-		}
-	}
-
-	if !health.Healthy {
-		return nil, nil, &errors.CLIError{
-			What:       "Sandbox is not healthy",
-			Why:        health.Status,
-			Additional: nil,
-			Solution:   "Wait for the sandbox to become healthy or check sandbox logs",
-		}
-	}
-
-	// Store proxy port if available
-	if health.ProxyPort != "" {
-		info.ProxyPort = health.ProxyPort
-	}
-
-	return client, info, nil
-}
-
 // Health checks sandbox health status
 func (h *SandboxHandler) Health(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	sandboxName := args[0]
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	health, err := client.Health(ctx.Context)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error checking sandbox health",
-			Why:        "failed to connect to sandbox",
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the sandbox is deployed and accessible",
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		health, err := client.Health(ctx.Context)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error checking sandbox health",
+				Why:        "failed to connect to sandbox",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the sandbox is deployed and accessible",
+			}
 		}
-	}
 
-	fmt.Printf("Sandbox: %s\n", sandboxName)
-	fmt.Printf("Status: %s\n", health.Status)
-	fmt.Printf("Healthy: %v\n", health.Healthy)
-	if health.Version != "" {
-		fmt.Printf("Version: %s\n", health.Version)
-	}
-	if health.Uptime > 0 {
-		fmt.Printf("Uptime: %s\n", time.Duration(health.Uptime)*time.Second)
-	}
-	if health.ProxyPort != "" {
-		fmt.Printf("Proxy Port: %s\n", health.ProxyPort)
-	}
-
-	return nil
+		fmt.Printf("Sandbox: %s\n", sandboxName)
+		fmt.Printf("Status: %s\n", health.Status)
+		fmt.Printf("Healthy: %v\n", health.Healthy)
+		if health.Version != "" {
+			fmt.Printf("Version: %s\n", health.Version)
+		}
+		if health.Uptime > 0 {
+			fmt.Printf("Uptime: %s\n", time.Duration(health.Uptime)*time.Second)
+		}
+		if health.ProxyPort != "" {
+			fmt.Printf("Proxy Port: %s\n", health.ProxyPort)
+		}
+		return nil
+	})
 }
 
-// addSandboxCreateFlags adds only the flags that are compatible with sandbox services
-// This excludes flags like --type, --git*, --archive*, --ports, --routes, --checks
-// which are either not applicable or handled automatically for sandboxes
 func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags := cmd.Flags()
 
