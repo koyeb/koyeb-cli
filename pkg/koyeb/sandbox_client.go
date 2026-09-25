@@ -346,8 +346,9 @@ func (c *SandboxClient) parseSSE(r io.Reader, handler func(StreamEvent) error) e
 		if strings.HasPrefix(line, "event:") {
 			currentEvent.Event = strings.TrimSpace(strings.TrimPrefix(line, "event:"))
 		} else if strings.HasPrefix(line, "data:") {
-			// Accumulate data lines instead of overwriting
-			dataLines = append(dataLines, strings.TrimPrefix(line, "data:"))
+			// Accumulate data lines instead of overwriting; the SSE spec
+			// strips a single leading space after the field name.
+			dataLines = append(dataLines, strings.TrimPrefix(strings.TrimPrefix(line, "data:"), " "))
 		}
 		// id: and retry: lines are part of the SSE spec but not used by this client
 	}
