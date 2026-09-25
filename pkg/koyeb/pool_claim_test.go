@@ -8,6 +8,8 @@ import (
 	"uuid"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/renderer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -163,5 +165,78 @@ func TestWaitClaimReady(t *testing.T) {
 				return koyeb.SERVICESTATUS_STARTING, nil
 			})
 		require.Error(t, err)
+	})
+}
+
+func TestWaitClaimReadyHugePollIntervalStillTimesOut(t *testing.T) {
+	// A saturated poll interval must never sleep past the deadline.
+	calls := 0
+	start := time.Now()
+	err := waitClaimReady(context.Background(), "323e4567-e89b-42d3-a456-426614174000",
+		30*time.Millisecond, 24*365*time.Hour,
+		func(context.Context, string) (koyeb.ServiceStatus, error) {
+			calls++
+			return koyeb.SERVICESTATUS_STARTING, nil
+		})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "did not become ready")
+	assert.Less(t, time.Since(start), 5*time.Second, "the wait must respect the timeout, not the poll interval")
+	assert.GreaterOrEqual(t, calls, 2, "the deadline check must still be reached after a poll")
+}
+
+func TestClaimWaitFlow(t *testing.T) {
+	serviceID := "323e4567-e89b-42d3-a456-426614174000"
+
+	newReply := func(serviceID string) *koyeb.PoolClaimReply {
+		return &koyeb.PoolClaimReply{ClaimId: &serviceID, ServiceId: &serviceID}
+	}
+
+	t.Run("without --wait the wait func is not invoked", func(t *testing.T) {
+		waited := false
+		cmd := newPoolClaimCmd()
+		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+
+		require.NoError(t, claimWaitFlow(ctx, cmd, newReply(serviceID), func(*CLIContext, string) error {
+			waited = true
+			return nil
+		}))
+		assert.False(t, waited)
+	})
+
+	t.Run("with --wait the claimed service is awaited", func(t *testing.T) {
+		var waitedFor string
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("wait", "true"))
+		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+
+		require.NoError(t, claimWaitFlow(ctx, cmd, newReply(serviceID), func(_ *CLIContext, id string) error {
+			waitedFor = id
+			return nil
+		}))
+		assert.Equal(t, serviceID, waitedFor)
+	})
+
+	t.Run("wait errors propagate", func(t *testing.T) {
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("wait", "true"))
+		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+
+		err := claimWaitFlow(ctx, cmd, newReply(serviceID), func(*CLIContext, string) error {
+			return fmt.Errorf("terminal")
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("empty service ID skips the wait", func(t *testing.T) {
+		waited := false
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("wait", "true"))
+		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+
+		require.NoError(t, claimWaitFlow(ctx, cmd, koyeb.NewPoolClaimReply(), func(*CLIContext, string) error {
+			waited = true
+			return nil
+		}))
+		assert.False(t, waited, "a claim reply without service ID must skip --wait")
 	})
 }

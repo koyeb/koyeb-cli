@@ -85,8 +85,14 @@ func waitForServiceStatus(ctx context.Context, serviceID string, timeout, pollIn
 			return timeoutErr()
 		}
 
+		// Never sleep past the deadline: a huge poll interval must not
+		// postpone the timeout check.
+		sleepFor := pollInterval
+		if remaining := time.Until(deadline); remaining < sleepFor {
+			sleepFor = remaining
+		}
 		select {
-		case <-time.After(pollInterval):
+		case <-time.After(sleepFor):
 		case <-ctx.Done():
 			return ctx.Err()
 		}
@@ -172,28 +178,37 @@ $> koyeb pool claim my-pool --request-id my-request-id
 				)
 			}
 
-			full := GetBoolFlags(cmd, "full")
-			claimReply := NewClaimReply(ctx.Mapper, res, full)
-			ctx.Renderer.Render(claimReply)
-
-			if GetBoolFlags(cmd, "wait") {
-				serviceID := res.GetServiceId()
-				if serviceID == "" {
-					log.Warnf("Claim reply has no service ID; skipping --wait")
-					return nil
-				}
-				if err := waitClaimedService(ctx, serviceID); err != nil {
-					return err
-				}
-				log.Infof("Claimed service %s is ready", serviceID)
-			}
-			return nil
+			return claimWaitFlow(ctx, cmd, res, waitClaimedService)
 		}),
 	}
 	cmd.Flags().String("request-id", "", "Claim request ID (defaults to a generated UUID v4)")
 	cmd.Flags().Bool("wait", false, "Wait until the claimed service is ready (timeout 5m, poll 2s)")
 
 	return cmd
+}
+
+// claimWaitFlow renders the claim and waits for the claimed service when
+// --wait is set. The wait func is a seam for tests.
+func claimWaitFlow(ctx *CLIContext, cmd *cobra.Command, res *koyeb.PoolClaimReply, wait func(ctx *CLIContext, serviceID string) error) error {
+	full := GetBoolFlags(cmd, "full")
+	claimReply := NewClaimReply(ctx.Mapper, res, full)
+	ctx.Renderer.Render(claimReply)
+
+	if !GetBoolFlags(cmd, "wait") {
+		return nil
+	}
+
+	serviceID := res.GetServiceId()
+	if serviceID == "" {
+		log.Warnf("Claim reply has no service ID; skipping --wait")
+		return nil
+	}
+
+	if err := wait(ctx, serviceID); err != nil {
+		return err
+	}
+	log.Infof("Claimed service %s is ready", serviceID)
+	return nil
 }
 
 // waitClaimedService polls GetService until the claimed service is ready.

@@ -367,6 +367,8 @@ func TestDeploymentWaitDone(t *testing.T) {
 		{koyeb.SERVICESTATUS_RESUMING, false, false},
 		{koyeb.SERVICESTATUS_DELETING, false, false},
 		{koyeb.SERVICESTATUS_PAUSING, false, false},
+		// Unknown forward-compat statuses are done-and-healthy (fail-open).
+		{koyeb.ServiceStatus("UNKNOWN_FORWARD_COMPAT"), true, false},
 	}
 
 	for _, tt := range tests {
@@ -504,6 +506,7 @@ func TestCreateSandboxRendersOnSuccess(t *testing.T) {
 	assert.Equal(t, []string{"svc-123"}, fake.rendered)
 	assert.Empty(t, fake.deletedApps)
 	assert.Empty(t, fake.deletedServices)
+	assert.False(t, fake.createReq.HasInstanceSnapshotId(), "no --snapshot flag means no snapshot on the request")
 }
 
 func TestCreateSandboxWiresFullSnapshot(t *testing.T) {
@@ -569,4 +572,40 @@ func TestWaitTimeoutFlagRejectsNonPositiveValues(t *testing.T) {
 	timeout, err := waitTimeoutFlag(cmd)
 	require.NoError(t, err)
 	assert.Equal(t, time.Minute, timeout)
+}
+
+func TestCreateSandboxValidatesWaitTimeoutBeforeCreating(t *testing.T) {
+	// A flag typo must not create-then-delete the sandbox.
+	fake := &fakeSandboxCreate{existingAppID: "app-existing", serviceID: "svc-123"}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("wait", "true"))
+	require.NoError(t, cmd.Flags().Set("wait-timeout", "0"))
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Nil(t, fake.createReq, "no service create request may be sent on an invalid --wait-timeout")
+	assert.Empty(t, fake.deletedServices)
+	assert.Empty(t, fake.rendered)
+}
+
+func TestCreateSandboxKeepsAppAfterSuccess(t *testing.T) {
+	// Pins the cleanup disarm: success must not trigger the deferred app delete.
+	fake := &fakeSandboxCreate{createdAppID: "app-created", serviceID: "svc-123"}
+	cmd := sandboxCreateCmd(t)
+
+	require.NoError(t, createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps()))
+	assert.Equal(t, []string{"myapp"}, fake.createdApps)
+	assert.Empty(t, fake.deletedApps, "the auto-created app must be kept on success")
+}
+
+func TestCreateSandboxWaitFailureCleansServiceNotApp(t *testing.T) {
+	// Pins the phase split: after the service exists, only the service is cleaned up.
+	fake := &fakeSandboxCreate{createdAppID: "app-created", serviceID: "svc-123", waitErr: fmt.Errorf("timed out")}
+	cmd := sandboxCreateCmd(t)
+	require.NoError(t, cmd.Flags().Set("wait", "true"))
+
+	err := createSandbox(&CLIContext{}, cmd, []string{"myapp/mysbx"}, fake.deps())
+	require.Error(t, err)
+	assert.Equal(t, []string{"svc-123"}, fake.deletedServices)
+	assert.Empty(t, fake.deletedApps, "the app must not be deleted after the service was created")
 }

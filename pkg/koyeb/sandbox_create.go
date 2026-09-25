@@ -118,6 +118,14 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 	// not pay lookup round-trips; a FULL snapshot boots without a definition.
 	snapshotID, snapshotType := deps.resolveSnapshot(ctx, GetStringFlags(cmd, "snapshot"))
 
+	// Validate the wait settings before creating anything: a flag typo
+	// must not create a sandbox that cleanup would then delete.
+	if GetBoolFlags(cmd, "wait") {
+		if _, err := waitTimeoutFlag(cmd); err != nil {
+			return err
+		}
+	}
+
 	createService := koyeb.NewCreateServiceWithDefaults()
 	if lifecycle := svcHandler.parseLifeCycle(cmd.Flags(), nil); lifecycle != nil {
 		createService.SetLifeCycle(*lifecycle)
