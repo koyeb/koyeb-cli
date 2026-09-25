@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -27,7 +26,6 @@ func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}
 
 	wait, _ := cmd.Flags().GetBool("wait")
-	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
 
 	res, resp, err := ctx.Client.ServicesApi.UpdateService(ctx.Context, service).Service(*updateService).Execute()
 	if err != nil {
@@ -54,39 +52,16 @@ func (h *ServiceHandler) Update(ctx *CLIContext, cmd *cobra.Command, args []stri
 	}()
 
 	if wait {
-		ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
-		defer cancel()
-
-		for range ticker(ctxd, 2*time.Second) {
-			res, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctxd, res.Service.GetLatestDeploymentId()).Execute()
-			if err != nil {
-				return errors.NewCLIErrorFromAPIError(
-					"Error while fetching deployment",
-					err,
-					resp,
-				)
-			}
-
-			if res.Deployment != nil && res.Deployment.Status != nil {
-				switch status := *res.Deployment.Status; status {
-				case koyeb.DEPLOYMENTSTATUS_ERROR, koyeb.DEPLOYMENTSTATUS_DEGRADED, koyeb.DEPLOYMENTSTATUS_UNHEALTHY, koyeb.DEPLOYMENTSTATUS_CANCELED, koyeb.DEPLOYMENTSTATUS_STOPPED, koyeb.DEPLOYMENTSTATUS_ERRORING:
-					return fmt.Errorf("deployment %s update ended in status: %s", res.Deployment.GetId()[:8], status)
-				case koyeb.DEPLOYMENTSTATUS_STARTING, koyeb.DEPLOYMENTSTATUS_PENDING, koyeb.DEPLOYMENTSTATUS_PROVISIONING, koyeb.DEPLOYMENTSTATUS_ALLOCATING:
-					break
-				default:
-					return nil
-				}
-			}
+		waitTimeout, err := waitTimeoutFlag(cmd)
+		if err != nil {
+			return err
 		}
-
-		log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-			res.Service.GetId()[:8],
-			res.Service.GetId()[:8],
-		)
-		return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-			res.Service.GetId()[:8],
-			res.Service.GetId()[:8],
-		)
+		if err := waitEngine(ctx.Context, waitTimeout, 2*time.Second,
+			deploymentUpdateProbe(ctx, res.Service.GetLatestDeploymentId()),
+			func() error { return serviceWaitTimedOut(res.Service.GetId(), "service logs") },
+		); err != nil {
+			return err
+		}
 	}
 	return nil
 }

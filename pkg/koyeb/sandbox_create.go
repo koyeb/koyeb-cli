@@ -199,9 +199,10 @@ func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID str
 		}
 	}
 
-	return waitForServiceStatus(
-		ctx.Context, serviceID, waitTimeout, waitPollInterval(cmd),
-		serviceStatusFromClient(ctx), terminalErr, timeoutErr)
+	return waitEngine(ctx.Context, waitTimeout, waitPollInterval(cmd),
+		failClosedServiceProbe(serviceStatusFromClient(ctx), serviceID, terminalErr),
+		timeoutErr,
+	)
 }
 
 // deleteAppBestEffort removes an app auto-created by this command; cleanup
