@@ -159,6 +159,9 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 		if err := deps.waitForService(ctx, cmd, service.GetId()); err != nil {
 			if GetBoolFlags(cmd, "cleanup-on-failure") {
 				deps.deleteService(ctx, service.GetId())
+				// Python appends the deletion note so the user knows why
+				// the sandbox is gone.
+				return fmt.Errorf("%w. The sandbox was deleted", err)
 			}
 			return err
 		}
@@ -170,7 +173,8 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 
 // waitForSandboxDeployment polls the created service until ready with the
 // SDKs' fail-closed classification (classifyServiceStatus): DEGRADED is
-// usable, and a wait failure must not delete a usable sandbox.
+// usable, and a wait failure must not delete a usable sandbox. Readiness is
+// service-status only — unlike the SDKs, the executor is not probed.
 func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
 	waitTimeout, err := waitTimeoutFlag(cmd)
 	if err != nil {
