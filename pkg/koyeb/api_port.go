@@ -19,9 +19,11 @@ type koyebAPI interface {
 	DeleteApp(ctx context.Context, appID string) (*http.Response, error)
 	DeleteService(ctx context.Context, serviceID string) (*http.Response, error)
 	GetDeployment(ctx context.Context, deploymentID string) (*koyeb.GetDeploymentReply, *http.Response, error)
-	ListDeploymentsByService(ctx context.Context, serviceID, limit string) (*koyeb.ListDeploymentsReply, *http.Response, error)
+	ListDeploymentsByService(ctx context.Context, serviceID, limit string) (
+		*koyeb.ListDeploymentsReply, *http.Response, error)
 	GetInstanceSnapshot(ctx context.Context, id string) (*koyeb.GetInstanceSnapshotReply, *http.Response, error)
-	ListInstanceSnapshotsByName(ctx context.Context, name string) (*koyeb.ListInstanceSnapshotsReply, *http.Response, error)
+	ListInstanceSnapshotsByName(ctx context.Context, name string) (
+		*koyeb.ListInstanceSnapshotsReply, *http.Response, error)
 	Claim(ctx context.Context, req koyeb.PoolClaimRequest) (*koyeb.PoolClaimReply, *http.Response, error)
 }
 
@@ -34,7 +36,8 @@ func (a apiPort) GetService(ctx context.Context, serviceID string) (*koyeb.GetSe
 	return a.client.ServicesApi.GetService(ctx, serviceID).Execute()
 }
 
-func (a apiPort) CreateService(ctx context.Context, req koyeb.CreateService) (*koyeb.CreateServiceReply, *http.Response, error) {
+func (a apiPort) CreateService(ctx context.Context, req koyeb.CreateService) (
+	*koyeb.CreateServiceReply, *http.Response, error) {
 	return a.client.ServicesApi.CreateService(ctx).Service(req).Execute()
 }
 
@@ -46,7 +49,8 @@ func (a apiPort) CreateApp(ctx context.Context, req koyeb.CreateApp) (*koyeb.Cre
 	return a.client.AppsApi.CreateApp(ctx).App(req).Execute()
 }
 
-func (a apiPort) ListApps(ctx context.Context, name, offset, limit string) (*koyeb.ListAppsReply, *http.Response, error) {
+func (a apiPort) ListApps(ctx context.Context, name, offset, limit string) (
+	*koyeb.ListAppsReply, *http.Response, error) {
 	return a.client.AppsApi.ListApps(ctx).Name(name).Offset(offset).Limit(limit).Execute()
 }
 
@@ -60,22 +64,27 @@ func (a apiPort) DeleteService(ctx context.Context, serviceID string) (*http.Res
 	return resp, err
 }
 
-func (a apiPort) GetDeployment(ctx context.Context, deploymentID string) (*koyeb.GetDeploymentReply, *http.Response, error) {
+func (a apiPort) GetDeployment(ctx context.Context, deploymentID string) (
+	*koyeb.GetDeploymentReply, *http.Response, error) {
 	return a.client.DeploymentsApi.GetDeployment(ctx, deploymentID).Execute()
 }
 
-func (a apiPort) ListDeploymentsByService(ctx context.Context, serviceID, limit string) (*koyeb.ListDeploymentsReply, *http.Response, error) {
+func (a apiPort) ListDeploymentsByService(ctx context.Context, serviceID, limit string) (
+	*koyeb.ListDeploymentsReply, *http.Response, error) {
 	return a.client.DeploymentsApi.ListDeployments(ctx).Limit(limit).ServiceId(serviceID).Execute()
 }
 
-func (a apiPort) GetInstanceSnapshot(ctx context.Context, id string) (*koyeb.GetInstanceSnapshotReply, *http.Response, error) {
+func (a apiPort) GetInstanceSnapshot(ctx context.Context, id string) (
+	*koyeb.GetInstanceSnapshotReply, *http.Response, error) {
 	return a.client.InstanceSnapshotsApi.GetInstanceSnapshot(ctx, id).Execute()
 }
 
-func (a apiPort) ListInstanceSnapshotsByName(ctx context.Context, name string) (*koyeb.ListInstanceSnapshotsReply, *http.Response, error) {
+func (a apiPort) ListInstanceSnapshotsByName(ctx context.Context, name string) (
+	*koyeb.ListInstanceSnapshotsReply, *http.Response, error) {
 	return a.client.InstanceSnapshotsApi.ListInstanceSnapshots(ctx).Name(name).Execute()
 }
 
-func (a apiPort) Claim(ctx context.Context, req koyeb.PoolClaimRequest) (*koyeb.PoolClaimReply, *http.Response, error) {
+func (a apiPort) Claim(ctx context.Context, req koyeb.PoolClaimRequest) (
+	*koyeb.PoolClaimReply, *http.Response, error) {
 	return a.client.PoolClaimsApi.Claim(ctx).Body(req).Execute()
 }

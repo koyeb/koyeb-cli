@@ -174,7 +174,8 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 			updateService := koyeb.NewUpdateServiceWithDefaults()
 			override, _ := cmd.Flags().GetBool("override")
 			updateDef, err := h.latestDeploymentDefinition(ctx, service, args[0], override,
-				"Try again in a few seconds. If the problem persists, please create an issue on https://github.com/koyeb/koyeb-cli/issues/new")
+				"Try again in a few seconds. If the problem persists, "+
+					"please create an issue on https://github.com/koyeb/koyeb-cli/issues/new")
 			if err != nil {
 				return err
 			}
@@ -705,7 +706,8 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 }
 
 // Parse --type
-func (h *ServiceHandler) parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType) (koyeb.DeploymentDefinitionType, error) {
+func (h *ServiceHandler) parseType(flags *pflag.FlagSet, currentType koyeb.DeploymentDefinitionType) (
+	koyeb.DeploymentDefinitionType, error) {
 	if !flags.Lookup("type").Changed {
 		// New service: return the default value
 		if currentType == koyeb.DEPLOYMENTDEFINITIONTYPE_INVALID {
@@ -803,7 +805,8 @@ func addNetworkPolicyFlags(flags *pflag.FlagSet) {
 // the service (nil if there is none); its other fields are preserved.
 // --outbound-allowlist uses the same add/remove idiom as --env / --ports /
 // --routes: bare entries are added, "!ENTRY" entries are removed.
-func (h *ServiceHandler) parseNetworkPolicy(flags *pflag.FlagSet, currentPolicy *koyeb.NetworkPolicy) (*koyeb.NetworkPolicy, bool, error) {
+func (h *ServiceHandler) parseNetworkPolicy(flags *pflag.FlagSet, currentPolicy *koyeb.NetworkPolicy) (
+	*koyeb.NetworkPolicy, bool, error) {
 	blockSet := flags.Lookup("block-network").Changed
 	allowSet := flags.Lookup("outbound-allowlist").Changed
 	clearSet := flags.Lookup("no-network-policy").Changed
@@ -905,7 +908,11 @@ func (h *ServiceHandler) addServiceAccountIdFlag(flags *pflag.FlagSet) {
 
 // applyCreateServiceFlags wires a create request from the definition flags:
 // lifecycle, network policy, the definition itself, and the service account.
-func (h *ServiceHandler) applyCreateServiceFlags(cmd *cobra.Command, def *koyeb.DeploymentDefinition, createService *koyeb.CreateService) error {
+func (h *ServiceHandler) applyCreateServiceFlags(
+	cmd *cobra.Command,
+	def *koyeb.DeploymentDefinition,
+	createService *koyeb.CreateService,
+) error {
 	if lifecycle := h.parseLifeCycle(cmd.Flags(), nil); lifecycle != nil {
 		createService.SetLifeCycle(*lifecycle)
 	}
@@ -937,7 +944,13 @@ func (h *ServiceHandler) applyNetworkPolicyFlags(cmd *cobra.Command, def *koyeb.
 
 // applyUpdateServiceFlags wires an update request: network policy, the
 // definition, then the lifecycle merged with the service's current one.
-func (h *ServiceHandler) applyUpdateServiceFlags(ctx *CLIContext, cmd *cobra.Command, serviceID, serviceName string, def *koyeb.DeploymentDefinition, updateService *koyeb.UpdateService) error {
+func (h *ServiceHandler) applyUpdateServiceFlags(
+	ctx *CLIContext,
+	cmd *cobra.Command,
+	serviceID, serviceName string,
+	def *koyeb.DeploymentDefinition,
+	updateService *koyeb.UpdateService,
+) error {
 	if err := h.applyNetworkPolicyFlags(cmd, def); err != nil {
 		return err
 	}
@@ -966,7 +979,13 @@ func (h *ServiceHandler) applyUpdateServiceFlags(ctx *CLIContext, cmd *cobra.Com
 // latestDeploymentDefinition fetches the service's latest deployment to use
 // as the update base, honoring --override. notFoundSolution builds the
 // caller-specific error when no deployment exists yet.
-func (h *ServiceHandler) latestDeploymentDefinition(ctx *CLIContext, serviceID, name string, override bool, notFoundSolution errors.CLIErrorSolution) (*koyeb.DeploymentDefinition, error) {
+func (h *ServiceHandler) latestDeploymentDefinition(
+	ctx *CLIContext,
+	serviceID, name string,
+	override bool,
+	notFoundSolution errors.CLIErrorSolution,
+) (
+	*koyeb.DeploymentDefinition, error) {
 	latestDeploy, resp, err := ctx.API.ListDeploymentsByService(ctx.Context, serviceID, "1")
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
@@ -1009,7 +1028,8 @@ func (h *ServiceHandler) parseServiceAccountId(flags *pflag.FlagSet, createServi
 }
 
 // Parse --deployment-strategy
-func (h *ServiceHandler) parseDeploymentStrategy(flags *pflag.FlagSet, currentStrategy koyeb.DeploymentStrategy) (koyeb.DeploymentStrategy, error) {
+func (h *ServiceHandler) parseDeploymentStrategy(flags *pflag.FlagSet, currentStrategy koyeb.DeploymentStrategy) (
+	koyeb.DeploymentStrategy, error) {
 	if !flags.Lookup("deployment-strategy").Changed {
 		return currentStrategy, nil
 	}
@@ -1044,12 +1064,18 @@ func parseListFlags[T any](
 }
 
 // Parse --env
-func (h *ServiceHandler) parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) ([]koyeb.DeploymentEnv, error) {
+func (h *ServiceHandler) parseEnv(flags *pflag.FlagSet, currentEnv []koyeb.DeploymentEnv) (
+	[]koyeb.DeploymentEnv, error) {
 	return parseListFlags("env", flags_list.NewEnvListFromFlags, flags, currentEnv)
 }
 
 // Parse --ports
-func (h *ServiceHandler) parsePorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentPort) ([]koyeb.DeploymentPort, error) {
+func (h *ServiceHandler) parsePorts(
+	type_ koyeb.DeploymentDefinitionType,
+	flags *pflag.FlagSet,
+	currentPorts []koyeb.DeploymentPort,
+) (
+	[]koyeb.DeploymentPort, error) {
 	newPorts, err := parseListFlags("ports", flags_list.NewPortListFromFlags, flags, currentPorts)
 	if err != nil {
 		return nil, err
@@ -1075,7 +1101,12 @@ func (h *ServiceHandler) parsePorts(type_ koyeb.DeploymentDefinitionType, flags 
 }
 
 // Parse --proxy-ports
-func (h *ServiceHandler) parseProxyPorts(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentPorts []koyeb.DeploymentProxyPort) ([]koyeb.DeploymentProxyPort, error) {
+func (h *ServiceHandler) parseProxyPorts(
+	type_ koyeb.DeploymentDefinitionType,
+	flags *pflag.FlagSet,
+	currentPorts []koyeb.DeploymentProxyPort,
+) (
+	[]koyeb.DeploymentProxyPort, error) {
 	newPorts, err := parseListFlags("proxy-ports", flags_list.NewProxyPortListFromFlags, flags, currentPorts)
 	if err != nil {
 		return nil, err
@@ -1179,7 +1210,12 @@ func (h *ServiceHandler) applyAuthToRoutes(flags *pflag.FlagSet, definition *koy
 	return nil
 }
 
-func (h *ServiceHandler) parseRoutes(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentRoutes []koyeb.DeploymentRoute) ([]koyeb.DeploymentRoute, error) {
+func (h *ServiceHandler) parseRoutes(
+	type_ koyeb.DeploymentDefinitionType,
+	flags *pflag.FlagSet,
+	currentRoutes []koyeb.DeploymentRoute,
+) (
+	[]koyeb.DeploymentRoute, error) {
 	newRoutes, err := parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, currentRoutes)
 	if err != nil {
 		return nil, err
@@ -1278,7 +1314,12 @@ func (h *ServiceHandler) setDefaultPortsAndRoutes(definition *koyeb.DeploymentDe
 }
 
 // Parse --checks
-func (h *ServiceHandler) parseChecks(type_ koyeb.DeploymentDefinitionType, flags *pflag.FlagSet, currentHealthChecks []koyeb.DeploymentHealthCheck) ([]koyeb.DeploymentHealthCheck, error) {
+func (h *ServiceHandler) parseChecks(
+	type_ koyeb.DeploymentDefinitionType,
+	flags *pflag.FlagSet,
+	currentHealthChecks []koyeb.DeploymentHealthCheck,
+) (
+	[]koyeb.DeploymentHealthCheck, error) {
 	newChecks, err := parseListFlags("checks", flags_list.NewHealthcheckListFromFlags, flags, currentHealthChecks)
 	if err != nil {
 		return nil, err
@@ -1381,7 +1422,12 @@ func (h *ServiceHandler) parseRegions(flags *pflag.FlagSet, currentRegions []str
 }
 
 // Parse --min-scale and --max-scale
-func (h *ServiceHandler) parseScalings(isFreeUsed bool, flags *pflag.FlagSet, currentScalings []koyeb.DeploymentScaling) ([]koyeb.DeploymentScaling, error) {
+func (h *ServiceHandler) parseScalings(
+	isFreeUsed bool,
+	flags *pflag.FlagSet,
+	currentScalings []koyeb.DeploymentScaling,
+) (
+	[]koyeb.DeploymentScaling, error) {
 	var minScale, maxScale int64
 
 	if flags.Lookup("min-scale").Changed {
@@ -1768,7 +1814,8 @@ func (h *ServiceHandler) setSource(ctx *CLIContext, definition *koyeb.Deployment
 }
 
 // Parse --docker-* flags
-func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (*koyeb.DockerSource, error) {
+func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (
+	*koyeb.DockerSource, error) {
 	// docker-private-registry-secret needs to be parsed first, because checkDockerImage reads it
 	if flags.Lookup("docker-private-registry-secret").Changed {
 		secret, _ := flags.GetString("docker-private-registry-secret")
@@ -1903,7 +1950,8 @@ func (h *ServiceHandler) setGitSourceBuilder(flags *pflag.FlagSet, source *koyeb
 }
 
 // Parse --git-buildpack-* flags
-func (h *ServiceHandler) parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (*koyeb.BuildpackBuilder, error) {
+func (h *ServiceHandler) parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.GitSource) (
+	*koyeb.BuildpackBuilder, error) {
 	builder := source.GetBuildpack()
 	// Legacy options for backward compatibility. We prefer
 	// --git-buildpack-build-command and --git-buildpack-run-command over --git-build-command and --git-run-command
@@ -1960,7 +2008,8 @@ func (h *ServiceHandler) parseGitSourceBuildpackBuilder(flags *pflag.FlagSet, so
 }
 
 // Parse --git-docker-* flags
-func (h *ServiceHandler) parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
+func (h *ServiceHandler) parseGitSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (
+	*koyeb.DockerBuilder, error) {
 	if flags.Lookup("git-docker-dockerfile").Changed {
 		dockerfile, _ := flags.GetString("git-docker-dockerfile")
 		builder.SetDockerfile(dockerfile)
@@ -1989,7 +2038,8 @@ func (h *ServiceHandler) parseGitSourceDockerBuilder(flags *pflag.FlagSet, build
 }
 
 // Parse --archive-* flags
-func (h *ServiceHandler) parseArchiveSource(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
+func (h *ServiceHandler) parseArchiveSource(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (
+	*koyeb.ArchiveSource, error) {
 	if flags.Lookup("archive").Changed {
 		archive, _ := flags.GetString("archive")
 		source.SetId(archive)
@@ -1998,7 +2048,8 @@ func (h *ServiceHandler) parseArchiveSource(flags *pflag.FlagSet, source *koyeb.
 }
 
 // Parse --archive-builder and --archive-* flags
-func (h *ServiceHandler) setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.ArchiveSource, error) {
+func (h *ServiceHandler) setArchiveSourceBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (
+	*koyeb.ArchiveSource, error) {
 	builder, _ := flags.GetString("archive-builder")
 	if builder != "buildpack" && builder != "docker" {
 		return nil, &errors.CLIError{
@@ -2070,7 +2121,8 @@ func (h *ServiceHandler) setArchiveSourceBuilder(flags *pflag.FlagSet, source *k
 }
 
 // Parse --archive-buildpack-* flags
-func (h *ServiceHandler) parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (*koyeb.BuildpackBuilder, error) {
+func (h *ServiceHandler) parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet, source *koyeb.ArchiveSource) (
+	*koyeb.BuildpackBuilder, error) {
 	builder := source.GetBuildpack()
 	buildpackBuildCommand, _ := flags.GetString("archive-buildpack-build-command")
 	buildpackRunCommand, _ := flags.GetString("archive-buildpack-run-command")
@@ -2089,7 +2141,8 @@ func (h *ServiceHandler) parseArchiveSourceBuildpackBuilder(flags *pflag.FlagSet
 }
 
 // Parse --archive-docker-* flags
-func (h *ServiceHandler) parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (*koyeb.DockerBuilder, error) {
+func (h *ServiceHandler) parseArchiveSourceDockerBuilder(flags *pflag.FlagSet, builder koyeb.DockerBuilder) (
+	*koyeb.DockerBuilder, error) {
 	if flags.Lookup("archive-docker-dockerfile").Changed {
 		dockerfile, _ := flags.GetString("archive-docker-dockerfile")
 		builder.SetDockerfile(dockerfile)
@@ -2332,7 +2385,8 @@ func (h *ServiceHandler) checkDockerImage(ctx *CLIContext, source *koyeb.DockerS
 }
 
 // Parse --volumes
-func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, currentVolumes []koyeb.DeploymentVolume) ([]koyeb.DeploymentVolume, error) {
+func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, currentVolumes []koyeb.DeploymentVolume) (
+	[]koyeb.DeploymentVolume, error) {
 	wrappedResolveVolumeId := func(value string) (string, error) {
 		return h.ResolveVolumeArgs(ctx, value)
 	}
@@ -2341,7 +2395,8 @@ func (h *ServiceHandler) parseVolumes(ctx *CLIContext, flags *pflag.FlagSet, cur
 }
 
 // Parse --config-file
-func (h *ServiceHandler) parseConfigFiles(ctx *CLIContext, flags *pflag.FlagSet, currentFiles []koyeb.ConfigFile) ([]koyeb.ConfigFile, error) {
+func (h *ServiceHandler) parseConfigFiles(ctx *CLIContext, flags *pflag.FlagSet, currentFiles []koyeb.ConfigFile) (
+	[]koyeb.ConfigFile, error) {
 	return parseListFlags("config-file", flags_list.GetNewConfigFilestListFromFlags(), flags, currentFiles)
 }
 

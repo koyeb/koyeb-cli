@@ -269,7 +269,12 @@ func (h *SandboxHandler) FsUpload(ctx *CLIContext, cmd *cobra.Command, args []st
 }
 
 // uploadFile uploads a single file to the sandbox
-func (h *SandboxHandler) uploadFile(ctx context.Context, client SandboxClientInterface, localPath, remotePath string, fileInfo fs.FileInfo) error {
+func (h *SandboxHandler) uploadFile(
+	ctx context.Context,
+	client SandboxClientInterface,
+	localPath, remotePath string,
+	fileInfo fs.FileInfo,
+) error {
 	if fileInfo.Size() > MaxUploadSize {
 		return &errors.CLIError{
 			What:     "Error while uploading file to sandbox",
@@ -309,7 +314,12 @@ func (h *SandboxHandler) uploadFile(ctx context.Context, client SandboxClientInt
 }
 
 // uploadDirectory uploads a directory recursively to the sandbox
-func (h *SandboxHandler) uploadDirectory(ctx context.Context, client SandboxClientInterface, localPath, remotePath string, force bool) error {
+func (h *SandboxHandler) uploadDirectory(
+	ctx context.Context,
+	client SandboxClientInterface,
+	localPath, remotePath string,
+	force bool,
+) error {
 	_, err := client.StatFile(ctx, remotePath)
 	if err == nil {
 		// Remote path exists
@@ -436,7 +446,11 @@ func (h *SandboxHandler) FsMove(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 // fsMovePath renames or moves a path in the sandbox via mv, mirroring the
 // Python SDK's rename_file/move_file.
-func (h *SandboxHandler) fsMovePath(ctx *CLIContext, client SandboxClientInterface, action, source, destination string) error {
+func (h *SandboxHandler) fsMovePath(
+	ctx *CLIContext,
+	client SandboxClientInterface,
+	action, source, destination string,
+) error {
 	result, err := client.Run(ctx.Context, &RunRequest{Cmd: mvCommand(source, destination)})
 	if err != nil {
 		return &errors.CLIError{

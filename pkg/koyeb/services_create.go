@@ -24,7 +24,13 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 // createService resolves the app and creates the service via the API,
 // without waiting. Callers own any post-create waiting and rendering.
-func (h *ServiceHandler) createService(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) (*koyeb.Service, error) {
+func (h *ServiceHandler) createService(
+	ctx *CLIContext,
+	cmd *cobra.Command,
+	args []string,
+	createService *koyeb.CreateService,
+) (
+	*koyeb.Service, error) {
 	appID, err := h.parseAppName(cmd, args[0])
 	if err != nil {
 		return nil, err
@@ -53,17 +59,19 @@ func (h *ServiceHandler) createService(ctx *CLIContext, cmd *cobra.Command, args
 			resp,
 		)
 	}
-	log.Infof(
-		"Service deployment in progress. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-		res.Service.GetId()[:8],
-		res.Service.GetId()[:8],
-	)
+	log.Infof(serviceDeploymentInProgressMsg, res.Service.GetId()[:8], res.Service.GetId()[:8])
 	return res.Service, nil
 }
 
+// serviceDeploymentInProgressMsg is the standard hint logged after a create.
+const serviceDeploymentInProgressMsg = "Service deployment in progress. " +
+	"To access the build logs, run: `koyeb service logs %s -t build`. " +
+	"For the runtime logs, run `koyeb service logs %s`"
+
 // createServiceInApp creates the service in the given app via the port and
 // logs the standard deployment hint. Callers own waiting and rendering.
-func (h *ServiceHandler) createServiceInApp(ctx *CLIContext, appID string, req koyeb.CreateService) (*koyeb.Service, error) {
+func (h *ServiceHandler) createServiceInApp(ctx *CLIContext, appID string, req koyeb.CreateService) (
+	*koyeb.Service, error) {
 	req.SetAppId(appID)
 	res, _, err := ctx.API.CreateService(ctx.Context, req)
 	if err != nil {
