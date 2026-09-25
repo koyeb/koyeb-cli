@@ -27,11 +27,12 @@ type sandboxCreateDeps struct {
 	getAppID        func(ctx *CLIContext, name string) (string, error)
 	createApp       func(ctx *CLIContext, name string) (string, error)
 	resolveSnapshot func(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType)
-	createService   func(ctx *CLIContext, cmd *cobra.Command, args []string, req *koyeb.CreateService) (*koyeb.Service, error)
-	waitForService  func(ctx *CLIContext, cmd *cobra.Command, serviceID string) error
-	deleteApp       func(ctx *CLIContext, appID string)
-	deleteService   func(ctx *CLIContext, serviceID string)
-	renderService   func(ctx *CLIContext, cmd *cobra.Command, serviceID string)
+	createService   func(ctx *CLIContext, cmd *cobra.Command, args []string,
+		req *koyeb.CreateService) (*koyeb.Service, error)
+	waitForService func(ctx *CLIContext, cmd *cobra.Command, serviceID string) error
+	deleteApp      func(ctx *CLIContext, appID string)
+	deleteService  func(ctx *CLIContext, serviceID string)
+	renderService  func(ctx *CLIContext, cmd *cobra.Command, serviceID string)
 }
 
 func defaultSandboxCreateDeps() sandboxCreateDeps {
@@ -51,7 +52,8 @@ func defaultSandboxCreateDeps() sandboxCreateDeps {
 			return app.GetId(), nil
 		},
 		resolveSnapshot: resolveSnapshotFlags,
-		createService: func(ctx *CLIContext, cmd *cobra.Command, args []string, req *koyeb.CreateService) (*koyeb.Service, error) {
+		createService: func(ctx *CLIContext, cmd *cobra.Command, args []string,
+			req *koyeb.CreateService) (*koyeb.Service, error) {
 			return NewServiceHandler().createService(ctx, cmd, args, req)
 		},
 		waitForService: waitForSandboxDeployment,
@@ -190,13 +192,16 @@ func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID str
 	}
 	timeoutErr := func() error {
 		return &errors.CLIError{
-			What:     "Timed out waiting for the sandbox deployment",
-			Why:      fmt.Sprintf("service %s did not become ready within %s", serviceID, waitTimeout),
-			Solution: errors.CLIErrorSolution("Check the service status with `koyeb service get " + serviceID + "`, or raise --wait-timeout"),
+			What: "Timed out waiting for the sandbox deployment",
+			Why:  fmt.Sprintf("service %s did not become ready within %s", serviceID, waitTimeout),
+			Solution: errors.CLIErrorSolution("Check the service status with " +
+				"`koyeb service get " + serviceID + "`, or raise --wait-timeout"),
 		}
 	}
 
-	return waitForServiceStatus(ctx.Context, serviceID, waitTimeout, waitPollInterval(cmd), serviceStatusFromClient(ctx), terminalErr, timeoutErr)
+	return waitForServiceStatus(
+		ctx.Context, serviceID, waitTimeout, waitPollInterval(cmd),
+		serviceStatusFromClient(ctx), terminalErr, timeoutErr)
 }
 
 // deleteAppBestEffort removes an app auto-created by this command; cleanup
@@ -267,7 +272,12 @@ func resolveSnapshotRef(ctx context.Context, ref string,
 
 // wireSnapshot wires boot-from-snapshot on the create request. FULL
 // snapshots boot without a definition (the API infers it); others keep it.
-func wireSnapshot(createService *koyeb.CreateService, snapshotID string, snapshotType koyeb.InstanceSnapshotType, serviceName string) {
+func wireSnapshot(
+	createService *koyeb.CreateService,
+	snapshotID string,
+	snapshotType koyeb.InstanceSnapshotType,
+	serviceName string,
+) {
 	createService.SetInstanceSnapshotId(snapshotID)
 	if snapshotType == koyeb.INSTANCESNAPSHOTTYPE_FULL {
 		createService.Definition = nil

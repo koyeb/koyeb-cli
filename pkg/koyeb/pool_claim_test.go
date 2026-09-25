@@ -81,7 +81,10 @@ func TestClassifyServiceStatus(t *testing.T) {
 	}
 }
 
-func statusFunc(statuses []koyeb.ServiceStatus, calls *int) func(context.Context, string) (koyeb.ServiceStatus, error) {
+func statusFunc(
+	statuses []koyeb.ServiceStatus,
+	calls *int,
+) func(context.Context, string) (koyeb.ServiceStatus, error) {
 	return func(context.Context, string) (koyeb.ServiceStatus, error) {
 		i := *calls
 		(*calls)++
@@ -106,7 +109,11 @@ func TestWaitClaimReady(t *testing.T) {
 	t.Run("in progress then ready", func(t *testing.T) {
 		calls := 0
 		err := waitClaimReady(context.Background(), serviceID, time.Second, 5*time.Millisecond,
-			statusFunc([]koyeb.ServiceStatus{koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_HEALTHY}, &calls))
+			statusFunc([]koyeb.ServiceStatus{
+				koyeb.SERVICESTATUS_STARTING,
+				koyeb.SERVICESTATUS_RESUMING,
+				koyeb.SERVICESTATUS_HEALTHY,
+			}, &calls))
 		require.NoError(t, err)
 		assert.Equal(t, 3, calls)
 	})
@@ -131,7 +138,8 @@ func TestWaitClaimReady(t *testing.T) {
 		err := waitClaimReady(context.Background(), serviceID, time.Second, 5*time.Millisecond,
 			statusFunc([]koyeb.ServiceStatus{koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_DELETED}, &calls))
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), fmt.Sprintf("Service '%s' reached terminal state 'DELETED' and will not become ready.", serviceID))
+		assert.Contains(t, err.Error(),
+			fmt.Sprintf("Service '%s' reached terminal state 'DELETED' and will not become ready.", serviceID))
 		assert.Equal(t, 2, calls)
 	})
 
@@ -194,7 +202,10 @@ func TestClaimWaitFlow(t *testing.T) {
 	t.Run("without --wait the wait func is not invoked", func(t *testing.T) {
 		waited := false
 		cmd := newPoolClaimCmd()
-		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+		ctx := &CLIContext{
+			Mapper:   idmapper.NewMapper(context.Background(), nil),
+			Renderer: renderer.NewRenderer(renderer.JSONFormat),
+		}
 
 		require.NoError(t, claimWaitFlow(ctx, cmd, newReply(serviceID), func(*CLIContext, string) error {
 			waited = true
@@ -207,7 +218,10 @@ func TestClaimWaitFlow(t *testing.T) {
 		var waitedFor string
 		cmd := newPoolClaimCmd()
 		require.NoError(t, cmd.Flags().Set("wait", "true"))
-		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+		ctx := &CLIContext{
+			Mapper:   idmapper.NewMapper(context.Background(), nil),
+			Renderer: renderer.NewRenderer(renderer.JSONFormat),
+		}
 
 		require.NoError(t, claimWaitFlow(ctx, cmd, newReply(serviceID), func(_ *CLIContext, id string) error {
 			waitedFor = id
@@ -219,7 +233,10 @@ func TestClaimWaitFlow(t *testing.T) {
 	t.Run("wait errors propagate", func(t *testing.T) {
 		cmd := newPoolClaimCmd()
 		require.NoError(t, cmd.Flags().Set("wait", "true"))
-		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+		ctx := &CLIContext{
+			Mapper:   idmapper.NewMapper(context.Background(), nil),
+			Renderer: renderer.NewRenderer(renderer.JSONFormat),
+		}
 
 		err := claimWaitFlow(ctx, cmd, newReply(serviceID), func(*CLIContext, string) error {
 			return fmt.Errorf("terminal")
@@ -231,7 +248,10 @@ func TestClaimWaitFlow(t *testing.T) {
 		waited := false
 		cmd := newPoolClaimCmd()
 		require.NoError(t, cmd.Flags().Set("wait", "true"))
-		ctx := &CLIContext{Mapper: idmapper.NewMapper(context.Background(), nil), Renderer: renderer.NewRenderer(renderer.JSONFormat)}
+		ctx := &CLIContext{
+			Mapper:   idmapper.NewMapper(context.Background(), nil),
+			Renderer: renderer.NewRenderer(renderer.JSONFormat),
+		}
 
 		require.NoError(t, claimWaitFlow(ctx, cmd, koyeb.NewPoolClaimReply(), func(*CLIContext, string) error {
 			waited = true

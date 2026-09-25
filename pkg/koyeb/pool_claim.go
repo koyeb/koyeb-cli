@@ -189,7 +189,12 @@ $> koyeb pool claim my-pool --request-id my-request-id
 
 // claimWaitFlow renders the claim and waits for the claimed service when
 // --wait is set. The wait func is a seam for tests.
-func claimWaitFlow(ctx *CLIContext, cmd *cobra.Command, res *koyeb.PoolClaimReply, wait func(ctx *CLIContext, serviceID string) error) error {
+func claimWaitFlow(
+	ctx *CLIContext,
+	cmd *cobra.Command,
+	res *koyeb.PoolClaimReply,
+	wait func(ctx *CLIContext, serviceID string) error,
+) error {
 	full := GetBoolFlags(cmd, "full")
 	claimReply := NewClaimReply(ctx.Mapper, res, full)
 	ctx.Renderer.Render(claimReply)
@@ -213,5 +218,8 @@ func claimWaitFlow(ctx *CLIContext, cmd *cobra.Command, res *koyeb.PoolClaimRepl
 
 // waitClaimedService polls GetService until the claimed service is ready.
 func waitClaimedService(ctx *CLIContext, serviceID string) error {
-	return waitClaimReady(ctx.Context, serviceID, DefaultClaimWaitTimeout, DefaultClaimPollInterval, serviceStatusFromClient(ctx))
+	return waitClaimReady(
+		ctx.Context, serviceID,
+		DefaultClaimWaitTimeout, DefaultClaimPollInterval,
+		serviceStatusFromClient(ctx))
 }
