@@ -14,9 +14,6 @@ func newPoolClaimsListCmd() *cobra.Command {
 		Short: "List claims of a service pool",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			poolID, err := ResolvePoolArgs(ctx, args[0])
 			if err != nil {
 				return err

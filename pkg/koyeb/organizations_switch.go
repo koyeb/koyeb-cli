@@ -8,9 +8,6 @@ import (
 
 func (h *OrganizationHandler) Switch(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 
-	if err := setProjectHeader(ctx, cmd); err != nil {
-		return err
-	}
 	organization, err := ResolveOrganizationArgs(ctx, args[0])
 	if err != nil {
 		return err

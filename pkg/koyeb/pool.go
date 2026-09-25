@@ -46,9 +46,6 @@ func newPoolListCmd() *cobra.Command {
 		Use:   "list",
 		Short: "List service pools",
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return NewPoolHandler().List(ctx, cmd, args)
 		}),
 	}
@@ -60,9 +57,6 @@ func newPoolGetCmd() *cobra.Command {
 		Short: "Get a service pool",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return NewPoolHandler().Get(ctx, cmd, args)
 		}),
 	}
@@ -74,9 +68,6 @@ func newPoolDescribeCmd() *cobra.Command {
 		Short: "Describe a service pool",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return NewPoolHandler().Describe(ctx, cmd, args)
 		}),
 	}
@@ -88,9 +79,6 @@ func newPoolDeleteCmd() *cobra.Command {
 		Short: "Delete a service pool",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return NewPoolHandler().Delete(ctx, cmd, args)
 		}),
 	}
