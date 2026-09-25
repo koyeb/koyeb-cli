@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -136,17 +137,18 @@ func waitTimeoutFlag(cmd *cobra.Command) (time.Duration, error) {
 
 // waitPollInterval returns the --wait polling interval: --poll-interval when
 // the command registers it (sandbox create), 2s otherwise (services).
-// Non-finite values fall back to the flag default — NaN would panic
-// time.NewTicker and Inf would never tick.
+// Unusable values fall back to the registered flag default — NaN would
+// panic time.NewTicker and Inf would never tick.
 func waitPollInterval(cmd *cobra.Command) time.Duration {
-	if f := cmd.Flags().Lookup("poll-interval"); f != nil {
-		seconds, err := cmd.Flags().GetFloat64("poll-interval")
-		if err != nil || seconds <= 0 || math.IsNaN(seconds) || math.IsInf(seconds, 0) {
-			seconds = 0.5
-		}
-		return time.Duration(seconds * float64(time.Second))
+	f := cmd.Flags().Lookup("poll-interval")
+	if f == nil {
+		return 2 * time.Second
 	}
-	return 2 * time.Second
+	seconds, err := cmd.Flags().GetFloat64("poll-interval")
+	if err != nil || seconds <= 0 || math.IsNaN(seconds) || math.IsInf(seconds, 0) {
+		seconds, _ = strconv.ParseFloat(f.DefValue, 64)
+	}
+	return time.Duration(seconds * float64(time.Second))
 }
 
 // deploymentWaitDone reports whether a --wait polling loop should stop for
