@@ -484,6 +484,7 @@ func TestCreateSandboxServiceCleanupOnWaitFailure(t *testing.T) {
 	require.Error(t, err)
 	assert.Equal(t, []string{"svc-123"}, fake.deletedServices, "default cleanup deletes the sandbox on wait failure")
 	assert.Empty(t, fake.rendered, "a failed sandbox is not rendered after cleanup")
+	assert.Contains(t, err.Error(), "The sandbox was deleted", "the deletion is surfaced in the error, like the SDKs")
 }
 
 func TestCreateSandboxNoServiceCleanupWhenFlagDisabled(t *testing.T) {
