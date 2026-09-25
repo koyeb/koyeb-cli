@@ -260,6 +260,49 @@ Parent directories on the sandbox must already exist (create them first with fs 
 	fsUploadCmd.Flags().BoolP("force", "f", false, "Overwrite existing remote directory")
 	fsCmd.AddCommand(fsUploadCmd)
 
+	// fs rename
+	fsRenameCmd := &cobra.Command{
+		Use:   "rename NAME OLD_PATH NEW_PATH",
+		Short: "Rename a file or directory in the sandbox",
+		Args:  cobra.ExactArgs(3),
+		RunE:  WithCLIContext(h.FsRename),
+	}
+	fsCmd.AddCommand(fsRenameCmd)
+
+	// fs move
+	fsMoveCmd := &cobra.Command{
+		Use:   "move NAME SOURCE_PATH DESTINATION_PATH",
+		Short: "Move a file to a different directory in the sandbox",
+		Args:  cobra.ExactArgs(3),
+		RunE:  WithCLIContext(h.FsMove),
+	}
+	fsCmd.AddCommand(fsMoveCmd)
+
+	// fs exists / is-file / is-dir
+	fsExistsCmd := &cobra.Command{
+		Use:   "exists NAME PATH",
+		Short: "Check if a path exists in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsExists),
+	}
+	fsCmd.AddCommand(fsExistsCmd)
+
+	fsIsFileCmd := &cobra.Command{
+		Use:   "is-file NAME PATH",
+		Short: "Check if a path is a regular file in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsIsFile),
+	}
+	fsCmd.AddCommand(fsIsFileCmd)
+
+	fsIsDirCmd := &cobra.Command{
+		Use:   "is-dir NAME PATH",
+		Short: "Check if a path is a directory in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsIsDir),
+	}
+	fsCmd.AddCommand(fsIsDirCmd)
+
 	// fs download
 	fsDownloadCmd := &cobra.Command{
 		Use:   "download NAME REMOTE_PATH LOCAL_PATH",
