@@ -214,3 +214,35 @@ func TestSandboxClientRunStreamingRoundTrip(t *testing.T) {
 	assert.Equal(t, []string{"chunk one", "chunk two"}, outputs)
 	assert.Equal(t, 0, code)
 }
+
+func TestSandboxClientRunStreamingDroppedWithoutComplete(t *testing.T) {
+	// The Python SDK's redeploy-teardown scenario: the instance dies
+	// mid-stream and the connection closes without a complete event.
+	// The CLI must surface an error, not return as if nothing happened.
+	client, _ := executorServer(t, "secret", "", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		writeChecked(w, "event: output\ndata: {\"stream\":\"stdout\",\"data\":\"partial\"}\n\n")
+		w.(http.Flusher).Flush()
+		// Connection drops here — no complete event.
+	})
+
+	err := client.RunStreaming(context.Background(), &RunRequest{Cmd: "build"},
+		func(string, string) {}, func(int, bool) {})
+	require.Error(t, err, "a stream that ends without a complete event must error, not hang the caller")
+	assert.Contains(t, err.Error(), "completion event")
+}
+
+func TestSandboxClientRunStreamingErrorEvent(t *testing.T) {
+	client, _ := executorServer(t, "secret", "", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher := w.(http.Flusher)
+		writeChecked(w, "event: error\ndata: command not found\n\n")
+		flusher.Flush()
+	})
+
+	err := client.RunStreaming(context.Background(), &RunRequest{Cmd: "nope"},
+		func(string, string) {}, func(int, bool) {})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "command error")
+	assert.Contains(t, err.Error(), "command not found")
+}

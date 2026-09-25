@@ -289,7 +289,10 @@ func (c *SandboxClient) RunStreaming(ctx context.Context, req *RunRequest, onOut
 		return fmt.Errorf("sandbox API error (status %d): %s", resp.StatusCode, string(body))
 	}
 
-	return c.parseSSE(resp.Body, func(event StreamEvent) error {
+	// A teardown mid-redeploy drops the connection without a complete
+	// event; without this check the caller would wait for it forever.
+	completed := false
+	err = c.parseSSE(resp.Body, func(event StreamEvent) error {
 		switch event.Event {
 		case "output":
 			var output StreamOutputEvent
@@ -304,6 +307,7 @@ func (c *SandboxClient) RunStreaming(ctx context.Context, req *RunRequest, onOut
 			if err := json.Unmarshal([]byte(event.Data), &complete); err != nil {
 				return fmt.Errorf("failed to parse complete event: %w", err)
 			}
+			completed = true
 			if onComplete != nil {
 				onComplete(complete.Code, complete.Error)
 			}
@@ -312,6 +316,13 @@ func (c *SandboxClient) RunStreaming(ctx context.Context, req *RunRequest, onOut
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	if !completed {
+		return fmt.Errorf("stream ended without a completion event — the sandbox may have been redeployed or torn down")
+	}
+	return nil
 }
 
 // parseSSE parses server-sent events from a reader
