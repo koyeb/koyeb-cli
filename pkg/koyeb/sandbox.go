@@ -615,8 +615,17 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 
 	// Sandbox-specific flags
 	flags.StringP("app", "a", "", "Sandbox application")
-	flags.Bool("wait", false, "Wait until sandbox deployment is done")
+	flags.Bool("wait", false, "Wait until the sandbox deployment is ready (opt-in; the Koyeb SDKs wait by default)")
 	flags.Duration("wait-timeout", 5*time.Minute, "Wait timeout duration")
+	flags.Float64("poll-interval", 0.5, "Seconds between readiness polls when --wait is set")
+	flags.Bool("cleanup-on-failure", true, "Delete the sandbox when --wait fails or times out")
+
+	// Parity flags mirroring the Koyeb SDKs' create options
+	flags.Bool("enable-mesh", false, "Enable mesh for this sandbox (tri-state: unset=AUTO, true=ENABLED, false=DISABLED)")
+	flags.String("exposed-port-protocol", "http", "Protocol for the exposed application port 3031 (http or http2)")
+	flags.Bool("enable-tcp-proxy", false, "Expose port 3031 via TCP proxy at create time")
+	flags.String("sandbox-secret", "", "Explicit sandbox secret (defaults to a generated one)")
+	flags.String("snapshot", "", "Instance snapshot ID or name to boot the sandbox from")
 
 	// Docker source flags (required for sandbox)
 	flags.String("docker", "", "Docker image (default: koyeb/sandbox)")
@@ -626,7 +635,7 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
 
 	// Instance flags
-	flags.String("instance-type", "nano", "Instance type")
+	flags.String("instance-type", "micro", "Instance type (default: micro)")
 
 	// Region flags
 	flags.StringSlice("regions", []string{}, "Deployment regions")

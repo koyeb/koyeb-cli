@@ -3,6 +3,7 @@ package koyeb
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -58,7 +59,11 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	ensureSandboxSecret(createDefinition)
 
 	// Configure sandbox-specific ports and routes (always use defaults for sandbox)
-	configureSandboxPortsAndRoutes(createDefinition, false, false)
+	exposedPortProtocol, err := cmd.Flags().GetString("exposed-port-protocol")
+	if err != nil {
+		return err
+	}
+	configureSandboxPortsAndRoutes(createDefinition, exposedPortProtocol, false, false)
 
 	// Set service name
 	serviceName, err := svcHandler.parseServiceNameWithoutApp(cmd, args[0])
@@ -111,6 +116,37 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 
 	// Parse instance type using ServiceHandler method
 	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, nil))
+
+	// Tri-state mesh, mirroring the SDKs: unset keeps the definition default
+	// (AUTO), --enable-mesh maps to ENABLED, --enable-mesh=false to DISABLED.
+	if flags.Changed("enable-mesh") {
+		if enableMesh, _ := flags.GetBool("enable-mesh"); enableMesh {
+			def.SetMesh(koyeb.DEPLOYMENTMESH_ENABLED)
+		} else {
+			def.SetMesh(koyeb.DEPLOYMENTMESH_DISABLED)
+		}
+	}
+
+	// Validate the exposed port protocol before building the definition.
+	protocol, err := flags.GetString("exposed-port-protocol")
+	if err != nil {
+		return err
+	}
+	if protocol != "http" && protocol != "http2" {
+		return &errors.CLIError{
+			What:     "Invalid exposed port protocol",
+			Why:      fmt.Sprintf("Invalid protocol '%s'. Must be one of ('http', 'http2')", protocol),
+			Orig:     nil,
+			Solution: "Use --exposed-port-protocol http or --exposed-port-protocol http2",
+		}
+	}
+
+	// Create-time TCP proxy on port 3031, mirroring the SDKs' enable_tcp_proxy.
+	if enableTCPProxy, _ := flags.GetBool("enable-tcp-proxy"); enableTCPProxy {
+		port := int64(3031)
+		proxyProtocol := koyeb.PROXYPORTPROTOCOL_TCP
+		def.SetProxyPorts([]koyeb.DeploymentProxyPort{{Port: &port, Protocol: &proxyProtocol}})
+	}
 
 	// Parse regions using ServiceHandler method
 	regions, err := svcHandler.parseRegions(flags, nil)
@@ -217,8 +253,8 @@ func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
 
 // configureSandboxPortsAndRoutes sets up default sandbox ports and routes
 // Port 3030: Management interface at /koyeb-sandbox/
-// Port 3031: Application endpoint at /
-func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, portsExplicitlySet, routesExplicitlySet bool) {
+// Port 3031: Application endpoint at / (protocol: exposedPortProtocol)
+func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, exposedPortProtocol string, portsExplicitlySet, routesExplicitlySet bool) {
 	// Set sandbox default ports unless user explicitly set --ports flag
 	if !portsExplicitlySet {
 		port3030 := koyeb.NewDeploymentPortWithDefaults()
@@ -227,7 +263,7 @@ func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, portsExplic
 
 		port3031 := koyeb.NewDeploymentPortWithDefaults()
 		port3031.SetPort(3031)
-		port3031.SetProtocol("http")
+		port3031.SetProtocol(exposedPortProtocol)
 
 		def.SetPorts([]koyeb.DeploymentPort{*port3030, *port3031})
 	}
