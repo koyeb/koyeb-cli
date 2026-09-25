@@ -678,7 +678,7 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
 
 	// Instance flags
-	flags.String("instance-type", "micro", "Instance type (default: micro)")
+	flags.String("instance-type", "micro", "Instance type")
 
 	// Region flags
 	flags.StringSlice("regions", []string{}, "Deployment regions")

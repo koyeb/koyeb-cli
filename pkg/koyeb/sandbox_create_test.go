@@ -41,6 +41,20 @@ func TestSandboxCreateFlagsRegistered(t *testing.T) {
 	protocol := flags.Lookup("exposed-port-protocol")
 	require.NotNil(t, protocol)
 	assert.Equal(t, "http", protocol.DefValue)
+
+	// --wait stays opt-in (intentional CLI UX) but must note the SDK default.
+	waitFlag := flags.Lookup("wait")
+	require.NotNil(t, waitFlag)
+	assert.Equal(t, "false", waitFlag.DefValue, "--wait must stay opt-in")
+	assert.Contains(t, waitFlag.Usage, "SDKs wait by default")
+
+	cleanupFlag := flags.Lookup("cleanup-on-failure")
+	require.NotNil(t, cleanupFlag)
+	assert.Equal(t, "true", cleanupFlag.DefValue)
+
+	pollFlag := flags.Lookup("poll-interval")
+	require.NotNil(t, pollFlag)
+	assert.Equal(t, "0.5", pollFlag.DefValue)
 }
 
 func TestParseSandboxDefinitionFlags_EnableMeshTriState(t *testing.T) {

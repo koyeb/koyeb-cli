@@ -56,7 +56,7 @@ func addPoolCreateFlags(flags *pflag.FlagSet) {
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
 
-	flags.String("instance-type", "micro", "Instance type (default: micro)")
+	flags.String("instance-type", "micro", "Instance type")
 	flags.StringSlice("regions", []string{}, "Deployment regions")
 
 	flags.StringSlice("env", []string{}, "Environment variables (KEY=VALUE)")
