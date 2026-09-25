@@ -335,6 +335,7 @@ See examples of koyeb service create --help
       --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string       Buid command
       --git-buildpack-run-command string         Run command
+      --git-credential-source string             Source of the Git repository credentials
       --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
       --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
       --git-docker-dockerfile string             Dockerfile path
@@ -1532,6 +1533,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
       --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string       Buid command
       --git-buildpack-run-command string         Run command
+      --git-credential-source string             Source of the Git repository credentials
       --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
       --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
       --git-docker-dockerfile string             Dockerfile path
@@ -2044,6 +2046,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
       --git-builder string                       Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
       --git-buildpack-build-command string       Buid command
       --git-buildpack-run-command string         Run command
+      --git-credential-source string             Source of the Git repository credentials
       --git-docker-args strings                  Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.
       --git-docker-command string                Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.
       --git-docker-dockerfile string             Dockerfile path

@@ -27,6 +27,25 @@ func TestSetGitSourceBuilder(t *testing.T) {
 				Branch:     koyeb.PtrString("main"),
 			},
 		},
+		"source_git_credential_source": {
+			args:   []string{"--git", "github.com/org/repo", "--git-credential-source", "connector:123e4567-e89b-12d3-a456-426614174000"},
+			source: &koyeb.GitSource{},
+			expected: &koyeb.GitSource{
+				Repository:       koyeb.PtrString("github.com/org/repo"),
+				Branch:           koyeb.PtrString("main"),
+				CredentialSource: koyeb.PtrString("connector:123e4567-e89b-12d3-a456-426614174000"),
+			},
+		},
+		"source_git_credential_source_override": {
+			args: []string{"--git-credential-source", "github"},
+			source: &koyeb.GitSource{
+				CredentialSource: koyeb.PtrString("connector:123e4567-e89b-12d3-a456-426614174000"),
+			},
+			expected: &koyeb.GitSource{
+				Branch:           koyeb.PtrString("main"),
+				CredentialSource: koyeb.PtrString("github"),
+			},
+		},
 		"source_buildpack_no_arg": {
 			args: []string{},
 			source: &koyeb.GitSource{
