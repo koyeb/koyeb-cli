@@ -36,6 +36,7 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		return err
 	}
 
+	createdAppID := ""
 	if appId == "" {
 		log.Infof("Application `%s` does not exist, creating it", appName)
 		createApp := koyeb.NewCreateAppWithDefaults()
@@ -44,9 +45,12 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		lifecycle.SetDeleteWhenEmpty(true)
 		createApp.SetLifeCycle(*lifecycle)
 		appHandler := NewAppHandler()
-		if _, err := appHandler.CreateApp(ctx, createApp); err != nil {
+		reply, err := appHandler.CreateApp(ctx, createApp)
+		if err != nil {
 			return err
 		}
+		app := reply.GetApp()
+		createdAppID = app.GetId()
 	}
 
 	// Resolve the snapshot reference before building the definition: a FULL
@@ -105,8 +109,47 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		wireSnapshot(createService, snapshotID, snapshotType, serviceName)
 	}
 
-	// Delegate to ServiceHandler.Create for API call
-	return svcHandler.Create(ctx, cmd, args, createService)
+	// The sandbox flow owns create and wait so cleanup can react to which
+	// phase failed (Python: app cleanup on create failure, service cleanup
+	// gated by cleanup_on_failure on wait failure).
+	service, err := svcHandler.createService(ctx, cmd, args, createService)
+	if err != nil {
+		if createdAppID != "" {
+			deleteAppBestEffort(ctx, createdAppID)
+		}
+		return err
+	}
+	defer renderServiceState(ctx, cmd, service.GetId())
+
+	if wait := GetBoolFlags(cmd, "wait"); wait {
+		if err := waitForServiceDeployment(ctx, cmd, service.GetId()); err != nil {
+			if GetBoolFlags(cmd, "cleanup-on-failure") {
+				deleteServiceBestEffort(ctx, service.GetId())
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// deleteAppBestEffort removes an app auto-created by this command after a
+// failed creation; cleanup failures are logged, never raised, so the
+// original error reaches the user.
+func deleteAppBestEffort(ctx *CLIContext, appID string) {
+	_, _, err := ctx.Client.AppsApi.DeleteApp(ctx.Context, appID).Execute()
+	if err != nil {
+		log.Warnf("Failed to delete app `%s` after sandbox creation failure", appID)
+	}
+}
+
+// deleteServiceBestEffort removes a sandbox whose wait failed; cleanup
+// failures are logged, never raised, so the original error reaches the user.
+func deleteServiceBestEffort(ctx *CLIContext, serviceID string) {
+	_, _, err := ctx.Client.ServicesApi.DeleteService(ctx.Context, serviceID).Execute()
+	if err != nil {
+		log.Warnf("Failed to delete service `%s` after sandbox wait failure", serviceID)
+	}
 }
 
 // resolveSnapshotFlags resolves --snapshot to an instance snapshot ID and
