@@ -12,26 +12,37 @@ import (
 )
 
 func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) error {
-
-	if err := setProjectHeader(ctx, cmd); err != nil {
+	service, err := h.createService(ctx, cmd, args, createService)
+	if err != nil {
 		return err
+	}
+	defer renderServiceState(ctx, cmd, service.GetId())
+
+	if wait, _ := cmd.Flags().GetBool("wait"); wait {
+		return waitForServiceDeployment(ctx, cmd, service.GetId())
+	}
+	return nil
+}
+
+// createService resolves the app and creates the service via the API,
+// without waiting. Callers own any post-create waiting and rendering.
+func (h *ServiceHandler) createService(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) (*koyeb.Service, error) {
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return nil, err
 	}
 	appID, err := h.parseAppName(cmd, args[0])
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	app, err := h.ResolveAppArgs(ctx, appID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	wait, _ := cmd.Flags().GetBool("wait")
-	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
 
 	resApp, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, app).Execute()
 	if err != nil {
-		return errors.NewCLIErrorFromAPIError(
+		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving the application `%s`", appID),
 			err,
 			resp,
@@ -41,7 +52,7 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	createService.SetAppId(resApp.App.GetId())
 	res, resp, err := ctx.Client.ServicesApi.CreateService(ctx.Context).Service(*createService).Execute()
 	if err != nil {
-		return errors.NewCLIErrorFromAPIError(
+		return nil, errors.NewCLIErrorFromAPIError(
 			"Error while creating the service",
 			err,
 			resp,
@@ -52,51 +63,81 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		res.Service.GetId()[:8],
 		res.Service.GetId()[:8],
 	)
-	defer func() {
-		res, _, err := ctx.Client.ServicesApi.GetService(ctx.Context, res.Service.GetId()).Execute()
+	return res.Service, nil
+}
+
+// renderServiceState fetches the service and renders its current state —
+// used after create and after an optional wait to show the final status.
+func renderServiceState(ctx *CLIContext, cmd *cobra.Command, serviceID string) {
+	res, _, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceID).Execute()
+	if err != nil {
+		return
+	}
+	full := GetBoolFlags(cmd, "full")
+	getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
+	ctx.Renderer.Render(getServiceReply)
+}
+
+// waitForServiceDeployment polls the service until it reaches a steady state
+// or --wait-timeout elapses.
+func waitForServiceDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
+	waitTimeout, _ := cmd.Flags().GetDuration("wait-timeout")
+	if waitTimeout <= 0 {
+		waitTimeout = 5 * time.Minute
+	}
+	ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
+	defer cancel()
+
+	for range ticker(ctxd, waitPollInterval(cmd)) {
+		res, resp, err := ctx.Client.ServicesApi.GetService(ctxd, serviceID).Execute()
 		if err != nil {
-			return
+			return errors.NewCLIErrorFromAPIError(
+				"Error while fetching service",
+				err,
+				resp,
+			)
 		}
-		full := GetBoolFlags(cmd, "full")
-		getServiceReply := NewGetServiceReply(ctx.Mapper, &koyeb.GetServiceReply{Service: res.Service}, full)
-		ctx.Renderer.Render(getServiceReply)
-	}()
 
-	if wait {
-		ctxd, cancel := context.WithTimeout(ctx.Context, waitTimeout)
-		defer cancel()
-
-		for range ticker(ctxd, 2*time.Second) {
-			res, resp, err := ctx.Client.ServicesApi.GetService(ctxd, res.Service.GetId()).Execute()
-			if err != nil {
-				return errors.NewCLIErrorFromAPIError(
-					"Error while fetching service",
-					err,
-					resp,
-				)
-			}
-
-			if res.Service != nil && res.Service.Status != nil {
-				switch status := *res.Service.Status; status {
-				case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
-					return fmt.Errorf("service %s deployment ended in status: %s", res.Service.GetId()[:8], status)
-				case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
-					break
-				default:
-					return nil
+		if res.Service != nil && res.Service.Status != nil {
+			if done, failed := deploymentWaitDone(*res.Service.Status); done {
+				if failed {
+					return fmt.Errorf("service %s deployment ended in status: %s", serviceID[:8], *res.Service.Status)
 				}
+				return nil
 			}
 		}
-
-		log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-			res.Service.GetId()[:8],
-			res.Service.GetId()[:8],
-		)
-		return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
-			res.Service.GetId()[:8],
-			res.Service.GetId()[:8],
-		)
 	}
 
-	return nil
+	log.Infof("Service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
+		serviceID[:8], serviceID[:8],
+	)
+	return fmt.Errorf("service deployment still in progress, --wait timed out. To access the build logs, run: `koyeb service logs %s -t build`. For the runtime logs, run `koyeb service logs %s`",
+		serviceID[:8], serviceID[:8],
+	)
+}
+
+// waitPollInterval returns the --wait polling interval: --poll-interval when
+// the command registers it (sandbox create), 2s otherwise (services).
+func waitPollInterval(cmd *cobra.Command) time.Duration {
+	if f := cmd.Flags().Lookup("poll-interval"); f != nil {
+		seconds, err := cmd.Flags().GetFloat64("poll-interval")
+		if err != nil || seconds <= 0 {
+			seconds = 0.5
+		}
+		return time.Duration(seconds * float64(time.Second))
+	}
+	return 2 * time.Second
+}
+
+// deploymentWaitDone reports whether a --wait polling loop should stop for
+// status, and whether that status means the deployment failed.
+func deploymentWaitDone(status koyeb.ServiceStatus) (done, failed bool) {
+	switch status {
+	case koyeb.SERVICESTATUS_DELETED, koyeb.SERVICESTATUS_DEGRADED, koyeb.SERVICESTATUS_UNHEALTHY:
+		return true, true
+	case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING, koyeb.SERVICESTATUS_DELETING, koyeb.SERVICESTATUS_PAUSING:
+		return false, false
+	default:
+		return true, false
+	}
 }

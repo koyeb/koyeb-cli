@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/spf13/cobra"
@@ -127,25 +128,25 @@ func TestSandboxCreateInstanceTypeDefaultsToMicro(t *testing.T) {
 
 func TestApplySandboxSecretFlag(t *testing.T) {
 	tests := []struct {
-		name     string
-		args     []string
-		wantEnv  map[string]string
+		name      string
+		args      []string
+		wantEnv   map[string]string
 		generated bool
 	}{
 		{
-			name:     "explicit flag wins over --env",
-			args:     []string{"--sandbox-secret", "flag-secret", "--env", "SANDBOX_SECRET=env-secret"},
-			wantEnv:  map[string]string{"SANDBOX_SECRET": "flag-secret"},
+			name:    "explicit flag wins over --env",
+			args:    []string{"--sandbox-secret", "flag-secret", "--env", "SANDBOX_SECRET=env-secret"},
+			wantEnv: map[string]string{"SANDBOX_SECRET": "flag-secret"},
 		},
 		{
-			name:     "flag without --env",
-			args:     []string{"--sandbox-secret", "flag-secret"},
-			wantEnv:  map[string]string{"SANDBOX_SECRET": "flag-secret"},
+			name:    "flag without --env",
+			args:    []string{"--sandbox-secret", "flag-secret"},
+			wantEnv: map[string]string{"SANDBOX_SECRET": "flag-secret"},
 		},
 		{
-			name:     "no flag keeps --env value",
-			args:     []string{"--env", "SANDBOX_SECRET=env-secret"},
-			wantEnv:  map[string]string{"SANDBOX_SECRET": "env-secret"},
+			name:    "no flag keeps --env value",
+			args:    []string{"--env", "SANDBOX_SECRET=env-secret"},
+			wantEnv: map[string]string{"SANDBOX_SECRET": "env-secret"},
 		},
 	}
 
@@ -200,12 +201,12 @@ func TestResolveSnapshotRef(t *testing.T) {
 	getID := "323e4567-e89b-42d3-a456-426614174000"
 
 	tests := []struct {
-		name      string
-		ref       string
-		get       func(context.Context, string) (*koyeb.InstanceSnapshot, error)
-		list      func(context.Context) ([]koyeb.InstanceSnapshot, error)
-		wantID    string
-		wantType  koyeb.InstanceSnapshotType
+		name     string
+		ref      string
+		get      func(context.Context, string) (*koyeb.InstanceSnapshot, error)
+		list     func(context.Context) ([]koyeb.InstanceSnapshot, error)
+		wantID   string
+		wantType koyeb.InstanceSnapshotType
 	}{
 		{
 			name: "id lookup succeeds",
@@ -293,6 +294,56 @@ func TestWireSnapshot(t *testing.T) {
 		assert.False(t, createService.HasDefinition(), "the API infers a FULL snapshot's definition")
 		assert.Equal(t, "my-sandbox", createService.GetName())
 	})
+}
+
+func TestWaitPollInterval(t *testing.T) {
+	t.Run("sandbox create defaults to 0.5s", func(t *testing.T) {
+		assert.Equal(t, 500*time.Millisecond, waitPollInterval(sandboxCreateCmd(t)))
+	})
+
+	t.Run("sandbox create honors --poll-interval", func(t *testing.T) {
+		cmd := sandboxCreateCmd(t)
+		require.NoError(t, cmd.Flags().Set("poll-interval", "1.5"))
+		assert.Equal(t, 1500*time.Millisecond, waitPollInterval(cmd))
+	})
+
+	t.Run("non-positive poll interval falls back to the flag default", func(t *testing.T) {
+		cmd := sandboxCreateCmd(t)
+		require.NoError(t, cmd.Flags().Set("poll-interval", "0"))
+		assert.Equal(t, 500*time.Millisecond, waitPollInterval(cmd))
+	})
+
+	t.Run("commands without the flag poll at 2s", func(t *testing.T) {
+		cmd, _, err := NewServiceCmd().Find([]string{"create"})
+		require.NoError(t, err)
+		assert.Equal(t, 2*time.Second, waitPollInterval(cmd))
+	})
+}
+
+func TestDeploymentWaitDone(t *testing.T) {
+	tests := []struct {
+		status koyeb.ServiceStatus
+		done   bool
+		failed bool
+	}{
+		{koyeb.SERVICESTATUS_HEALTHY, true, false},
+		{koyeb.SERVICESTATUS_PAUSED, true, false},
+		{koyeb.SERVICESTATUS_DELETED, true, true},
+		{koyeb.SERVICESTATUS_DEGRADED, true, true},
+		{koyeb.SERVICESTATUS_UNHEALTHY, true, true},
+		{koyeb.SERVICESTATUS_STARTING, false, false},
+		{koyeb.SERVICESTATUS_RESUMING, false, false},
+		{koyeb.SERVICESTATUS_DELETING, false, false},
+		{koyeb.SERVICESTATUS_PAUSING, false, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			done, failed := deploymentWaitDone(tt.status)
+			assert.Equal(t, tt.done, done)
+			assert.Equal(t, tt.failed, failed)
+		})
+	}
 }
 
 func TestPoolCreateInstanceTypeDefaultsToMicro(t *testing.T) {
