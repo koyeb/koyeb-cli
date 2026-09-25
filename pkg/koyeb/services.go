@@ -624,6 +624,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForGitSource(flags *pflag.Flag
 	flags.String("git-sha", "", "Git commit SHA to deploy")
 	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
 	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
+	flags.String("git-credential-source", "", "Source of the Git repository credentials")
 	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
 
 	// Git service: buildpack builder
@@ -1823,6 +1824,10 @@ func (h *ServiceHandler) parseGitSource(flags *pflag.FlagSet, source *koyeb.GitS
 	if flags.Lookup("git-workdir").Changed {
 		workdir, _ := flags.GetString("git-workdir")
 		source.SetWorkdir(workdir)
+	}
+	if flags.Lookup("git-credential-source").Changed {
+		credentialSource, _ := flags.GetString("git-credential-source")
+		source.SetCredentialSource(credentialSource)
 	}
 	return h.setGitSourceBuilder(flags, source)
 }
