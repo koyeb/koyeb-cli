@@ -427,11 +427,6 @@ func withSandboxClient(ctx *CLIContext, sandboxName string, op sandboxOp, opts .
 	return op(info.NewClient(opts...), info)
 }
 
-// GetSandboxInfo resolves sandbox name to connection info
-func (h *SandboxHandler) GetSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
-	return fetchSandboxInfo(ctx, name)
-}
-
 // fetchSandboxInfo retrieves sandbox info from the API
 func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 	// Resolve service ID

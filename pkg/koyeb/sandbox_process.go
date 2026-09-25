@@ -44,13 +44,6 @@ func (h *SandboxHandler) StartProcess(ctx *CLIContext, cmd *cobra.Command, args 
 		log.Warn(w)
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
 	req := &ProcessRequest{
 		Cmd: command,
 		Cwd: cwd,
@@ -59,21 +52,23 @@ func (h *SandboxHandler) StartProcess(ctx *CLIContext, cmd *cobra.Command, args 
 		req.Env = env
 	}
 
-	result, err := client.StartProcess(ctx.Context, req)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while starting process in sandbox",
-			Why:        "the process failed to start",
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the sandbox is running and the command is valid",
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		result, err := client.StartProcess(ctx.Context, req)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while starting process in sandbox",
+				Why:        "the process failed to start",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the sandbox is running and the command is valid",
+			}
 		}
-	}
 
-	log.Infof("Process started with ID: %s (PID: %d, Status: %s)", result.ID, result.PID, result.Status)
-	fmt.Printf("Process ID: %s\n", result.ID)
+		log.Infof("Process started with ID: %s (PID: %d, Status: %s)", result.ID, result.PID, result.Status)
+		fmt.Printf("Process ID: %s\n", result.ID)
 
-	return nil
+		return nil
+	})
 }
 
 // ListProcesses lists background processes in the sandbox
@@ -81,33 +76,29 @@ func (h *SandboxHandler) ListProcesses(ctx *CLIContext, cmd *cobra.Command, args
 
 	sandboxName := args[0]
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	processes, err := client.ListProcesses(ctx.Context)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while listing processes in sandbox",
-			Why:        "failed to retrieve process list",
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the sandbox is running",
-		}
-	}
-
-	if len(processes) == 0 {
-		fmt.Println("No background processes running")
-		return nil
-	}
-
 	full := GetBoolFlags(cmd, "full")
-	reply := NewListProcessesReply(processes, full)
-	ctx.Renderer.Render(reply)
-	return nil
+
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		processes, err := client.ListProcesses(ctx.Context)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while listing processes in sandbox",
+				Why:        "failed to retrieve process list",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the sandbox is running",
+			}
+		}
+
+		if len(processes) == 0 {
+			fmt.Println("No background processes running")
+			return nil
+		}
+
+		reply := NewListProcessesReply(processes, full)
+		ctx.Renderer.Render(reply)
+		return nil
+	})
 }
 
 // KillProcess kills a background process in the sandbox
@@ -116,26 +107,21 @@ func (h *SandboxHandler) KillProcess(ctx *CLIContext, cmd *cobra.Command, args [
 	sandboxName := args[0]
 	processID := args[1]
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	err = client.KillProcess(ctx.Context, processID)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while killing process in sandbox",
-			Why:        "failed to kill process",
-			Additional: []string{fmt.Sprintf("Process ID: %s", processID)},
-			Orig:       err,
-			Solution:   "Check that the process ID is correct and the process is running",
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		err := client.KillProcess(ctx.Context, processID)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while killing process in sandbox",
+				Why:        "failed to kill process",
+				Additional: []string{fmt.Sprintf("Process ID: %s", processID)},
+				Orig:       err,
+				Solution:   "Check that the process ID is correct and the process is running",
+			}
 		}
-	}
 
-	log.Infof("Process %s killed successfully", processID)
-	return nil
+		log.Infof("Process %s killed successfully", processID)
+		return nil
+	})
 }
 
 // ProcessLogs streams logs from a background process
@@ -154,37 +140,31 @@ func (h *SandboxHandler) ProcessLogs(ctx *CLIContext, cmd *cobra.Command, args [
 		}
 	}
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
 	if follow {
 		log.Info("Streaming logs (press Ctrl+C to stop)...")
 	}
 
-	err = client.StreamProcessLogs(ctx.Context, processID, follow, func(timestamp, stream, data string) {
-		// Format output with stream indicator
-		streamIndicator := "stdout"
-		if stream == StreamStderr {
-			streamIndicator = "stderr"
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		err := client.StreamProcessLogs(ctx.Context, processID, follow, func(timestamp, stream, data string) {
+			// Format output with stream indicator
+			streamIndicator := "stdout"
+			if stream == StreamStderr {
+				streamIndicator = "stderr"
+			}
+			fmt.Printf("[%s] %s\n", streamIndicator, data)
+		})
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error while streaming process logs",
+				Why:        "failed to stream logs",
+				Additional: []string{fmt.Sprintf("Process ID: %s", processID)},
+				Orig:       err,
+				Solution:   "Check that the process ID is correct",
+			}
 		}
-		fmt.Printf("[%s] %s\n", streamIndicator, data)
+
+		return nil
 	})
-
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while streaming process logs",
-			Why:        "failed to stream logs",
-			Additional: []string{fmt.Sprintf("Process ID: %s", processID)},
-			Orig:       err,
-			Solution:   "Check that the process ID is correct",
-		}
-	}
-
-	return nil
 }
 
 // ListProcessesReply implements the renderer interface for process listing
