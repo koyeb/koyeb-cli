@@ -130,48 +130,12 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	}
 	def.SetConfigFiles(parsedFiles)
 
-	// Pools run at max-scale=1, and parseScalings dereferences flags this
-	// command does not register, so the scaling is built inline.
-	minScale, _ := flags.GetInt64("min-scale")
-	scaling := koyeb.NewDeploymentScalingWithDefaults()
-	scaling.SetMin(minScale)
-	scaling.SetMax(1)
-
-	if flags.Lookup("light-sleep-delay").Changed || flags.Lookup("deep-sleep-delay").Changed {
-		if minScale > 0 {
-			return koyeb.CreateServicePool{}, &errors.CLIError{
-				What: "Error while configuring the pool",
-				Why:  "--light-sleep-delay and --deep-sleep-delay can only be used when min-scale is 0",
-				Additional: []string{
-					"Sleep delays are only applicable to services that can scale to zero.",
-					"Set --min-scale 0 to enable scale-to-zero before configuring sleep delays.",
-				},
-				Orig:     nil,
-				Solution: "Add --min-scale 0 to your command and try again",
-			}
-		}
-
-		lightSleepDuration, _ := flags.GetDuration("light-sleep-delay")
-		deepSleepDuration, _ := flags.GetDuration("deep-sleep-delay")
-
-		sid := koyeb.NewDeploymentScalingTargetSleepIdleDelay()
-		hasValue := false
-		if flags.Lookup("light-sleep-delay").Changed && lightSleepDuration > 0 {
-			sid.SetLightSleepValue(int64(lightSleepDuration.Seconds()))
-			hasValue = true
-		}
-		if flags.Lookup("deep-sleep-delay").Changed && deepSleepDuration > 0 {
-			sid.SetDeepSleepValue(int64(deepSleepDuration.Seconds()))
-			hasValue = true
-		}
-		if hasValue {
-			target := koyeb.NewDeploymentScalingTarget()
-			target.SetSleepIdleDelay(*sid)
-			scaling.Targets = []koyeb.DeploymentScalingTarget{*target}
-		}
+	// Pools run at max-scale=1 with the same curated flag set as sandboxes.
+	scaling, err := parseSingleInstanceScaling(flags, "pool")
+	if err != nil {
+		return koyeb.CreateServicePool{}, err
 	}
-
-	def.SetScalings([]koyeb.DeploymentScaling{*scaling})
+	def.SetScalings([]koyeb.DeploymentScaling{scaling})
 
 	def.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX)
 	// The server requires the definition name to be set (SANDBOX case).

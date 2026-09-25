@@ -62,9 +62,8 @@ func defaultSandboxCreateDeps() sandboxCreateDeps {
 }
 
 // createSandbox runs the create flow against the seams in deps. Cleanup is
-// phase-aware like the Python SDK: any failure before the service exists
-// removes the app this command auto-created (_delete_created_app), and a
-// wait failure deletes the service when --cleanup-on-failure is set.
+// phase-aware like the Python SDK: failures before the service exists remove
+// the auto-created app; a wait failure deletes the service when the flag is set.
 func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sandboxCreateDeps) error {
 	svcHandler := NewServiceHandler()
 
@@ -161,28 +160,15 @@ func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string, deps sand
 	return nil
 }
 
-// waitForSandboxDeployment polls the created service until it is ready,
-// using the SDKs' fail-closed classification: HEALTHY/DEGRADED are ready,
-// STARTING/RESUMING are in progress, and anything else — including PAUSED
-// and unknown values — will not become ready. Transient GetService errors
-// are retried until the timeout, like the SDKs' wait loops.
+// waitForSandboxDeployment polls the created service until ready with the
+// SDKs' fail-closed classification (classifyServiceStatus): DEGRADED is
+// usable, and a wait failure must not delete a usable sandbox.
 func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
 	waitTimeout, err := waitTimeoutFlag(cmd)
 	if err != nil {
 		return err
 	}
 
-	getStatus := func(c context.Context, id string) (koyeb.ServiceStatus, error) {
-		res, _, err := ctx.Client.ServicesApi.GetService(c, id).Execute()
-		if err != nil {
-			return "", err
-		}
-		service := res.GetService()
-		if !service.HasStatus() {
-			return "", fmt.Errorf("service %s has no status", id)
-		}
-		return service.GetStatus(), nil
-	}
 	terminalErr := func(status koyeb.ServiceStatus) error {
 		return &errors.CLIError{
 			What:     "Sandbox deployment failed",
@@ -198,12 +184,11 @@ func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID str
 		}
 	}
 
-	return waitForServiceStatus(ctx.Context, serviceID, waitTimeout, waitPollInterval(cmd), getStatus, terminalErr, timeoutErr)
+	return waitForServiceStatus(ctx.Context, serviceID, waitTimeout, waitPollInterval(cmd), serviceStatusFromClient(ctx), terminalErr, timeoutErr)
 }
 
-// deleteAppBestEffort removes an app auto-created by this command after a
-// failed creation; cleanup failures are logged, never raised, so the
-// original error reaches the user.
+// deleteAppBestEffort removes an app auto-created by this command; cleanup
+// failures are logged, never raised, so the original error reaches the user.
 func deleteAppBestEffort(ctx *CLIContext, appID string) {
 	_, _, err := ctx.Client.AppsApi.DeleteApp(ctx.Context, appID).Execute()
 	if err != nil {
@@ -220,9 +205,8 @@ func deleteServiceBestEffort(ctx *CLIContext, serviceID string) {
 	}
 }
 
-// resolveSnapshotFlags resolves a snapshot reference to an instance
-// snapshot ID and type, like the Python SDK: ID first, then name, then raw
-// string. An empty reference returns empty values.
+// resolveSnapshotFlags resolves a snapshot reference to ID and type: ID
+// lookup first, then name, then the raw string. Empty stays empty.
 func resolveSnapshotFlags(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType) {
 	if ref == "" {
 		return "", ""
@@ -247,10 +231,9 @@ func resolveSnapshotFlags(ctx *CLIContext, ref string) (string, koyeb.InstanceSn
 	return resolveSnapshotRef(ctx.Context, ref, get, list)
 }
 
-// resolveSnapshotRef resolves a snapshot name-or-ID the way the Python SDK
-// does: ID lookup first (fast path for UUIDs), then name lookup, then the
-// raw string with the FILESYSTEM type. Lookup failures fall through instead
-// of erroring — an unknown ID surfaces server-side at service creation.
+// resolveSnapshotRef mirrors the Python SDK's resolution order: ID lookup
+// (fast path for UUIDs), then name lookup, then the raw string as a
+// FILESYSTEM ID — unknown IDs surface server-side at service creation.
 func resolveSnapshotRef(ctx context.Context, ref string,
 	get func(context.Context, string) (*koyeb.InstanceSnapshot, error),
 	list func(context.Context) ([]koyeb.InstanceSnapshot, error),
@@ -271,8 +254,7 @@ func resolveSnapshotRef(ctx context.Context, ref string,
 }
 
 // wireSnapshot wires boot-from-snapshot on the create request. FULL
-// snapshots boot without a definition (the API infers it from the
-// snapshot); other snapshot types keep the built definition.
+// snapshots boot without a definition (the API infers it); others keep it.
 func wireSnapshot(createService *koyeb.CreateService, snapshotID string, snapshotType koyeb.InstanceSnapshotType, serviceName string) {
 	createService.SetInstanceSnapshotId(snapshotID)
 	if snapshotType == koyeb.INSTANCESNAPSHOTTYPE_FULL {
@@ -352,24 +334,29 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 	}
 	def.SetConfigFiles(parsedFiles)
 
-	// Parse scaling for sandbox: only min-scale is supported.
-	// max-scale is always 1 (no autoscaling for sandboxes).
-	// We handle this directly instead of calling svcHandler.parseScalings()
-	// because that function accesses flags (max-scale, scale, autoscaling-*)
-	// via flags.Lookup().Changed which would panic since those flags are not
-	// registered on the sandbox create command.
+	scaling, err := parseSingleInstanceScaling(flags, "sandbox")
+	if err != nil {
+		return err
+	}
+	def.SetScalings([]koyeb.DeploymentScaling{scaling})
+
+	return nil
+}
+
+// parseSingleInstanceScaling builds the max=1 scaling shared by sandbox and
+// pool definitions. parseScalings is not reusable here: it dereferences
+// autoscaling flags these commands do not register.
+func parseSingleInstanceScaling(flags *pflag.FlagSet, what string) (koyeb.DeploymentScaling, error) {
 	minScale, _ := flags.GetInt64("min-scale")
 	scaling := koyeb.NewDeploymentScalingWithDefaults()
 	scaling.SetMin(minScale)
 	scaling.SetMax(1)
 
-	// Parse sleep delay targets (require min-scale 0).
-	// Handled inline for the same reason as above: setScalingsTargets()
-	// unconditionally looks up autoscaling flags that don't exist here.
+	// Sleep delay targets require scale-to-zero (min-scale 0).
 	if flags.Lookup("light-sleep-delay").Changed || flags.Lookup("deep-sleep-delay").Changed {
 		if minScale > 0 {
-			return &errors.CLIError{
-				What: "Error while configuring the sandbox",
+			return koyeb.DeploymentScaling{}, &errors.CLIError{
+				What: "Error while configuring the " + what,
 				Why:  "--light-sleep-delay and --deep-sleep-delay can only be used when min-scale is 0",
 				Additional: []string{
 					"Sleep delays are only applicable to services that can scale to zero.",
@@ -400,9 +387,7 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 		}
 	}
 
-	def.SetScalings([]koyeb.DeploymentScaling{*scaling})
-
-	return nil
+	return *scaling, nil
 }
 
 // applySandboxSecretFlag sets SANDBOX_SECRET from --sandbox-secret when
@@ -452,9 +437,8 @@ func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
 	setSandboxSecretValue(def, base64.RawURLEncoding.EncodeToString(secretBytes))
 }
 
-// configureSandboxPortsAndRoutes sets up the sandbox default ports and
-// routes: port 3030 (management interface at /koyeb-sandbox/, always http)
-// and port 3031 (application endpoint at /, protocol: exposedPortProtocol).
+// configureSandboxPortsAndRoutes sets the sandbox defaults: port 3030
+// (management, always http) and port 3031 (application, exposedPortProtocol).
 func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, exposedPortProtocol string) {
 	port3030 := koyeb.NewDeploymentPortWithDefaults()
 	port3030.SetPort(3030)

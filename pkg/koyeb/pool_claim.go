@@ -22,6 +22,22 @@ const (
 // serviceStatusGetter fetches a service status for the shared wait loop.
 type serviceStatusGetter func(ctx context.Context, serviceID string) (koyeb.ServiceStatus, error)
 
+// serviceStatusFromClient builds a GetService-backed getter; fetch errors
+// are transient input the shared wait loop retries until its timeout.
+func serviceStatusFromClient(ctx *CLIContext) serviceStatusGetter {
+	return func(c context.Context, id string) (koyeb.ServiceStatus, error) {
+		res, _, err := ctx.Client.ServicesApi.GetService(c, id).Execute()
+		if err != nil {
+			return "", err
+		}
+		service := res.GetService()
+		if !service.HasStatus() {
+			return "", fmt.Errorf("service %s has no status", id)
+		}
+		return service.GetStatus(), nil
+	}
+}
+
 // serviceStatusClass classifies a service status for claim readiness.
 type serviceStatusClass int
 
@@ -32,10 +48,8 @@ const (
 )
 
 // classifyServiceStatus fails closed like the SDKs: HEALTHY/DEGRADED are
-// ready, STARTING/RESUMING are in progress, everything else — including
-// unknown forward-compat values — is terminal. The services wait keeps
-// its historical fail-open classification (deploymentWaitDone) — do not
-// consolidate the two.
+// ready, STARTING/RESUMING are in progress, everything else is terminal.
+// The services wait keeps its fail-open deploymentWaitDone — do not merge.
 func classifyServiceStatus(status koyeb.ServiceStatus) serviceStatusClass {
 	switch status {
 	case koyeb.SERVICESTATUS_HEALTHY, koyeb.SERVICESTATUS_DEGRADED:
@@ -47,10 +61,8 @@ func classifyServiceStatus(status koyeb.ServiceStatus) serviceStatusClass {
 	}
 }
 
-// waitForServiceStatus polls getStatus until the service is ready, a
-// terminal state, the timeout, or context cancellation. Transient
-// getStatus failures count as in progress and retry until the timeout,
-// mirroring the SDKs' wait loops.
+// waitForServiceStatus polls getStatus until ready, a terminal state, the
+// timeout, or cancellation. Transient failures retry until the timeout.
 func waitForServiceStatus(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
 	getStatus serviceStatusGetter,
 	terminalErr func(koyeb.ServiceStatus) error,
@@ -185,19 +197,6 @@ $> koyeb pool claim my-pool --request-id my-request-id
 }
 
 // waitClaimedService polls GetService until the claimed service is ready.
-// Transient API failures count as in progress, matching the SDKs.
 func waitClaimedService(ctx *CLIContext, serviceID string) error {
-	getStatus := func(c context.Context, id string) (koyeb.ServiceStatus, error) {
-		res, _, err := ctx.Client.ServicesApi.GetService(c, id).Execute()
-		if err != nil {
-			return "", err
-		}
-		service := res.GetService()
-		if !service.HasStatus() {
-			return "", fmt.Errorf("service %s has no status", id)
-		}
-		return service.GetStatus(), nil
-	}
-
-	return waitClaimReady(ctx.Context, serviceID, DefaultClaimWaitTimeout, DefaultClaimPollInterval, getStatus)
+	return waitClaimReady(ctx.Context, serviceID, DefaultClaimWaitTimeout, DefaultClaimPollInterval, serviceStatusFromClient(ctx))
 }
