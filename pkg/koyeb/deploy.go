@@ -1,7 +1,6 @@
 package koyeb
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -86,30 +85,8 @@ func NewDeployCmd() *cobra.Command {
 				if err := serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), createDefinition); err != nil {
 					return err
 				}
-				createService.SetDefinition(*createDefinition)
-
-				// Service account ID is a service-level attribute, set at creation time only.
-				serviceHandler.parseServiceAccountId(cmd.Flags(), createService)
-
-				// Parse and set lifecycle
-				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), nil)
-				if lifecycle != nil {
-					createService.SetLifeCycle(*lifecycle)
-				}
-
-				// Parse and set network policy (on the definition — any change creates a new deployment)
-				var currentNetworkPolicy *koyeb.NetworkPolicy
-				if createDefinition.HasNetworkPolicy() {
-					np := createDefinition.GetNetworkPolicy()
-					currentNetworkPolicy = &np
-				}
-				networkPolicy, networkPolicyChanged, err := serviceHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
-				if err != nil {
+				if err := serviceHandler.applyCreateServiceFlags(cmd, createDefinition, createService); err != nil {
 					return err
-				}
-				if networkPolicyChanged && networkPolicy != nil {
-					createDefinition.SetNetworkPolicy(*networkPolicy)
-					createService.SetDefinition(*createDefinition)
 				}
 
 				log.Infof("Creating the new service `%s`", serviceName)
@@ -118,33 +95,11 @@ func NewDeployCmd() *cobra.Command {
 				}
 			} else {
 				updateService := koyeb.NewUpdateServiceWithDefaults()
-				latestDeploy, resp, err := ctx.Client.DeploymentsApi.
-					ListDeployments(ctx.Context).
-					Limit("1").
-					ServiceId(serviceId).
-					Execute()
+				updateDefinition, err := serviceHandler.latestDeploymentDefinition(ctx, serviceId, args[0], false,
+					"Try again in a few seconds. If the problem persists, delete the service and create it again.")
 				if err != nil {
-					return errors.NewCLIErrorFromAPIError(
-						fmt.Sprintf("Error while updating the service `%s`", args[0]),
-						err,
-						resp,
-					)
+					return err
 				}
-
-				if len(latestDeploy.GetDeployments()) == 0 {
-					return &errors.CLIError{
-						What: "Error while updating the service",
-						Why:  "we couldn't find the latest deployment of your service",
-						Additional: []string{
-							"When you create a service for the first time, it can take a few seconds for the first deployment to be created.",
-							"We need to fetch the configuration of this latest deployment to update your service.",
-						},
-						Orig:     nil,
-						Solution: "Try again in a few seconds. If the problem persists, delete the service and create it again.",
-					}
-				}
-
-				updateDefinition := latestDeploy.GetDeployments()[0].Definition
 
 				log.Infof("Creating and uploading an archive from `%s`", args[0])
 				archiveReply, err := archiveHandler.CreateArchive(ctx, args[0])
@@ -157,17 +112,14 @@ func NewDeployCmd() *cobra.Command {
 				updateDefinition.SetArchive(archive)
 				updateDefinition.Git = nil
 				updateDefinition.Docker = nil
-				updateService.SetDefinition(*updateDefinition)
 
 				// Update definition with the flags provided by the user.
 				// parseServiceDefinitionFlags expects to have an archive
 				// source, otherwise it would try to get the --git or --docker
 				// flags which are not present.
-				err = serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition)
-				if err != nil {
+				if err := serviceHandler.parseServiceDefinitionFlags(ctx, cmd.Flags(), updateDefinition); err != nil {
 					return err
 				}
-				updateService.SetDefinition(*updateDefinition)
 
 				// The service account ID is immutable after creation: warn and ignore on update.
 				if cmd.Flags().Lookup("service-account-id") != nil && cmd.Flags().Lookup("service-account-id").Changed {
@@ -177,39 +129,8 @@ func NewDeployCmd() *cobra.Command {
 					}
 				}
 
-				// Get current service to access lifecycle
-				currentService, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceId).Execute()
-				if err != nil {
-					return errors.NewCLIErrorFromAPIError(
-						fmt.Sprintf("Error while fetching service `%s`", serviceName),
-						err,
-						resp,
-					)
-				}
-
-				// Parse and set lifecycle
-				var currentLifeCycle *koyeb.ServiceLifeCycle
-				if currentService.Service.HasLifeCycle() {
-					lc := currentService.Service.GetLifeCycle()
-					currentLifeCycle = &lc
-				}
-				lifecycle := serviceHandler.parseLifeCycle(cmd.Flags(), currentLifeCycle)
-				if lifecycle != nil {
-					updateService.SetLifeCycle(*lifecycle)
-				}
-
-				var currentNetworkPolicy *koyeb.NetworkPolicy
-				if updateDefinition.HasNetworkPolicy() {
-					np := updateDefinition.GetNetworkPolicy()
-					currentNetworkPolicy = &np
-				}
-				networkPolicy, networkPolicyChanged, err := serviceHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
-				if err != nil {
+				if err := serviceHandler.applyUpdateServiceFlags(ctx, cmd, serviceId, serviceName, updateDefinition, updateService); err != nil {
 					return err
-				}
-				if networkPolicyChanged && networkPolicy != nil {
-					updateDefinition.SetNetworkPolicy(*networkPolicy)
-					updateService.SetDefinition(*updateDefinition)
 				}
 
 				log.Infof("Updating the existing service `%s`", serviceName)
