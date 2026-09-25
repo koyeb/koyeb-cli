@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	log "github.com/sirupsen/logrus"
@@ -459,6 +460,113 @@ func (h *SandboxHandler) uploadDirectory(ctx context.Context, client *SandboxCli
 	}
 
 	log.Infof("Uploaded %d files and %d directories to %s", fileCount, dirCount, remotePath)
+	return nil
+}
+
+// shellQuote quotes s for safe use in a shell command run on the sandbox
+// executor (POSIX single quotes, like the Python SDK's shlex.quote).
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+// mvCommand builds the sandbox-side move/rename command with escaped paths.
+func mvCommand(source, destination string) string {
+	return "mv " + shellQuote(source) + " " + shellQuote(destination)
+}
+
+// testCommand builds a sandbox-side test invocation with an escaped path.
+func testCommand(expression, path string) string {
+	return "test " + expression + " " + shellQuote(path)
+}
+
+// FsRename renames a file or directory in the sandbox
+func (h *SandboxHandler) FsRename(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return h.fsMovePath(ctx, cmd, "rename", args[0], args[1], args[2])
+}
+
+// FsMove moves a file to a different directory in the sandbox
+func (h *SandboxHandler) FsMove(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return h.fsMovePath(ctx, cmd, "move", args[0], args[1], args[2])
+}
+
+// fsMovePath renames or moves a path in the sandbox via mv, mirroring the
+// Python SDK's rename_file/move_file.
+func (h *SandboxHandler) fsMovePath(ctx *CLIContext, cmd *cobra.Command, action, sandboxName, source, destination string) error {
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
+
+	info, err := h.GetSandboxInfo(ctx, sandboxName)
+	if err != nil {
+		return err
+	}
+
+	client := info.NewClient()
+
+	result, err := client.Run(ctx.Context, &RunRequest{Cmd: mvCommand(source, destination)})
+	if err != nil {
+		return &errors.CLIError{
+			What:       fmt.Sprintf("Error while %sing file in sandbox", action),
+			Why:        "the sandbox API request failed",
+			Orig:       err,
+			Solution:   "Check that the sandbox is running and accessible",
+			Additional: nil,
+		}
+	}
+
+	if result.Code != 0 {
+		return &errors.CLIError{
+			What:     fmt.Sprintf("Error while %sing file in sandbox", action),
+			Why:      strings.TrimSpace(result.Stderr),
+			Orig:     nil,
+			Solution: "Check that the source path exists and the destination is writable",
+		}
+	}
+
+	log.Infof("%s: %s -> %s", action, source, destination)
+	return nil
+}
+
+// FsExists checks if a path exists in the sandbox
+func (h *SandboxHandler) FsExists(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return h.fsTestPath(ctx, cmd, "-e", args[0], args[1])
+}
+
+// FsIsFile checks if a path is a regular file in the sandbox
+func (h *SandboxHandler) FsIsFile(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return h.fsTestPath(ctx, cmd, "-f", args[0], args[1])
+}
+
+// FsIsDir checks if a path is a directory in the sandbox
+func (h *SandboxHandler) FsIsDir(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return h.fsTestPath(ctx, cmd, "-d", args[0], args[1])
+}
+
+// fsTestPath runs a sandbox-side test expression and prints the boolean
+// result, mirroring the Python SDK's exists/is_file/is_dir.
+func (h *SandboxHandler) fsTestPath(ctx *CLIContext, cmd *cobra.Command, expression, sandboxName, path string) error {
+	if err := setProjectHeader(ctx, cmd); err != nil {
+		return err
+	}
+
+	info, err := h.GetSandboxInfo(ctx, sandboxName)
+	if err != nil {
+		return err
+	}
+
+	client := info.NewClient()
+
+	result, err := client.Run(ctx.Context, &RunRequest{Cmd: testCommand(expression, path)})
+	if err != nil {
+		return &errors.CLIError{
+			What:     "Error while checking path in sandbox",
+			Why:      "the sandbox API request failed",
+			Orig:     err,
+			Solution: "Check that the sandbox is running and accessible",
+		}
+	}
+
+	fmt.Println(result.Code == 0)
 	return nil
 }
 
