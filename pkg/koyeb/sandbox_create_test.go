@@ -1,6 +1,8 @@
 package koyeb
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -121,6 +123,176 @@ func TestSandboxCreateInstanceTypeDefaultsToMicro(t *testing.T) {
 	instanceTypes := def.GetInstanceTypes()
 	require.Len(t, instanceTypes, 1)
 	assert.Equal(t, "micro", instanceTypes[0].GetType())
+}
+
+func TestApplySandboxSecretFlag(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		wantEnv  map[string]string
+		generated bool
+	}{
+		{
+			name:     "explicit flag wins over --env",
+			args:     []string{"--sandbox-secret", "flag-secret", "--env", "SANDBOX_SECRET=env-secret"},
+			wantEnv:  map[string]string{"SANDBOX_SECRET": "flag-secret"},
+		},
+		{
+			name:     "flag without --env",
+			args:     []string{"--sandbox-secret", "flag-secret"},
+			wantEnv:  map[string]string{"SANDBOX_SECRET": "flag-secret"},
+		},
+		{
+			name:     "no flag keeps --env value",
+			args:     []string{"--env", "SANDBOX_SECRET=env-secret"},
+			wantEnv:  map[string]string{"SANDBOX_SECRET": "env-secret"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := sandboxCreateCmd(t)
+			require.NoError(t, cmd.Flags().Parse(tt.args))
+
+			def, err := parseSandboxDefinition(t, tt.args)
+			require.NoError(t, err)
+
+			applySandboxSecretFlag(cmd.Flags(), def)
+			ensureSandboxSecret(def)
+
+			var found []string
+			for _, env := range def.GetEnv() {
+				if env.GetKey() == SandboxSecretKey {
+					found = append(found, env.GetValue())
+				}
+			}
+			require.Len(t, found, 1, "SANDBOX_SECRET must appear exactly once")
+			assert.Equal(t, tt.wantEnv[SandboxSecretKey], found[0])
+		})
+	}
+}
+
+func TestEnsureSandboxSecretGeneratesWhenNoFlagAndNoEnv(t *testing.T) {
+	def, err := parseSandboxDefinition(t, nil)
+	require.NoError(t, err)
+
+	applySandboxSecretFlag(sandboxCreateCmd(t).Flags(), def)
+	ensureSandboxSecret(def)
+
+	var found []string
+	for _, env := range def.GetEnv() {
+		if env.GetKey() == SandboxSecretKey {
+			found = append(found, env.GetValue())
+		}
+	}
+	require.Len(t, found, 1)
+	// 32 random bytes, URL-safe base64: 43 chars
+	assert.Len(t, found[0], 43)
+}
+
+func instanceSnapshot(id, name string, snapshotType koyeb.InstanceSnapshotType) *koyeb.InstanceSnapshot {
+	return &koyeb.InstanceSnapshot{Id: &id, Name: &name, Type: &snapshotType}
+}
+
+func TestResolveSnapshotRef(t *testing.T) {
+	filesystem := koyeb.INSTANCESNAPSHOTTYPE_FILESYSTEM
+	full := koyeb.INSTANCESNAPSHOTTYPE_FULL
+	getID := "323e4567-e89b-42d3-a456-426614174000"
+
+	tests := []struct {
+		name      string
+		ref       string
+		get       func(context.Context, string) (*koyeb.InstanceSnapshot, error)
+		list      func(context.Context) ([]koyeb.InstanceSnapshot, error)
+		wantID    string
+		wantType  koyeb.InstanceSnapshotType
+	}{
+		{
+			name: "id lookup succeeds",
+			ref:  "323e4567-e89b-42d3-a456-426614174000",
+			get: func(_ context.Context, id string) (*koyeb.InstanceSnapshot, error) {
+				return instanceSnapshot(id, "ignored", full), nil
+			},
+			list: func(context.Context) ([]koyeb.InstanceSnapshot, error) {
+				t.Error("list must not be called when the id lookup succeeds")
+				return nil, nil
+			},
+			wantID:   getID,
+			wantType: full,
+		},
+		{
+			name: "id lookup fails, name matches",
+			ref:  "golden-image",
+			get: func(context.Context, string) (*koyeb.InstanceSnapshot, error) {
+				return nil, fmt.Errorf("not found")
+			},
+			list: func(context.Context) ([]koyeb.InstanceSnapshot, error) {
+				return []koyeb.InstanceSnapshot{*instanceSnapshot(getID, "golden-image", filesystem)}, nil
+			},
+			wantID:   getID,
+			wantType: filesystem,
+		},
+		{
+			name: "id and name lookups fail, ref used as id",
+			ref:  "323e4567-e89b-42d3-a456-426614174000",
+			get: func(context.Context, string) (*koyeb.InstanceSnapshot, error) {
+				return nil, fmt.Errorf("boom")
+			},
+			list: func(context.Context) ([]koyeb.InstanceSnapshot, error) {
+				return nil, fmt.Errorf("boom")
+			},
+			wantID:   "323e4567-e89b-42d3-a456-426614174000",
+			wantType: koyeb.INSTANCESNAPSHOTTYPE_FILESYSTEM,
+		},
+		{
+			name: "name list has no exact match, ref used as id",
+			ref:  "golden",
+			get: func(context.Context, string) (*koyeb.InstanceSnapshot, error) {
+				return nil, fmt.Errorf("not found")
+			},
+			list: func(context.Context) ([]koyeb.InstanceSnapshot, error) {
+				return []koyeb.InstanceSnapshot{*instanceSnapshot(getID, "golden-image", filesystem)}, nil
+			},
+			wantID:   "golden",
+			wantType: koyeb.INSTANCESNAPSHOTTYPE_FILESYSTEM,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			id, snapshotType := resolveSnapshotRef(context.Background(), tt.ref, tt.get, tt.list)
+			assert.Equal(t, tt.wantID, id)
+			assert.Equal(t, tt.wantType, snapshotType)
+		})
+	}
+}
+
+func TestWireSnapshot(t *testing.T) {
+	filesystem := koyeb.INSTANCESNAPSHOTTYPE_FILESYSTEM
+	full := koyeb.INSTANCESNAPSHOTTYPE_FULL
+	snapshotID := "323e4567-e89b-42d3-a456-426614174000"
+
+	t.Run("filesystem snapshot keeps definition", func(t *testing.T) {
+		createService := koyeb.NewCreateServiceWithDefaults()
+		createService.SetDefinition(*koyeb.NewDeploymentDefinitionWithDefaults())
+
+		wireSnapshot(createService, snapshotID, filesystem, "my-sandbox")
+
+		assert.Equal(t, snapshotID, createService.GetInstanceSnapshotId())
+		assert.True(t, createService.HasDefinition())
+		assert.False(t, createService.HasName(), "name stays on the definition")
+	})
+
+	t.Run("full snapshot drops definition and names the service", func(t *testing.T) {
+		createService := koyeb.NewCreateServiceWithDefaults()
+		createService.SetDefinition(*koyeb.NewDeploymentDefinitionWithDefaults())
+
+		wireSnapshot(createService, snapshotID, full, "my-sandbox")
+
+		assert.Equal(t, snapshotID, createService.GetInstanceSnapshotId())
+		assert.False(t, createService.HasDefinition(), "the API infers a FULL snapshot's definition")
+		assert.Equal(t, "my-sandbox", createService.GetName())
+	})
 }
 
 func TestPoolCreateInstanceTypeDefaultsToMicro(t *testing.T) {

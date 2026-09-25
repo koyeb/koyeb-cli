@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // Create creates a new sandbox service with appropriate defaults
@@ -47,6 +49,10 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 		}
 	}
 
+	// Resolve the snapshot reference before building the definition: a FULL
+	// snapshot boots without one.
+	snapshotID, snapshotType := resolveSnapshotFlags(ctx, cmd)
+
 	// Parse sandbox-compatible flags using ServiceHandler methods
 	if err := parseSandboxDefinitionFlags(ctx, cmd, createDefinition, svcHandler); err != nil {
 		return err
@@ -55,7 +61,8 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 	// Force type to SANDBOX
 	createDefinition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX)
 
-	// Ensure SANDBOX_SECRET exists - generate if not provided
+	// Ensure SANDBOX_SECRET exists - explicit flag value, then --env, then generated
+	applySandboxSecretFlag(cmd.Flags(), createDefinition)
 	ensureSandboxSecret(createDefinition)
 
 	// Configure sandbox-specific ports and routes (always use defaults for sandbox)
@@ -94,8 +101,74 @@ func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 	createService.SetDefinition(*createDefinition)
 
+	if snapshotID != "" {
+		wireSnapshot(createService, snapshotID, snapshotType, serviceName)
+	}
+
 	// Delegate to ServiceHandler.Create for API call
 	return svcHandler.Create(ctx, cmd, args, createService)
+}
+
+// resolveSnapshotFlags resolves --snapshot to an instance snapshot ID and
+// type. An empty flag returns empty values; otherwise the reference is
+// resolved like the Python SDK: ID first, then name, then raw string.
+func resolveSnapshotFlags(ctx *CLIContext, cmd *cobra.Command) (string, koyeb.InstanceSnapshotType) {
+	ref := GetStringFlags(cmd, "snapshot")
+	if ref == "" {
+		return "", ""
+	}
+
+	get := func(c context.Context, id string) (*koyeb.InstanceSnapshot, error) {
+		reply, _, err := ctx.Client.InstanceSnapshotsApi.GetInstanceSnapshot(c, id).Execute()
+		if err != nil {
+			return nil, err
+		}
+		snapshot := reply.GetInstanceSnapshot()
+		return &snapshot, nil
+	}
+	list := func(c context.Context) ([]koyeb.InstanceSnapshot, error) {
+		reply, _, err := ctx.Client.InstanceSnapshotsApi.ListInstanceSnapshots(c).Name(ref).Execute()
+		if err != nil {
+			return nil, err
+		}
+		return reply.GetInstanceSnapshots(), nil
+	}
+
+	return resolveSnapshotRef(ctx.Context, ref, get, list)
+}
+
+// resolveSnapshotRef resolves a snapshot name-or-ID the way the Python SDK
+// does: ID lookup first (fast path for UUIDs), then name lookup, then the
+// raw string with the FILESYSTEM type. Lookup failures fall through instead
+// of erroring — an unknown ID surfaces server-side at service creation.
+func resolveSnapshotRef(ctx context.Context, ref string,
+	get func(context.Context, string) (*koyeb.InstanceSnapshot, error),
+	list func(context.Context) ([]koyeb.InstanceSnapshot, error),
+) (string, koyeb.InstanceSnapshotType) {
+	snapshot, err := get(ctx, ref)
+	if err == nil && snapshot != nil && snapshot.GetId() != "" {
+		return snapshot.GetId(), snapshot.GetType()
+	}
+	snapshots, err := list(ctx)
+	if err == nil {
+		for _, s := range snapshots {
+			if s.GetName() == ref {
+				return s.GetId(), s.GetType()
+			}
+		}
+	}
+	return ref, koyeb.INSTANCESNAPSHOTTYPE_FILESYSTEM
+}
+
+// wireSnapshot wires boot-from-snapshot on the create request. FULL
+// snapshots boot without a definition (the API infers it from the
+// snapshot); other snapshot types keep the built definition.
+func wireSnapshot(createService *koyeb.CreateService, snapshotID string, snapshotType koyeb.InstanceSnapshotType, serviceName string) {
+	createService.SetInstanceSnapshotId(snapshotID)
+	if snapshotType == koyeb.INSTANCESNAPSHOTTYPE_FULL {
+		createService.Definition = nil
+		createService.SetName(serviceName)
+	}
 }
 
 // parseSandboxDefinitionFlags parses the sandbox-compatible flags using ServiceHandler methods
@@ -222,6 +295,39 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 	return nil
 }
 
+// applySandboxSecretFlag sets SANDBOX_SECRET from --sandbox-secret when
+// provided, overriding any --env value (SDK parity: the explicit secret
+// wins). The generated fallback lives in ensureSandboxSecret.
+func applySandboxSecretFlag(flags *pflag.FlagSet, def *koyeb.DeploymentDefinition) {
+	secret, err := flags.GetString("sandbox-secret")
+	if err != nil || secret == "" {
+		return
+	}
+
+	setSandboxSecretValue(def, secret)
+}
+
+// setSandboxSecretValue replaces any existing SANDBOX_SECRET entry with
+// value, preserving the env scopes of the remaining variables.
+func setSandboxSecretValue(def *koyeb.DeploymentDefinition, value string) {
+	envVars := def.GetEnv()
+	filtered := make([]koyeb.DeploymentEnv, 0, len(envVars)+1)
+	for _, env := range envVars {
+		if env.GetKey() != SandboxSecretKey {
+			filtered = append(filtered, env)
+		}
+	}
+
+	newEnv := koyeb.NewDeploymentEnvWithDefaults()
+	newEnv.SetKey(SandboxSecretKey)
+	newEnv.SetValue(value)
+	if len(filtered) > 0 && len(filtered[0].GetScopes()) > 0 {
+		newEnv.SetScopes(filtered[0].GetScopes())
+	}
+
+	def.SetEnv(append(filtered, *newEnv))
+}
+
 // ensureSandboxSecret adds SANDBOX_SECRET env var if not already present
 func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
 	envVars := def.GetEnv()
@@ -236,7 +342,7 @@ func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
 	// Generate secure random secret (32 bytes, URL-safe base64)
 	secretBytes := make([]byte, 32)
 	rand.Read(secretBytes)
-	secret := base64.URLEncoding.EncodeToString(secretBytes)
+	secret := base64.RawURLEncoding.EncodeToString(secretBytes)
 
 	// Create new env var
 	newEnv := koyeb.NewDeploymentEnvWithDefaults()
