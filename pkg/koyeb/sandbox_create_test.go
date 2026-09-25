@@ -341,7 +341,8 @@ func TestWaitPollInterval(t *testing.T) {
 		for _, value := range []string{"nan", "inf", "-inf"} {
 			cmd := sandboxCreateCmd(t)
 			require.NoError(t, cmd.Flags().Set("poll-interval", value))
-			assert.Equal(t, 500*time.Millisecond, waitPollInterval(cmd), "--poll-interval %s must not reach time.NewTicker", value)
+			assert.Equal(t, 500*time.Millisecond, waitPollInterval(cmd),
+				"--poll-interval %s must not reach time.NewTicker", value)
 		}
 	})
 

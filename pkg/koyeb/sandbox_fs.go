@@ -491,7 +491,11 @@ func (h *SandboxHandler) FsMove(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 // fsMovePath renames or moves a path in the sandbox via mv, mirroring the
 // Python SDK's rename_file/move_file.
-func (h *SandboxHandler) fsMovePath(ctx *CLIContext, cmd *cobra.Command, action, sandboxName, source, destination string) error {
+func (h *SandboxHandler) fsMovePath(
+	ctx *CLIContext,
+	cmd *cobra.Command,
+	action, sandboxName, source, destination string,
+) error {
 	if err := setProjectHeader(ctx, cmd); err != nil {
 		return err
 	}

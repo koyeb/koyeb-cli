@@ -28,7 +28,12 @@ func (h *ServiceHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []stri
 
 // createService resolves the app and creates the service via the API,
 // without waiting. Callers own any post-create waiting and rendering.
-func (h *ServiceHandler) createService(ctx *CLIContext, cmd *cobra.Command, args []string, createService *koyeb.CreateService) (*koyeb.Service, error) {
+func (h *ServiceHandler) createService(
+	ctx *CLIContext,
+	cmd *cobra.Command,
+	args []string,
+	createService *koyeb.CreateService,
+) (*koyeb.Service, error) {
 	if err := setProjectHeader(ctx, cmd); err != nil {
 		return nil, err
 	}
