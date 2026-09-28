@@ -56,9 +56,6 @@ func NewDeploymentCmd() *cobra.Command {
 		Short:   "Get deployment logs",
 		Args:    cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.Logs(ctx, cmd, since.Time, args)
 		}),
 	}

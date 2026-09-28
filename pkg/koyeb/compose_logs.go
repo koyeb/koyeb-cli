@@ -14,9 +14,6 @@ func NewComposeLogsCmd() *cobra.Command {
 		Short: "l",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			composeFile, err := parseComposeFile(args[0])
 			if err != nil {
 				return err

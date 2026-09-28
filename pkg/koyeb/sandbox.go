@@ -260,6 +260,49 @@ Parent directories on the sandbox must already exist (create them first with fs 
 	fsUploadCmd.Flags().BoolP("force", "f", false, "Overwrite existing remote directory")
 	fsCmd.AddCommand(fsUploadCmd)
 
+	// fs rename
+	fsRenameCmd := &cobra.Command{
+		Use:   "rename NAME OLD_PATH NEW_PATH",
+		Short: "Rename a file or directory in the sandbox",
+		Args:  cobra.ExactArgs(3),
+		RunE:  WithCLIContext(h.FsRename),
+	}
+	fsCmd.AddCommand(fsRenameCmd)
+
+	// fs move
+	fsMoveCmd := &cobra.Command{
+		Use:   "move NAME SOURCE_PATH DESTINATION_PATH",
+		Short: "Move a file to a different directory in the sandbox",
+		Args:  cobra.ExactArgs(3),
+		RunE:  WithCLIContext(h.FsMove),
+	}
+	fsCmd.AddCommand(fsMoveCmd)
+
+	// fs exists / is-file / is-dir
+	fsExistsCmd := &cobra.Command{
+		Use:   "exists NAME PATH",
+		Short: "Check if a path exists in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsExists),
+	}
+	fsCmd.AddCommand(fsExistsCmd)
+
+	fsIsFileCmd := &cobra.Command{
+		Use:   "is-file NAME PATH",
+		Short: "Check if a path is a regular file in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsIsFile),
+	}
+	fsCmd.AddCommand(fsIsFileCmd)
+
+	fsIsDirCmd := &cobra.Command{
+		Use:   "is-dir NAME PATH",
+		Short: "Check if a path is a directory in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsIsDir),
+	}
+	fsCmd.AddCommand(fsIsDirCmd)
+
 	// fs download
 	fsDownloadCmd := &cobra.Command{
 		Use:   "download NAME REMOTE_PATH LOCAL_PATH",
@@ -371,13 +414,21 @@ func ValidateTimeout(timeout int) int {
 	return timeout
 }
 
-// GetSandboxInfo resolves sandbox name to connection info
-func (h *SandboxHandler) GetSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
-	return h.fetchSandboxInfo(ctx, name)
+// sandboxOp is one executor operation against a resolved sandbox connection.
+type sandboxOp func(client SandboxClientInterface, info *SandboxInfo) error
+
+// withSandboxClient resolves the sandbox connection, builds an executor
+// client, and runs op against it.
+func withSandboxClient(ctx *CLIContext, sandboxName string, op sandboxOp, opts ...SandboxClientOption) error {
+	info, err := fetchSandboxInfo(ctx, sandboxName)
+	if err != nil {
+		return err
+	}
+	return op(info.NewClient(opts...), info)
 }
 
 // fetchSandboxInfo retrieves sandbox info from the API
-func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
+func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 	// Resolve service ID
 	serviceMapper := ctx.Mapper.Service()
 	serviceID, err := serviceMapper.ResolveID(name)
@@ -392,7 +443,7 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 	}
 
 	// Get service details
-	serviceRes, resp, err := ctx.Client.ServicesApi.GetService(ctx.Context, serviceID).Execute()
+	serviceRes, resp, err := ctx.API.GetService(ctx.Context, serviceID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving sandbox '%s'", name),
@@ -416,7 +467,7 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 	appID := service.GetAppId()
 
 	// Get app to find domain
-	appRes, resp, err := ctx.Client.AppsApi.GetApp(ctx.Context, appID).Execute()
+	appRes, resp, err := ctx.API.GetApp(ctx.Context, appID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving application for sandbox '%s'", name),
@@ -454,7 +505,7 @@ func (h *SandboxHandler) fetchSandboxInfo(ctx *CLIContext, name string) (*Sandbo
 		}
 	}
 
-	deploymentRes, resp, err := ctx.Client.DeploymentsApi.GetDeployment(ctx.Context, deploymentID).Execute()
+	deploymentRes, resp, err := ctx.API.GetDeployment(ctx.Context, deploymentID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving deployment for sandbox '%s'", name),
@@ -531,92 +582,54 @@ func selectBestDomain(domains []koyeb.Domain) string {
 	return domains[0].GetName()
 }
 
-// GetClientWithHealthCheck creates a client and verifies sandbox is healthy
-func (h *SandboxHandler) GetClientWithHealthCheck(ctx *CLIContext, sandboxName string) (*SandboxClient, *SandboxInfo, error) {
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	client := info.NewClient()
-
-	// Perform health check
-	health, err := client.Health(ctx.Context)
-	if err != nil {
-		return nil, nil, &errors.CLIError{
-			What:       "Error while connecting to sandbox",
-			Why:        "failed to reach sandbox",
-			Additional: []string{fmt.Sprintf("Domain: %s", info.Domain)},
-			Orig:       err,
-			Solution:   "Check that the sandbox is running and accessible",
-		}
-	}
-
-	if !health.Healthy {
-		return nil, nil, &errors.CLIError{
-			What:       "Sandbox is not healthy",
-			Why:        health.Status,
-			Additional: nil,
-			Solution:   "Wait for the sandbox to become healthy or check sandbox logs",
-		}
-	}
-
-	// Store proxy port if available
-	if health.ProxyPort != "" {
-		info.ProxyPort = health.ProxyPort
-	}
-
-	return client, info, nil
-}
-
 // Health checks sandbox health status
 func (h *SandboxHandler) Health(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	sandboxName := args[0]
 
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient()
-
-	health, err := client.Health(ctx.Context)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error checking sandbox health",
-			Why:        "failed to connect to sandbox",
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the sandbox is deployed and accessible",
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		health, err := client.Health(ctx.Context)
+		if err != nil {
+			return &errors.CLIError{
+				What:       "Error checking sandbox health",
+				Why:        "failed to connect to sandbox",
+				Additional: nil,
+				Orig:       err,
+				Solution:   "Check that the sandbox is deployed and accessible",
+			}
 		}
-	}
 
-	fmt.Printf("Sandbox: %s\n", sandboxName)
-	fmt.Printf("Status: %s\n", health.Status)
-	fmt.Printf("Healthy: %v\n", health.Healthy)
-	if health.Version != "" {
-		fmt.Printf("Version: %s\n", health.Version)
-	}
-	if health.Uptime > 0 {
-		fmt.Printf("Uptime: %s\n", time.Duration(health.Uptime)*time.Second)
-	}
-	if health.ProxyPort != "" {
-		fmt.Printf("Proxy Port: %s\n", health.ProxyPort)
-	}
-
-	return nil
+		fmt.Printf("Sandbox: %s\n", sandboxName)
+		fmt.Printf("Status: %s\n", health.Status)
+		fmt.Printf("Healthy: %v\n", health.Healthy)
+		if health.Version != "" {
+			fmt.Printf("Version: %s\n", health.Version)
+		}
+		if health.Uptime > 0 {
+			fmt.Printf("Uptime: %s\n", time.Duration(health.Uptime)*time.Second)
+		}
+		if health.ProxyPort != "" {
+			fmt.Printf("Proxy Port: %s\n", health.ProxyPort)
+		}
+		return nil
+	})
 }
 
-// addSandboxCreateFlags adds only the flags that are compatible with sandbox services
-// This excludes flags like --type, --git*, --archive*, --ports, --routes, --checks
-// which are either not applicable or handled automatically for sandboxes
 func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags := cmd.Flags()
 
 	// Sandbox-specific flags
 	flags.StringP("app", "a", "", "Sandbox application")
-	flags.Bool("wait", false, "Wait until sandbox deployment is done")
+	flags.Bool("wait", false, "Wait until the sandbox deployment is ready (opt-in; the Koyeb SDKs wait by default)")
 	flags.Duration("wait-timeout", 5*time.Minute, "Wait timeout duration")
+	flags.Float64("poll-interval", 0.5, "Seconds between readiness polls when --wait is set")
+	flags.Bool("cleanup-on-failure", true, "Delete the sandbox when --wait fails or times out")
+
+	// Parity flags mirroring the Koyeb SDKs' create options
+	flags.Bool("enable-mesh", false, "Enable mesh for this sandbox (tri-state: unset=AUTO, true=ENABLED, false=DISABLED)")
+	flags.String("exposed-port-protocol", "http", "Protocol for the exposed application port 3031 (http or http2)")
+	flags.Bool("enable-tcp-proxy", false, "Expose port 3031 via TCP proxy at create time")
+	flags.String("sandbox-secret", "", "Explicit sandbox secret (defaults to a generated one)")
+	flags.String("snapshot", "", "Instance snapshot ID or name to boot the sandbox from")
 
 	// Docker source flags (required for sandbox)
 	flags.String("docker", "", "Docker image (default: koyeb/sandbox)")
@@ -626,7 +639,7 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
 
 	// Instance flags
-	flags.String("instance-type", "nano", "Instance type")
+	flags.String("instance-type", "micro", "Instance type")
 
 	// Region flags
 	flags.StringSlice("regions", []string{}, "Deployment regions")

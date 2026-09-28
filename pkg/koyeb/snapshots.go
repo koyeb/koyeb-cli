@@ -23,9 +23,6 @@ func NewSnapshotCmd() *cobra.Command {
 		Short: "Create a new snapshot",
 		Args:  cobra.ExactArgs(2),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			req := koyeb.NewCreateSnapshotRequestWithDefaults()
 
 			parentVolumeID, err := ctx.Mapper.Volume().ResolveID(args[1])
@@ -46,9 +43,6 @@ func NewSnapshotCmd() *cobra.Command {
 		Short: "Get a snapshot",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.Get(ctx, cmd, args)
 		}),
 	}
@@ -58,9 +52,6 @@ func NewSnapshotCmd() *cobra.Command {
 		Use:   "list",
 		Short: "List snapshots",
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.List(ctx, cmd, args)
 		}),
 	}
@@ -71,9 +62,6 @@ func NewSnapshotCmd() *cobra.Command {
 		Short: "Update a snapshot",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			req := koyeb.NewUpdateSnapshotRequestWithDefaults()
 
 			name, _ := cmd.Flags().GetString("name")
@@ -92,9 +80,6 @@ func NewSnapshotCmd() *cobra.Command {
 		Short: "Delete a snapshot",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.Delete(ctx, cmd, args)
 		}),
 	}

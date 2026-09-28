@@ -25,6 +25,7 @@ type SandboxClientInterface interface {
 	MakeDir(ctx context.Context, path string) error
 	DeleteDir(ctx context.Context, path string) error
 	ListDir(ctx context.Context, path string) ([]DirEntry, error)
+	StatFile(ctx context.Context, path string) (*DirEntry, error)
 	BindPort(ctx context.Context, port string) (*PortResponse, error)
 	UnbindPort(ctx context.Context) (*PortResponse, error)
 	StartProcess(ctx context.Context, req *ProcessRequest) (*StartProcessResponse, error)
@@ -288,7 +289,10 @@ func (c *SandboxClient) RunStreaming(ctx context.Context, req *RunRequest, onOut
 		return fmt.Errorf("sandbox API error (status %d): %s", resp.StatusCode, string(body))
 	}
 
-	return c.parseSSE(resp.Body, func(event StreamEvent) error {
+	// A teardown mid-redeploy drops the connection without a complete
+	// event; without this check the caller would wait for it forever.
+	completed := false
+	err = c.parseSSE(resp.Body, func(event StreamEvent) error {
 		switch event.Event {
 		case "output":
 			var output StreamOutputEvent
@@ -303,6 +307,7 @@ func (c *SandboxClient) RunStreaming(ctx context.Context, req *RunRequest, onOut
 			if err := json.Unmarshal([]byte(event.Data), &complete); err != nil {
 				return fmt.Errorf("failed to parse complete event: %w", err)
 			}
+			completed = true
 			if onComplete != nil {
 				onComplete(complete.Code, complete.Error)
 			}
@@ -311,6 +316,13 @@ func (c *SandboxClient) RunStreaming(ctx context.Context, req *RunRequest, onOut
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	if !completed {
+		return fmt.Errorf("stream ended without a completion event — the sandbox may have been redeployed or torn down")
+	}
+	return nil
 }
 
 // parseSSE parses server-sent events from a reader
@@ -345,8 +357,9 @@ func (c *SandboxClient) parseSSE(r io.Reader, handler func(StreamEvent) error) e
 		if strings.HasPrefix(line, "event:") {
 			currentEvent.Event = strings.TrimSpace(strings.TrimPrefix(line, "event:"))
 		} else if strings.HasPrefix(line, "data:") {
-			// Accumulate data lines instead of overwriting
-			dataLines = append(dataLines, strings.TrimPrefix(line, "data:"))
+			// Accumulate data lines instead of overwriting; the SSE spec
+			// strips a single leading space after the field name.
+			dataLines = append(dataLines, strings.TrimPrefix(strings.TrimPrefix(line, "data:"), " "))
 		}
 		// id: and retry: lines are part of the SSE spec but not used by this client
 	}

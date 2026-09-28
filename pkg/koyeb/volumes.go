@@ -29,9 +29,6 @@ func NewVolumeCmd() *cobra.Command {
 		Short: "Create a new volume",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			req := koyeb.NewCreatePersistentVolumeRequestWithDefaults()
 
 			req.SetName(args[0])
@@ -112,9 +109,6 @@ func NewVolumeCmd() *cobra.Command {
 		Short: "Get a volume",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.Get(ctx, cmd, args)
 		}),
 	}
@@ -124,9 +118,6 @@ func NewVolumeCmd() *cobra.Command {
 		Use:   "list",
 		Short: "List volumes",
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.List(ctx, cmd, args)
 		}),
 	}
@@ -137,9 +128,6 @@ func NewVolumeCmd() *cobra.Command {
 		Short: "Update a volume",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			req := koyeb.NewUpdatePersistentVolumeRequestWithDefaults()
 
 			name, _ := cmd.Flags().GetString("name")
@@ -167,9 +155,6 @@ func NewVolumeCmd() *cobra.Command {
 		Short: "Delete a volume",
 		Args:  cobra.ExactArgs(1),
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			return h.Delete(ctx, cmd, args)
 		}),
 	}

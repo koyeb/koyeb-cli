@@ -1,96 +1,251 @@
 package koyeb
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // Create creates a new sandbox service with appropriate defaults
 func (h *SandboxHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return createSandbox(ctx, cmd, args)
+}
 
-	if err := setProjectHeader(ctx, cmd); err != nil {
-		return err
-	}
-	createService := koyeb.NewCreateServiceWithDefaults()
-	createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
-
-	// Use ServiceHandler for parsing common flags - reuse existing methods to avoid duplication
+// createSandbox runs the create flow. Cleanup is phase-aware like the
+// Python SDK: failures before the service exists remove the auto-created
+// app; a wait failure deletes the service when the flag is set.
+func createSandbox(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	svcHandler := NewServiceHandler()
 
-	// Auto-create app if it doesn't exist
 	appName, err := svcHandler.parseAppName(cmd, args[0])
 	if err != nil {
 		return err
 	}
 
-	appId, err := getAppIdByName(ctx, appName)
+	appID, err := getAppIdByName(ctx, appName)
 	if err != nil {
 		return err
 	}
 
-	if appId == "" {
+	createdAppID := ""
+	if appID == "" {
 		log.Infof("Application `%s` does not exist, creating it", appName)
-		createApp := koyeb.NewCreateAppWithDefaults()
-		createApp.SetName(appName)
-		lifecycle := koyeb.NewAppLifeCycleWithDefaults()
-		lifecycle.SetDeleteWhenEmpty(true)
-		createApp.SetLifeCycle(*lifecycle)
-		appHandler := NewAppHandler()
-		if _, err := appHandler.CreateApp(ctx, createApp); err != nil {
+		createdAppID, err = createSandboxApp(ctx, appName)
+		if err != nil {
 			return err
 		}
+		appID = createdAppID
 	}
+	appCleanup := createdAppID != ""
+	defer func() {
+		if appCleanup {
+			deleteAppBestEffort(ctx, createdAppID)
+		}
+	}()
 
-	// Parse sandbox-compatible flags using ServiceHandler methods
+	createDefinition := koyeb.NewDeploymentDefinitionWithDefaults()
 	if err := parseSandboxDefinitionFlags(ctx, cmd, createDefinition, svcHandler); err != nil {
 		return err
 	}
-
-	// Force type to SANDBOX
 	createDefinition.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX)
 
-	// Ensure SANDBOX_SECRET exists - generate if not provided
+	// Ensure SANDBOX_SECRET exists - explicit flag value, then --env, then generated
+	applySandboxSecretFlag(cmd.Flags(), createDefinition)
 	ensureSandboxSecret(createDefinition)
 
-	// Configure sandbox-specific ports and routes (always use defaults for sandbox)
-	configureSandboxPortsAndRoutes(createDefinition, false, false)
+	exposedPortProtocol, err := cmd.Flags().GetString("exposed-port-protocol")
+	if err != nil {
+		return err
+	}
+	configureSandboxPortsAndRoutes(createDefinition, exposedPortProtocol)
 
-	// Set service name
 	serviceName, err := svcHandler.parseServiceNameWithoutApp(cmd, args[0])
 	if err != nil {
 		return err
 	}
 	createDefinition.SetName(serviceName)
 
-	// Parse lifecycle flags using ServiceHandler method
-	lifecycle := svcHandler.parseLifeCycle(cmd.Flags(), nil)
-	if lifecycle != nil {
-		createService.SetLifeCycle(*lifecycle)
+	// Resolve the snapshot only after flag validation so invalid flags do
+	// not pay lookup round-trips; a FULL snapshot boots without a definition.
+	snapshotID, snapshotType := resolveSnapshotFlags(ctx, GetStringFlags(cmd, "snapshot"))
+
+	// Validate the wait settings before creating anything: a flag typo
+	// must not create a sandbox that cleanup would then delete.
+	if GetBoolFlags(cmd, "wait") {
+		if _, err := waitTimeoutFlag(cmd); err != nil {
+			return err
+		}
 	}
 
-	// Parse network policy flags using ServiceHandler method
-	var currentNetworkPolicy *koyeb.NetworkPolicy
-	if createDefinition.HasNetworkPolicy() {
-		np := createDefinition.GetNetworkPolicy()
-		currentNetworkPolicy = &np
+	createService := koyeb.NewCreateServiceWithDefaults()
+	if err := svcHandler.applyCreateServiceFlags(cmd, createDefinition, createService); err != nil {
+		return err
 	}
-	networkPolicy, networkPolicyChanged, err := svcHandler.parseNetworkPolicy(cmd.Flags(), currentNetworkPolicy)
+	if snapshotID != "" {
+		wireSnapshot(createService, snapshotID, snapshotType, serviceName)
+	}
+
+	service, err := svcHandler.createServiceInApp(ctx, appID, *createService)
 	if err != nil {
 		return err
 	}
-	if networkPolicyChanged && networkPolicy != nil {
-		createDefinition.SetNetworkPolicy(*networkPolicy)
+	appCleanup = false
+
+	if wait := GetBoolFlags(cmd, "wait"); wait {
+		if err := waitForSandboxDeployment(ctx, cmd, service.GetId()); err != nil {
+			if GetBoolFlags(cmd, "cleanup-on-failure") {
+				deleteServiceBestEffort(ctx, service.GetId())
+				// Python appends the deletion note so the user knows why
+				// the sandbox is gone.
+				return fmt.Errorf("%w. The sandbox was deleted", err)
+			}
+			return err
+		}
 	}
 
-	createService.SetDefinition(*createDefinition)
+	renderServiceState(ctx, cmd, service.GetId())
+	return nil
+}
 
-	// Delegate to ServiceHandler.Create for API call
-	return svcHandler.Create(ctx, cmd, args, createService)
+// createSandboxApp creates the sandbox's host app with delete-when-empty so
+// the platform reaps it once empty.
+func createSandboxApp(ctx *CLIContext, name string) (string, error) {
+	createApp := koyeb.NewCreateAppWithDefaults()
+	createApp.SetName(name)
+	lifecycle := koyeb.NewAppLifeCycleWithDefaults()
+	lifecycle.SetDeleteWhenEmpty(true)
+	createApp.SetLifeCycle(*lifecycle)
+
+	reply, _, err := ctx.API.CreateApp(ctx.Context, *createApp)
+	if err != nil {
+		return "", errors.NewCLIErrorFromAPIError(
+			fmt.Sprintf("Error while creating the app `%s`", name),
+			err,
+			nil,
+		)
+	}
+	app := reply.GetApp()
+	return app.GetId(), nil
+}
+
+// waitForSandboxDeployment polls the created service until ready with the
+// SDKs' fail-closed classification (classifyServiceStatus): DEGRADED is
+// usable, and a wait failure must not delete a usable sandbox. Readiness is
+// service-status only — unlike the SDKs, the executor is not probed.
+func waitForSandboxDeployment(ctx *CLIContext, cmd *cobra.Command, serviceID string) error {
+	waitTimeout, err := waitTimeoutFlag(cmd)
+	if err != nil {
+		return err
+	}
+
+	terminalErr := func(status koyeb.ServiceStatus) error {
+		return &errors.CLIError{
+			What:     "Sandbox deployment failed",
+			Why:      fmt.Sprintf("Service '%s' reached terminal state '%s' and will not become ready.", serviceID, status),
+			Solution: errors.CLIErrorSolution("Inspect the sandbox with `koyeb service logs " + serviceID + " -t build`"),
+		}
+	}
+	timeoutErr := func() error {
+		return &errors.CLIError{
+			What: "Timed out waiting for the sandbox deployment",
+			Why:  fmt.Sprintf("service %s did not become ready within %s", serviceID, waitTimeout),
+			Solution: errors.CLIErrorSolution("Check the service status with " +
+				"`koyeb service get " + serviceID + "`, or raise --wait-timeout"),
+		}
+	}
+
+	return waitEngine(ctx.Context, waitTimeout, waitPollInterval(cmd),
+		failClosedServiceProbe(serviceStatusFromClient(ctx), serviceID, terminalErr),
+		timeoutErr,
+	)
+}
+
+// deleteAppBestEffort removes an app auto-created by this command; cleanup
+// failures are logged, never raised, so the original error reaches the user.
+func deleteAppBestEffort(ctx *CLIContext, appID string) {
+	_, err := ctx.API.DeleteApp(ctx.Context, appID)
+	if err != nil {
+		log.Warnf("Failed to delete app `%s` after sandbox creation failure", appID)
+	}
+}
+
+// deleteServiceBestEffort removes a sandbox whose wait failed; cleanup
+// failures are logged, never raised, so the original error reaches the user.
+func deleteServiceBestEffort(ctx *CLIContext, serviceID string) {
+	_, err := ctx.API.DeleteService(ctx.Context, serviceID)
+	if err != nil {
+		log.Warnf("Failed to delete service `%s` after sandbox wait failure", serviceID)
+	}
+}
+
+// resolveSnapshotFlags resolves a snapshot reference to an instance
+// snapshot ID and type, like the Python SDK: ID first, then name, then raw
+// string. An empty reference returns empty values.
+func resolveSnapshotFlags(ctx *CLIContext, ref string) (string, koyeb.InstanceSnapshotType) {
+	if ref == "" {
+		return "", ""
+	}
+	return resolveSnapshotRef(ctx.Context, ref,
+		func(c context.Context, id string) (*koyeb.InstanceSnapshot, error) {
+			reply, _, err := ctx.API.GetInstanceSnapshot(c, id)
+			if err != nil {
+				return nil, err
+			}
+			snapshot := reply.GetInstanceSnapshot()
+			return &snapshot, nil
+		},
+		func(c context.Context) ([]koyeb.InstanceSnapshot, error) {
+			reply, _, err := ctx.API.ListInstanceSnapshotsByName(c, ref)
+			if err != nil {
+				return nil, err
+			}
+			return reply.GetInstanceSnapshots(), nil
+		},
+	)
+}
+
+// resolveSnapshotRef mirrors the Python SDK's resolution order: ID lookup
+// (fast path for UUIDs), then name lookup, then the raw string as a
+// FILESYSTEM ID — unknown IDs surface server-side at service creation.
+func resolveSnapshotRef(ctx context.Context, ref string,
+	get func(context.Context, string) (*koyeb.InstanceSnapshot, error),
+	list func(context.Context) ([]koyeb.InstanceSnapshot, error),
+) (string, koyeb.InstanceSnapshotType) {
+	snapshot, err := get(ctx, ref)
+	if err == nil && snapshot != nil && snapshot.GetId() != "" {
+		return snapshot.GetId(), snapshot.GetType()
+	}
+	snapshots, err := list(ctx)
+	if err == nil {
+		for _, s := range snapshots {
+			if s.GetName() == ref {
+				return s.GetId(), s.GetType()
+			}
+		}
+	}
+	return ref, koyeb.INSTANCESNAPSHOTTYPE_FILESYSTEM
+}
+
+// wireSnapshot wires boot-from-snapshot on the create request. FULL
+// snapshots boot without a definition (the API infers it); others keep it.
+func wireSnapshot(
+	createService *koyeb.CreateService,
+	snapshotID string,
+	snapshotType koyeb.InstanceSnapshotType,
+	serviceName string,
+) {
+	createService.SetInstanceSnapshotId(snapshotID)
+	if snapshotType == koyeb.INSTANCESNAPSHOTTYPE_FULL {
+		createService.Definition = nil
+		createService.SetName(serviceName)
+	}
 }
 
 // parseSandboxDefinitionFlags parses the sandbox-compatible flags using ServiceHandler methods
@@ -111,6 +266,37 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 
 	// Parse instance type using ServiceHandler method
 	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, nil))
+
+	// Tri-state mesh, mirroring the SDKs: unset keeps the definition default
+	// (AUTO), --enable-mesh maps to ENABLED, --enable-mesh=false to DISABLED.
+	if flags.Changed("enable-mesh") {
+		if enableMesh, _ := flags.GetBool("enable-mesh"); enableMesh {
+			def.SetMesh(koyeb.DEPLOYMENTMESH_ENABLED)
+		} else {
+			def.SetMesh(koyeb.DEPLOYMENTMESH_DISABLED)
+		}
+	}
+
+	// Validate the exposed port protocol before building the definition.
+	protocol, err := flags.GetString("exposed-port-protocol")
+	if err != nil {
+		return err
+	}
+	if protocol != "http" && protocol != "http2" {
+		return &errors.CLIError{
+			What:     "Invalid exposed port protocol",
+			Why:      fmt.Sprintf("Invalid protocol '%s'. Must be one of ('http', 'http2')", protocol),
+			Orig:     nil,
+			Solution: "Use --exposed-port-protocol http or --exposed-port-protocol http2",
+		}
+	}
+
+	// Create-time TCP proxy on port 3031, mirroring the SDKs' enable_tcp_proxy.
+	if enableTCPProxy, _ := flags.GetBool("enable-tcp-proxy"); enableTCPProxy {
+		port := int64(3031)
+		proxyProtocol := koyeb.PROXYPORTPROTOCOL_TCP
+		def.SetProxyPorts([]koyeb.DeploymentProxyPort{{Port: &port, Protocol: &proxyProtocol}})
+	}
 
 	// Parse regions using ServiceHandler method
 	regions, err := svcHandler.parseRegions(flags, nil)
@@ -133,24 +319,29 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 	}
 	def.SetConfigFiles(parsedFiles)
 
-	// Parse scaling for sandbox: only min-scale is supported.
-	// max-scale is always 1 (no autoscaling for sandboxes).
-	// We handle this directly instead of calling svcHandler.parseScalings()
-	// because that function accesses flags (max-scale, scale, autoscaling-*)
-	// via flags.Lookup().Changed which would panic since those flags are not
-	// registered on the sandbox create command.
+	scaling, err := parseSingleInstanceScaling(flags, "sandbox")
+	if err != nil {
+		return err
+	}
+	def.SetScalings([]koyeb.DeploymentScaling{scaling})
+
+	return nil
+}
+
+// parseSingleInstanceScaling builds the max=1 scaling shared by sandbox and
+// pool definitions. parseScalings is not reusable here: it dereferences
+// autoscaling flags these commands do not register.
+func parseSingleInstanceScaling(flags *pflag.FlagSet, what string) (koyeb.DeploymentScaling, error) {
 	minScale, _ := flags.GetInt64("min-scale")
 	scaling := koyeb.NewDeploymentScalingWithDefaults()
 	scaling.SetMin(minScale)
 	scaling.SetMax(1)
 
-	// Parse sleep delay targets (require min-scale 0).
-	// Handled inline for the same reason as above: setScalingsTargets()
-	// unconditionally looks up autoscaling flags that don't exist here.
+	// Sleep delay targets require scale-to-zero (min-scale 0).
 	if flags.Lookup("light-sleep-delay").Changed || flags.Lookup("deep-sleep-delay").Changed {
 		if minScale > 0 {
-			return &errors.CLIError{
-				What: "Error while configuring the sandbox",
+			return koyeb.DeploymentScaling{}, &errors.CLIError{
+				What: "Error while configuring the " + what,
 				Why:  "--light-sleep-delay and --deep-sleep-delay can only be used when min-scale is 0",
 				Additional: []string{
 					"Sleep delays are only applicable to services that can scale to zero.",
@@ -181,67 +372,76 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 		}
 	}
 
-	def.SetScalings([]koyeb.DeploymentScaling{*scaling})
-
-	return nil
+	return *scaling, nil
 }
 
-// ensureSandboxSecret adds SANDBOX_SECRET env var if not already present
-func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
-	envVars := def.GetEnv()
+// applySandboxSecretFlag sets SANDBOX_SECRET from --sandbox-secret when
+// provided, overriding any --env value (SDK parity: the explicit secret
+// wins). The generated fallback lives in ensureSandboxSecret.
+func applySandboxSecretFlag(flags *pflag.FlagSet, def *koyeb.DeploymentDefinition) {
+	secret, err := flags.GetString("sandbox-secret")
+	if err != nil || secret == "" {
+		return
+	}
 
-	// Check if SANDBOX_SECRET already exists
+	setSandboxSecretValue(def, secret)
+}
+
+// setSandboxSecretValue replaces any existing SANDBOX_SECRET entry with
+// value, preserving the env scopes of the remaining variables.
+func setSandboxSecretValue(def *koyeb.DeploymentDefinition, value string) {
+	envVars := def.GetEnv()
+	filtered := make([]koyeb.DeploymentEnv, 0, len(envVars)+1)
 	for _, env := range envVars {
+		if env.GetKey() != SandboxSecretKey {
+			filtered = append(filtered, env)
+		}
+	}
+
+	newEnv := koyeb.NewDeploymentEnvWithDefaults()
+	newEnv.SetKey(SandboxSecretKey)
+	newEnv.SetValue(value)
+	if len(filtered) > 0 && len(filtered[0].GetScopes()) > 0 {
+		newEnv.SetScopes(filtered[0].GetScopes())
+	}
+
+	def.SetEnv(append(filtered, *newEnv))
+}
+
+// ensureSandboxSecret adds SANDBOX_SECRET if not already present, generating
+// a URL-safe random secret (32 bytes, unpadded base64 — token_urlsafe parity).
+func ensureSandboxSecret(def *koyeb.DeploymentDefinition) {
+	for _, env := range def.GetEnv() {
 		if env.GetKey() == SandboxSecretKey {
 			return // Already set by user
 		}
 	}
 
-	// Generate secure random secret (32 bytes, URL-safe base64)
 	secretBytes := make([]byte, 32)
 	rand.Read(secretBytes)
-	secret := base64.URLEncoding.EncodeToString(secretBytes)
-
-	// Create new env var
-	newEnv := koyeb.NewDeploymentEnvWithDefaults()
-	newEnv.SetKey(SandboxSecretKey)
-	newEnv.SetValue(secret)
-
-	// Copy scopes from existing env vars if present
-	if len(envVars) > 0 && len(envVars[0].GetScopes()) > 0 {
-		newEnv.SetScopes(envVars[0].GetScopes())
-	}
-
-	def.SetEnv(append(envVars, *newEnv))
+	setSandboxSecretValue(def, base64.RawURLEncoding.EncodeToString(secretBytes))
 }
 
-// configureSandboxPortsAndRoutes sets up default sandbox ports and routes
-// Port 3030: Management interface at /koyeb-sandbox/
-// Port 3031: Application endpoint at /
-func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, portsExplicitlySet, routesExplicitlySet bool) {
-	// Set sandbox default ports unless user explicitly set --ports flag
-	if !portsExplicitlySet {
-		port3030 := koyeb.NewDeploymentPortWithDefaults()
-		port3030.SetPort(3030)
-		port3030.SetProtocol("http")
+// configureSandboxPortsAndRoutes sets the sandbox defaults: port 3030
+// (management, always http) and port 3031 (application, exposedPortProtocol).
+func configureSandboxPortsAndRoutes(def *koyeb.DeploymentDefinition, exposedPortProtocol string) {
+	port3030 := koyeb.NewDeploymentPortWithDefaults()
+	port3030.SetPort(3030)
+	port3030.SetProtocol("http")
 
-		port3031 := koyeb.NewDeploymentPortWithDefaults()
-		port3031.SetPort(3031)
-		port3031.SetProtocol("http")
+	port3031 := koyeb.NewDeploymentPortWithDefaults()
+	port3031.SetPort(3031)
+	port3031.SetProtocol(exposedPortProtocol)
 
-		def.SetPorts([]koyeb.DeploymentPort{*port3030, *port3031})
-	}
+	def.SetPorts([]koyeb.DeploymentPort{*port3030, *port3031})
 
-	// Set sandbox default routes unless user explicitly set --routes flag
-	if !routesExplicitlySet {
-		routeManagement := koyeb.NewDeploymentRouteWithDefaults()
-		routeManagement.SetPort(3030)
-		routeManagement.SetPath("/koyeb-sandbox/")
+	routeManagement := koyeb.NewDeploymentRouteWithDefaults()
+	routeManagement.SetPort(3030)
+	routeManagement.SetPath("/koyeb-sandbox/")
 
-		routeApp := koyeb.NewDeploymentRouteWithDefaults()
-		routeApp.SetPort(3031)
-		routeApp.SetPath("/")
+	routeApp := koyeb.NewDeploymentRouteWithDefaults()
+	routeApp.SetPort(3031)
+	routeApp.SetPath("/")
 
-		def.SetRoutes([]koyeb.DeploymentRoute{*routeManagement, *routeApp})
-	}
+	def.SetRoutes([]koyeb.DeploymentRoute{*routeManagement, *routeApp})
 }

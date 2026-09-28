@@ -59,39 +59,31 @@ func (mapper *PoolMapper) ResolveID(val string) (string, error) {
 func (mapper *PoolMapper) fetch() error {
 	radix := NewRadixTree()
 
-	page := int64(0)
-	offset := int64(0)
-	limit := int64(100)
-	for {
+	pools, err := FetchAllPages(func(offset, limit int64) ([]koyeb.ServicePool, int64, error) {
 		res, resp, err := mapper.client.ServicePoolsApi.ListServicePools(mapper.ctx).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.NewCLIErrorFromAPIError(
+			return nil, 0, errors.NewCLIErrorFromAPIError(
 				"Error listing service pools to resolve the provided identifier to an object ID",
 				err,
 				resp,
 			)
 		}
+		return res.GetServicePools(), res.GetCount(), nil
+	}, 100)
+	if err != nil {
+		return err
+	}
 
-		pools := res.GetServicePools()
-
-		if len(pools) == 0 {
-			break
-		}
-
-		for i := range pools {
-			pool := &pools[i]
-			radix.Insert(getKey(pool.GetId()), pool)
-		}
-
-		page++
-		offset = page * limit
+	for i := range pools {
+		pool := &pools[i]
+		radix.Insert(getKey(pool.GetId()), pool)
 	}
 
 	minLength := radix.MinimalLength(8)
-	err := radix.ForEach(func(key Key, value Value) error {
+	err = radix.ForEach(func(key Key, value Value) error {
 		pool := value.(*koyeb.ServicePool)
 		id := pool.GetId()
 		name := pool.GetName()

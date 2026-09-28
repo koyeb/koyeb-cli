@@ -8,6 +8,7 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -237,4 +238,51 @@ func TestDescribePoolReplyNilSafe(t *testing.T) {
 	assert.Equal(t, "", fields[0]["image"])
 	assert.Equal(t, "", fields[0]["instance_types"])
 	assert.Equal(t, "", fields[0]["regions"])
+}
+
+func TestParseSingleInstanceScaling(t *testing.T) {
+	t.Run("defaults to min-scale with max 1", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		flags := cmd.Flags()
+
+		scaling, err := parseSingleInstanceScaling(flags, "pool")
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), scaling.GetMin())
+		assert.Equal(t, int64(1), scaling.GetMax())
+		assert.False(t, scaling.HasTargets())
+	})
+
+	t.Run("sleep delays require min-scale 0", func(t *testing.T) {
+		for _, cmdFlags := range []*struct {
+			what string
+			cmd  func() *cobra.Command
+		}{
+			{"sandbox", func() *cobra.Command { return sandboxCreateCmd(t) }},
+			{"pool", func() *cobra.Command { return newPoolCreateCmd() }},
+		} {
+			t.Run(cmdFlags.what, func(t *testing.T) {
+				cmd := cmdFlags.cmd()
+				require.NoError(t, cmd.Flags().Set("light-sleep-delay", "5m"))
+
+				_, err := parseSingleInstanceScaling(cmd.Flags(), cmdFlags.what)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), "can only be used when min-scale is 0")
+			})
+		}
+	})
+
+	t.Run("sleep delays set scale-to-zero targets", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("min-scale", "0"))
+		require.NoError(t, cmd.Flags().Set("deep-sleep-delay", "30m"))
+
+		scaling, err := parseSingleInstanceScaling(cmd.Flags(), "pool")
+		require.NoError(t, err)
+		assert.Equal(t, int64(0), scaling.GetMin())
+		targets := scaling.GetTargets()
+		require.Len(t, targets, 1)
+		delay := targets[0].GetSleepIdleDelay()
+		assert.Equal(t, int64(1800), delay.GetDeepSleepValue())
+		assert.False(t, delay.HasLightSleepValue())
+	})
 }

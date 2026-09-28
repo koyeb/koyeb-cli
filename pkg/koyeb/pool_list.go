@@ -12,27 +12,18 @@ import (
 
 // List lists the service pools of the current scope.
 func (h *PoolHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-	list := []koyeb.ServicePool{}
-
-	page := int64(0)
-	offset := int64(0)
-	limit := int64(100)
-	for {
+	list, err := idmapper.FetchAllPages(func(offset, limit int64) ([]koyeb.ServicePool, int64, error) {
 		res, resp, err := ctx.Client.ServicePoolsApi.ListServicePools(ctx.Context).
 			Limit(strconv.FormatInt(limit, 10)).
 			Offset(strconv.FormatInt(offset, 10)).
 			Execute()
 		if err != nil {
-			return errors.NewCLIErrorFromAPIError("Error while listing pools", err, resp)
+			return nil, 0, errors.NewCLIErrorFromAPIError("Error while listing pools", err, resp)
 		}
-		pools := res.GetServicePools()
-		if len(pools) == 0 {
-			break
-		}
-		list = append(list, pools...)
-
-		page++
-		offset = page * limit
+		return res.GetServicePools(), res.GetCount(), nil
+	}, 100)
+	if err != nil {
+		return err
 	}
 
 	full := GetBoolFlags(cmd, "full")

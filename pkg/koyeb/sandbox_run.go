@@ -15,9 +15,6 @@ import (
 // Run executes a command in the sandbox
 func (h *SandboxHandler) Run(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 
-	if err := setProjectHeader(ctx, cmd); err != nil {
-		return err
-	}
 	sandboxName := args[0]
 	command := strings.Join(args[1:], " ")
 
@@ -71,16 +68,6 @@ func (h *SandboxHandler) Run(ctx *CLIContext, cmd *cobra.Command, args []string)
 		log.Warn(w)
 	}
 
-	// Get sandbox info and create client
-	info, err := h.GetSandboxInfo(ctx, sandboxName)
-	if err != nil {
-		return err
-	}
-
-	client := info.NewClient(
-		WithTimeout(time.Duration(timeout) * time.Second),
-	)
-
 	req := &RunRequest{
 		Cmd:     command,
 		Cwd:     cwd,
@@ -91,14 +78,18 @@ func (h *SandboxHandler) Run(ctx *CLIContext, cmd *cobra.Command, args []string)
 	}
 
 	if stream {
-		return h.runStreaming(ctx, client, req)
+		return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+			return h.runStreaming(ctx, client, req)
+		}, WithTimeout(time.Duration(timeout)*time.Second))
 	}
 
-	return h.runBuffered(ctx, client, req)
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		return h.runBuffered(ctx, client, req)
+	}, WithTimeout(time.Duration(timeout)*time.Second))
 }
 
 // runBuffered executes command with buffered output
-func (h *SandboxHandler) runBuffered(ctx *CLIContext, client *SandboxClient, req *RunRequest) error {
+func (h *SandboxHandler) runBuffered(ctx *CLIContext, client SandboxClientInterface, req *RunRequest) error {
 	result, err := client.Run(ctx.Context, req)
 	if err != nil {
 		return &errors.CLIError{
@@ -126,7 +117,7 @@ func (h *SandboxHandler) runBuffered(ctx *CLIContext, client *SandboxClient, req
 
 // runStreaming executes command with streaming output
 // Uses mutex to safely capture exit code from callback
-func (h *SandboxHandler) runStreaming(ctx *CLIContext, client *SandboxClient, req *RunRequest) error {
+func (h *SandboxHandler) runStreaming(ctx *CLIContext, client SandboxClientInterface, req *RunRequest) error {
 	var (
 		exitCode int
 		mu       sync.Mutex

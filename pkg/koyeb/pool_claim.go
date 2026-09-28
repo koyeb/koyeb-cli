@@ -1,13 +1,89 @@
 package koyeb
 
 import (
+	"context"
 	"fmt"
+	"time"
 	"uuid"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+const (
+	// DefaultClaimWaitTimeout and DefaultClaimPollInterval mirror the
+	// Python SDK's wait_claim_ready defaults.
+	DefaultClaimWaitTimeout  = 300 * time.Second
+	DefaultClaimPollInterval = 2 * time.Second
+)
+
+// serviceStatusGetter fetches a service status for the shared wait loop.
+type serviceStatusGetter func(ctx context.Context, serviceID string) (koyeb.ServiceStatus, error)
+
+// serviceStatusFromClient builds a GetService-backed getter; fetch errors
+// are transient input the shared wait loop retries until its timeout.
+func serviceStatusFromClient(ctx *CLIContext) serviceStatusGetter {
+	return func(c context.Context, id string) (koyeb.ServiceStatus, error) {
+		res, _, err := ctx.API.GetService(c, id)
+		if err != nil {
+			return "", err
+		}
+		service := res.GetService()
+		if !service.HasStatus() {
+			return "", fmt.Errorf("service %s has no status", id)
+		}
+		return service.GetStatus(), nil
+	}
+}
+
+// serviceStatusClass classifies a service status for claim readiness.
+type serviceStatusClass int
+
+const (
+	serviceStatusInProgress serviceStatusClass = iota
+	serviceStatusReady
+	serviceStatusTerminal
+)
+
+// classifyServiceStatus fails closed like the SDKs: HEALTHY/DEGRADED are
+// ready, STARTING/RESUMING are in progress, everything else is terminal.
+// The services wait keeps its fail-open deploymentWaitDone — do not merge.
+func classifyServiceStatus(status koyeb.ServiceStatus) serviceStatusClass {
+	switch status {
+	case koyeb.SERVICESTATUS_HEALTHY, koyeb.SERVICESTATUS_DEGRADED:
+		return serviceStatusReady
+	case koyeb.SERVICESTATUS_STARTING, koyeb.SERVICESTATUS_RESUMING:
+		return serviceStatusInProgress
+	default:
+		return serviceStatusTerminal
+	}
+}
+
+// waitClaimReady polls the claimed service until it is ready, mirroring
+// the SDKs' wait_claim_ready: transient GetService failures are treated as
+// in progress and retried until the timeout, terminal states error out.
+func waitClaimReady(ctx context.Context, serviceID string, timeout, pollInterval time.Duration,
+	getStatus serviceStatusGetter,
+) error {
+	return waitEngine(ctx, timeout, pollInterval,
+		failClosedServiceProbe(getStatus, serviceID, func(status koyeb.ServiceStatus) error {
+			return &errors.CLIError{
+				What:     "Claimed service reached a terminal state",
+				Why:      fmt.Sprintf("Service '%s' reached terminal state '%s' and will not become ready.", serviceID, status),
+				Solution: errors.CLIErrorSolution("Check the service logs with `koyeb service logs " + serviceID + "`"),
+			}
+		}),
+		func() error {
+			return &errors.CLIError{
+				What:     "Timed out waiting for the claimed service",
+				Why:      fmt.Sprintf("service %s did not become ready within %s", serviceID, timeout),
+				Solution: errors.CLIErrorSolution("Check the service status with `koyeb service get " + serviceID + "`"),
+			}
+		},
+	)
+}
 
 // generateRequestID returns a UUID v7 used when --request-id is not given.
 func generateRequestID() string {
@@ -40,9 +116,6 @@ $> koyeb pool claim my-pool
 $> koyeb pool claim my-pool --request-id my-request-id
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
-			if err := setProjectHeader(ctx, cmd); err != nil {
-				return err
-			}
 			poolID, err := ResolvePoolArgs(ctx, args[0])
 			if err != nil {
 				return err
@@ -55,7 +128,7 @@ $> koyeb pool claim my-pool --request-id my-request-id
 
 			req := buildPoolClaimRequest(poolID, requestID)
 
-			res, resp, err := ctx.Client.PoolClaimsApi.Claim(ctx.Context).Body(req).Execute()
+			res, resp, err := ctx.API.Claim(ctx.Context, req)
 			if err != nil {
 				return errors.NewCLIErrorFromAPIError(
 					fmt.Sprintf("Error while claiming an instance from the pool `%s`", args[0]),
@@ -64,13 +137,43 @@ $> koyeb pool claim my-pool --request-id my-request-id
 				)
 			}
 
-			full := GetBoolFlags(cmd, "full")
-			claimReply := NewClaimReply(ctx.Mapper, res, full)
-			ctx.Renderer.Render(claimReply)
-			return nil
+			return claimWaitFlow(ctx, cmd, res)
 		}),
 	}
 	cmd.Flags().String("request-id", "", "Claim request ID (defaults to a generated UUID v4)")
+	cmd.Flags().Bool("wait", false, "Wait until the claimed service is ready (timeout 5m, poll 2s)")
 
 	return cmd
+}
+
+// claimWaitFlow renders the claim and waits for the claimed service when
+// --wait is set.
+func claimWaitFlow(ctx *CLIContext, cmd *cobra.Command, res *koyeb.PoolClaimReply) error {
+	full := GetBoolFlags(cmd, "full")
+	claimReply := NewClaimReply(ctx.Mapper, res, full)
+	ctx.Renderer.Render(claimReply)
+
+	if !GetBoolFlags(cmd, "wait") {
+		return nil
+	}
+
+	serviceID := res.GetServiceId()
+	if serviceID == "" {
+		log.Warnf("Claim reply has no service ID; skipping --wait")
+		return nil
+	}
+
+	if err := waitClaimedService(ctx, serviceID); err != nil {
+		return err
+	}
+	log.Infof("Claimed service %s is ready", serviceID)
+	return nil
+}
+
+// waitClaimedService polls GetService until the claimed service is ready.
+func waitClaimedService(ctx *CLIContext, serviceID string) error {
+	return waitClaimReady(
+		ctx.Context, serviceID,
+		DefaultClaimWaitTimeout, DefaultClaimPollInterval,
+		serviceStatusFromClient(ctx))
 }
