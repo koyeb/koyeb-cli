@@ -5,6 +5,7 @@ import (
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
+	"github.com/koyeb/koyeb-cli/pkg/koyeb/flags_list"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -21,7 +22,14 @@ project the pool is created in. Without it, the request is sent without a
 project scope and is effectively required by the server.
 
 A pool pre-provisions instances of the given Docker image so they
-can be claimed later with 'koyeb pool claim'.`,
+can be claimed later with 'koyeb pool claim'.
+
+--type selects the definition the pool members run: "sandbox" (the
+default), "web" or "worker". DATABASE pools are not supported. SANDBOX
+pools keep the sandbox auto-wiring (the platform owns ports 3030/3031
+and mints the executor secret); explicit --port/--route flags are
+rejected on them. WEB and WORKER pools carry exactly the declared
+--port/--route values, verbatim.`,
 		Args: cobra.ExactArgs(1),
 		Example: `
 # Create a pool of 3 instances
@@ -29,6 +37,9 @@ $> koyeb pool create my-pool --size 3 --docker ghcr.io/acme/sandbox
 
 # Create a pool in a specific project
 $> koyeb pool create my-pool --project my-project
+
+# Create a WEB pool with explicit member ports and routes
+$> koyeb pool create my-pool --type web --port 8080:http --route /:8080
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			req, err := buildCreateServicePool(ctx, cmd, args[0])
@@ -39,34 +50,9 @@ $> koyeb pool create my-pool --project my-project
 		}),
 	}
 
-	addPoolCreateFlags(cmd.Flags())
+	addPoolFlags(cmd.Flags())
 
 	return cmd
-}
-
-func addPoolCreateFlags(flags *pflag.FlagSet) {
-	flags.Int64("size", 1, "Number of instances kept ready in the pool")
-
-	flags.String("docker", "", "Docker image (default: koyeb/sandbox)")
-	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("docker-command", "", "Docker command")
-	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
-
-	flags.String("instance-type", "micro", "Instance type")
-	flags.StringSlice("regions", []string{}, "Deployment regions")
-
-	flags.StringSlice("env", []string{}, "Environment variables (KEY=VALUE)")
-	flags.StringSlice("config-file", nil, "Config files (LOCAL:REMOTE:PERMS)")
-
-	flags.Int64("min-scale", 1, "Min scale")
-
-	flags.Duration("light-sleep-delay", 0,
-		"Delay after which an idle service is put to light sleep. "+
-			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
-	flags.Duration("deep-sleep-delay", 0,
-		"Delay after which an idle service is put to deep sleep. "+
-			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
 }
 
 // buildCreateServicePool builds the create request. parseServiceDefinitionFlags
@@ -74,6 +60,14 @@ func addPoolCreateFlags(flags *pflag.FlagSet) {
 func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (koyeb.CreateServicePool, error) {
 	flags := cmd.Flags()
 	svcHandler := NewServiceHandler()
+
+	poolType, err := parsePoolType(flags)
+	if err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
+	if err := validatePoolWiringFlags(poolType, flags); err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
 
 	def := koyeb.NewDeploymentDefinitionWithDefaults()
 
@@ -134,7 +128,16 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	}
 	def.SetScalings([]koyeb.DeploymentScaling{scaling})
 
-	def.SetType(koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX)
+	def.SetType(poolType)
+
+	// SANDBOX wiring (ports 3030/3031 and the sandbox routes) stays
+	// server-owned: SANDBOX pool definitions never declare ports or routes.
+	if poolType != koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
+		if err := setPoolPortsAndRoutes(flags, def); err != nil {
+			return koyeb.CreateServicePool{}, err
+		}
+	}
+
 	// The server requires the definition name to be set (SANDBOX case).
 	def.SetName(name)
 
@@ -145,6 +148,29 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		Size:       &size,
 		Definition: def,
 	}, nil
+}
+
+// setPoolPortsAndRoutes parses the --port and --route flags onto the
+// definition. WEB and WORKER pools carry the declared values verbatim;
+// SANDBOX pools never reach this function (validatePoolWiringFlags
+// rejects the flags first).
+func setPoolPortsAndRoutes(flags *pflag.FlagSet, def *koyeb.DeploymentDefinition) error {
+	ports, err := parseListFlags("ports", flags_list.NewPortListFromFlags, flags, def.Ports)
+	if err != nil {
+		return err
+	}
+	if len(ports) > 0 {
+		def.SetPorts(ports)
+	}
+
+	routes, err := parseListFlags("routes", flags_list.NewRouteListFromFlags, flags, def.Routes)
+	if err != nil {
+		return err
+	}
+	if len(routes) > 0 {
+		def.SetRoutes(routes)
+	}
+	return nil
 }
 
 // Create creates a service pool.
