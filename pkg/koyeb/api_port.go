@@ -25,11 +25,14 @@ type koyebAPI interface {
 	ListInstanceSnapshotsByName(ctx context.Context, name string) (
 		*koyeb.ListInstanceSnapshotsReply, *http.Response, error)
 	Claim(ctx context.Context, req koyeb.PoolClaimRequest) (*koyeb.PoolClaimReply, *http.Response, error)
+	CreateServicePool(ctx context.Context, req koyeb.CreateServicePool) (
+		*koyeb.CreateServicePoolReply, *http.Response, error)
 	GetServicePool(ctx context.Context, poolID string) (*koyeb.GetServicePoolReply, *http.Response, error)
 	UpdateServicePool(ctx context.Context, poolID string, req koyeb.UpdateServicePool) (
 		*koyeb.UpdateServicePoolReply, *http.Response, error)
 	ListServicePools(ctx context.Context, name, offset, limit string) (
 		*koyeb.ListServicePoolsReply, *http.Response, error)
+	DeleteServicePool(ctx context.Context, poolID string) (*http.Response, error)
 }
 
 // apiPort adapts the generated control-plane client to the koyebAPI port.
@@ -94,6 +97,11 @@ func (a apiPort) Claim(ctx context.Context, req koyeb.PoolClaimRequest) (
 	return a.client.PoolClaimsApi.Claim(ctx).Body(req).Execute()
 }
 
+func (a apiPort) CreateServicePool(ctx context.Context, req koyeb.CreateServicePool) (
+	*koyeb.CreateServicePoolReply, *http.Response, error) {
+	return a.client.ServicePoolsApi.CreateServicePool(ctx).ServicePool(req).Execute()
+}
+
 func (a apiPort) GetServicePool(ctx context.Context, poolID string) (
 	*koyeb.GetServicePoolReply, *http.Response, error) {
 	return a.client.ServicePoolsApi.GetServicePool(ctx, poolID).Execute()
@@ -111,4 +119,9 @@ func (a apiPort) ListServicePools(ctx context.Context, name, offset, limit strin
 		req = req.Name(name)
 	}
 	return req.Offset(offset).Limit(limit).Execute()
+}
+
+func (a apiPort) DeleteServicePool(ctx context.Context, poolID string) (*http.Response, error) {
+	_, resp, err := a.client.ServicePoolsApi.DeleteServicePool(ctx, poolID).Execute()
+	return resp, err
 }

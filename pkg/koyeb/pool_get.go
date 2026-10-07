@@ -14,7 +14,7 @@ func (h *PoolHandler) Get(ctx *CLIContext, cmd *cobra.Command, args []string) er
 		return err
 	}
 
-	res, resp, err := ctx.Client.ServicePoolsApi.GetServicePool(ctx.Context, poolID).Execute()
+	res, resp, err := ctx.API.GetServicePool(ctx.Context, poolID)
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while retrieving the pool `%s`", args[0]),

@@ -247,7 +247,7 @@ func setPoolPortsAndRoutes(poolType koyeb.DeploymentDefinitionType,
 
 // Create creates a service pool.
 func (h *PoolHandler) Create(ctx *CLIContext, cmd *cobra.Command, args []string, req koyeb.CreateServicePool) error {
-	res, resp, err := ctx.Client.ServicePoolsApi.CreateServicePool(ctx.Context).ServicePool(req).Execute()
+	res, resp, err := ctx.API.CreateServicePool(ctx.Context, req)
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while creating the pool `%s`", args[0]),
