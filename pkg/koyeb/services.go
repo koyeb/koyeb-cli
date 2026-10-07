@@ -553,12 +553,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForGitSource(flags *pflag.Flag
 
 // Add the flags for Docker sources
 func (h *ServiceHandler) addServiceDefinitionFlagsForDockerSource(flags *pflag.FlagSet) {
-	flags.String("docker", "", "Docker image")
-	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.Bool("docker-skip-verify", false, "Skip docker image verification")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.")
-	flags.String("docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.")
-	flags.StringSlice("docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.")
+	addDockerSourceFlags(flags, serviceDockerSourceFlagUsage)
 }
 
 // Add the flags for Archive sources
@@ -875,6 +870,53 @@ func (h *ServiceHandler) parseNetworkPolicy(flags *pflag.FlagSet, currentPolicy 
 	}
 	networkPolicy.SetEgress(*egress)
 	return networkPolicy, true, nil
+}
+
+// dockerSourceFlagUsage carries the per-surface help text of the docker
+// source flag bundle. Two skins exist today: the service surface spells
+// out the flag mechanics and offers --docker-skip-verify; the sandbox and
+// pool surfaces use the compact forms with the koyeb/sandbox default
+// noted on --docker.
+type dockerSourceFlagUsage struct {
+	image      string
+	entrypoint string
+	command    string
+	args       string
+	skipVerify string // empty: the surface does not offer --docker-skip-verify
+}
+
+// serviceDockerSourceFlagUsage is the skin of `service create` and
+// `service update`.
+var serviceDockerSourceFlagUsage = dockerSourceFlagUsage{
+	image:      "Docker image",
+	skipVerify: "Skip docker image verification",
+	entrypoint: "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.",
+	command:    "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.",
+	args:       "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.",
+}
+
+// sandboxPoolDockerSourceFlagUsage is the skin of `sandbox create` and
+// `pool create`/`pool update`.
+var sandboxPoolDockerSourceFlagUsage = dockerSourceFlagUsage{
+	image:      "Docker image (default: koyeb/sandbox)",
+	entrypoint: "Docker entrypoint",
+	command:    "Docker command",
+	args:       "Docker command arguments",
+}
+
+// addDockerSourceFlags registers the docker source flag bundle shared by
+// the service, sandbox and pool surfaces. --privileged is registered by
+// each surface itself: on services it is shared with the git and archive
+// docker builders.
+func addDockerSourceFlags(flags *pflag.FlagSet, usage dockerSourceFlagUsage) {
+	flags.String("docker", "", usage.image)
+	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
+	if usage.skipVerify != "" {
+		flags.Bool("docker-skip-verify", false, usage.skipVerify)
+	}
+	flags.StringSlice("docker-entrypoint", []string{}, usage.entrypoint)
+	flags.String("docker-command", "", usage.command)
+	flags.StringSlice("docker-args", []string{}, usage.args)
 }
 
 // Parse --instance-type

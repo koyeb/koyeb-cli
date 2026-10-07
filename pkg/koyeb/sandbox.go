@@ -632,11 +632,7 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags.String("snapshot", "", "Instance snapshot ID or name to boot the sandbox from")
 
 	// Docker source flags (required for sandbox)
-	flags.String("docker", "", "Docker image (default: koyeb/sandbox)")
-	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("docker-command", "", "Docker command")
-	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
+	addDockerSourceFlags(flags, sandboxPoolDockerSourceFlagUsage)
 
 	// Instance flags
 	flags.String("instance-type", "micro", "Instance type")
