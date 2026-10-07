@@ -36,11 +36,7 @@ func addPoolFlags(flags *pflag.FlagSet) {
 			"To remove a route on update, prefix its path with '!', for example --route '!/foo'\n",
 	)
 
-	flags.String("docker", "", "Docker image (default: koyeb/sandbox)")
-	flags.String("docker-private-registry-secret", "", "Docker private registry secret")
-	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("docker-command", "", "Docker command")
-	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
+	addDockerSourceFlags(flags, sandboxPoolDockerSourceFlagUsage)
 	flags.Bool("privileged", false, "Whether the member containers run in privileged mode")
 
 	flags.String("exposed-port-protocol", "http",
