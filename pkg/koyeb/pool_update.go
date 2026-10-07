@@ -136,18 +136,20 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	if err := validatePoolWiringFlags(poolType, flags); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
+	if err := validatePoolSandboxKnobs(poolType, flags); err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
 	def.SetType(poolType)
 
 	// Docker source: merge the changed flags into the live image config.
-	// parseDockerSource is not reusable here: it dereferences the
-	// --privileged and --docker-skip-verify flags pool commands do not
-	// register, and its image verification makes an API call the pure
-	// builder avoids.
+	// parseDockerSource is not reused: its image verification makes an
+	// API call the pure update builder avoids.
 	dockerChanged := flags.Lookup("docker").Changed ||
 		flags.Lookup("docker-private-registry-secret").Changed ||
 		flags.Lookup("docker-args").Changed ||
 		flags.Lookup("docker-command").Changed ||
-		flags.Lookup("docker-entrypoint").Changed
+		flags.Lookup("docker-entrypoint").Changed ||
+		flags.Lookup("privileged").Changed
 	if dockerChanged {
 		dockerSource := def.GetDocker()
 		if flags.Lookup("docker-private-registry-secret").Changed {
@@ -169,6 +171,10 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 		if flags.Lookup("docker-entrypoint").Changed {
 			entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
 			dockerSource.SetEntrypoint(entrypoint)
+		}
+		if flags.Lookup("privileged").Changed {
+			privileged, _ := flags.GetBool("privileged")
+			dockerSource.SetPrivileged(privileged)
 		}
 		def.SetDocker(dockerSource)
 	}
@@ -199,9 +205,26 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	}
 	def.SetScalings(scalings)
 
+	// Member network policy (egress), merged over the live policy.
+	var currentPolicy *koyeb.NetworkPolicy
+	if def.HasNetworkPolicy() {
+		np := def.GetNetworkPolicy()
+		currentPolicy = &np
+	}
+	networkPolicy, policyChanged, err := svcHandler.parseNetworkPolicy(flags, currentPolicy)
+	if err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
+	if policyChanged && networkPolicy != nil {
+		def.SetNetworkPolicy(*networkPolicy)
+	}
+
 	// SANDBOX wiring (ports 3030/3031 and the sandbox routes) stays
 	// server-owned; non-SANDBOX pools merge the declared values verbatim.
 	if err := setPoolPortsAndRoutes(poolType, flags, &def); err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
+	if err := applyPoolSandboxKnobs(poolType, flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
 

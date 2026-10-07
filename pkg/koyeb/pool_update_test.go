@@ -118,6 +118,142 @@ func TestBuildUpdateServicePool(t *testing.T) {
 		assert.Len(t, def.Routes, 2)
 	})
 
+	t.Run("--privileged flags the member containers", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("privileged", "true"))
+		live := liveSandboxPoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		docker := req.GetDefinition().Docker
+		assert.True(t, docker.GetPrivileged())
+	})
+
+	t.Run("an unchanged --privileged keeps the live value", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveSandboxPoolFixture()
+		live.Definition.Docker.Privileged = koyeb.PtrBool(true)
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		docker := req.GetDefinition().Docker
+		assert.True(t, docker.GetPrivileged())
+	})
+
+	t.Run("--block-network replaces the live member policy", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("block-network", "true"))
+		live := liveSandboxPoolFixture()
+		allowCIDR := "10.0.0.0/8"
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		live.Definition.NetworkPolicy = &koyeb.NetworkPolicy{
+			Egress: &koyeb.EgressPolicy{
+				Mode:      &mode,
+				AllowList: []koyeb.NetworkPolicyDestination{{Cidr: &allowCIDR}},
+			},
+		}
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		networkPolicy := req.GetDefinition().NetworkPolicy
+		require.NotNil(t, networkPolicy)
+		egress := networkPolicy.GetEgress()
+		assert.Equal(t, koyeb.EGRESSPOLICYMODE_DENY_ALL, egress.GetMode())
+		assert.Empty(t, egress.AllowList, "--block-network drops any existing allow-list")
+	})
+
+	t.Run("--no-network-policy reverts the live member policy", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("no-network-policy", "true"))
+		live := liveSandboxPoolFixture()
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		live.Definition.NetworkPolicy = &koyeb.NetworkPolicy{
+			Egress: &koyeb.EgressPolicy{Mode: &mode},
+		}
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		networkPolicy := req.GetDefinition().NetworkPolicy
+		require.NotNil(t, networkPolicy)
+		egress := networkPolicy.GetEgress()
+		assert.Equal(t, koyeb.EGRESSPOLICYMODE_DEFAULT, egress.GetMode())
+	})
+
+	t.Run("an unchanged policy is kept verbatim", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveSandboxPoolFixture()
+		mode := koyeb.EGRESSPOLICYMODE_DENY_ALL
+		livePolicy := &koyeb.NetworkPolicy{Egress: &koyeb.EgressPolicy{Mode: &mode}}
+		live.Definition.NetworkPolicy = livePolicy
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Equal(t, livePolicy, req.GetDefinition().NetworkPolicy)
+	})
+
+	t.Run("--exposed-port-protocol rewrites the live wiring", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "http2"))
+		live := liveSandboxPoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		ports := def.Ports
+		require.Len(t, ports, 2)
+		assert.Equal(t, int64(3030), ports[0].GetPort())
+		assert.Equal(t, "http", ports[0].GetProtocol())
+		assert.Equal(t, int64(3031), ports[1].GetPort())
+		assert.Equal(t, "http2", ports[1].GetProtocol())
+		require.Len(t, def.Routes, 2)
+	})
+
+	t.Run("--enable-tcp-proxy surgically edits the 3031 proxy port", func(t *testing.T) {
+		live := liveSandboxPoolFixture()
+		port3031 := int64(3031)
+		port22 := int64(22)
+		tcp := koyeb.PROXYPORTPROTOCOL_TCP
+		live.Definition.ProxyPorts = []koyeb.DeploymentProxyPort{
+			{Port: &port22, Protocol: &tcp},
+			{Port: &port3031, Protocol: &tcp},
+		}
+
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("enable-tcp-proxy", "false"))
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+		proxyPorts := req.GetDefinition().ProxyPorts
+		require.Len(t, proxyPorts, 1, "only the 3031 entry is cleared; other proxy ports are kept")
+		assert.Equal(t, int64(22), proxyPorts[0].GetPort())
+
+		cmd = newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("enable-tcp-proxy", "true"))
+
+		req, err = buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+		proxyPorts = req.GetDefinition().ProxyPorts
+		require.Len(t, proxyPorts, 2, "enabling adds the 3031 entry without dropping the others")
+		assert.Equal(t, int64(22), proxyPorts[0].GetPort())
+		assert.Equal(t, int64(3031), proxyPorts[1].GetPort())
+	})
+
+	t.Run("knobs are rejected on WEB pools", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("enable-tcp-proxy", "true"))
+		live := liveWebPoolFixture()
+
+		_, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "sandbox-only options")
+	})
+
 	t.Run("--env merges over the live environment", func(t *testing.T) {
 		cmd := newPoolUpdateCmd()
 		require.NoError(t, cmd.Flags().Set("env", "LOG_LEVEL=debug"))
@@ -198,6 +334,17 @@ func TestBuildUpdateServicePool(t *testing.T) {
 		assert.Equal(t, live.Definition, &def, "restating the live type must be a no-op")
 	})
 
+	t.Run("WEB pools with unchanged port flags resend the wiring verbatim", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveWebPoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.Equal(t, live.Definition, &def, "unchanged --port/--route flags must keep the live wiring")
+	})
+
 	t.Run("WEB pools merge and delete declared ports", func(t *testing.T) {
 		cmd := newPoolUpdateCmd()
 		require.NoError(t, cmd.Flags().Set("ports", "!9090"))
@@ -209,6 +356,35 @@ func TestBuildUpdateServicePool(t *testing.T) {
 		ports := req.GetDefinition().Ports
 		require.Len(t, ports, 1)
 		assert.Equal(t, int64(8080), ports[0].GetPort())
+	})
+
+	t.Run("deleting the last port empties the member wiring", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("ports", "!8080"))
+		live := liveWebPoolFixture()
+		live.Definition.Ports = []koyeb.DeploymentPort{
+			{Port: koyeb.PtrInt64(8080), Protocol: koyeb.PtrString("http")},
+		}
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Empty(t, req.GetDefinition().Ports,
+			"the last deletion must empty the wiring, not silently no-op")
+	})
+
+	t.Run("deleting the last route empties the member routes", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("routes", "!/"))
+		live := liveWebPoolFixture()
+		live.Definition.Routes = []koyeb.DeploymentRoute{
+			{Port: koyeb.PtrInt64(8080), Path: koyeb.PtrString("/")},
+		}
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Empty(t, req.GetDefinition().Routes)
 	})
 
 	t.Run("a pool without a definition cannot be updated", func(t *testing.T) {
@@ -311,9 +487,8 @@ func TestPoolUpdateFlow(t *testing.T) {
 	poolID := "123e4567-e89b-42d3-a456-426614174000"
 
 	t.Run("refetches the live pool and resends size + definition", func(t *testing.T) {
-		fake := &fakeAPI{pool: &koyeb.ServicePool{}}
 		live := liveSandboxPoolFixture()
-		fake.pool = &live
+		fake := &fakeAPI{pool: &live}
 		ctx := sandboxTestContext(fake)
 		cmd := newPoolUpdateCmd()
 		require.NoError(t, cmd.Flags().Set("size", strconv.FormatInt(7, 10)))
@@ -361,7 +536,10 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 	for _, name := range []string{
 		"size", "type", "ports", "routes",
 		"docker", "docker-private-registry-secret", "docker-args",
-		"docker-command", "docker-entrypoint", "instance-type", "regions",
+		"docker-command", "docker-entrypoint", "privileged",
+		"exposed-port-protocol", "enable-tcp-proxy",
+		"block-network", "outbound-allowlist", "no-network-policy",
+		"instance-type", "regions",
 		"env", "config-file", "min-scale", "light-sleep-delay", "deep-sleep-delay",
 	} {
 		assert.NotNil(t, cmd.Flags().Lookup(name), "flag --%s must be registered on pool update", name)

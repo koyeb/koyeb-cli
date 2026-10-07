@@ -28,6 +28,8 @@ type koyebAPI interface {
 	GetServicePool(ctx context.Context, poolID string) (*koyeb.GetServicePoolReply, *http.Response, error)
 	UpdateServicePool(ctx context.Context, poolID string, req koyeb.UpdateServicePool) (
 		*koyeb.UpdateServicePoolReply, *http.Response, error)
+	ListServicePools(ctx context.Context, name, offset, limit string) (
+		*koyeb.ListServicePoolsReply, *http.Response, error)
 }
 
 // apiPort adapts the generated control-plane client to the koyebAPI port.
@@ -100,4 +102,13 @@ func (a apiPort) GetServicePool(ctx context.Context, poolID string) (
 func (a apiPort) UpdateServicePool(ctx context.Context, poolID string, req koyeb.UpdateServicePool) (
 	*koyeb.UpdateServicePoolReply, *http.Response, error) {
 	return a.client.ServicePoolsApi.UpdateServicePool(ctx, poolID).ServicePool(req).Execute()
+}
+
+func (a apiPort) ListServicePools(ctx context.Context, name, offset, limit string) (
+	*koyeb.ListServicePoolsReply, *http.Response, error) {
+	req := a.client.ServicePoolsApi.ListServicePools(ctx)
+	if name != "" {
+		req = req.Name(name)
+	}
+	return req.Offset(offset).Limit(limit).Execute()
 }

@@ -4214,6 +4214,7 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
 ### Options
 
 ```
+      --block-network                           Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
       --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --docker string                           Docker image (default: koyeb/sandbox)
@@ -4221,16 +4222,21 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
+      --enable-tcp-proxy                        Expose port 3031 via TCP proxy, SANDBOX pools only
       --env strings                             Environment variables (KEY=VALUE)
+      --exposed-port-protocol string            Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only (default "http")
   -h, --help                                    help for create
       --instance-type string                    Instance type (default "micro")
       --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --min-scale int                           Min scale (default 1)
+      --no-network-policy                       Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings              Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --ports strings                           Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                 Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
                                                 To remove a port on update, prefix its number with '!', for example --port '!80'
                                                 
+      --privileged                              Whether the member containers run in privileged mode
       --regions strings                         Deployment regions
       --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
                                                 PORT defaults to 8000
@@ -4374,7 +4380,8 @@ koyeb pool list [flags]
 ### Options
 
 ```
-  -h, --help   help for list
+  -h, --help          help for list
+      --name string   Filter pools by name
 ```
 
 ### Options inherited from parent commands
@@ -4436,6 +4443,7 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
 ### Options
 
 ```
+      --block-network                           Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
       --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --docker string                           Docker image (default: koyeb/sandbox)
@@ -4443,16 +4451,21 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
       --docker-command string                   Docker command
       --docker-entrypoint strings               Docker entrypoint
       --docker-private-registry-secret string   Docker private registry secret
+      --enable-tcp-proxy                        Expose port 3031 via TCP proxy, SANDBOX pools only
       --env strings                             Environment variables (KEY=VALUE)
+      --exposed-port-protocol string            Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only (default "http")
   -h, --help                                    help for update
       --instance-type string                    Instance type (default "micro")
       --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --min-scale int                           Min scale (default 1)
+      --no-network-policy                       Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings              Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
       --ports strings                           Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
                                                 Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
                                                 To remove a port on update, prefix its number with '!', for example --port '!80'
                                                 
+      --privileged                              Whether the member containers run in privileged mode
       --regions strings                         Deployment regions
       --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
                                                 PORT defaults to 8000

@@ -68,6 +68,9 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	if err := validatePoolWiringFlags(poolType, flags); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
+	if err := validatePoolSandboxKnobs(poolType, flags); err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
 
 	def := koyeb.NewDeploymentDefinitionWithDefaults()
 
@@ -95,6 +98,10 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
 		dockerSource.SetEntrypoint(entrypoint)
 	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		dockerSource.SetPrivileged(privileged)
+	}
 	def.SetDocker(*dockerSource)
 
 	// Instance type
@@ -121,6 +128,15 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	}
 	def.SetConfigFiles(parsedFiles)
 
+	// Member network policy (egress).
+	networkPolicy, policyChanged, err := svcHandler.parseNetworkPolicy(flags, nil)
+	if err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
+	if policyChanged && networkPolicy != nil {
+		def.SetNetworkPolicy(*networkPolicy)
+	}
+
 	// Pools run at max-scale=1 with the same curated flag set as sandboxes.
 	scaling, err := parseSingleInstanceScaling(flags, "pool")
 	if err != nil {
@@ -135,6 +151,9 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	if err := setPoolPortsAndRoutes(poolType, flags, def); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
+	if err := applyPoolSandboxKnobs(poolType, flags, def); err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
 
 	// The server requires the definition name to be set (SANDBOX case).
 	def.SetName(name)
@@ -146,6 +165,52 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		Size:       &size,
 		Definition: def,
 	}, nil
+}
+
+// applyPoolSandboxKnobs applies the sandbox-only knobs on SANDBOX pools:
+// the platform owns the default wiring, so an explicit protocol request
+// emits the wiring with the chosen protocol (python/JS parity); the TCP
+// proxy is a standalone proxy-ports entry and needs no wiring.
+func applyPoolSandboxKnobs(poolType koyeb.DeploymentDefinitionType, flags *pflag.FlagSet,
+	def *koyeb.DeploymentDefinition) error {
+	if poolType != koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
+		return nil
+	}
+	if flags.Lookup("exposed-port-protocol").Changed {
+		protocol, _ := flags.GetString("exposed-port-protocol")
+		if protocol != "http" && protocol != "http2" {
+			return &errors.CLIError{
+				What:     "Invalid exposed port protocol",
+				Why:      fmt.Sprintf("Invalid protocol '%s'. Must be one of ('http', 'http2')", protocol),
+				Orig:     nil,
+				Solution: "Use --exposed-port-protocol http or --exposed-port-protocol http2",
+			}
+		}
+		configureSandboxPortsAndRoutes(def, protocol)
+	}
+	if flags.Lookup("enable-tcp-proxy").Changed {
+		enableTCPProxy, _ := flags.GetBool("enable-tcp-proxy")
+		def.SetProxyPorts(mergeTCPProxyPort(def.GetProxyPorts(), enableTCPProxy))
+	}
+	return nil
+}
+
+// mergeTCPProxyPort merges the --enable-tcp-proxy state into the live
+// proxy ports: enabling adds the executor's 3031/tcp entry, disabling
+// removes it. Other proxy ports the pool may carry are untouched.
+func mergeTCPProxyPort(current []koyeb.DeploymentProxyPort, enable bool) []koyeb.DeploymentProxyPort {
+	merged := make([]koyeb.DeploymentProxyPort, 0, len(current)+1)
+	for _, proxyPort := range current {
+		if proxyPort.GetPort() != 3031 {
+			merged = append(merged, proxyPort)
+		}
+	}
+	if enable {
+		port := int64(3031)
+		protocol := koyeb.PROXYPORTPROTOCOL_TCP
+		merged = append(merged, koyeb.DeploymentProxyPort{Port: &port, Protocol: &protocol})
+	}
+	return merged
 }
 
 // setPoolPortsAndRoutes parses the --port and --route flags onto the
@@ -163,7 +228,10 @@ func setPoolPortsAndRoutes(poolType koyeb.DeploymentDefinitionType,
 	if err != nil {
 		return err
 	}
-	if len(ports) > 0 {
+	// Set on change even when the merge empties the list: deleting the
+	// last port must clear the wiring, not silently no-op (the len>0
+	// guard would swallow it).
+	if flags.Lookup("ports").Changed || len(ports) > 0 {
 		def.SetPorts(ports)
 	}
 
@@ -171,7 +239,7 @@ func setPoolPortsAndRoutes(poolType koyeb.DeploymentDefinitionType,
 	if err != nil {
 		return err
 	}
-	if len(routes) > 0 {
+	if flags.Lookup("routes").Changed || len(routes) > 0 {
 		def.SetRoutes(routes)
 	}
 	return nil
