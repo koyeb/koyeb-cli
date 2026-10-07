@@ -3,6 +3,7 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 	"uuid"
 
@@ -17,7 +18,80 @@ const (
 	// Python SDK's wait_claim_ready defaults.
 	DefaultClaimWaitTimeout  = 300 * time.Second
 	DefaultClaimPollInterval = 2 * time.Second
+
+	// Default claim retry policy, mirroring the Python SDK reference:
+	// retry 429/5xx only, at most 3 attempts, linear backoff.
+	DefaultClaimAttempts   = 3
+	DefaultClaimRetryDelay = 1 * time.Second
 )
+
+// claimCaller is the seam the retry loop drives: the API port's Claim in
+// production, a fake in tests.
+type claimCaller func(ctx context.Context, req koyeb.PoolClaimRequest) (
+	*koyeb.PoolClaimReply, *http.Response, error)
+
+// claimRetryable reports whether an API failure with the given HTTP
+// status is worth retrying: claims are idempotent per request ID, so
+// only transient throttling (429) and server-side failures (5xx)
+// qualify. Everything else fails immediately.
+func claimRetryable(status int) bool {
+	return status == http.StatusTooManyRequests || status >= http.StatusInternalServerError
+}
+
+// claimWithRetry runs the claim with the Python reference retry policy:
+// HTTP 429/5xx are retried up to maxAttempts attempts with a linear
+// retryDelay×attempt backoff. The request — and with it the request ID —
+// is reused verbatim across attempts, so a retried claim never consumes
+// two pool members.
+func claimWithRetry(ctx context.Context, req koyeb.PoolClaimRequest,
+	maxAttempts int, retryDelay time.Duration, call claimCaller) (
+	*koyeb.PoolClaimReply, *http.Response, error) {
+	for attempt := 1; ; attempt++ {
+		res, resp, err := call(ctx, req)
+		if err == nil {
+			return res, resp, nil
+		}
+		if attempt >= maxAttempts || resp == nil || !claimRetryable(resp.StatusCode) {
+			return res, resp, err
+		}
+		timer := time.NewTimer(retryDelay * time.Duration(attempt))
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, nil, ctx.Err()
+		case <-timer.C:
+		}
+	}
+}
+
+// claimRetryPolicy reads and validates the claim retry flags.
+func claimRetryPolicy(cmd *cobra.Command) (maxAttempts int, retryDelay time.Duration, err error) {
+	maxAttempts, _ = cmd.Flags().GetInt("max-attempts")
+	if maxAttempts < 1 {
+		return 0, 0, &errors.CLIError{
+			What: "Error while claiming an instance from the pool",
+			Why:  "the --max-attempts flag must be at least 1",
+			Additional: []string{
+				"An attempt budget of 1 disables retries; use higher values only for transient 429/5xx throttling.",
+			},
+			Orig:     nil,
+			Solution: "Fix the --max-attempts flag and try again",
+		}
+	}
+	retryDelay, _ = cmd.Flags().GetDuration("retry-delay")
+	if retryDelay < 0 {
+		return 0, 0, &errors.CLIError{
+			What: "Error while claiming an instance from the pool",
+			Why:  "the --retry-delay flag cannot be negative",
+			Additional: []string{
+				"The retry delay uses duration format (e.g. '1s', '500ms'); the wait is --retry-delay × attempt.",
+			},
+			Orig:     nil,
+			Solution: "Fix the --retry-delay flag and try again",
+		}
+	}
+	return maxAttempts, retryDelay, nil
+}
 
 // serviceStatusGetter fetches a service status for the shared wait loop.
 type serviceStatusGetter func(ctx context.Context, serviceID string) (koyeb.ServiceStatus, error)
@@ -106,7 +180,13 @@ func newPoolClaimCmd() *cobra.Command {
 
 When --request-id is not provided, a random UUID v7 is generated. Replaying
 a claim with the same request ID is idempotent: the server returns the
-previously created claim instead of provisioning a new instance.`,
+previously created claim instead of provisioning a new instance. The
+request ID is reused across the internal retries.
+
+Retries follow the python SDK reference: only HTTP 429 and 5xx
+responses are retried, at most --max-attempts times (default 3), with a
+linear --retry-delay × attempt backoff (default 1s). Permanent failures
+(family 4xx other than 429) fail immediately.`,
 		Args: cobra.ExactArgs(1),
 		Example: `
 # Claim an instance from a pool
@@ -114,8 +194,16 @@ $> koyeb pool claim my-pool
 
 # Claim with an explicit request ID (idempotent retries)
 $> koyeb pool claim my-pool --request-id my-request-id
+
+# Claim with a larger retry budget for heavy throttling
+$> koyeb pool claim my-pool --max-attempts 5 --retry-delay 2s
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+			maxAttempts, retryDelay, err := claimRetryPolicy(cmd)
+			if err != nil {
+				return err
+			}
+
 			poolID, err := ResolvePoolArgs(ctx, args[0])
 			if err != nil {
 				return err
@@ -128,7 +216,7 @@ $> koyeb pool claim my-pool --request-id my-request-id
 
 			req := buildPoolClaimRequest(poolID, requestID)
 
-			res, resp, err := ctx.API.Claim(ctx.Context, req)
+			res, resp, err := claimWithRetry(ctx.Context, req, maxAttempts, retryDelay, ctx.API.Claim)
 			if err != nil {
 				return errors.NewCLIErrorFromAPIError(
 					fmt.Sprintf("Error while claiming an instance from the pool `%s`", args[0]),
@@ -140,7 +228,11 @@ $> koyeb pool claim my-pool --request-id my-request-id
 			return claimWaitFlow(ctx, cmd, res)
 		}),
 	}
-	cmd.Flags().String("request-id", "", "Claim request ID (defaults to a generated UUID v4)")
+	cmd.Flags().String("request-id", "", "Claim request ID (defaults to a generated UUID v7)")
+	cmd.Flags().Int("max-attempts", DefaultClaimAttempts,
+		"Max claim attempts on retryable failures, HTTP 429/5xx")
+	cmd.Flags().Duration("retry-delay", DefaultClaimRetryDelay,
+		"Base delay between claim retries; the wait is --retry-delay × attempt")
 	cmd.Flags().Bool("wait", false, "Wait until the claimed service is ready (timeout 5m, poll 2s)")
 
 	return cmd

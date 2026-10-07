@@ -3,6 +3,7 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 	"uuid"
@@ -53,6 +54,193 @@ func TestPoolClaimCmdRegistersWaitFlag(t *testing.T) {
 	waitFlag := cmd.Flags().Lookup("wait")
 	require.NotNil(t, waitFlag, "pool claim must register --wait")
 	assert.Equal(t, "false", waitFlag.DefValue, "--wait is opt-in")
+
+	attemptsFlag := cmd.Flags().Lookup("max-attempts")
+	require.NotNil(t, attemptsFlag, "pool claim must register --max-attempts")
+	assert.Equal(t, "3", attemptsFlag.DefValue, "--max-attempts defaults to 3")
+
+	retryDelayFlag := cmd.Flags().Lookup("retry-delay")
+	require.NotNil(t, retryDelayFlag, "pool claim must register --retry-delay")
+	assert.Equal(t, "1s", retryDelayFlag.DefValue, "--retry-delay defaults to 1s")
+}
+
+func TestClaimRetryPolicy(t *testing.T) {
+	t.Run("defaults match the python reference", func(t *testing.T) {
+		maxAttempts, retryDelay, err := claimRetryPolicy(newPoolClaimCmd())
+		require.NoError(t, err)
+		assert.Equal(t, DefaultClaimAttempts, maxAttempts)
+		assert.Equal(t, DefaultClaimRetryDelay, retryDelay)
+	})
+
+	t.Run("tuning is accepted", func(t *testing.T) {
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("max-attempts", "5"))
+		require.NoError(t, cmd.Flags().Set("retry-delay", "250ms"))
+
+		maxAttempts, retryDelay, err := claimRetryPolicy(cmd)
+		require.NoError(t, err)
+		assert.Equal(t, 5, maxAttempts)
+		assert.Equal(t, 250*time.Millisecond, retryDelay)
+	})
+
+	t.Run("zero attempts are rejected", func(t *testing.T) {
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("max-attempts", "0"))
+
+		_, _, err := claimRetryPolicy(cmd)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "--max-attempts flag must be at least 1")
+	})
+
+	t.Run("negative delays are rejected", func(t *testing.T) {
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("retry-delay", "-1s"))
+
+		_, _, err := claimRetryPolicy(cmd)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "--retry-delay flag cannot be negative")
+	})
+}
+
+func TestClaimRetryable(t *testing.T) {
+	for _, status := range []int{429, 500, 502, 503} {
+		assert.True(t, claimRetryable(status), "HTTP %d must be retryable", status)
+	}
+	for _, status := range []int{200, 400, 401, 404, 409, 422} {
+		assert.False(t, claimRetryable(status), "HTTP %d must not be retryable", status)
+	}
+}
+
+// scriptedClaimCaller returns a caller serving the scripted results in
+// order (the last one repeats) and records the request of every attempt.
+func scriptedClaimCaller(results []claimCallResult, requests *[]koyeb.PoolClaimRequest) claimCaller {
+	return func(_ context.Context, req koyeb.PoolClaimRequest) (
+		*koyeb.PoolClaimReply, *http.Response, error) {
+		*requests = append(*requests, req)
+		i := len(*requests) - 1
+		if i >= len(results) {
+			i = len(results) - 1
+		}
+		result := results[i]
+		if result.err != nil {
+			if result.status == 0 {
+				return nil, nil, result.err
+			}
+			return nil, &http.Response{StatusCode: result.status}, result.err
+		}
+		return result.reply, nil, nil
+	}
+}
+
+type claimCallResult struct {
+	status int
+	reply  *koyeb.PoolClaimReply
+	err    error
+}
+
+func TestClaimWithRetry(t *testing.T) {
+	claimID := "claim-1"
+	serviceID := "323e4567-e89b-42d3-a456-426614174000"
+	success := &koyeb.PoolClaimReply{ClaimId: &claimID, ServiceId: &serviceID}
+
+	t.Run("succeeds on the first attempt", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		res, _, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			3, time.Millisecond, scriptedClaimCaller(
+				[]claimCallResult{{reply: success}}, &requests))
+		require.NoError(t, err)
+		assert.Equal(t, success, res)
+		require.Len(t, requests, 1)
+	})
+
+	t.Run("retries 429s with linear backoff and preserves the request ID", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		start := time.Now()
+		res, _, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			3, 5*time.Millisecond, scriptedClaimCaller([]claimCallResult{
+				{status: 429, err: fmt.Errorf("too many requests")},
+				{status: 429, err: fmt.Errorf("too many requests")},
+				{reply: success},
+			}, &requests))
+		require.NoError(t, err)
+		assert.Equal(t, success, res)
+
+		// Three attempts, all carrying the identical request ID.
+		require.Len(t, requests, 3)
+		for _, req := range requests {
+			assert.Equal(t, "req-1", req.GetRequestId())
+			assert.Equal(t, "pool-1", req.GetPoolId())
+		}
+		// Linear backoff: 5ms × 1 + 5ms × 2.
+		assert.GreaterOrEqual(t, time.Since(start), 15*time.Millisecond)
+	})
+
+	t.Run("retries 5xx", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		res, _, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			3, time.Millisecond, scriptedClaimCaller([]claimCallResult{
+				{status: 503, err: fmt.Errorf("unavailable")},
+				{reply: success},
+			}, &requests))
+		require.NoError(t, err)
+		assert.Equal(t, success, res)
+		require.Len(t, requests, 2)
+	})
+
+	t.Run("permanent failures fail immediately", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		_, resp, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			3, time.Millisecond, scriptedClaimCaller([]claimCallResult{
+				{status: 404, err: fmt.Errorf("pool not found")},
+			}, &requests))
+		require.Error(t, err)
+		assert.Equal(t, 404, resp.StatusCode)
+		require.Len(t, requests, 1, "404s are never retried")
+	})
+
+	t.Run("transport failures fail immediately", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		_, resp, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			3, time.Millisecond, scriptedClaimCaller([]claimCallResult{
+				{status: 0, err: fmt.Errorf("connection refused")},
+			}, &requests))
+		require.Error(t, err)
+		assert.Nil(t, resp, "a transport failure carries no response")
+		require.Len(t, requests, 1)
+	})
+
+	t.Run("gives up after max attempts", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		_, resp, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			2, time.Millisecond, scriptedClaimCaller([]claimCallResult{
+				{status: 429, err: fmt.Errorf("too many requests")},
+			}, &requests))
+		require.Error(t, err)
+		assert.Equal(t, 429, resp.StatusCode)
+		require.Len(t, requests, 2)
+	})
+
+	t.Run("a single attempt disables retries", func(t *testing.T) {
+		requests := []koyeb.PoolClaimRequest{}
+		_, _, err := claimWithRetry(context.Background(), buildPoolClaimRequest("pool-1", "req-1"),
+			1, time.Millisecond, scriptedClaimCaller([]claimCallResult{
+				{status: 429, err: fmt.Errorf("too many requests")},
+			}, &requests))
+		require.Error(t, err)
+		require.Len(t, requests, 1)
+	})
+
+	t.Run("context cancellation stops the retries", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		requests := []koyeb.PoolClaimRequest{}
+
+		_, _, err := claimWithRetry(ctx, buildPoolClaimRequest("pool-1", "req-1"),
+			3, time.Hour, scriptedClaimCaller([]claimCallResult{
+				{status: 429, err: fmt.Errorf("too many requests")},
+			}, &requests))
+		require.ErrorIs(t, err, context.Canceled)
+	})
 }
 
 func TestClassifyServiceStatus(t *testing.T) {
