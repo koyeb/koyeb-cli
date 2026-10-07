@@ -447,25 +447,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForDockerSource(flags *pflag.F
 
 // Add the flags for Archive sources
 func (h *ServiceHandler) addServiceDefinitionFlagsForArchiveSource(flags *pflag.FlagSet) {
-	flags.String("archive", "", "Archive ID to deploy")
-	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
-
-	// Archive service: buildpack builder
-	flags.String("archive-buildpack-build-command", "", "Buid command")
-	flags.String("archive-buildpack-run-command", "", "Run command")
-
-	// Archive service: docker builder
-	flags.String("archive-docker-dockerfile", "", "Dockerfile path")
-	flags.StringSlice("archive-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
-	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
-	flags.String("archive-docker-target", "", "Docker target")
-	flags.StringSlice("archive-ignore-dir", []string{".git", "node_modules", "vendor"},
-		"Set directories to ignore when building the archive.\n"+
-			"To ignore multiple directories, use the flag multiple times.\n"+
-			"To include all directories, set the flag to an empty string.",
-	)
-
+	addArchiveSourceFlags(flags)
 }
 
 func isFreeInstanceUsed(instanceTypes []koyeb.DeploymentInstanceType) bool {
@@ -2277,6 +2259,33 @@ func (h *ServiceHandler) parseGitSourceDockerBuilder(flags *pflag.FlagSet, build
 		builder.SetPrivileged(privileged)
 	}
 	return &builder, nil
+}
+
+// addArchiveSourceFlags registers the archive source flag bundle
+// (--archive and the --archive-* family). Today the services definition
+// umbrella (`service create`/`service update`, `app init`) and `deploy`
+// compose it; --privileged is registered by each surface itself: on
+// services it is shared with the docker source and the git and archive
+// docker builders.
+func addArchiveSourceFlags(flags *pflag.FlagSet) {
+	flags.String("archive", "", "Archive ID to deploy")
+	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	// Archive service: buildpack builder
+	flags.String("archive-buildpack-build-command", "", "Buid command")
+	flags.String("archive-buildpack-run-command", "", "Run command")
+
+	// Archive service: docker builder
+	flags.String("archive-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("archive-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
+	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
+	flags.String("archive-docker-target", "", "Docker target")
+	flags.StringSlice("archive-ignore-dir", []string{".git", "node_modules", "vendor"},
+		"Set directories to ignore when building the archive.\n"+
+			"To ignore multiple directories, use the flag multiple times.\n"+
+			"To include all directories, set the flag to an empty string.",
+	)
 }
 
 // Parse --archive-* flags
