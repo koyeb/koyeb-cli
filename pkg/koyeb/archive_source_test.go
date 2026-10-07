@@ -32,11 +32,13 @@ func TestAddArchiveSourceFlagsServiceSurface(t *testing.T) {
 		{"archive-docker-entrypoint", "[]", "Docker entrypoint"},
 		{
 			"archive-docker-command", "",
-			"Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.",
+			"Set the docker CMD explicitly. " +
+				"To provide arguments to the command, use the --archive-docker-args flag.",
 		},
 		{
 			"archive-docker-args", "[]",
-			"Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.",
+			"Set arguments to the docker command. " +
+				"To provide multiple arguments, use the --archive-docker-args flag multiple times.",
 		},
 		{"archive-docker-target", "", "Docker target"},
 		{
