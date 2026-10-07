@@ -114,21 +114,15 @@ func validatePoolWiringFlags(poolType koyeb.DeploymentDefinitionType, flags *pfl
 	if poolType != koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
 		return nil
 	}
-	for _, wiring := range []struct {
-		flag  string
-		label string
-	}{
-		{"ports", "ports"},
-		{"routes", "routes"},
-	} {
-		if !flags.Lookup(wiring.flag).Changed {
+	for _, flag := range []string{"ports", "routes"} {
+		if !flags.Lookup(flag).Changed {
 			continue
 		}
 		return &errors.CLIError{
 			What: "Error while configuring the pool",
 			Why: fmt.Sprintf(
 				"explicit %s are not allowed on SANDBOX pools: the sandbox wiring owns ports 3030/3031",
-				wiring.label),
+				flag),
 			Additional: []string{
 				"The pool members' executor connectivity depends on the sandbox wiring; user-declared wiring would break it.",
 				`Create a WEB or WORKER pool with --type to declare member ports and routes.`,

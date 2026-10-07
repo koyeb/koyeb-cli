@@ -111,6 +111,12 @@ func TestClaimRetryable(t *testing.T) {
 	}
 }
 
+type claimCallResult struct {
+	status int
+	reply  *koyeb.PoolClaimReply
+	err    error
+}
+
 // scriptedClaimCaller returns a caller serving the scripted results in
 // order (the last one repeats) and records the request of every attempt.
 func scriptedClaimCaller(results []claimCallResult, requests *[]koyeb.PoolClaimRequest) claimCaller {
@@ -130,12 +136,6 @@ func scriptedClaimCaller(results []claimCallResult, requests *[]koyeb.PoolClaimR
 		}
 		return result.reply, nil, nil
 	}
-}
-
-type claimCallResult struct {
-	status int
-	reply  *koyeb.PoolClaimReply
-	err    error
 }
 
 func TestClaimWithRetry(t *testing.T) {

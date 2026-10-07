@@ -139,12 +139,16 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	def.SetType(poolType)
 
 	// Docker source: merge the changed flags into the live image config.
+	// parseDockerSource is not reusable here: it dereferences the
+	// --privileged and --docker-skip-verify flags pool commands do not
+	// register, and its image verification makes an API call the pure
+	// builder avoids.
 	dockerChanged := flags.Lookup("docker").Changed ||
 		flags.Lookup("docker-private-registry-secret").Changed ||
 		flags.Lookup("docker-args").Changed ||
 		flags.Lookup("docker-command").Changed ||
 		flags.Lookup("docker-entrypoint").Changed
-	if dockerChanged || def.HasDocker() {
+	if dockerChanged {
 		dockerSource := def.GetDocker()
 		if flags.Lookup("docker-private-registry-secret").Changed {
 			secret, _ := flags.GetString("docker-private-registry-secret")
@@ -196,12 +200,9 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	def.SetScalings(scalings)
 
 	// SANDBOX wiring (ports 3030/3031 and the sandbox routes) stays
-	// server-owned: SANDBOX pool definitions are never touched here
-	// (validatePoolWiringFlags rejects the flags first).
-	if poolType != koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
-		if err := setPoolPortsAndRoutes(flags, &def); err != nil {
-			return koyeb.UpdateServicePool{}, err
-		}
+	// server-owned; non-SANDBOX pools merge the declared values verbatim.
+	if err := setPoolPortsAndRoutes(poolType, flags, &def); err != nil {
+		return koyeb.UpdateServicePool{}, err
 	}
 
 	size := current.GetSize()

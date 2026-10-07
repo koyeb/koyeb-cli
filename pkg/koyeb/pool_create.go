@@ -131,11 +131,9 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	def.SetType(poolType)
 
 	// SANDBOX wiring (ports 3030/3031 and the sandbox routes) stays
-	// server-owned: SANDBOX pool definitions never declare ports or routes.
-	if poolType != koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
-		if err := setPoolPortsAndRoutes(flags, def); err != nil {
-			return koyeb.CreateServicePool{}, err
-		}
+	// server-owned; non-SANDBOX pools carry the declared values verbatim.
+	if err := setPoolPortsAndRoutes(poolType, flags, def); err != nil {
+		return koyeb.CreateServicePool{}, err
 	}
 
 	// The server requires the definition name to be set (SANDBOX case).
@@ -152,9 +150,15 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 
 // setPoolPortsAndRoutes parses the --port and --route flags onto the
 // definition. WEB and WORKER pools carry the declared values verbatim;
-// SANDBOX pools never reach this function (validatePoolWiringFlags
-// rejects the flags first).
-func setPoolPortsAndRoutes(flags *pflag.FlagSet, def *koyeb.DeploymentDefinition) error {
+// SANDBOX wiring (ports 3030/3031 and the sandbox routes) stays
+// server-owned, so SANDBOX pool definitions are never touched here —
+// validatePoolWiringFlags rejects the flags first.
+func setPoolPortsAndRoutes(poolType koyeb.DeploymentDefinitionType,
+	flags *pflag.FlagSet, def *koyeb.DeploymentDefinition) error {
+	if poolType == koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
+		return nil
+	}
+
 	ports, err := parseListFlags("ports", flags_list.NewPortListFromFlags, flags, def.Ports)
 	if err != nil {
 		return err
