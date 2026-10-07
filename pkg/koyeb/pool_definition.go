@@ -10,9 +10,11 @@ import (
 )
 
 // addPoolFlags registers the curated flag set shared by pool create and
-// pool update. Sandbox-only knobs (exposed-port-protocol, enable-tcp-proxy)
-// are deliberately absent: cobra rejects them as unknown flags for every
-// pool type, so they can never leak into a pool definition.
+// pool update. The sandbox-only knobs (exposed-port-protocol,
+// enable-tcp-proxy) are accepted on SANDBOX pools only —
+// validatePoolSandboxKnobs rejects them on every other type. Pool secrets
+// and mesh stay off the pool surface per the cross-client contract: the
+// platform mints the executor secret and mesh stays AUTO.
 func addPoolFlags(flags *pflag.FlagSet) {
 	flags.Int64("size", 1, "Number of instances kept ready in the pool")
 
@@ -39,6 +41,12 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	flags.StringSlice("docker-entrypoint", []string{}, "Docker entrypoint")
 	flags.String("docker-command", "", "Docker command")
 	flags.StringSlice("docker-args", []string{}, "Docker command arguments")
+	flags.Bool("privileged", false, "Whether the member containers run in privileged mode")
+
+	flags.String("exposed-port-protocol", "http",
+		"Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only")
+	flags.Bool("enable-tcp-proxy", false,
+		"Expose port 3031 via TCP proxy, SANDBOX pools only")
 
 	flags.String("instance-type", "micro", "Instance type")
 	flags.StringSlice("regions", []string{}, "Deployment regions")
@@ -47,6 +55,9 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	flags.StringSlice("config-file", nil, "Config files (LOCAL:REMOTE:PERMS)")
 
 	flags.Int64("min-scale", 1, "Min scale")
+
+	// Member egress policy, shared with the service and sandbox surfaces.
+	addNetworkPolicyFlags(flags)
 
 	flags.Duration("light-sleep-delay", 0,
 		"Delay after which an idle service is put to light sleep. "+
@@ -103,6 +114,32 @@ func parsePoolType(flags *pflag.FlagSet) (koyeb.DeploymentDefinitionType, error)
 			Orig:     nil,
 			Solution: "Fix the --type flag and try again",
 		}
+	}
+}
+
+// validatePoolSandboxKnobs enforces the inverse wiring rule: the
+// sandbox-only knobs (exposed port protocol, TCP proxy) never apply to
+// non-SANDBOX pools — their members carry exactly the declared
+// --port/--route wiring. Mirrors the python reference's fail-fast check.
+func validatePoolSandboxKnobs(poolType koyeb.DeploymentDefinitionType, flags *pflag.FlagSet) error {
+	if poolType == koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
+		return nil
+	}
+	protocolSet := flags.Lookup("exposed-port-protocol").Changed
+	tcpProxy, _ := flags.GetBool("enable-tcp-proxy")
+	if !protocolSet && !tcpProxy {
+		return nil
+	}
+	return &errors.CLIError{
+		What: "Error while configuring the pool",
+		Why: "--exposed-port-protocol and --enable-tcp-proxy are sandbox-only options " +
+			"and are not allowed on WEB/WORKER pools",
+		Additional: []string{
+			"The knobs configure the executor wiring that only SANDBOX pool members carry.",
+			"Non-SANDBOX members are wired with the --port and --route flags instead.",
+		},
+		Orig:     nil,
+		Solution: "Remove the sandbox-only flags or set --type sandbox, and try again",
 	}
 }
 

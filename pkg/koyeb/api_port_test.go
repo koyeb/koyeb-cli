@@ -46,6 +46,9 @@ type fakeAPI struct {
 	updatePoolReq   *koyeb.UpdateServicePool
 	updatePoolReply *koyeb.ServicePool
 	updatePoolErr   error
+
+	pools         []koyeb.ServicePool
+	listPoolsName string
 }
 
 func (f *fakeAPI) GetService(_ context.Context, serviceID string) (*koyeb.GetServiceReply, *http.Response, error) {
@@ -152,6 +155,16 @@ func (f *fakeAPI) GetServicePool(_ context.Context, poolID string) (
 		return &koyeb.GetServicePoolReply{}, nil, nil
 	}
 	return &koyeb.GetServicePoolReply{ServicePool: f.pool}, nil, nil
+}
+
+func (f *fakeAPI) ListServicePools(_ context.Context, name, _, _ string) (
+	*koyeb.ListServicePoolsReply, *http.Response, error) {
+	f.listPoolsName = name
+	count := int64(len(f.pools))
+	return &koyeb.ListServicePoolsReply{
+		ServicePools: f.pools,
+		Count:        &count,
+	}, nil, nil
 }
 
 func (f *fakeAPI) UpdateServicePool(_ context.Context, poolID string, req koyeb.UpdateServicePool) (

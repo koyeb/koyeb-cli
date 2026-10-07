@@ -43,13 +43,15 @@ func ResolvePoolArgs(ctx *CLIContext, val string) (string, error) {
 }
 
 func newPoolListCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List service pools",
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return NewPoolHandler().List(ctx, cmd, args)
 		}),
 	}
+	cmd.Flags().String("name", "", "Filter pools by name")
+	return cmd
 }
 
 func newPoolGetCmd() *cobra.Command {

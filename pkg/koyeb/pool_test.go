@@ -216,6 +216,144 @@ func TestBuildCreateServicePoolPortsAndRoutes(t *testing.T) {
 	})
 }
 
+func TestBuildCreateServicePoolPrivileged(t *testing.T) {
+	t.Run("members run unprivileged by default", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		docker := req.GetDefinition().Docker
+		assert.False(t, docker.GetPrivileged())
+	})
+
+	t.Run("--privileged flags the member containers", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("privileged", "true"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		docker := req.GetDefinition().Docker
+		assert.True(t, docker.GetPrivileged())
+	})
+}
+
+func TestBuildCreateServicePoolNetworkPolicy(t *testing.T) {
+	t.Run("--block-network denies all member egress", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("block-network", "true"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		networkPolicy := req.GetDefinition().NetworkPolicy
+		require.NotNil(t, networkPolicy, "the definition must carry a network policy")
+		egress := networkPolicy.GetEgress()
+		assert.Equal(t, koyeb.EGRESSPOLICYMODE_DENY_ALL, egress.GetMode())
+	})
+
+	t.Run("--outbound-allowlist lists member egress destinations", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("outbound-allowlist", "10.0.0.0/8"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		networkPolicy := req.GetDefinition().NetworkPolicy
+		require.NotNil(t, networkPolicy)
+		egress := networkPolicy.GetEgress()
+		assert.Equal(t, koyeb.EGRESSPOLICYMODE_DENY_ALL, egress.GetMode())
+		require.Len(t, egress.AllowList, 1)
+	})
+
+	t.Run("members carry no policy by default", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasNetworkPolicy())
+	})
+}
+
+func TestBuildCreateServicePoolSandboxKnobs(t *testing.T) {
+	t.Run("--exposed-port-protocol emits the wiring with the chosen protocol", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "http2"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		ports := def.Ports
+		require.Len(t, ports, 2, "the sandbox wiring is emitted when the protocol is explicit")
+		assert.Equal(t, int64(3030), ports[0].GetPort())
+		assert.Equal(t, "http", ports[0].GetProtocol())
+		assert.Equal(t, int64(3031), ports[1].GetPort())
+		assert.Equal(t, "http2", ports[1].GetProtocol())
+		routes := def.Routes
+		require.Len(t, routes, 2)
+		assert.Equal(t, "/koyeb-sandbox/", routes[0].GetPath())
+		assert.Equal(t, "/", routes[1].GetPath())
+	})
+
+	t.Run("--enable-tcp-proxy exposes port 3031 via TCP proxy", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("enable-tcp-proxy", "true"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		proxyPorts := def.ProxyPorts
+		require.Len(t, proxyPorts, 1)
+		assert.Equal(t, int64(3031), proxyPorts[0].GetPort())
+		assert.Equal(t, koyeb.PROXYPORTPROTOCOL_TCP, proxyPorts[0].GetProtocol())
+	})
+
+	t.Run("knobs are rejected on WEB pools", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "http"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "sandbox-only options")
+	})
+
+	t.Run("the TCP proxy is rejected on WORKER pools", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "worker"))
+		require.NoError(t, cmd.Flags().Set("enable-tcp-proxy", "true"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "sandbox-only options")
+	})
+
+	t.Run("invalid protocols are rejected", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("exposed-port-protocol", "tcp"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Invalid exposed port protocol")
+	})
+
+	t.Run("no knobs, no wiring: the platform owns the default", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasPorts(), "unchanged knobs must not emit wiring")
+		assert.False(t, def.HasProxyPorts())
+	})
+}
+
 func TestPoolCreateCmdFlagSet(t *testing.T) {
 	cmd := newPoolCreateCmd()
 	flags := cmd.Flags()
@@ -226,17 +364,22 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 	}
 	// Service flags that have no pool equivalent must not be registered:
 	// cobra rejects them as unknown flags, which guards against invalid pool
-	// definitions. Sandbox-only knobs are likewise absent on every pool type.
+	// definitions. Pool secrets and mesh stay off the pool surface per the
+	// cross-client contract.
 	for _, name := range []string{
 		"checks", "proxy-ports", "auth", "app", "wait", "wait-timeout",
-		"exposed-port-protocol", "enable-tcp-proxy", "sandbox-secret", "enable-mesh",
+		"sandbox-secret", "enable-mesh",
 	} {
 		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
 	}
-	// The curated flag set must be declared.
+	// The curated flag set must be declared, matching the SDK surfaces.
 	for _, name := range []string{
-		"size", "docker", "docker-private-registry-secret", "docker-args",
-		"docker-command", "docker-entrypoint", "instance-type", "regions",
+		"size", "type", "ports", "routes",
+		"docker", "docker-private-registry-secret", "docker-args",
+		"docker-command", "docker-entrypoint", "privileged",
+		"exposed-port-protocol", "enable-tcp-proxy",
+		"block-network", "outbound-allowlist", "no-network-policy",
+		"instance-type", "regions",
 		"env", "config-file", "min-scale", "light-sleep-delay", "deep-sleep-delay",
 	} {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on pool create", name)
@@ -257,6 +400,33 @@ func TestPoolCreateCmdFlagAliases(t *testing.T) {
 	ports := def.Ports
 	require.Len(t, ports, 1)
 	assert.Equal(t, int64(8080), ports[0].GetPort())
+}
+
+func TestPoolListCmdRegistersNameFilter(t *testing.T) {
+	cmd := newPoolListCmd()
+
+	nameFlag := cmd.Flags().Lookup("name")
+	require.NotNil(t, nameFlag, "pool list must register --name")
+	assert.Equal(t, "", nameFlag.DefValue, "the name filter is opt-in")
+}
+
+func TestPoolListFlow(t *testing.T) {
+	t.Run("--name filters the listing", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+		require.NoError(t, cmd.Flags().Set("name", "my-pool"))
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "my-pool", fake.listPoolsName, "the filter must reach the API request")
+	})
+
+	t.Run("without --name the listing is unfiltered", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "", fake.listPoolsName)
+	})
 }
 
 func TestPoolCmdWiring(t *testing.T) {

@@ -10,13 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// List lists the service pools of the current scope.
+// List lists the service pools of the current scope, optionally filtered
+// by --name.
 func (h *PoolHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	name, _ := cmd.Flags().GetString("name")
 	list, err := idmapper.FetchAllPages(func(offset, limit int64) ([]koyeb.ServicePool, int64, error) {
-		res, resp, err := ctx.Client.ServicePoolsApi.ListServicePools(ctx.Context).
-			Limit(strconv.FormatInt(limit, 10)).
-			Offset(strconv.FormatInt(offset, 10)).
-			Execute()
+		res, resp, err := ctx.API.ListServicePools(
+			ctx.Context,
+			name,
+			strconv.FormatInt(offset, 10),
+			strconv.FormatInt(limit, 10),
+		)
 		if err != nil {
 			return nil, 0, errors.NewCLIErrorFromAPIError("Error while listing pools", err, resp)
 		}
