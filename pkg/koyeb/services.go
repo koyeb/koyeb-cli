@@ -388,13 +388,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To update a service and remove a region, prefix the region name with '!', for example --region '!par'\n"+
 			"If the region is not specified on service creation, the service is deployed in was\n",
 	)
-	flags.StringSlice(
-		"env",
-		[]string{},
-		"Update service environment variables using the format KEY=VALUE, for example --env FOO=bar\n"+
-			"To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}\n"+
-			"To delete an environment variable, prefix its name with '!', for example --env '!FOO'\n",
-	)
+	addEnvConfigFilesFlags(flags, serviceEnvConfigFilesFlagUsage)
 	flags.String("instance-type", "nano", "Instance type")
 
 	var strategy DeploymentStrategy
@@ -468,13 +462,6 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 		nil,
 		"Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data."+
 			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
-	)
-	flags.StringSlice(
-		"config-file",
-		nil,
-		"Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]\n"+
-			"for example --config-file /etc/data.yaml:/etc/data.yaml:0644\n"+
-			"To delete a config file, use !PATH, for example --config-file !/etc/data.yaml\n",
 	)
 	flags.StringSlice(
 		"auth",
@@ -612,11 +599,11 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 	skipCache, _ := flags.GetBool("skip-cache")
 	definition.SetSkipCache(skipCache)
 
-	envs, err := h.parseEnv(flags, definition.Env)
-	if err != nil {
+	// Env and config files: the shared bundle applies both with the
+	// changed-only merge conventions.
+	if err := h.parseEnvConfigFiles(ctx, flags, definition); err != nil {
 		return err
 	}
-	definition.SetEnv(envs)
 
 	definition.SetInstanceTypes(h.parseInstanceType(flags, definition.GetInstanceTypes()))
 
@@ -682,12 +669,6 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		return err
 	}
 	definition.SetVolumes(volumes)
-
-	files, err := h.parseConfigFiles(ctx, flags, definition.ConfigFiles)
-	if err != nil {
-		return err
-	}
-	definition.SetConfigFiles(files)
 
 	authChanged := flags.Lookup("auth") != nil && flags.Lookup("auth").Changed
 	authDisable, _ := flags.GetBool("auth-disable")
@@ -996,6 +977,60 @@ func dockerSourceChanged(flags *pflag.FlagSet) bool {
 		flags.Lookup("docker-command").Changed ||
 		flags.Lookup("docker-entrypoint").Changed ||
 		flags.Lookup("privileged").Changed
+}
+
+// envConfigFilesFlagUsage carries the per-surface help text of the env
+// and config-file flag bundle. Two skins exist today: the service surface
+// spells out the formats and the deletion idioms; the sandbox and pool
+// surfaces use the compact forms.
+type envConfigFilesFlagUsage struct {
+	env        string
+	configFile string
+}
+
+// serviceEnvConfigFilesFlagUsage is the skin of the service surfaces
+// (`service create`/`service update`, `app init` and `deploy`).
+var serviceEnvConfigFilesFlagUsage = envConfigFilesFlagUsage{
+	env: "Update service environment variables using the format KEY=VALUE, for example --env FOO=bar\n" +
+		"To use the value of a secret as an environment variable, use the following syntax: --env FOO={{secret.bar}}\n" +
+		"To delete an environment variable, prefix its name with '!', for example --env '!FOO'\n",
+	configFile: "Copy a local file to your service container using the format LOCAL_FILE:PATH:[PERMISSIONS]\n" +
+		"for example --config-file /etc/data.yaml:/etc/data.yaml:0644\n" +
+		"To delete a config file, use !PATH, for example --config-file !/etc/data.yaml\n",
+}
+
+// sandboxPoolEnvConfigFilesFlagUsage is the skin of `sandbox create` and
+// `pool create`/`pool update`.
+var sandboxPoolEnvConfigFilesFlagUsage = envConfigFilesFlagUsage{
+	env:        "Environment variables (KEY=VALUE)",
+	configFile: "Config files (LOCAL:REMOTE:PERMS)",
+}
+
+// addEnvConfigFilesFlags registers the env/config-file bundle shared by
+// the service, sandbox and pool surfaces.
+func addEnvConfigFilesFlags(flags *pflag.FlagSet, usage envConfigFilesFlagUsage) {
+	flags.StringSlice("env", []string{}, usage.env)
+	flags.StringSlice("config-file", nil, usage.configFile)
+}
+
+// parseEnvConfigFiles applies the env/config-file bundle onto the
+// definition with the shared changed-only merge conventions: flags that
+// were not passed keep the definition's live values, and the '!' prefix
+// carries the deletion idiom.
+func (h *ServiceHandler) parseEnvConfigFiles(ctx *CLIContext, flags *pflag.FlagSet,
+	def *koyeb.DeploymentDefinition) error {
+	envs, err := h.parseEnv(flags, def.Env)
+	if err != nil {
+		return err
+	}
+	def.SetEnv(envs)
+
+	files, err := h.parseConfigFiles(ctx, flags, def.ConfigFiles)
+	if err != nil {
+		return err
+	}
+	def.SetConfigFiles(files)
+	return nil
 }
 
 // Parse --instance-type

@@ -161,17 +161,9 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	}
 	def.SetRegions(regions)
 
-	envVars, err := svcHandler.parseEnv(flags, def.Env)
-	if err != nil {
+	if err := svcHandler.parseEnvConfigFiles(ctx, flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
-	def.SetEnv(envVars)
-
-	parsedFiles, err := svcHandler.parseConfigFiles(ctx, flags, def.ConfigFiles)
-	if err != nil {
-		return koyeb.UpdateServicePool{}, err
-	}
-	def.SetConfigFiles(parsedFiles)
 
 	scalings, err := mergePoolScalings(flags, def.Scalings)
 	if err != nil {
