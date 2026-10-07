@@ -28,7 +28,8 @@ func TestAddInstanceTypeRegionsFlagsServiceSurface(t *testing.T) {
 		},
 		{
 			"regions", "[]",
-			"Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.\n" +
+			"Add a region where the service is deployed. " +
+				"You can specify this flag multiple times to deploy the service in multiple regions.\n" +
 				"To update a service and remove a region, prefix the region name with '!', for example --region '!par'\n" +
 				"If the region is not specified on service creation, the service is deployed in was\n",
 		},
