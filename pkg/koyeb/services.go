@@ -892,7 +892,8 @@ var serviceDockerSourceFlagUsage = dockerSourceFlagUsage{
 	skipVerify: "Skip docker image verification",
 	entrypoint: "Docker entrypoint. To provide multiple arguments, use the --docker-entrypoint flag multiple times.",
 	command:    "Set the docker CMD explicitly. To provide arguments to the command, use the --docker-args flag.",
-	args:       "Set arguments to the docker command. To provide multiple arguments, use the --docker-args flag multiple times.",
+	args: "Set arguments to the docker command. " +
+		"To provide multiple arguments, use the --docker-args flag multiple times.",
 }
 
 // sandboxPoolDockerSourceFlagUsage is the skin of `sandbox create` and
