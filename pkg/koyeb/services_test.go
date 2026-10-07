@@ -712,8 +712,9 @@ func TestApplyCreateServiceFlags(t *testing.T) {
 			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
 		}
 		// The union of the composed bundles; the docker, env/config-file,
-		// instance-type/regions, scaling/sleep-delay, network-policy and
-		// checks registrations derive from the shared bundle seams.
+		// instance-type/regions, scaling/sleep-delay, network-policy,
+		// checks and volumes registrations derive from the shared bundle
+		// seams.
 		for _, name := range slices.Concat(
 			dockerSourceFlagNames(serviceDockerSourceFlagUsage),
 			envConfigFilesFlagNames(serviceEnvConfigFilesFlagUsage),
@@ -721,6 +722,7 @@ func TestApplyCreateServiceFlags(t *testing.T) {
 			scalingSleepDelayFlagNames(serviceScalingSleepDelayFlagUsage),
 			networkPolicyFlagNames(),
 			checksFlagNames(),
+			volumesFlagNames(),
 		) {
 			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
 		}
