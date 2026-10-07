@@ -437,26 +437,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 
 // Add the flags for Git sources
 func (h *ServiceHandler) addServiceDefinitionFlagsForGitSource(flags *pflag.FlagSet) {
-	flags.String("git", "", "Git repository")
-	flags.String("git-branch", "main", "Git branch")
-	flags.String("git-sha", "", "Git commit SHA to deploy")
-	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
-	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
-	flags.String("git-credential-source", "", "Source of the Git repository credentials")
-	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
-
-	// Git service: buildpack builder
-	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
-	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
-	flags.String("git-buildpack-build-command", "", "Buid command")
-	flags.String("git-buildpack-run-command", "", "Run command")
-
-	// Git service: docker builder
-	flags.String("git-docker-dockerfile", "", "Dockerfile path")
-	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("git-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
-	flags.StringSlice("git-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.")
-	flags.String("git-docker-target", "", "Docker target")
+	addGitSourceFlags(flags)
 }
 
 // Add the flags for Docker sources
@@ -2077,6 +2058,34 @@ func (h *ServiceHandler) setSource(ctx *CLIContext, definition *koyeb.Deployment
 		definition.Archive = nil
 	}
 	return nil
+}
+
+// addGitSourceFlags registers the git source flag bundle (--git and
+// the --git-* family). Today the services definition umbrella composes
+// it alone (`service create`/`service update` and `app init`); --privileged
+// is registered by each surface itself: on services it is shared with the
+// docker source and the git and archive docker builders.
+func addGitSourceFlags(flags *pflag.FlagSet) {
+	flags.String("git", "", "Git repository")
+	flags.String("git-branch", "main", "Git branch")
+	flags.String("git-sha", "", "Git commit SHA to deploy")
+	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
+	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
+	flags.String("git-credential-source", "", "Source of the Git repository credentials")
+	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
+
+	// Git service: buildpack builder
+	flags.String("git-build-command", "", "Buid command (legacy, prefer git-buildpack-build-command)")
+	flags.String("git-run-command", "", "Run command (legacy, prefer git-buildpack-run-command)")
+	flags.String("git-buildpack-build-command", "", "Buid command")
+	flags.String("git-buildpack-run-command", "", "Run command")
+
+	// Git service: docker builder
+	flags.String("git-docker-dockerfile", "", "Dockerfile path")
+	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
+	flags.String("git-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
+	flags.StringSlice("git-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.")
+	flags.String("git-docker-target", "", "Docker target")
 }
 
 // Parse --git-* flags
