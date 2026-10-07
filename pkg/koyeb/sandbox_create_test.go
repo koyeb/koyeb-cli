@@ -32,9 +32,12 @@ func parseSandboxDefinition(t *testing.T, args []string) (*koyeb.DeploymentDefin
 func TestSandboxCreateFlagsRegistered(t *testing.T) {
 	flags := sandboxCreateCmd(t).Flags()
 
+	// The sandbox surface base: the sandbox-specific definition flags
+	// plus the command flags, none of which any bundle owns.
 	for _, name := range []string{
 		"enable-mesh", "exposed-port-protocol", "enable-tcp-proxy",
 		"sandbox-secret", "poll-interval", "cleanup-on-failure", "snapshot",
+		"privileged", "delete-after-delay", "delete-after-inactivity-delay",
 	} {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on sandbox create", name)
 	}
@@ -58,12 +61,14 @@ func TestSandboxCreateFlagsRegistered(t *testing.T) {
 	assert.Equal(t, "0.5", pollFlag.DefValue)
 
 	// The definition flag bundles register through the shared seams: the
-	// env/config-file, instance-type/regions and scaling/sleep-delay
-	// unions derive from the bundle registrations.
+	// docker, env/config-file, instance-type/regions, scaling/sleep-delay
+	// and network-policy unions derive from the bundle registrations.
 	for _, name := range slices.Concat(
+		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
+		networkPolicyFlagNames(),
 	) {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on sandbox create", name)
 	}

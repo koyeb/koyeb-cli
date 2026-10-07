@@ -698,16 +698,28 @@ func TestApplyCreateServiceFlags(t *testing.T) {
 		assert.Equal(t, "sa-123", createService.GetServiceAccountId())
 	})
 
-	t.Run("registers the definition flag bundles", func(t *testing.T) {
+	t.Run("registers the definition flag set", func(t *testing.T) {
 		cmd := serviceCreateCmdForTest(t)
 		flags := cmd.Flags()
 
-		// The env/config-file, instance-type/regions and scaling/
-		// sleep-delay entries derive from the shared bundle registrations.
+		// The surface base: the umbrella's definition flags that no
+		// bundle owns.
+		for _, name := range []string{
+			"type", "deployment-strategy", "privileged", "skip-cache",
+			"delete-after-delay", "delete-after-inactivity-delay",
+			"routes", "ports", "auth", "auth-disable",
+		} {
+			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
+		}
+		// The union of the composed bundles; the docker, env/config-file,
+		// instance-type/regions, scaling/sleep-delay and network-policy
+		// registrations derive from the shared bundle seams.
 		for _, name := range slices.Concat(
+			dockerSourceFlagNames(serviceDockerSourceFlagUsage),
 			envConfigFilesFlagNames(serviceEnvConfigFilesFlagUsage),
 			instanceTypeRegionsFlagNames(serviceInstanceTypeRegionsFlagUsage),
 			scalingSleepDelayFlagNames(serviceScalingSleepDelayFlagUsage),
+			networkPolicyFlagNames(),
 		) {
 			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
 		}

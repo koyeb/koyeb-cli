@@ -9,6 +9,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// networkPolicyFlagNames returns the flag names the network-policy bundle
+// registers — the bundle union the surface flag-set tests derive their
+// expectations from.
+func networkPolicyFlagNames() []string {
+	flags := pflag.NewFlagSet("network-policy", pflag.ContinueOnError)
+	addNetworkPolicyFlags(flags)
+	names := make([]string, 0, 3)
+	flags.VisitAll(func(f *pflag.Flag) { names = append(names, f.Name) })
+	return names
+}
+
 func newNetworkPolicyFlagSet() *pflag.FlagSet {
 	fs := pflag.NewFlagSet("test", pflag.ContinueOnError)
 	fs.Bool("block-network", false, "")
