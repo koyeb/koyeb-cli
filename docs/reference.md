@@ -4013,6 +4013,9 @@ responses are retried, at most --max-attempts times (default 3), with a
 linear --retry-delay × attempt backoff (default 1s). Permanent failures
 (family 4xx other than 429) fail immediately.
 
+With --wait, the readiness poll runs until the claimed service is ready,
+bounded by --wait-timeout (default 5m) at --poll-interval (default 2s).
+
 ```
 koyeb pool claim POOL [flags]
 ```
@@ -4035,11 +4038,13 @@ $> koyeb pool claim my-pool --max-attempts 5 --retry-delay 2s
 ### Options
 
 ```
-  -h, --help                   help for claim
-      --max-attempts int       Max claim attempts on retryable failures, HTTP 429/5xx (default 3)
-      --request-id string      Claim request ID (defaults to a generated UUID v7)
-      --retry-delay duration   Base delay between claim retries; the wait is --retry-delay × attempt (default 1s)
-      --wait                   Wait until the claimed service is ready (timeout 5m, poll 2s)
+  -h, --help                    help for claim
+      --max-attempts int        Max claim attempts on retryable failures, HTTP 429/5xx (default 3)
+      --poll-interval float     Seconds between readiness polls when --wait is set (default 2)
+      --request-id string       Claim request ID (defaults to a generated UUID v7)
+      --retry-delay duration    Base delay between claim retries; the wait is --retry-delay × attempt (default 1s)
+      --wait                    Wait until the claimed service is ready
+      --wait-timeout duration   Duration the --wait will last until timeout (default 5m0s)
 ```
 
 ### Options inherited from parent commands

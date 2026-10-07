@@ -62,6 +62,16 @@ func TestPoolClaimCmdRegistersWaitFlag(t *testing.T) {
 	retryDelayFlag := cmd.Flags().Lookup("retry-delay")
 	require.NotNil(t, retryDelayFlag, "pool claim must register --retry-delay")
 	assert.Equal(t, "1s", retryDelayFlag.DefValue, "--retry-delay defaults to 1s")
+
+	waitTimeout, err := waitTimeoutFlag(cmd)
+	require.NoError(t, err, "pool claim must register --wait-timeout")
+	assert.Equal(t, DefaultClaimWaitTimeout, waitTimeout, "--wait-timeout defaults to 5m")
+
+	assert.Equal(t, DefaultClaimPollInterval, waitPollInterval(cmd),
+		"--poll-interval defaults to 2s")
+	require.NoError(t, cmd.Flags().Set("poll-interval", "0.05"))
+	assert.Equal(t, 50*time.Millisecond, waitPollInterval(cmd),
+		"--poll-interval is honored when set")
 }
 
 func TestClaimRetryPolicy(t *testing.T) {
@@ -419,5 +429,49 @@ func TestClaimWaitFlow(t *testing.T) {
 
 		require.NoError(t, claimWaitFlow(sandboxTestContext(fake), cmd, koyeb.NewPoolClaimReply()))
 		assert.Empty(t, fake.servicesFetched, "a claim reply without service ID must skip --wait")
+	})
+
+	t.Run("--wait-timeout bounds the readiness wait", func(t *testing.T) {
+		status := koyeb.SERVICESTATUS_STARTING
+		serviceID := "323e4567-e89b-42d3-a456-426614174000"
+		fake := &fakeAPI{service: &koyeb.Service{Id: &serviceID, Status: &status}}
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("wait", "true"))
+		require.NoError(t, cmd.Flags().Set("wait-timeout", "40ms"))
+
+		err := claimWaitFlow(sandboxTestContext(fake), cmd, newReply(serviceID))
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "did not become ready within 40ms",
+			"the flag value must reach the wait engine")
+	})
+
+	t.Run("an invalid --wait-timeout is rejected", func(t *testing.T) {
+		fake := &fakeAPI{}
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("wait", "true"))
+		require.NoError(t, cmd.Flags().Set("wait-timeout", "0"))
+
+		err := claimWaitFlow(sandboxTestContext(fake), cmd, newReply("323e4567-e89b-42d3-a456-426614174000"))
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "--wait-timeout must be a positive duration")
+	})
+
+	t.Run("--poll-interval drives the poll cadence", func(t *testing.T) {
+		status := koyeb.SERVICESTATUS_STARTING
+		serviceID := "323e4567-e89b-42d3-a456-426614174000"
+		fake := &fakeAPI{service: &koyeb.Service{Id: &serviceID, Status: &status}}
+		cmd := newPoolClaimCmd()
+		require.NoError(t, cmd.Flags().Set("wait", "true"))
+		require.NoError(t, cmd.Flags().Set("wait-timeout", "150ms"))
+		require.NoError(t, cmd.Flags().Set("poll-interval", "0.005"))
+
+		start := time.Now()
+		err := claimWaitFlow(sandboxTestContext(fake), cmd, newReply(serviceID))
+		elapsed := time.Since(start)
+
+		require.Error(t, err)
+		assert.Less(t, elapsed, 2*time.Second, "5ms polls must bound the wait, not the 2s default")
+		assert.GreaterOrEqual(t, len(fake.servicesFetched), 3,
+			"a 5ms cadence over a 150ms budget must poll repeatedly")
 	})
 }
