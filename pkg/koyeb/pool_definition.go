@@ -44,8 +44,7 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	flags.Bool("enable-tcp-proxy", false,
 		"Expose port 3031 via TCP proxy, SANDBOX pools only")
 
-	flags.String("instance-type", "micro", "Instance type")
-	flags.StringSlice("regions", []string{}, "Deployment regions")
+	addInstanceTypeRegionsFlags(flags, sandboxPoolInstanceTypeRegionsFlagUsage)
 
 	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)
 

@@ -3,6 +3,7 @@ package koyeb
 import (
 	"context"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -57,8 +58,12 @@ func TestSandboxCreateFlagsRegistered(t *testing.T) {
 	assert.Equal(t, "0.5", pollFlag.DefValue)
 
 	// The definition flag bundles register through the shared seams: the
-	// env/config-file union derives from the bundle registration.
-	for _, name := range envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage) {
+	// env/config-file and instance-type/regions unions derive from the
+	// bundle registrations.
+	for _, name := range slices.Concat(
+		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
+		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
+	) {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on sandbox create", name)
 	}
 }

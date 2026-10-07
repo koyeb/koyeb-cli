@@ -374,9 +374,9 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
 	}
 	// The curated flag set must be declared, matching the SDK surfaces.
-	// The env/config-file entries derive from the shared bundle, so a new
-	// bundle flag lands on the pool surface without hand-updating this
-	// list.
+	// The env/config-file and instance-type/regions entries derive from
+	// the shared bundles, so a new bundle flag lands on the pool surface
+	// without hand-updating this list.
 	for _, name := range slices.Concat(
 		[]string{
 			"size", "type", "ports", "routes",
@@ -384,10 +384,10 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 			"docker-command", "docker-entrypoint", "privileged",
 			"exposed-port-protocol", "enable-tcp-proxy",
 			"block-network", "outbound-allowlist", "no-network-policy",
-			"instance-type", "regions",
 			"min-scale", "light-sleep-delay", "deep-sleep-delay",
 		},
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
+		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 	) {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on pool create", name)
 	}
