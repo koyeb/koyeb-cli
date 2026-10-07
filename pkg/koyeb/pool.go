@@ -51,6 +51,8 @@ func newPoolListCmd() *cobra.Command {
 		}),
 	}
 	cmd.Flags().String("name", "", "Filter pools by name")
+	cmd.Flags().Int64("limit", 0, "Limit the number of pools returned")
+	cmd.Flags().Int64("offset", 0, "Offset the pools returned")
 	return cmd
 }
 
