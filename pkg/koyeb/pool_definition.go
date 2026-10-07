@@ -48,17 +48,12 @@ func addPoolFlags(flags *pflag.FlagSet) {
 
 	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)
 
-	flags.Int64("min-scale", 1, "Min scale")
+	// Scaling and sleep delays: the shared bundle (pools run
+	// single-instance).
+	addScalingSleepDelayFlags(flags, sandboxPoolScalingSleepDelayFlagUsage)
 
 	// Member egress policy, shared with the service and sandbox surfaces.
 	addNetworkPolicyFlags(flags)
-
-	flags.Duration("light-sleep-delay", 0,
-		"Delay after which an idle service is put to light sleep. "+
-			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
-	flags.Duration("deep-sleep-delay", 0,
-		"Delay after which an idle service is put to deep sleep. "+
-			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
 
 	// Match the service commands: --port and --route alias --ports and --routes.
 	flags.SetNormalizeFunc(poolFlagAliases)

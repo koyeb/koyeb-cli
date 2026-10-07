@@ -387,20 +387,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	var strategy DeploymentStrategy
 	flags.Var(&strategy, "deployment-strategy", `Deployment strategy, either "rolling" (default), "blue-green" or "immediate".`)
 
-	flags.Int64("scale", 1, "Set both min-scale and max-scale")
-	flags.Int64("min-scale", 1, "Min scale")
-	flags.Int64("max-scale", 1, "Max scale")
-	flags.Int64("autoscaling-average-cpu", 0, "Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.")
-	flags.Int64("autoscaling-average-mem", 0, "Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.")
-	flags.Int64("autoscaling-requests-per-second", 0, "Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
-	flags.Int64("autoscaling-concurrent-requests", 0, "Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.")
-	flags.Int64("autoscaling-requests-response-time", 0, "Target p95 response time to trigger a scaling event (in ms). Set to 0 to disable concurrent response time autoscaling.")
-	flags.Duration("light-sleep-delay", 0,
-		"Delay after which an idle service is put to light sleep. "+
-			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
-	flags.Duration("deep-sleep-delay", 0,
-		"Delay after which an idle service is put to deep sleep. "+
-			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
+	addScalingSleepDelayFlags(flags, serviceScalingSleepDelayFlagUsage)
 	flags.Bool("privileged", false, "Whether the service container should run in privileged mode")
 	flags.Bool("skip-cache", false, "Whether to use the cache when building the service")
 
@@ -629,12 +616,11 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		}
 	}
 
-	isFreeUsed := isFreeInstanceUsed(definition.GetInstanceTypes())
-	scalings, err := h.parseScalings(isFreeUsed, flags, definition.Scalings)
-	if err != nil {
+	// Scaling and sleep delays: the shared bundle merges the flags over
+	// the live scalings.
+	if err := h.parseScalingSleepDelay(flags, definition, scalingSleepDelayParseOptions{}); err != nil {
 		return err
 	}
-	definition.SetScalings(scalings)
 
 	healthchecks, err := h.parseChecks(definition.GetType(), flags, definition.HealthChecks)
 	if err != nil {
@@ -1078,6 +1064,105 @@ func (h *ServiceHandler) parseInstanceTypeRegions(flags *pflag.FlagSet,
 		return err
 	}
 	def.SetRegions(regions)
+	return nil
+}
+
+// scalingSleepDelayFlagUsage carries the per-surface skin of the scaling
+// and sleep-delay flag bundle. The service surface registers the full
+// scaling flag set; the sandbox and pool surfaces always run at
+// max-scale 1 and register only --min-scale and the sleep delays.
+type scalingSleepDelayFlagUsage struct {
+	// serviceScaling registers the service-only scaling flags: --scale,
+	// --max-scale and the --autoscaling-* family.
+	serviceScaling bool
+}
+
+// serviceScalingSleepDelayFlagUsage is the skin of the service surfaces
+// (`service create`/`service update`, `app init` and `deploy`).
+var serviceScalingSleepDelayFlagUsage = scalingSleepDelayFlagUsage{
+	serviceScaling: true,
+}
+
+// sandboxPoolScalingSleepDelayFlagUsage is the skin of `sandbox create`
+// and `pool create`/`pool update`.
+var sandboxPoolScalingSleepDelayFlagUsage = scalingSleepDelayFlagUsage{}
+
+// addScalingSleepDelayFlags registers the scaling/sleep-delay bundle
+// shared by the service, sandbox and pool surfaces.
+func addScalingSleepDelayFlags(flags *pflag.FlagSet, usage scalingSleepDelayFlagUsage) {
+	if usage.serviceScaling {
+		flags.Int64("scale", 1, "Set both min-scale and max-scale")
+	}
+	flags.Int64("min-scale", 1, "Min scale")
+	if usage.serviceScaling {
+		flags.Int64("max-scale", 1, "Max scale")
+		flags.Int64("autoscaling-average-cpu", 0,
+			"Target CPU usage (in %) to trigger a scaling event. Set to 0 to disable CPU autoscaling.")
+		flags.Int64("autoscaling-average-mem", 0,
+			"Target memory usage (in %) to trigger a scaling event. Set to 0 to disable memory autoscaling.")
+		flags.Int64("autoscaling-requests-per-second", 0,
+			"Target requests per second to trigger a scaling event. Set to 0 to disable requests per second autoscaling.")
+		flags.Int64("autoscaling-concurrent-requests", 0,
+			"Target concurrent requests to trigger a scaling event. Set to 0 to disable concurrent requests autoscaling.")
+		flags.Int64("autoscaling-requests-response-time", 0,
+			"Target p95 response time to trigger a scaling event (in ms). "+
+				"Set to 0 to disable concurrent response time autoscaling.")
+	}
+	flags.Duration("light-sleep-delay", 0,
+		"Delay after which an idle service is put to light sleep. "+
+			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
+	flags.Duration("deep-sleep-delay", 0,
+		"Delay after which an idle service is put to deep sleep. "+
+			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
+}
+
+// scalingSleepDelayParseOptions carries the per-surface behavior of the
+// scaling/sleep-delay bundle apply step.
+type scalingSleepDelayParseOptions struct {
+	// what names the surface in the single-instance sleep-delay gating
+	// error, e.g. "sandbox" or "pool".
+	what string
+
+	// singleInstance runs the sandbox/pool semantics: max-scale is pinned
+	// at 1 and the autoscaling flags are not registered on the surface.
+	// The service surface merges the full scaling flag set instead.
+	singleInstance bool
+
+	// mergeLive runs the pool update conventions: unchanged flags keep
+	// the live scaling and its sleep delays untouched. The create
+	// surfaces always build the scaling from the flag defaults.
+	mergeLive bool
+}
+
+// parseScalingSleepDelay applies the scaling/sleep-delay bundle onto the
+// definition. It is the single orchestration seam of the bundle; the
+// per-surface merge semantics stay in the parse helpers it routes to:
+// parseScalings on services (full flag set over the live scalings),
+// parseSingleInstanceScaling on sandbox and pool creates (fresh
+// max-scale-1 scaling), mergePoolScalings on pool update (changed-only
+// merge over the live scaling).
+func (h *ServiceHandler) parseScalingSleepDelay(flags *pflag.FlagSet, def *koyeb.DeploymentDefinition,
+	opts scalingSleepDelayParseOptions) error {
+	switch {
+	case opts.singleInstance && opts.mergeLive:
+		scalings, err := mergePoolScalings(flags, def.Scalings)
+		if err != nil {
+			return err
+		}
+		def.SetScalings(scalings)
+	case opts.singleInstance:
+		scaling, err := parseSingleInstanceScaling(flags, opts.what)
+		if err != nil {
+			return err
+		}
+		def.SetScalings([]koyeb.DeploymentScaling{scaling})
+	default:
+		scalings, err := h.parseScalings(isFreeInstanceUsed(def.GetInstanceTypes()), flags, def.Scalings)
+		if err != nil {
+			return err
+		}
+		def.SetScalings(scalings)
+	}
 	return nil
 }
 

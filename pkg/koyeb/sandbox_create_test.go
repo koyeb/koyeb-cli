@@ -58,11 +58,12 @@ func TestSandboxCreateFlagsRegistered(t *testing.T) {
 	assert.Equal(t, "0.5", pollFlag.DefValue)
 
 	// The definition flag bundles register through the shared seams: the
-	// env/config-file and instance-type/regions unions derive from the
-	// bundle registrations.
+	// env/config-file, instance-type/regions and scaling/sleep-delay
+	// unions derive from the bundle registrations.
 	for _, name := range slices.Concat(
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
+		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
 	) {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on sandbox create", name)
 	}
