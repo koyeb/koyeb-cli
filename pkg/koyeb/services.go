@@ -424,12 +424,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
 	)
 	addChecksFlags(flags)
-	flags.StringSlice(
-		"volumes",
-		nil,
-		"Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data."+
-			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
-	)
+	addVolumesFlags(flags)
 	flags.StringSlice(
 		"auth",
 		nil,
@@ -2612,6 +2607,19 @@ func (h *ServiceHandler) checkDockerImage(ctx *CLIContext, source *koyeb.DockerS
 		}
 	}
 	return nil
+}
+
+// addVolumesFlags registers the volumes flag bundle (--volumes).
+// Today the definition flag umbrella composes it alone: `service
+// create`/`service update`, `app init` and `deploy` register it through
+// the all-sources composition.
+func addVolumesFlags(flags *pflag.FlagSet) {
+	flags.StringSlice(
+		"volumes",
+		nil,
+		"Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data."+
+			"To delete a volume, use !VOLUME, for example --volume '!myvolume'\n",
+	)
 }
 
 // Parse --volumes
