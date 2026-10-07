@@ -410,6 +410,17 @@ func TestPoolListCmdRegistersNameFilter(t *testing.T) {
 	assert.Equal(t, "", nameFlag.DefValue, "the name filter is opt-in")
 }
 
+func TestPoolListCmdRegistersPaginationFlags(t *testing.T) {
+	cmd := newPoolListCmd()
+
+	for _, name := range []string{"limit", "offset"} {
+		flag := cmd.Flags().Lookup(name)
+		require.NotNil(t, flag, "pool list must register --%s", name)
+		assert.Equal(t, "int64", flag.Value.Type(), "--%s must be an Int64 flag like pool claims list", name)
+		assert.Equal(t, "0", flag.DefValue, "--%s is opt-in", name)
+	}
+}
+
 func TestPoolListFlow(t *testing.T) {
 	t.Run("--name filters the listing", func(t *testing.T) {
 		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
@@ -426,6 +437,46 @@ func TestPoolListFlow(t *testing.T) {
 
 		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
 		assert.Equal(t, "", fake.listPoolsName)
+	})
+
+	t.Run("--limit and --offset reach the request", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+		require.NoError(t, cmd.Flags().Set("limit", "7"))
+		require.NoError(t, cmd.Flags().Set("offset", "3"))
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "7", fake.listPoolsLimit, "--limit must bound the request")
+		assert.Equal(t, "3", fake.listPoolsOffset, "--offset must shift the request")
+	})
+
+	t.Run("--limit alone keeps the default start", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+		require.NoError(t, cmd.Flags().Set("limit", "7"))
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "7", fake.listPoolsLimit)
+		assert.Equal(t, "0", fake.listPoolsOffset)
+	})
+
+	t.Run("--offset alone keeps the fetch-all page size", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+		require.NoError(t, cmd.Flags().Set("offset", "3"))
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "3", fake.listPoolsOffset)
+		assert.Equal(t, "100", fake.listPoolsLimit, "without --limit the listing still pages to the end")
+	})
+
+	t.Run("unset flags keep the fetch-all page walk", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "0", fake.listPoolsOffset, "the walk starts at offset 0")
+		assert.Equal(t, "100", fake.listPoolsLimit, "the walk keeps the fetch-all page size")
 	})
 }
 
