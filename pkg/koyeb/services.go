@@ -416,13 +416,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"PROTOCOL defaults to \"http\". Supported protocols are \"http\", \"http2\" and \"tcp\"\n"+
 			"To delete an exposed port, prefix its number with '!', for example --port '!80'\n",
 	)
-	flags.StringSlice(
-		"proxy-ports",
-		nil,
-		"Update service proxy ports (available for services of type \"web\" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp\n"+
-			"PROTOCOL defaults to \"tcp\". Supported protocols are \"tcp\"."+
-			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
-	)
+	addProxyPortsFlags(flags)
 	addChecksFlags(flags)
 	addVolumesFlags(flags)
 	flags.StringSlice(
@@ -1335,6 +1329,20 @@ func (h *ServiceHandler) parsePorts(
 		}
 	}
 	return newPorts, nil
+}
+
+// addProxyPortsFlags registers the proxy-ports flag bundle
+// (--proxy-ports). Today the definition flag umbrella composes it
+// alone: `service create`/`service update`, `app init` and `deploy`
+// register it through the all-sources composition.
+func addProxyPortsFlags(flags *pflag.FlagSet) {
+	flags.StringSlice(
+		"proxy-ports",
+		nil,
+		"Update service proxy ports (available for services of type \"web\" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp\n"+
+			"PROTOCOL defaults to \"tcp\". Supported protocols are \"tcp\"."+
+			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
+	)
 }
 
 // Parse --proxy-ports
