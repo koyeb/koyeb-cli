@@ -454,44 +454,9 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	)
 	flags.Bool("auth-disable", false, "Remove all security policies from routes")
 
-	// Configure aliases: for example, allow user to use --port instead of --ports
-	flags.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
-		aliases := map[string]string{
-			"port":  "ports",
-			"proxy": "proxy-ports",
-			"check": "checks",
-
-			"healthcheck":              "checks",
-			"healthcheck-grace":        "checks-grace-period",
-			"healthcheck-grace-period": "checks-grace-period",
-
-			"health-check":              "checks",
-			"health-check-grace":        "checks-grace-period",
-			"health-check-grace-period": "checks-grace-period",
-
-			"healthchecks":              "checks",
-			"healthchecks-grace":        "checks-grace-period",
-			"healthchecks-grace-period": "checks-grace-period",
-
-			"health-checks":              "checks",
-			"health-checks-graee":        "checks-grace-period",
-			"health-checks-grace-period": "checks-grace-period",
-
-			"strategy": "deployment-strategy",
-
-			"route":              "routes",
-			"volume":             "volumes",
-			"region":             "regions",
-			"git-docker-arg":     "git-docker-args",
-			"docker-arg":         "docker-args",
-			"archive-docker-arg": "archive-docker-args",
-		}
-		alias, exists := aliases[name]
-		if exists {
-			name = alias
-		}
-		return pflag.NormalizedName(name)
-	})
+	// Configure aliases: for example, allow user to use --port instead of
+	// --ports. The pool surfaces apply the same shared map.
+	flags.SetNormalizeFunc(normalizeFlagAlias)
 }
 
 // Add the flags for Git sources

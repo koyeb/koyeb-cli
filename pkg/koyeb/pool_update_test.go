@@ -553,3 +553,18 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 	// No --name: renaming a pool is not supported.
 	assert.Nil(t, cmd.Flags().Lookup("name"), "flag --name must not be registered on pool update")
 }
+
+func TestPoolUpdateCmdFlagAliases(t *testing.T) {
+	cmd := newPoolUpdateCmd()
+	require.NoError(t, cmd.Flags().Set("docker-arg", "my-arg"))
+	live := liveSandboxPoolFixture()
+
+	req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+	require.NoError(t, err)
+
+	docker := req.GetDefinition().Docker
+	assert.Equal(t, []string{"my-arg"}, docker.GetArgs(),
+		"--docker-arg must normalize to the registered --docker-args flag")
+	// The changed-only merge keeps the untouched live image.
+	assert.Equal(t, "koyeb/sandbox:latest", docker.GetImage())
+}

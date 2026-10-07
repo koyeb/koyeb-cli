@@ -394,19 +394,44 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 }
 
 func TestPoolCreateCmdFlagAliases(t *testing.T) {
-	cmd := newPoolCreateCmd()
+	t.Run("--port and --route alias --ports and --routes, matching the service commands", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
 
-	// --port and --route alias --ports and --routes, matching the service commands.
-	require.NoError(t, cmd.Flags().Set("port", "8080"))
-	require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("port", "8080"))
+		require.NoError(t, cmd.Flags().Set("type", "web"))
 
-	req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
-	require.NoError(t, err)
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
 
-	def := req.GetDefinition()
-	ports := def.Ports
-	require.Len(t, ports, 1)
-	assert.Equal(t, int64(8080), ports[0].GetPort())
+		def := req.GetDefinition()
+		ports := def.Ports
+		require.Len(t, ports, 1)
+		assert.Equal(t, int64(8080), ports[0].GetPort())
+	})
+
+	t.Run("--docker-arg aliases --docker-args, inheriting the service alias set", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		require.NoError(t, cmd.Flags().Set("docker", "ghcr.io/acme/sandbox"))
+		require.NoError(t, cmd.Flags().Set("docker-arg", "my-arg"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		docker := req.GetDefinition().Docker
+		assert.Equal(t, "ghcr.io/acme/sandbox", docker.GetImage())
+		assert.Equal(t, []string{"my-arg"}, docker.GetArgs(),
+			"--docker-arg must normalize to the registered --docker-args flag")
+	})
+
+	t.Run("aliases whose canonical flag is not registered stay inert", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		// --check would normalize to --checks, which pool create does not
+		// register: the alias must not resolve to any flag.
+		err := cmd.Flags().Set("check", "8080:http:/health")
+		assert.Error(t, err, "--check must stay inert on pool create")
+	})
 }
 
 func TestPoolCreateFlow(t *testing.T) {
