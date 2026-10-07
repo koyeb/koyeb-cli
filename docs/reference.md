@@ -4168,6 +4168,13 @@ project scope and is effectively required by the server.
 A pool pre-provisions instances of the given Docker image so they
 can be claimed later with 'koyeb pool claim'.
 
+--type selects the definition the pool members run: "sandbox" (the
+default), "web" or "worker". DATABASE pools are not supported. SANDBOX
+pools keep the sandbox auto-wiring (the platform owns ports 3030/3031
+and mints the executor secret); explicit --port/--route flags are
+rejected on them. WEB and WORKER pools carry exactly the declared
+--port/--route values, verbatim.
+
 ```
 koyeb pool create NAME [flags]
 ```
@@ -4181,6 +4188,9 @@ $> koyeb pool create my-pool --size 3 --docker ghcr.io/acme/sandbox
 
 # Create a pool in a specific project
 $> koyeb pool create my-pool --project my-project
+
+# Create a WEB pool with explicit member ports and routes
+$> koyeb pool create my-pool --type web --port 8080:http --route /:8080
 
 ```
 
@@ -4199,8 +4209,19 @@ $> koyeb pool create my-pool --project my-project
       --instance-type string                    Instance type (default "micro")
       --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
       --min-scale int                           Min scale (default 1)
+      --ports strings                           Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                To remove a port on update, prefix its number with '!', for example --port '!80'
+                                                
       --regions strings                         Deployment regions
+      --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
+                                                PORT defaults to 8000
+                                                Explicit routes are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                To remove a route on update, prefix its path with '!', for example --route '!/foo'
+                                                
       --size int                                Number of instances kept ready in the pool (default 1)
+      --type string                             Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
 ```
 
 ### Options inherited from parent commands

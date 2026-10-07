@@ -80,19 +80,157 @@ func TestBuildCreateServicePoolDefaultsOnly(t *testing.T) {
 	assert.Equal(t, int64(1), req.GetSize())
 	def := req.GetDefinition()
 	assert.Equal(t, koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX, def.GetType())
+	assert.False(t, def.HasPorts(), "SANDBOX pool definitions must not declare ports")
+	assert.False(t, def.HasRoutes(), "SANDBOX pool definitions must not declare routes")
+	for _, env := range def.Env {
+		assert.NotEqual(t, SandboxSecretKey, env.GetKey(),
+			"the platform mints the pool secret; the CLI must never inject one")
+	}
 }
 
-func TestPoolCreateCmdDoesNotRegisterWebOrSandboxOnlyFlags(t *testing.T) {
+func TestBuildCreateServicePoolType(t *testing.T) {
+	tests := []struct {
+		name    string
+		typeArg string
+		want    koyeb.DeploymentDefinitionType
+	}{
+		{name: "default is sandbox", typeArg: "", want: koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX},
+		{name: "sandbox", typeArg: "sandbox", want: koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX},
+		{name: "web is case-insensitive", typeArg: "WEB", want: koyeb.DEPLOYMENTDEFINITIONTYPE_WEB},
+		{name: "worker", typeArg: "worker", want: koyeb.DEPLOYMENTDEFINITIONTYPE_WORKER},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := newPoolCreateCmd()
+			if tt.typeArg != "" {
+				require.NoError(t, cmd.Flags().Set("type", tt.typeArg))
+			}
+
+			req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+			require.NoError(t, err)
+			def := req.GetDefinition()
+			assert.Equal(t, tt.want, def.GetType())
+		})
+	}
+
+	t.Run("database is rejected fail-fast with the rule", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "database"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not supported")
+		assert.Contains(t, err.Error(), "WEB, WORKER and SANDBOX")
+	})
+
+	t.Run("unknown types are rejected", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "sidecar"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "--type flag is not valid")
+	})
+}
+
+func TestBuildCreateServicePoolPortsAndRoutes(t *testing.T) {
+	t.Run("web pools carry declared ports and routes verbatim", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("ports", "8080:http"))
+		require.NoError(t, cmd.Flags().Set("ports", "9090:tcp"))
+		require.NoError(t, cmd.Flags().Set("routes", "/:8080"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		ports := def.Ports
+		require.Len(t, ports, 2)
+		assert.Equal(t, int64(8080), ports[0].GetPort())
+		assert.Equal(t, "http", ports[0].GetProtocol())
+		assert.Equal(t, int64(9090), ports[1].GetPort())
+		assert.Equal(t, "tcp", ports[1].GetProtocol())
+
+		routes := def.GetRoutes()
+		require.Len(t, routes, 1)
+		assert.Equal(t, "/", routes[0].GetPath())
+		assert.Equal(t, int64(8080), routes[0].GetPort())
+	})
+
+	t.Run("worker pools accept declared ports", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "worker"))
+		require.NoError(t, cmd.Flags().Set("ports", "8080"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		ports := def.Ports
+		require.Len(t, ports, 1)
+		assert.Equal(t, int64(8080), ports[0].GetPort())
+		assert.Equal(t, "http", ports[0].GetProtocol(), "PORT defaults to http")
+	})
+
+	t.Run("web pools without declared ports send none", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasPorts(), "no default ports are injected for non-SANDBOX pools")
+		assert.False(t, def.HasRoutes(), "no default routes are injected for non-SANDBOX pools")
+	})
+
+	t.Run("explicit ports are rejected on SANDBOX pools", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("ports", "8080"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not allowed on SANDBOX pools")
+		assert.Contains(t, err.Error(), "3030/3031")
+	})
+
+	t.Run("explicit routes are rejected on the SANDBOX default", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("routes", "/:8080"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not allowed on SANDBOX pools")
+	})
+
+	t.Run("invalid port values are rejected", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("ports", "not-a-port"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unable to parse the port")
+	})
+}
+
+func TestPoolCreateCmdFlagSet(t *testing.T) {
 	cmd := newPoolCreateCmd()
 	flags := cmd.Flags()
 
-	// Web service configuration flags must not be registered: cobra rejects
-	// them as unknown flags, which guards against invalid pool definitions.
-	for _, name := range []string{"type", "ports", "routes", "checks"} {
-		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
+	// The pool typing and wiring flags must be registered.
+	for _, name := range []string{"type", "ports", "routes"} {
+		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on pool create", name)
 	}
-	// Sandbox-specific flags have no pool equivalent.
-	for _, name := range []string{"app", "wait", "wait-timeout"} {
+	// Service flags that have no pool equivalent must not be registered:
+	// cobra rejects them as unknown flags, which guards against invalid pool
+	// definitions. Sandbox-only knobs are likewise absent on every pool type.
+	for _, name := range []string{
+		"checks", "proxy-ports", "auth", "app", "wait", "wait-timeout",
+		"exposed-port-protocol", "enable-tcp-proxy", "sandbox-secret", "enable-mesh",
+	} {
 		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
 	}
 	// The curated flag set must be declared.
@@ -103,6 +241,22 @@ func TestPoolCreateCmdDoesNotRegisterWebOrSandboxOnlyFlags(t *testing.T) {
 	} {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on pool create", name)
 	}
+}
+
+func TestPoolCreateCmdFlagAliases(t *testing.T) {
+	cmd := newPoolCreateCmd()
+
+	// --port and --route alias --ports and --routes, matching the service commands.
+	require.NoError(t, cmd.Flags().Set("port", "8080"))
+	require.NoError(t, cmd.Flags().Set("type", "web"))
+
+	req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+	require.NoError(t, err)
+
+	def := req.GetDefinition()
+	ports := def.Ports
+	require.Len(t, ports, 1)
+	assert.Equal(t, int64(8080), ports[0].GetPort())
 }
 
 func TestPoolCmdWiring(t *testing.T) {
