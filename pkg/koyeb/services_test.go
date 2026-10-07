@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
@@ -701,9 +702,12 @@ func TestApplyCreateServiceFlags(t *testing.T) {
 		cmd := serviceCreateCmdForTest(t)
 		flags := cmd.Flags()
 
-		// The env/config-file entries derive from the shared bundle
-		// registration.
-		for _, name := range envConfigFilesFlagNames(serviceEnvConfigFilesFlagUsage) {
+		// The env/config-file and instance-type/regions entries derive
+		// from the shared bundle registrations.
+		for _, name := range slices.Concat(
+			envConfigFilesFlagNames(serviceEnvConfigFilesFlagUsage),
+			instanceTypeRegionsFlagNames(serviceInstanceTypeRegionsFlagUsage),
+		) {
 			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
 		}
 	})

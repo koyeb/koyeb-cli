@@ -86,15 +86,10 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	}
 	def.SetDocker(*parsedDocker)
 
-	// Instance type
-	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, nil))
-
-	// Regions
-	regions, err := svcHandler.parseRegions(flags, nil)
-	if err != nil {
+	// Instance type and regions: the shared bundle applies both.
+	if err := svcHandler.parseInstanceTypeRegions(flags, def); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
-	def.SetRegions(regions)
 
 	// Environment variables and config files: the shared bundle applies
 	// both.

@@ -153,13 +153,11 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 		def.SetDocker(*parsedDocker)
 	}
 
-	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, def.GetInstanceTypes()))
-
-	regions, err := svcHandler.parseRegions(flags, def.GetRegions())
-	if err != nil {
+	// Instance type and regions: the shared bundle merges both over the
+	// live values.
+	if err := svcHandler.parseInstanceTypeRegions(flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
-	def.SetRegions(regions)
 
 	if err := svcHandler.parseEnvConfigFiles(ctx, flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err

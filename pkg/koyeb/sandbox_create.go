@@ -265,8 +265,10 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 	}
 	def.SetDocker(*parsedDocker)
 
-	// Parse instance type using ServiceHandler method
-	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, nil))
+	// Instance type and regions: the shared bundle applies both.
+	if err := svcHandler.parseInstanceTypeRegions(flags, def); err != nil {
+		return err
+	}
 
 	// Tri-state mesh, mirroring the SDKs: unset keeps the definition default
 	// (AUTO), --enable-mesh maps to ENABLED, --enable-mesh=false to DISABLED.
@@ -298,13 +300,6 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 		proxyProtocol := koyeb.PROXYPORTPROTOCOL_TCP
 		def.SetProxyPorts([]koyeb.DeploymentProxyPort{{Port: &port, Protocol: &proxyProtocol}})
 	}
-
-	// Parse regions using ServiceHandler method
-	regions, err := svcHandler.parseRegions(flags, nil)
-	if err != nil {
-		return err
-	}
-	def.SetRegions(regions)
 
 	// Environment variables and config files: the shared bundle applies
 	// both.

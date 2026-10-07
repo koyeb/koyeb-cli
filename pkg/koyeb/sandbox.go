@@ -634,11 +634,8 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	// Docker source flags (required for sandbox)
 	addDockerSourceFlags(flags, sandboxPoolDockerSourceFlagUsage)
 
-	// Instance flags
-	flags.String("instance-type", "micro", "Instance type")
-
-	// Region flags
-	flags.StringSlice("regions", []string{}, "Deployment regions")
+	// Instance type and regions: the shared bundle registers both.
+	addInstanceTypeRegionsFlags(flags, sandboxPoolInstanceTypeRegionsFlagUsage)
 
 	// Environment and configuration: the shared bundle registers both.
 	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)

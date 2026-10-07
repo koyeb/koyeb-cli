@@ -381,15 +381,8 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 	// Global flags
 	flags.String("type", "web", `Service type, one of "web", "worker" or "sandbox"`)
 
-	flags.StringSlice(
-		"regions",
-		[]string{},
-		"Add a region where the service is deployed. You can specify this flag multiple times to deploy the service in multiple regions.\n"+
-			"To update a service and remove a region, prefix the region name with '!', for example --region '!par'\n"+
-			"If the region is not specified on service creation, the service is deployed in was\n",
-	)
 	addEnvConfigFilesFlags(flags, serviceEnvConfigFilesFlagUsage)
-	flags.String("instance-type", "nano", "Instance type")
+	addInstanceTypeRegionsFlags(flags, serviceInstanceTypeRegionsFlagUsage)
 
 	var strategy DeploymentStrategy
 	flags.Var(&strategy, "deployment-strategy", `Deployment strategy, either "rolling" (default), "blue-green" or "immediate".`)
@@ -605,7 +598,11 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 		return err
 	}
 
-	definition.SetInstanceTypes(h.parseInstanceType(flags, definition.GetInstanceTypes()))
+	// Instance type and regions: the shared bundle applies both. The
+	// region scope wiring runs below, once the scalings are parsed.
+	if err := h.parseInstanceTypeRegions(flags, definition); err != nil {
+		return err
+	}
 
 	ports, err := h.parsePorts(definition.GetType(), flags, definition.Ports)
 	if err != nil {
@@ -645,19 +642,18 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 	}
 	definition.SetHealthChecks(healthchecks)
 
-	regions, err := h.parseRegions(flags, definition.GetRegions())
-	if err != nil {
-		return err
-	}
-	if flags.Lookup("regions").Changed && len(regions) >= 2 {
+	// Multi-region deployments are billed per region: the regions were
+	// parsed by the instance-type/regions bundle above.
+	if flags.Lookup("regions").Changed && len(definition.GetRegions()) >= 2 {
 		logrus.Warnf(
 			"Attention: you are deploying your service in %d regions (%s) which may impact your billing. If you intended to deploy your service in only one region, remove the regions you don't want to deploy to with `koyeb service update <app>/<service> --region '!<region>'`.",
-			len(regions),
-			strings.Join(regions, ", "),
+			len(definition.GetRegions()),
+			strings.Join(definition.GetRegions(), ", "),
 		)
 	}
-	// Scalings and environment variables refer to regions, so we must call setRegions after definition.SetScalings and definition.SetEnv.
-	h.setRegions(definition, regions)
+	// Scalings and environment variables refer to regions, so the region
+	// scopes are wired after the scalings and env are parsed.
+	h.setRegions(definition, definition.GetRegions())
 
 	err = h.setSource(ctx, definition, flags)
 	if err != nil {
@@ -1030,6 +1026,58 @@ func (h *ServiceHandler) parseEnvConfigFiles(ctx *CLIContext, flags *pflag.FlagS
 		return err
 	}
 	def.SetConfigFiles(files)
+	return nil
+}
+
+// instanceTypeRegionsFlagUsage carries the per-surface skin of the
+// instance-type and regions flag bundle: the instance-type default is
+// part of the skin (parseInstanceType reads it back from the registered
+// flag), and the regions help text differs.
+type instanceTypeRegionsFlagUsage struct {
+	instanceTypeDefault string
+	regions             string
+}
+
+// serviceInstanceTypeRegionsFlagUsage is the skin of the service
+// surfaces (`service create`/`service update`, `app init` and `deploy`).
+var serviceInstanceTypeRegionsFlagUsage = instanceTypeRegionsFlagUsage{
+	instanceTypeDefault: "nano",
+	regions: "Add a region where the service is deployed. " +
+		"You can specify this flag multiple times to deploy the service in multiple regions.\n" +
+		"To update a service and remove a region, prefix the region name with '!', for example --region '!par'\n" +
+		"If the region is not specified on service creation, the service is deployed in was\n",
+}
+
+// sandboxPoolInstanceTypeRegionsFlagUsage is the skin of `sandbox
+// create` and `pool create`/`pool update`.
+var sandboxPoolInstanceTypeRegionsFlagUsage = instanceTypeRegionsFlagUsage{
+	instanceTypeDefault: "micro",
+	regions:             "Deployment regions",
+}
+
+// addInstanceTypeRegionsFlags registers the instance-type/regions bundle
+// shared by the service, sandbox and pool surfaces. The instance-type
+// default is per-surface.
+func addInstanceTypeRegionsFlags(flags *pflag.FlagSet, usage instanceTypeRegionsFlagUsage) {
+	flags.String("instance-type", usage.instanceTypeDefault, "Instance type")
+	flags.StringSlice("regions", []string{}, usage.regions)
+}
+
+// parseInstanceTypeRegions applies the instance-type/regions bundle
+// onto the definition with the shared changed-only merge conventions:
+// flags that were not passed keep the definition's live values, and the
+// '!' prefix on --regions carries the deletion idiom. The service surface
+// layers the region scope wiring on top (setRegions must run after the
+// scalings and env are parsed).
+func (h *ServiceHandler) parseInstanceTypeRegions(flags *pflag.FlagSet,
+	def *koyeb.DeploymentDefinition) error {
+	def.SetInstanceTypes(h.parseInstanceType(flags, def.GetInstanceTypes()))
+
+	regions, err := h.parseRegions(flags, def.GetRegions())
+	if err != nil {
+		return err
+	}
+	def.SetRegions(regions)
 	return nil
 }
 
