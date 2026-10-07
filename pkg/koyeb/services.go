@@ -1302,7 +1302,8 @@ func addProxyPortsFlags(flags *pflag.FlagSet) {
 	flags.StringSlice(
 		"proxy-ports",
 		nil,
-		"Update service proxy ports (available for services of type \"web\" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp\n"+
+		"Update service proxy ports (available for services of type \"web\" only) "+
+			"using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp\n"+
 			"PROTOCOL defaults to \"tcp\". Supported protocols are \"tcp\"."+
 			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
 	)
@@ -2051,7 +2052,8 @@ func addGitSourceFlags(flags *pflag.FlagSet) {
 	flags.String("git", "", "Git repository")
 	flags.String("git-branch", "main", "Git branch")
 	flags.String("git-sha", "", "Git commit SHA to deploy")
-	flags.Bool("git-no-deploy-on-push", false, "Disable new deployments creation when code changes are pushed on the configured branch")
+	flags.Bool("git-no-deploy-on-push", false,
+		"Disable new deployments creation when code changes are pushed on the configured branch")
 	flags.String("git-workdir", "", "Path to the sub-directory containing the code to build and deploy")
 	flags.String("git-credential-source", "", "Source of the Git repository credentials")
 	flags.String("git-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)
@@ -2065,8 +2067,11 @@ func addGitSourceFlags(flags *pflag.FlagSet) {
 	// Git service: docker builder
 	flags.String("git-docker-dockerfile", "", "Dockerfile path")
 	flags.StringSlice("git-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("git-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
-	flags.StringSlice("git-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.")
+	flags.String("git-docker-command", "",
+		"Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.")
+	flags.StringSlice("git-docker-args", []string{},
+		"Set arguments to the docker command. "+
+			"To provide multiple arguments, use the --git-docker-args flag multiple times.")
 	flags.String("git-docker-target", "", "Docker target")
 }
 
@@ -2278,8 +2283,11 @@ func addArchiveSourceFlags(flags *pflag.FlagSet) {
 	// Archive service: docker builder
 	flags.String("archive-docker-dockerfile", "", "Dockerfile path")
 	flags.StringSlice("archive-docker-entrypoint", []string{}, "Docker entrypoint")
-	flags.String("archive-docker-command", "", "Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
-	flags.StringSlice("archive-docker-args", []string{}, "Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.")
+	flags.String("archive-docker-command", "",
+		"Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.")
+	flags.StringSlice("archive-docker-args", []string{},
+		"Set arguments to the docker command. "+
+			"To provide multiple arguments, use the --archive-docker-args flag multiple times.")
 	flags.String("archive-docker-target", "", "Docker target")
 	flags.StringSlice("archive-ignore-dir", []string{".git", "node_modules", "vendor"},
 		"Set directories to ignore when building the archive.\n"+

@@ -43,11 +43,13 @@ func TestAddGitSourceFlagsServiceSurface(t *testing.T) {
 		{"git-docker-entrypoint", "[]", "Docker entrypoint"},
 		{
 			"git-docker-command", "",
-			"Set the docker CMD explicitly. To provide arguments to the command, use the --git-docker-args flag.",
+			"Set the docker CMD explicitly. " +
+				"To provide arguments to the command, use the --git-docker-args flag.",
 		},
 		{
 			"git-docker-args", "[]",
-			"Set arguments to the docker command. To provide multiple arguments, use the --git-docker-args flag multiple times.",
+			"Set arguments to the docker command. " +
+				"To provide multiple arguments, use the --git-docker-args flag multiple times.",
 		},
 		{"git-docker-target", "", "Docker target"},
 	}

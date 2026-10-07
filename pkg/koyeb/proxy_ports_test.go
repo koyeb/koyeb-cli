@@ -22,8 +22,8 @@ func TestAddProxyPortsFlagsServiceSurface(t *testing.T) {
 	require.NotNil(t, flag, "--proxy-ports must be registered by the proxy-ports bundle")
 	assert.Equal(t, "[]", flag.DefValue, "--proxy-ports default value")
 	assert.Equal(t,
-		"Update service proxy ports (available for services of type \"web\" only) using format PORT[:PROTOCOL], "+
-			"for example --proxy-ports 22:tcp\n"+
+		"Update service proxy ports (available for services of type \"web\" only) "+
+			"using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp\n"+
 			"PROTOCOL defaults to \"tcp\". Supported protocols are \"tcp\"."+
 			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
 		flag.Usage, "--proxy-ports help text")
