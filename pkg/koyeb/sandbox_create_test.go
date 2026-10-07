@@ -135,6 +135,24 @@ func TestSandboxCreateInstanceTypeDefaultsToMicro(t *testing.T) {
 	assert.Equal(t, "micro", instanceTypes[0].GetType())
 }
 
+func TestParseSandboxDefinitionFlags_DockerDefaults(t *testing.T) {
+	t.Run("--docker unset defaults the image to koyeb/sandbox", func(t *testing.T) {
+		def, err := parseSandboxDefinition(t, nil)
+		require.NoError(t, err)
+		docker := def.GetDocker()
+		assert.Equal(t, koyebSandboxImage, docker.GetImage())
+	})
+
+	t.Run("docker build flags apply without overriding the default image", func(t *testing.T) {
+		def, err := parseSandboxDefinition(t, []string{"--docker-args", "a", "--docker-args", "b"})
+		require.NoError(t, err)
+
+		docker := def.GetDocker()
+		assert.Equal(t, koyebSandboxImage, docker.GetImage())
+		assert.Equal(t, []string{"a", "b"}, docker.GetArgs())
+	})
+}
+
 func parseSandboxSecret(t *testing.T, args []string) (*cobra.Command, *koyeb.DeploymentDefinition) {
 	t.Helper()
 	cmd := sandboxCreateCmd(t)

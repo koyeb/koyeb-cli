@@ -919,6 +919,84 @@ func addDockerSourceFlags(flags *pflag.FlagSet, usage dockerSourceFlagUsage) {
 	flags.StringSlice("docker-args", []string{}, usage.args)
 }
 
+// koyebSandboxImage is the default image of sandbox and pool member
+// containers when --docker is not passed.
+const koyebSandboxImage = "koyeb/sandbox"
+
+// dockerSourceParseOptions carries the per-surface behavior of the
+// docker flag bundle apply step.
+type dockerSourceParseOptions struct {
+	// verifyImage runs checkDockerImage once --docker is applied, unless
+	// --docker-skip-verify is set. The service and sandbox surfaces verify;
+	// the pool builders stay pure (no API calls) and leave it off.
+	verifyImage bool
+
+	// defaultImage is applied when --docker was not passed: the sandbox
+	// and pool create surfaces default to koyeb/sandbox. The service and
+	// update surfaces leave it empty to keep the live image.
+	defaultImage string
+}
+
+// parseDockerSource applies the docker flag bundle onto source with the
+// shared changed-only merge conventions: a flag that was not passed keeps
+// the source's live value. --privileged is applied by the bundle on every
+// surface (on services the git and archive docker builders apply it
+// through their own parse functions).
+//
+// Returns (source, changed, error): changed=false means no bundle flag
+// was passed; callers merging over a live definition leave it untouched.
+func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource,
+	opts dockerSourceParseOptions) (*koyeb.DockerSource, bool, error) {
+	// docker-private-registry-secret needs to be parsed first, because checkDockerImage reads it
+	if flags.Lookup("docker-private-registry-secret").Changed {
+		secret, _ := flags.GetString("docker-private-registry-secret")
+		source.SetImageRegistrySecret(secret)
+	}
+	if flags.Lookup("docker").Changed {
+		image, _ := flags.GetString("docker")
+		source.SetImage(image)
+		if opts.verifyImage {
+			skipVerify, _ := flags.GetBool("docker-skip-verify")
+			if !skipVerify {
+				if err := h.checkDockerImage(ctx, source); err != nil {
+					return nil, true, err
+				}
+			}
+		}
+	} else if opts.defaultImage != "" {
+		// Create surfaces default the image when --docker is unset.
+		source.SetImage(opts.defaultImage)
+	}
+	if flags.Lookup("docker-args").Changed {
+		args, _ := flags.GetStringSlice("docker-args")
+		source.SetArgs(args)
+	}
+	if flags.Lookup("docker-command").Changed {
+		command, _ := flags.GetString("docker-command")
+		source.SetCommand(command)
+	}
+	if flags.Lookup("docker-entrypoint").Changed {
+		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
+		source.SetEntrypoint(entrypoint)
+	}
+	if flags.Lookup("privileged").Changed {
+		privileged, _ := flags.GetBool("privileged")
+		source.SetPrivileged(privileged)
+	}
+	return source, dockerSourceChanged(flags), nil
+}
+
+// dockerSourceChanged reports whether any flag of the docker bundle was
+// passed — the flags whose values feed the DockerSource.
+func dockerSourceChanged(flags *pflag.FlagSet) bool {
+	return flags.Lookup("docker").Changed ||
+		flags.Lookup("docker-private-registry-secret").Changed ||
+		flags.Lookup("docker-args").Changed ||
+		flags.Lookup("docker-command").Changed ||
+		flags.Lookup("docker-entrypoint").Changed ||
+		flags.Lookup("privileged").Changed
+}
+
 // Parse --instance-type
 func (h *ServiceHandler) parseInstanceType(flags *pflag.FlagSet, currentInstanceTypes []koyeb.DeploymentInstanceType) []koyeb.DeploymentInstanceType {
 	if !flags.Lookup("instance-type").Changed {
@@ -1792,7 +1870,7 @@ func (h *ServiceHandler) setSource(ctx *CLIContext, definition *koyeb.Deployment
 		// If --docker-* flags are set and the service already has a Docker
 		// source, update it.
 		docker := definition.GetDocker()
-		source, err := h.parseDockerSource(ctx, flags, &docker)
+		source, _, err := h.parseDockerSource(ctx, flags, &docker, dockerSourceParseOptions{verifyImage: true})
 		if err != nil {
 			return err
 		}
@@ -1826,7 +1904,7 @@ func (h *ServiceHandler) setSource(ctx *CLIContext, definition *koyeb.Deployment
 		// source to remain the same), but it is necessary to update the
 		// --privileged flag, for example.
 		docker := definition.GetDocker()
-		source, err := h.parseDockerSource(ctx, flags, &docker)
+		source, _, err := h.parseDockerSource(ctx, flags, &docker, dockerSourceParseOptions{verifyImage: true})
 		if err != nil {
 			return err
 		}
@@ -1854,43 +1932,6 @@ func (h *ServiceHandler) setSource(ctx *CLIContext, definition *koyeb.Deployment
 		definition.Archive = nil
 	}
 	return nil
-}
-
-// Parse --docker-* flags
-func (h *ServiceHandler) parseDockerSource(ctx *CLIContext, flags *pflag.FlagSet, source *koyeb.DockerSource) (
-	*koyeb.DockerSource, error) {
-	// docker-private-registry-secret needs to be parsed first, because checkDockerImage reads it
-	if flags.Lookup("docker-private-registry-secret").Changed {
-		secret, _ := flags.GetString("docker-private-registry-secret")
-		source.SetImageRegistrySecret(secret)
-	}
-	if flags.Lookup("docker").Changed {
-		image, _ := flags.GetString("docker")
-		source.SetImage(image)
-		skipVerify, _ := flags.GetBool("docker-skip-verify")
-		if !skipVerify {
-			if err := h.checkDockerImage(ctx, source); err != nil {
-				return nil, err
-			}
-		}
-	}
-	if flags.Lookup("docker-args").Changed {
-		args, _ := flags.GetStringSlice("docker-args")
-		source.SetArgs(args)
-	}
-	if flags.Lookup("docker-command").Changed {
-		command, _ := flags.GetString("docker-command")
-		source.SetCommand(command)
-	}
-	if flags.Lookup("docker-entrypoint").Changed {
-		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
-		source.SetEntrypoint(entrypoint)
-	}
-	if flags.Lookup("privileged").Changed {
-		privileged, _ := flags.GetBool("privileged")
-		source.SetPrivileged(privileged)
-	}
-	return source, nil
 }
 
 // Parse --git-* flags
