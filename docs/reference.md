@@ -3993,6 +3993,7 @@ Manage service pools
 * [koyeb pool describe](#koyeb-pool-describe)	 - Describe a service pool
 * [koyeb pool get](#koyeb-pool-get)	 - Get a service pool
 * [koyeb pool list](#koyeb-pool-list)	 - List service pools
+* [koyeb pool update](#koyeb-pool-update)	 - Update a service pool
 
 ## koyeb pool claim
 
@@ -4358,6 +4359,92 @@ koyeb pool list [flags]
 
 ```
   -h, --help   help for list
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+  -w, --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb pool](#koyeb-pool)	 - Manage service pools
+
+## koyeb pool update
+
+Update a service pool
+
+### Synopsis
+
+Update a service pool.
+
+The update is a full replace: the live pool is refetched, the changed
+flags are applied over its definition, and size + definition are resent
+in one PUT (the API rejects update_mask and requires the definition).
+Flags that are not passed keep their current values.
+
+The NAME argument identifies the pool (name, short ID or full UUID);
+renaming a pool is not supported. The pool type is fixed at creation:
+--type must match the live type (restating it is allowed).
+
+```
+koyeb pool update NAME [flags]
+```
+
+### Examples
+
+```
+
+# Resize a pool
+$> koyeb pool update my-pool --size 5
+
+# Update the image of a pool's members
+$> koyeb pool update my-pool --docker ghcr.io/acme/sandbox:v2
+
+# Upsert an environment variable on a WEB pool's members
+$> koyeb pool update my-pool --env LOG_LEVEL=debug
+
+```
+
+### Options
+
+```
+      --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
+      --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --docker string                           Docker image (default: koyeb/sandbox)
+      --docker-args strings                     Docker command arguments
+      --docker-command string                   Docker command
+      --docker-entrypoint strings               Docker entrypoint
+      --docker-private-registry-secret string   Docker private registry secret
+      --env strings                             Environment variables (KEY=VALUE)
+  -h, --help                                    help for update
+      --instance-type string                    Instance type (default "micro")
+      --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
+      --min-scale int                           Min scale (default 1)
+      --ports strings                           Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                To remove a port on update, prefix its number with '!', for example --port '!80'
+                                                
+      --regions strings                         Deployment regions
+      --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
+                                                PORT defaults to 8000
+                                                Explicit routes are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                To remove a route on update, prefix its path with '!', for example --route '!/foo'
+                                                
+      --size int                                Number of instances kept ready in the pool (default 1)
+      --type string                             Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
 ```
 
 ### Options inherited from parent commands

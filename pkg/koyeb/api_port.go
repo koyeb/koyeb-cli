@@ -25,6 +25,9 @@ type koyebAPI interface {
 	ListInstanceSnapshotsByName(ctx context.Context, name string) (
 		*koyeb.ListInstanceSnapshotsReply, *http.Response, error)
 	Claim(ctx context.Context, req koyeb.PoolClaimRequest) (*koyeb.PoolClaimReply, *http.Response, error)
+	GetServicePool(ctx context.Context, poolID string) (*koyeb.GetServicePoolReply, *http.Response, error)
+	UpdateServicePool(ctx context.Context, poolID string, req koyeb.UpdateServicePool) (
+		*koyeb.UpdateServicePoolReply, *http.Response, error)
 }
 
 // apiPort adapts the generated control-plane client to the koyebAPI port.
@@ -87,4 +90,14 @@ func (a apiPort) ListInstanceSnapshotsByName(ctx context.Context, name string) (
 func (a apiPort) Claim(ctx context.Context, req koyeb.PoolClaimRequest) (
 	*koyeb.PoolClaimReply, *http.Response, error) {
 	return a.client.PoolClaimsApi.Claim(ctx).Body(req).Execute()
+}
+
+func (a apiPort) GetServicePool(ctx context.Context, poolID string) (
+	*koyeb.GetServicePoolReply, *http.Response, error) {
+	return a.client.ServicePoolsApi.GetServicePool(ctx, poolID).Execute()
+}
+
+func (a apiPort) UpdateServicePool(ctx context.Context, poolID string, req koyeb.UpdateServicePool) (
+	*koyeb.UpdateServicePoolReply, *http.Response, error) {
+	return a.client.ServicePoolsApi.UpdateServicePool(ctx, poolID).ServicePool(req).Execute()
 }

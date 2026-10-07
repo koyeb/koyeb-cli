@@ -38,6 +38,14 @@ type fakeAPI struct {
 
 	claimReply *koyeb.PoolClaimReply
 	claimErr   error
+
+	pool            *koyeb.ServicePool
+	getPoolErr      error
+	poolsFetched    []string
+	updatedPoolID   string
+	updatePoolReq   *koyeb.UpdateServicePool
+	updatePoolReply *koyeb.ServicePool
+	updatePoolErr   error
 }
 
 func (f *fakeAPI) GetService(_ context.Context, serviceID string) (*koyeb.GetServiceReply, *http.Response, error) {
@@ -132,6 +140,36 @@ func (f *fakeAPI) Claim(_ context.Context, _ koyeb.PoolClaimRequest) (*koyeb.Poo
 		return koyeb.NewPoolClaimReply(), nil, nil
 	}
 	return f.claimReply, nil, nil
+}
+
+func (f *fakeAPI) GetServicePool(_ context.Context, poolID string) (
+	*koyeb.GetServicePoolReply, *http.Response, error) {
+	f.poolsFetched = append(f.poolsFetched, poolID)
+	if f.getPoolErr != nil {
+		return nil, nil, f.getPoolErr
+	}
+	if f.pool == nil {
+		return &koyeb.GetServicePoolReply{}, nil, nil
+	}
+	return &koyeb.GetServicePoolReply{ServicePool: f.pool}, nil, nil
+}
+
+func (f *fakeAPI) UpdateServicePool(_ context.Context, poolID string, req koyeb.UpdateServicePool) (
+	*koyeb.UpdateServicePoolReply, *http.Response, error) {
+	f.updatedPoolID = poolID
+	stored := req
+	f.updatePoolReq = &stored
+	if f.updatePoolErr != nil {
+		return nil, nil, f.updatePoolErr
+	}
+	pool := f.updatePoolReply
+	if pool == nil {
+		pool = f.pool
+	}
+	if pool == nil {
+		return &koyeb.UpdateServicePoolReply{}, nil, nil
+	}
+	return &koyeb.UpdateServicePoolReply{ServicePool: pool}, nil, nil
 }
 
 func sandboxTestContext(fake *fakeAPI) *CLIContext {
