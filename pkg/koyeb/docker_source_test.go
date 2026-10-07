@@ -73,6 +73,17 @@ func TestAddDockerSourceFlagsSandboxPoolSurface(t *testing.T) {
 		"--docker-skip-verify must stay a service-surface flag only")
 }
 
+// dockerSourceFlagNames returns the flag names the bundle registers for
+// the given skin — the bundle union the surface flag-set tests derive
+// their expectations from.
+func dockerSourceFlagNames(usage dockerSourceFlagUsage) []string {
+	flags := pflag.NewFlagSet("docker-source", pflag.ContinueOnError)
+	addDockerSourceFlags(flags, usage)
+	names := make([]string, 0, 6)
+	flags.VisitAll(func(f *pflag.Flag) { names = append(names, f.Name) })
+	return names
+}
+
 // dockerBundleTestFlagSet registers the full bundle surface the parse
 // step consumes: the docker flags plus --privileged, which every surface
 // registers next to the bundle.

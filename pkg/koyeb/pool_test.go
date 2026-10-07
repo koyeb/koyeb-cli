@@ -373,18 +373,17 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 	} {
 		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
 	}
-	// The curated flag set must be declared, matching the SDK surfaces.
-	// The env/config-file, instance-type/regions and scaling/sleep-delay
-	// entries derive from the shared bundles, so a new bundle flag lands
-	// on the pool surface without hand-updating this list.
+	// The curated flag set must be declared, matching the SDK surfaces:
+	// the pool surface base plus the union of its definition flag
+	// bundles, so a new bundle flag lands on the pool surface without
+	// hand-updating this list.
 	for _, name := range slices.Concat(
 		[]string{
-			"size", "type", "ports", "routes",
-			"docker", "docker-private-registry-secret", "docker-args",
-			"docker-command", "docker-entrypoint", "privileged",
+			"size", "type", "ports", "routes", "privileged",
 			"exposed-port-protocol", "enable-tcp-proxy",
-			"block-network", "outbound-allowlist", "no-network-policy",
 		},
+		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
+		networkPolicyFlagNames(),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
