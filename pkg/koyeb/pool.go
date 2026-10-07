@@ -20,6 +20,7 @@ func NewPoolCmd() *cobra.Command {
 	poolCmd.PersistentFlags().StringP("workspace", "w", "", "Workspace ID or name (alias for --project)")
 
 	poolCmd.AddCommand(newPoolCreateCmd())
+	poolCmd.AddCommand(newPoolUpdateCmd())
 	poolCmd.AddCommand(newPoolListCmd())
 	poolCmd.AddCommand(newPoolGetCmd())
 	poolCmd.AddCommand(newPoolDescribeCmd())

@@ -267,7 +267,7 @@ func TestPoolCmdWiring(t *testing.T) {
 	assert.NotNil(t, cmd.PersistentFlags().Lookup("project"))
 	assert.NotNil(t, cmd.PersistentFlags().Lookup("workspace"))
 
-	for _, sub := range []string{"create", "list", "get", "describe", "delete", "claim", "claims"} {
+	for _, sub := range []string{"create", "update", "list", "get", "describe", "delete", "claim", "claims"} {
 		_, _, err := cmd.Find([]string{sub})
 		require.NoError(t, err, "pool command must register the %q subcommand", sub)
 	}
