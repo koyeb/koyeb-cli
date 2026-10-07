@@ -702,11 +702,12 @@ func TestApplyCreateServiceFlags(t *testing.T) {
 		cmd := serviceCreateCmdForTest(t)
 		flags := cmd.Flags()
 
-		// The env/config-file and instance-type/regions entries derive
-		// from the shared bundle registrations.
+		// The env/config-file, instance-type/regions and scaling/
+		// sleep-delay entries derive from the shared bundle registrations.
 		for _, name := range slices.Concat(
 			envConfigFilesFlagNames(serviceEnvConfigFilesFlagUsage),
 			instanceTypeRegionsFlagNames(serviceInstanceTypeRegionsFlagUsage),
+			scalingSleepDelayFlagNames(serviceScalingSleepDelayFlagUsage),
 		) {
 			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
 		}

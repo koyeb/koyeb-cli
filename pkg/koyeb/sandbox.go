@@ -644,16 +644,9 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags.Duration("delete-after-delay", 0, "Auto-delete after duration (e.g., '24h')")
 	flags.Duration("delete-after-inactivity-delay", 0, "Auto-delete after inactivity (e.g., '1h')")
 
-	// Scaling flags (sandboxes always run with max-scale=1, no autoscaling)
-	flags.Int64("min-scale", 1, "Min scale")
-
-	// Sleep delay flags (require min-scale 0)
-	flags.Duration("light-sleep-delay", 0,
-		"Delay after which an idle service is put to light sleep. "+
-			"Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.")
-	flags.Duration("deep-sleep-delay", 0,
-		"Delay after which an idle service is put to deep sleep. "+
-			"Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.")
+	// Scaling and sleep delay flags: the shared bundle (sandboxes always
+	// run at max-scale=1, no autoscaling).
+	addScalingSleepDelayFlags(flags, sandboxPoolScalingSleepDelayFlagUsage)
 
 	// Network policy flags
 	addNetworkPolicyFlags(flags)

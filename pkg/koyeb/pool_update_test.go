@@ -534,8 +534,8 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 	cmd := newPoolUpdateCmd()
 
 	// The update command declares the same curated flag set as create.
-	// The env/config-file and instance-type/regions entries derive from
-	// the shared bundles.
+	// The env/config-file, instance-type/regions and scaling/sleep-delay
+	// entries derive from the shared bundles.
 	for _, name := range slices.Concat(
 		[]string{
 			"size", "type", "ports", "routes",
@@ -543,10 +543,10 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 			"docker-command", "docker-entrypoint", "privileged",
 			"exposed-port-protocol", "enable-tcp-proxy",
 			"block-network", "outbound-allowlist", "no-network-policy",
-			"min-scale", "light-sleep-delay", "deep-sleep-delay",
 		},
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
+		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
 	) {
 		assert.NotNil(t, cmd.Flags().Lookup(name), "flag --%s must be registered on pool update", name)
 	}

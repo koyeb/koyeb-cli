@@ -163,11 +163,15 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 		return koyeb.UpdateServicePool{}, err
 	}
 
-	scalings, err := mergePoolScalings(flags, def.Scalings)
-	if err != nil {
+	// Scaling and sleep delays: the shared bundle merges over the live
+	// scaling (unchanged flags keep the live values).
+	if err := svcHandler.parseScalingSleepDelay(flags, &def, scalingSleepDelayParseOptions{
+		what:           "pool",
+		singleInstance: true,
+		mergeLive:      true,
+	}); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
-	def.SetScalings(scalings)
 
 	// Member network policy (egress), merged over the live policy.
 	var currentPolicy *koyeb.NetworkPolicy

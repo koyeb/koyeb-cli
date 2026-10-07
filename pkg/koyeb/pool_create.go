@@ -106,12 +106,14 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		def.SetNetworkPolicy(*networkPolicy)
 	}
 
-	// Pools run at max-scale=1 with the same curated flag set as sandboxes.
-	scaling, err := parseSingleInstanceScaling(flags, "pool")
-	if err != nil {
+	// Pools run at max-scale=1 with the same curated flag set as
+	// sandboxes: the shared bundle applies the single-instance scaling.
+	if err := svcHandler.parseScalingSleepDelay(flags, def, scalingSleepDelayParseOptions{
+		what:           "pool",
+		singleInstance: true,
+	}); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
-	def.SetScalings([]koyeb.DeploymentScaling{scaling})
 
 	def.SetType(poolType)
 

@@ -307,11 +307,14 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 		return err
 	}
 
-	scaling, err := parseSingleInstanceScaling(flags, "sandbox")
-	if err != nil {
+	// Scaling and sleep delays: the shared bundle runs the single-instance
+	// scaling (max-scale 1).
+	if err := svcHandler.parseScalingSleepDelay(flags, def, scalingSleepDelayParseOptions{
+		what:           "sandbox",
+		singleInstance: true,
+	}); err != nil {
 		return err
 	}
-	def.SetScalings([]koyeb.DeploymentScaling{scaling})
 
 	return nil
 }
