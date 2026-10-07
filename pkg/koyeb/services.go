@@ -423,20 +423,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 			"PROTOCOL defaults to \"tcp\". Supported protocols are \"tcp\"."+
 			"To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'\n",
 	)
-	flags.StringSlice(
-		"checks",
-		nil,
-		"Update service healthchecks (available for services of type \"web\" only)\n"+
-			"For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health\n"+
-			"For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp\n"+
-			"To delete a healthcheck, use !PORT, for example --checks '!8080'\n",
-	)
-	flags.StringSlice(
-		"checks-grace-period",
-		nil,
-		"Set healthcheck grace period in seconds.\n"+
-			"Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10\n",
-	)
+	addChecksFlags(flags)
 	flags.StringSlice(
 		"volumes",
 		nil,
@@ -1566,6 +1553,27 @@ func (h *ServiceHandler) setDefaultPortsAndRoutes(definition *koyeb.DeploymentDe
 		definition.SetPorts(h.getDeploymentPort(portNumber))
 	}
 	return nil
+}
+
+// addChecksFlags registers the checks flag bundle (--checks,
+// --checks-grace-period). Today the definition flag umbrella composes
+// it alone: `service create`/`service update`, `app init` and `deploy`
+// register it through the all-sources composition.
+func addChecksFlags(flags *pflag.FlagSet) {
+	flags.StringSlice(
+		"checks",
+		nil,
+		"Update service healthchecks (available for services of type \"web\" only)\n"+
+			"For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health\n"+
+			"For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp\n"+
+			"To delete a healthcheck, use !PORT, for example --checks '!8080'\n",
+	)
+	flags.StringSlice(
+		"checks-grace-period",
+		nil,
+		"Set healthcheck grace period in seconds.\n"+
+			"Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10\n",
+	)
 }
 
 // Parse --checks
