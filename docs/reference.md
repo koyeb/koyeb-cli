@@ -4381,7 +4381,9 @@ koyeb pool list [flags]
 
 ```
   -h, --help          help for list
+      --limit int     Limit the number of pools returned
       --name string   Filter pools by name
+      --offset int    Offset the pools returned
 ```
 
 ### Options inherited from parent commands
