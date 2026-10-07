@@ -186,7 +186,10 @@ request ID is reused across the internal retries.
 Retries follow the python SDK reference: only HTTP 429 and 5xx
 responses are retried, at most --max-attempts times (default 3), with a
 linear --retry-delay × attempt backoff (default 1s). Permanent failures
-(family 4xx other than 429) fail immediately.`,
+(family 4xx other than 429) fail immediately.
+
+With --wait, the readiness poll runs until the claimed service is ready,
+bounded by --wait-timeout (default 5m) at --poll-interval (default 2s).`,
 		Args: cobra.ExactArgs(1),
 		Example: `
 # Claim an instance from a pool
@@ -233,7 +236,10 @@ $> koyeb pool claim my-pool --max-attempts 5 --retry-delay 2s
 		"Max claim attempts on retryable failures, HTTP 429/5xx")
 	cmd.Flags().Duration("retry-delay", DefaultClaimRetryDelay,
 		"Base delay between claim retries; the wait is --retry-delay × attempt")
-	cmd.Flags().Bool("wait", false, "Wait until the claimed service is ready (timeout 5m, poll 2s)")
+	cmd.Flags().Bool("wait", false, "Wait until the claimed service is ready")
+	cmd.Flags().Duration("wait-timeout", DefaultClaimWaitTimeout, "Duration the --wait will last until timeout")
+	cmd.Flags().Float64("poll-interval", DefaultClaimPollInterval.Seconds(),
+		"Seconds between readiness polls when --wait is set")
 
 	return cmd
 }
@@ -255,17 +261,23 @@ func claimWaitFlow(ctx *CLIContext, cmd *cobra.Command, res *koyeb.PoolClaimRepl
 		return nil
 	}
 
-	if err := waitClaimedService(ctx, serviceID); err != nil {
+	waitTimeout, err := waitTimeoutFlag(cmd)
+	if err != nil {
+		return err
+	}
+
+	if err := waitClaimedService(ctx, serviceID, waitTimeout, waitPollInterval(cmd)); err != nil {
 		return err
 	}
 	log.Infof("Claimed service %s is ready", serviceID)
 	return nil
 }
 
-// waitClaimedService polls GetService until the claimed service is ready.
-func waitClaimedService(ctx *CLIContext, serviceID string) error {
+// waitClaimedService polls GetService until the claimed service is ready,
+// with the --wait-timeout and --poll-interval values from the command.
+func waitClaimedService(ctx *CLIContext, serviceID string, timeout, pollInterval time.Duration) error {
 	return waitClaimReady(
 		ctx.Context, serviceID,
-		DefaultClaimWaitTimeout, DefaultClaimPollInterval,
+		timeout, pollInterval,
 		serviceStatusFromClient(ctx))
 }
