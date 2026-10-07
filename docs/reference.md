@@ -4005,7 +4005,13 @@ Claim an instance from a pool.
 
 When --request-id is not provided, a random UUID v7 is generated. Replaying
 a claim with the same request ID is idempotent: the server returns the
-previously created claim instead of provisioning a new instance.
+previously created claim instead of provisioning a new instance. The
+request ID is reused across the internal retries.
+
+Retries follow the python SDK reference: only HTTP 429 and 5xx
+responses are retried, at most --max-attempts times (default 3), with a
+linear --retry-delay × attempt backoff (default 1s). Permanent failures
+(family 4xx other than 429) fail immediately.
 
 ```
 koyeb pool claim POOL [flags]
@@ -4021,14 +4027,19 @@ $> koyeb pool claim my-pool
 # Claim with an explicit request ID (idempotent retries)
 $> koyeb pool claim my-pool --request-id my-request-id
 
+# Claim with a larger retry budget for heavy throttling
+$> koyeb pool claim my-pool --max-attempts 5 --retry-delay 2s
+
 ```
 
 ### Options
 
 ```
-  -h, --help                help for claim
-      --request-id string   Claim request ID (defaults to a generated UUID v4)
-      --wait                Wait until the claimed service is ready (timeout 5m, poll 2s)
+  -h, --help                   help for claim
+      --max-attempts int       Max claim attempts on retryable failures, HTTP 429/5xx (default 3)
+      --request-id string      Claim request ID (defaults to a generated UUID v7)
+      --retry-delay duration   Base delay between claim retries; the wait is --retry-delay × attempt (default 1s)
+      --wait                   Wait until the claimed service is ready (timeout 5m, poll 2s)
 ```
 
 ### Options inherited from parent commands
