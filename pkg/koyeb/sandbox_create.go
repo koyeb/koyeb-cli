@@ -252,15 +252,16 @@ func wireSnapshot(
 func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb.DeploymentDefinition, svcHandler *ServiceHandler) error {
 	flags := cmd.Flags()
 
-	// Parse docker source using ServiceHandler method
+	// Docker source: the shared bundle parses the flags and defaults the
+	// image to koyeb/sandbox when --docker is unset; the sandbox surface
+	// keeps the service path's image verification.
 	dockerSource := koyeb.NewDockerSourceWithDefaults()
-	parsedDocker, err := svcHandler.parseDockerSource(ctx, flags, dockerSource)
+	parsedDocker, _, err := svcHandler.parseDockerSource(ctx, flags, dockerSource, dockerSourceParseOptions{
+		verifyImage:  true,
+		defaultImage: koyebSandboxImage,
+	})
 	if err != nil {
 		return err
-	}
-	// Default to koyeb/sandbox if --docker was not explicitly set
-	if !flags.Changed("docker") {
-		parsedDocker.SetImage("koyeb/sandbox")
 	}
 	def.SetDocker(*parsedDocker)
 

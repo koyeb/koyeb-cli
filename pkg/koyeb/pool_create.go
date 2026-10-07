@@ -74,35 +74,17 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 
 	def := koyeb.NewDeploymentDefinitionWithDefaults()
 
-	// Docker source
+	// Docker source: the shared bundle parses the flags and defaults the
+	// image to koyeb/sandbox when --docker is unset. The builder stays
+	// pure: no image verification API call on the pool paths.
 	dockerSource := koyeb.NewDockerSourceWithDefaults()
-	if flags.Lookup("docker-private-registry-secret").Changed {
-		secret, _ := flags.GetString("docker-private-registry-secret")
-		dockerSource.SetImageRegistrySecret(secret)
+	parsedDocker, _, err := svcHandler.parseDockerSource(ctx, flags, dockerSource, dockerSourceParseOptions{
+		defaultImage: koyebSandboxImage,
+	})
+	if err != nil {
+		return koyeb.CreateServicePool{}, err
 	}
-	if flags.Lookup("docker").Changed {
-		image, _ := flags.GetString("docker")
-		dockerSource.SetImage(image)
-	} else {
-		dockerSource.SetImage("koyeb/sandbox")
-	}
-	if flags.Lookup("docker-args").Changed {
-		args, _ := flags.GetStringSlice("docker-args")
-		dockerSource.SetArgs(args)
-	}
-	if flags.Lookup("docker-command").Changed {
-		command, _ := flags.GetString("docker-command")
-		dockerSource.SetCommand(command)
-	}
-	if flags.Lookup("docker-entrypoint").Changed {
-		entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
-		dockerSource.SetEntrypoint(entrypoint)
-	}
-	if flags.Lookup("privileged").Changed {
-		privileged, _ := flags.GetBool("privileged")
-		dockerSource.SetPrivileged(privileged)
-	}
-	def.SetDocker(*dockerSource)
+	def.SetDocker(*parsedDocker)
 
 	// Instance type
 	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, nil))

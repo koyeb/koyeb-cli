@@ -141,42 +141,16 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	}
 	def.SetType(poolType)
 
-	// Docker source: merge the changed flags into the live image config.
-	// parseDockerSource is not reused: its image verification makes an
-	// API call the pure update builder avoids.
-	dockerChanged := flags.Lookup("docker").Changed ||
-		flags.Lookup("docker-private-registry-secret").Changed ||
-		flags.Lookup("docker-args").Changed ||
-		flags.Lookup("docker-command").Changed ||
-		flags.Lookup("docker-entrypoint").Changed ||
-		flags.Lookup("privileged").Changed
+	// Docker source: merge the changed bundle flags into the live image
+	// config. The pure option keeps the builder free of API calls.
+	dockerSource := def.GetDocker()
+	parsedDocker, dockerChanged, err := svcHandler.parseDockerSource(ctx, flags, &dockerSource,
+		dockerSourceParseOptions{})
+	if err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
 	if dockerChanged {
-		dockerSource := def.GetDocker()
-		if flags.Lookup("docker-private-registry-secret").Changed {
-			secret, _ := flags.GetString("docker-private-registry-secret")
-			dockerSource.SetImageRegistrySecret(secret)
-		}
-		if flags.Lookup("docker").Changed {
-			image, _ := flags.GetString("docker")
-			dockerSource.SetImage(image)
-		}
-		if flags.Lookup("docker-args").Changed {
-			args, _ := flags.GetStringSlice("docker-args")
-			dockerSource.SetArgs(args)
-		}
-		if flags.Lookup("docker-command").Changed {
-			command, _ := flags.GetString("docker-command")
-			dockerSource.SetCommand(command)
-		}
-		if flags.Lookup("docker-entrypoint").Changed {
-			entrypoint, _ := flags.GetStringSlice("docker-entrypoint")
-			dockerSource.SetEntrypoint(entrypoint)
-		}
-		if flags.Lookup("privileged").Changed {
-			privileged, _ := flags.GetBool("privileged")
-			dockerSource.SetPrivileged(privileged)
-		}
-		def.SetDocker(dockerSource)
+		def.SetDocker(*parsedDocker)
 	}
 
 	def.SetInstanceTypes(svcHandler.parseInstanceType(flags, def.GetInstanceTypes()))
