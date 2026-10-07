@@ -55,6 +55,12 @@ func TestSandboxCreateFlagsRegistered(t *testing.T) {
 	pollFlag := flags.Lookup("poll-interval")
 	require.NotNil(t, pollFlag)
 	assert.Equal(t, "0.5", pollFlag.DefValue)
+
+	// The definition flag bundles register through the shared seams: the
+	// env/config-file union derives from the bundle registration.
+	for _, name := range envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage) {
+		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on sandbox create", name)
+	}
 }
 
 func TestParseSandboxDefinitionFlags_EnableMeshTriState(t *testing.T) {

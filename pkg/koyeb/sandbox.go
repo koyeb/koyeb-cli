@@ -640,9 +640,8 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	// Region flags
 	flags.StringSlice("regions", []string{}, "Deployment regions")
 
-	// Environment and configuration
-	flags.StringSlice("env", []string{}, "Environment variables (KEY=VALUE)")
-	flags.StringSlice("config-file", nil, "Config files (LOCAL:REMOTE:PERMS)")
+	// Environment and configuration: the shared bundle registers both.
+	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)
 
 	// Lifecycle flags
 	flags.Duration("delete-after-delay", 0, "Auto-delete after duration (e.g., '24h')")

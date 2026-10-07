@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"slices"
 	"strconv"
 	"testing"
 
@@ -533,15 +534,19 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 	cmd := newPoolUpdateCmd()
 
 	// The update command declares the same curated flag set as create.
-	for _, name := range []string{
-		"size", "type", "ports", "routes",
-		"docker", "docker-private-registry-secret", "docker-args",
-		"docker-command", "docker-entrypoint", "privileged",
-		"exposed-port-protocol", "enable-tcp-proxy",
-		"block-network", "outbound-allowlist", "no-network-policy",
-		"instance-type", "regions",
-		"env", "config-file", "min-scale", "light-sleep-delay", "deep-sleep-delay",
-	} {
+	// The env/config-file entries derive from the shared bundle.
+	for _, name := range slices.Concat(
+		[]string{
+			"size", "type", "ports", "routes",
+			"docker", "docker-private-registry-secret", "docker-args",
+			"docker-command", "docker-entrypoint", "privileged",
+			"exposed-port-protocol", "enable-tcp-proxy",
+			"block-network", "outbound-allowlist", "no-network-policy",
+			"instance-type", "regions",
+			"min-scale", "light-sleep-delay", "deep-sleep-delay",
+		},
+		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
+	) {
 		assert.NotNil(t, cmd.Flags().Lookup(name), "flag --%s must be registered on pool update", name)
 	}
 	// No --name: renaming a pool is not supported.

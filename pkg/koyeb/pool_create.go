@@ -96,19 +96,11 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	}
 	def.SetRegions(regions)
 
-	// Environment variables
-	envVars, err := svcHandler.parseEnv(flags, nil)
-	if err != nil {
+	// Environment variables and config files: the shared bundle applies
+	// both.
+	if err := svcHandler.parseEnvConfigFiles(ctx, flags, def); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
-	def.SetEnv(envVars)
-
-	// Config files
-	parsedFiles, err := svcHandler.parseConfigFiles(ctx, flags, nil)
-	if err != nil {
-		return koyeb.CreateServicePool{}, err
-	}
-	def.SetConfigFiles(parsedFiles)
 
 	// Member network policy (egress).
 	networkPolicy, policyChanged, err := svcHandler.parseNetworkPolicy(flags, nil)

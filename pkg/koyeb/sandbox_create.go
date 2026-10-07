@@ -306,19 +306,11 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 	}
 	def.SetRegions(regions)
 
-	// Parse environment variables using ServiceHandler method
-	envVars, err := svcHandler.parseEnv(flags, nil)
-	if err != nil {
+	// Environment variables and config files: the shared bundle applies
+	// both.
+	if err := svcHandler.parseEnvConfigFiles(ctx, flags, def); err != nil {
 		return err
 	}
-	def.SetEnv(envVars)
-
-	// Parse config files using ServiceHandler method
-	parsedFiles, err := svcHandler.parseConfigFiles(ctx, flags, nil)
-	if err != nil {
-		return err
-	}
-	def.SetConfigFiles(parsedFiles)
 
 	scaling, err := parseSingleInstanceScaling(flags, "sandbox")
 	if err != nil {

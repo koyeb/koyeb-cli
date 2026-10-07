@@ -697,6 +697,17 @@ func TestApplyCreateServiceFlags(t *testing.T) {
 		assert.Equal(t, "sa-123", createService.GetServiceAccountId())
 	})
 
+	t.Run("registers the definition flag bundles", func(t *testing.T) {
+		cmd := serviceCreateCmdForTest(t)
+		flags := cmd.Flags()
+
+		// The env/config-file entries derive from the shared bundle
+		// registration.
+		for _, name := range envConfigFilesFlagNames(serviceEnvConfigFilesFlagUsage) {
+			assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on service create", name)
+		}
+	})
+
 	t.Run("no flags leave the request untouched", func(t *testing.T) {
 		cmd := serviceCreateCmdForTest(t)
 

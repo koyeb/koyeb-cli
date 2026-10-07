@@ -47,8 +47,7 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	flags.String("instance-type", "micro", "Instance type")
 	flags.StringSlice("regions", []string{}, "Deployment regions")
 
-	flags.StringSlice("env", []string{}, "Environment variables (KEY=VALUE)")
-	flags.StringSlice("config-file", nil, "Config files (LOCAL:REMOTE:PERMS)")
+	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)
 
 	flags.Int64("min-scale", 1, "Min scale")
 
