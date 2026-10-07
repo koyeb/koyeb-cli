@@ -46,6 +46,11 @@ type fakeAPI struct {
 	updatePoolReq   *koyeb.UpdateServicePool
 	updatePoolReply *koyeb.ServicePool
 	updatePoolErr   error
+	createPoolReq   *koyeb.CreateServicePool
+	createPoolReply *koyeb.ServicePool
+	createPoolErr   error
+	deletedPools    []string
+	deletePoolErr   error
 
 	pools           []koyeb.ServicePool
 	listPoolsName   string
@@ -169,6 +174,29 @@ func (f *fakeAPI) ListServicePools(_ context.Context, name, offset, limit string
 		ServicePools: f.pools,
 		Count:        &count,
 	}, nil, nil
+}
+
+func (f *fakeAPI) CreateServicePool(_ context.Context, req koyeb.CreateServicePool) (
+	*koyeb.CreateServicePoolReply, *http.Response, error) {
+	stored := req
+	f.createPoolReq = &stored
+	if f.createPoolErr != nil {
+		return nil, nil, f.createPoolErr
+	}
+	pool := f.createPoolReply
+	if pool == nil {
+		id := "123e4567-e89b-42d3-a456-426614174000"
+		pool = &koyeb.ServicePool{Id: &id}
+	}
+	return &koyeb.CreateServicePoolReply{ServicePool: pool}, nil, nil
+}
+
+func (f *fakeAPI) DeleteServicePool(_ context.Context, poolID string) (*http.Response, error) {
+	f.deletedPools = append(f.deletedPools, poolID)
+	if f.deletePoolErr != nil {
+		return nil, f.deletePoolErr
+	}
+	return nil, nil
 }
 
 func (f *fakeAPI) UpdateServicePool(_ context.Context, poolID string, req koyeb.UpdateServicePool) (

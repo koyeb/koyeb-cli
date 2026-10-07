@@ -402,6 +402,38 @@ func TestPoolCreateCmdFlagAliases(t *testing.T) {
 	assert.Equal(t, int64(8080), ports[0].GetPort())
 }
 
+func TestPoolCreateFlow(t *testing.T) {
+	t.Run("sends the built request through the port", func(t *testing.T) {
+		fake := &fakeAPI{}
+		ctx := sandboxTestContext(fake)
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("size", "3"))
+		require.NoError(t, cmd.Flags().Set("docker", "ghcr.io/acme/sandbox"))
+
+		req, err := buildCreateServicePool(ctx, cmd, "my-pool")
+		require.NoError(t, err)
+
+		require.NoError(t, NewPoolHandler().Create(ctx, cmd, []string{"my-pool"}, req))
+
+		recorded := fake.createPoolReq
+		require.NotNil(t, recorded, "the create request must travel through the port")
+		assert.Equal(t, "my-pool", recorded.GetName())
+		assert.Equal(t, int64(3), recorded.GetSize())
+		docker := recorded.GetDefinition().Docker
+		assert.Equal(t, "ghcr.io/acme/sandbox", docker.GetImage())
+	})
+
+	t.Run("API errors surface as CLI errors", func(t *testing.T) {
+		fake := &fakeAPI{createPoolErr: assert.AnError}
+		ctx := sandboxTestContext(fake)
+		cmd := newPoolCreateCmd()
+
+		err := NewPoolHandler().Create(ctx, cmd, []string{"my-pool"}, koyeb.CreateServicePool{})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Error while creating the pool `my-pool`")
+	})
+}
+
 func TestPoolListCmdRegistersNameFilter(t *testing.T) {
 	cmd := newPoolListCmd()
 
@@ -477,6 +509,60 @@ func TestPoolListFlow(t *testing.T) {
 		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
 		assert.Equal(t, "0", fake.listPoolsOffset, "the walk starts at offset 0")
 		assert.Equal(t, "100", fake.listPoolsLimit, "the walk keeps the fetch-all page size")
+	})
+}
+
+func TestPoolGetDescribeFlow(t *testing.T) {
+	poolID := "123e4567-e89b-42d3-a456-426614174000"
+
+	// get and describe share the port's GetServicePool: one fetch
+	// through the seam, two renderers over the same reply.
+	t.Run("get fetches the pool through the port", func(t *testing.T) {
+		live := liveSandboxPoolFixture()
+		fake := &fakeAPI{pool: &live}
+		ctx := sandboxTestContext(fake)
+
+		require.NoError(t, NewPoolHandler().Get(ctx, newPoolGetCmd(), []string{poolID}))
+		assert.Equal(t, []string{poolID}, fake.poolsFetched)
+	})
+
+	t.Run("describe fetches the pool through the port", func(t *testing.T) {
+		live := liveSandboxPoolFixture()
+		fake := &fakeAPI{pool: &live}
+		ctx := sandboxTestContext(fake)
+
+		require.NoError(t, NewPoolHandler().Describe(ctx, newPoolDescribeCmd(), []string{poolID}))
+		assert.Equal(t, []string{poolID}, fake.poolsFetched)
+	})
+
+	t.Run("API errors surface as CLI errors", func(t *testing.T) {
+		fake := &fakeAPI{getPoolErr: assert.AnError}
+		ctx := sandboxTestContext(fake)
+
+		err := NewPoolHandler().Get(ctx, newPoolGetCmd(), []string{poolID})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Error while retrieving the pool `"+poolID+"`")
+	})
+}
+
+func TestPoolDeleteFlow(t *testing.T) {
+	poolID := "123e4567-e89b-42d3-a456-426614174000"
+
+	t.Run("deletes the resolved pool through the port", func(t *testing.T) {
+		fake := &fakeAPI{}
+		ctx := sandboxTestContext(fake)
+
+		require.NoError(t, NewPoolHandler().Delete(ctx, newPoolDeleteCmd(), []string{poolID}))
+		assert.Equal(t, []string{poolID}, fake.deletedPools)
+	})
+
+	t.Run("API errors surface as CLI errors", func(t *testing.T) {
+		fake := &fakeAPI{deletePoolErr: assert.AnError}
+		ctx := sandboxTestContext(fake)
+
+		err := NewPoolHandler().Delete(ctx, newPoolDeleteCmd(), []string{poolID})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Error while deleting the pool `"+poolID+"`")
 	})
 }
 

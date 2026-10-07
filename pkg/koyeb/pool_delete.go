@@ -15,7 +15,7 @@ func (h *PoolHandler) Delete(ctx *CLIContext, cmd *cobra.Command, args []string)
 		return err
 	}
 
-	_, resp, err := ctx.Client.ServicePoolsApi.DeleteServicePool(ctx.Context, pool).Execute()
+	resp, err := ctx.API.DeleteServicePool(ctx.Context, pool)
 	if err != nil {
 		return errors.NewCLIErrorFromAPIError(
 			fmt.Sprintf("Error while deleting the pool `%s`", args[0]),
