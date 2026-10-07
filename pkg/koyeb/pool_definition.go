@@ -55,19 +55,10 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	// Member egress policy, shared with the service and sandbox surfaces.
 	addNetworkPolicyFlags(flags)
 
-	// Match the service commands: --port and --route alias --ports and --routes.
-	flags.SetNormalizeFunc(poolFlagAliases)
-}
-
-func poolFlagAliases(_ *pflag.FlagSet, name string) pflag.NormalizedName {
-	aliases := map[string]string{
-		"port":  "ports",
-		"route": "routes",
-	}
-	if alias, exists := aliases[name]; exists {
-		name = alias
-	}
-	return pflag.NormalizedName(name)
+	// Match the service commands: the pool surfaces inherit the shared
+	// alias map (--port, --route, --docker-arg, the whole legacy set).
+	// Aliases whose canonical flag is not registered here stay inert.
+	flags.SetNormalizeFunc(normalizeFlagAlias)
 }
 
 // parsePoolType parses the --type flag. Pools host WEB, WORKER and SANDBOX
