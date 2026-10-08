@@ -4182,8 +4182,8 @@ Pools are project-scoped: use --project (or --workspace) to select the
 project the pool is created in. Without it, the request is sent without a
 project scope and is effectively required by the server.
 
-A pool pre-provisions instances of the given Docker image so they
-can be claimed later with 'koyeb pool claim'.
+A pool pre-provisions instances of the given Docker image or
+archive so they can be claimed later with 'koyeb pool claim'.
 
 --type selects the definition the pool members run: "sandbox" (the
 default), "web" or "worker". DATABASE pools are not supported. SANDBOX
@@ -4212,55 +4212,70 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
 # Expose a TCP proxy port on a WEB pool's members
 $> koyeb pool create my-pool --type web --proxy-ports 5432:tcp
 
+# Create a pool whose members boot from an archive
+$> koyeb pool create my-pool --archive my-archive
+
 ```
 
 ### Options
 
 ```
-      --block-network                           Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
-      --checks strings                          Update service healthchecks (available for services of type "web" only)
-                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
-                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
-                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
-                                                
-      --checks-grace-period strings             Set healthcheck grace period in seconds.
-                                                Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
-                                                
-      --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
-      --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
-      --docker string                           Docker image (default: koyeb/sandbox)
-      --docker-args strings                     Docker command arguments
-      --docker-command string                   Docker command
-      --docker-entrypoint strings               Docker entrypoint
-      --docker-private-registry-secret string   Docker private registry secret
-      --enable-tcp-proxy                        Expose port 3031 via TCP proxy, SANDBOX pools only
-      --env strings                             Environment variables (KEY=VALUE)
-      --exposed-port-protocol string            Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only (default "http")
-  -h, --help                                    help for create
-      --instance-type string                    Instance type (default "micro")
-      --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
-      --min-scale int                           Min scale (default 1)
-      --no-network-policy                       Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
-      --outbound-allowlist strings              Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
-      --ports strings                           Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
-                                                Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
-                                                To remove a port on update, prefix its number with '!', for example --port '!80'
-                                                
-      --privileged                              Whether the member containers run in privileged mode
-      --proxy-ports strings                     Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
-                                                PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
-                                                
-      --regions strings                         Deployment regions
-      --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
-                                                PORT defaults to 8000
-                                                Explicit routes are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
-                                                To remove a route on update, prefix its path with '!', for example --route '!/foo'
-                                                
-      --size int                                Number of instances kept ready in the pool (default 1)
-      --type string                             Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
-      --volumes strings                         Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
-                                                
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --checks-grace-period strings              Set healthcheck grace period in seconds.
+                                                 Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
+                                                 
+      --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --docker string                            Docker image (default: koyeb/sandbox)
+      --docker-args strings                      Docker command arguments
+      --docker-command string                    Docker command
+      --docker-entrypoint strings                Docker entrypoint
+      --docker-private-registry-secret string    Docker private registry secret
+      --enable-tcp-proxy                         Expose port 3031 via TCP proxy, SANDBOX pools only
+      --env strings                              Environment variables (KEY=VALUE)
+      --exposed-port-protocol string             Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only (default "http")
+  -h, --help                                     help for create
+      --instance-type string                     Instance type (default "micro")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
+      --min-scale int                            Min scale (default 1)
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
+      --ports strings                            Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                 To remove a port on update, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the member containers run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
+      --regions strings                          Deployment regions
+      --routes strings                           Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
+                                                 PORT defaults to 8000
+                                                 Explicit routes are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                 To remove a route on update, prefix its path with '!', for example --route '!/foo'
+                                                 
+      --size int                                 Number of instances kept ready in the pool (default 1)
+      --type string                              Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
 ```
 
 ### Options inherited from parent commands
@@ -4461,50 +4476,62 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
 ### Options
 
 ```
-      --block-network                           Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
-      --checks strings                          Update service healthchecks (available for services of type "web" only)
-                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
-                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
-                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
-                                                
-      --checks-grace-period strings             Set healthcheck grace period in seconds.
-                                                Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
-                                                
-      --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
-      --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
-      --docker string                           Docker image (default: koyeb/sandbox)
-      --docker-args strings                     Docker command arguments
-      --docker-command string                   Docker command
-      --docker-entrypoint strings               Docker entrypoint
-      --docker-private-registry-secret string   Docker private registry secret
-      --enable-tcp-proxy                        Expose port 3031 via TCP proxy, SANDBOX pools only
-      --env strings                             Environment variables (KEY=VALUE)
-      --exposed-port-protocol string            Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only (default "http")
-  -h, --help                                    help for update
-      --instance-type string                    Instance type (default "micro")
-      --light-sleep-delay duration              Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
-      --min-scale int                           Min scale (default 1)
-      --no-network-policy                       Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
-      --outbound-allowlist strings              Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
-      --ports strings                           Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
-                                                PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
-                                                Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
-                                                To remove a port on update, prefix its number with '!', for example --port '!80'
-                                                
-      --privileged                              Whether the member containers run in privileged mode
-      --proxy-ports strings                     Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
-                                                PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
-                                                
-      --regions strings                         Deployment regions
-      --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
-                                                PORT defaults to 8000
-                                                Explicit routes are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
-                                                To remove a route on update, prefix its path with '!', for example --route '!/foo'
-                                                
-      --size int                                Number of instances kept ready in the pool (default 1)
-      --type string                             Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
-      --volumes strings                         Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
-                                                
+      --archive string                           Archive ID to deploy
+      --archive-builder string                   Builder to use, either "buildpack" (default) or "docker" (default "buildpack")
+      --archive-buildpack-build-command string   Buid command
+      --archive-buildpack-run-command string     Run command
+      --archive-docker-args strings              Set arguments to the docker command. To provide multiple arguments, use the --archive-docker-args flag multiple times.
+      --archive-docker-command string            Set the docker CMD explicitly. To provide arguments to the command, use the --archive-docker-args flag.
+      --archive-docker-dockerfile string         Dockerfile path
+      --archive-docker-entrypoint strings        Docker entrypoint
+      --archive-docker-target string             Docker target
+      --archive-ignore-dir strings               Set directories to ignore when building the archive.
+                                                 To ignore multiple directories, use the flag multiple times.
+                                                 To include all directories, set the flag to an empty string. (default [.git,node_modules,vendor])
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
+      --checks strings                           Update service healthchecks (available for services of type "web" only)
+                                                 For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                 For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                 To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                 
+      --checks-grace-period strings              Set healthcheck grace period in seconds.
+                                                 Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
+                                                 
+      --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
+      --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
+      --docker string                            Docker image (default: koyeb/sandbox)
+      --docker-args strings                      Docker command arguments
+      --docker-command string                    Docker command
+      --docker-entrypoint strings                Docker entrypoint
+      --docker-private-registry-secret string    Docker private registry secret
+      --enable-tcp-proxy                         Expose port 3031 via TCP proxy, SANDBOX pools only
+      --env strings                              Environment variables (KEY=VALUE)
+      --exposed-port-protocol string             Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only (default "http")
+  -h, --help                                     help for update
+      --instance-type string                     Instance type (default "micro")
+      --light-sleep-delay duration               Delay after which an idle service is put to light sleep. Use duration format (e.g., '1m', '5m', '1h'). Set to 0 to disable.
+      --min-scale int                            Min scale (default 1)
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
+      --ports strings                            Member ports for WEB and WORKER pools using the format PORT[:PROTOCOL], for example --port 8080:http
+                                                 PROTOCOL defaults to "http". Supported protocols are "http", "http2" and "tcp"
+                                                 Explicit ports are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                 To remove a port on update, prefix its number with '!', for example --port '!80'
+                                                 
+      --privileged                               Whether the member containers run in privileged mode
+      --proxy-ports strings                      Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                 PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                 
+      --regions strings                          Deployment regions
+      --routes strings                           Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
+                                                 PORT defaults to 8000
+                                                 Explicit routes are rejected on SANDBOX pools: the sandbox wiring owns ports 3030/3031
+                                                 To remove a route on update, prefix its path with '!', for example --route '!/foo'
+                                                 
+      --size int                                 Number of instances kept ready in the pool (default 1)
+      --type string                              Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
+      --volumes strings                          Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                 
 ```
 
 ### Options inherited from parent commands

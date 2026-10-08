@@ -406,6 +406,63 @@ func TestBuildCreateServicePoolVolumes(t *testing.T) {
 	})
 }
 
+func TestBuildCreateServicePoolArchiveSource(t *testing.T) {
+	t.Run("--archive deploys the members from the archive", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		archive := def.Archive
+		require.NotNil(t, archive, "the definition must carry the archive source")
+		assert.Equal(t, "my-archive", archive.GetId())
+		assert.False(t, def.HasDocker(), "the archive source replaces the default docker image")
+	})
+
+	t.Run("--archive-builder docker configures the archive's docker builder", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+		require.NoError(t, cmd.Flags().Set("archive-builder", "docker"))
+		require.NoError(t, cmd.Flags().Set("archive-docker-dockerfile", "Dockerfile.dev"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		archive := req.GetDefinition().Archive
+		require.NotNil(t, archive)
+		docker := archive.GetDocker()
+		assert.Equal(t, "Dockerfile.dev", docker.GetDockerfile())
+		assert.False(t, archive.HasBuildpack(), "the docker builder replaces the buildpack default")
+	})
+
+	t.Run("the archive source is allowed on WEB pools", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.Equal(t, koyeb.DEPLOYMENTDEFINITIONTYPE_WEB, def.GetType())
+		archive := def.Archive
+		require.NotNil(t, archive)
+		assert.Equal(t, "my-archive", archive.GetId())
+	})
+
+	t.Run("conflicting --docker and --archive flags are rejected", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("docker", "ghcr.io/acme/sandbox"))
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid flag combination")
+	})
+}
+
 func TestBuildCreateServicePoolNetworkPolicy(t *testing.T) {
 	t.Run("--block-network denies all member egress", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
@@ -549,6 +606,7 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 			"exposed-port-protocol", "enable-tcp-proxy",
 		},
 		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
+		archiveSourceFlagNames(),
 		networkPolicyFlagNames(),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		volumesFlagNames(),
@@ -607,14 +665,30 @@ func TestPoolCreateCmdFlagAliases(t *testing.T) {
 		assert.Equal(t, int64(8080), *http.Port)
 	})
 
+	t.Run("--archive-docker-arg aliases --archive-docker-args, inheriting the service alias set", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+		require.NoError(t, cmd.Flags().Set("archive-builder", "docker"))
+		require.NoError(t, cmd.Flags().Set("archive-docker-arg", "my-arg"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		archive := req.GetDefinition().Archive
+		require.NotNil(t, archive)
+		docker := archive.GetDocker()
+		assert.Equal(t, "my-archive", archive.GetId())
+		assert.Equal(t, []string{"my-arg"}, docker.GetArgs(),
+			"--archive-docker-arg must normalize to the registered --archive-docker-args flag")
+	})
+
 	t.Run("aliases whose canonical flag is not registered stay inert", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
 
-		// --archive-docker-arg would normalize to --archive-docker-args,
-		// which pool create does not register: the alias must not resolve
-		// to any flag.
-		err := cmd.Flags().Set("archive-docker-arg", "nginx")
-		assert.Error(t, err, "--archive-docker-arg must stay inert on pool create")
+		// --strategy would normalize to --deployment-strategy, which pool
+		// create does not register: the alias must not resolve to any flag.
+		err := cmd.Flags().Set("strategy", "rolling")
+		assert.Error(t, err, "--strategy must stay inert on pool create")
 	})
 }
 

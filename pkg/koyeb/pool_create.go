@@ -21,8 +21,8 @@ Pools are project-scoped: use --project (or --workspace) to select the
 project the pool is created in. Without it, the request is sent without a
 project scope and is effectively required by the server.
 
-A pool pre-provisions instances of the given Docker image so they
-can be claimed later with 'koyeb pool claim'.
+A pool pre-provisions instances of the given Docker image or
+archive so they can be claimed later with 'koyeb pool claim'.
 
 --type selects the definition the pool members run: "sandbox" (the
 default), "web" or "worker". DATABASE pools are not supported. SANDBOX
@@ -43,6 +43,9 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
 
 # Expose a TCP proxy port on a WEB pool's members
 $> koyeb pool create my-pool --type web --proxy-ports 5432:tcp
+
+# Create a pool whose members boot from an archive
+$> koyeb pool create my-pool --archive my-archive
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			req, err := buildCreateServicePool(ctx, cmd, args[0])
@@ -68,6 +71,9 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	if err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
+	if err := validatePoolSourceFlags(flags); err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
 	if err := validatePoolWiringFlags(poolType, flags); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
@@ -77,17 +83,28 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 
 	def := koyeb.NewDeploymentDefinitionWithDefaults()
 
-	// Docker source: the shared bundle parses the flags and defaults the
-	// image to koyeb/sandbox when --docker is unset. The builder stays
-	// pure: no image verification API call on the pool paths.
-	dockerSource := koyeb.NewDockerSourceWithDefaults()
-	parsedDocker, _, err := svcHandler.parseDockerSource(ctx, flags, dockerSource, dockerSourceParseOptions{
-		defaultImage: koyebSandboxImage,
-	})
-	if err != nil {
-		return koyeb.CreateServicePool{}, err
+	// Member source: either a Docker image or an archive — never both
+	// (validatePoolSourceFlags). The docker bundle defaults the image to
+	// koyeb/sandbox when --docker is unset; the archive bundle deploys
+	// the referenced archive. Both builders stay pure: no image
+	// verification API call on the pool paths.
+	if hasPoolArchiveSourceFlags(flags) {
+		archive := koyeb.NewArchiveSourceWithDefaults()
+		parsedArchive, err := svcHandler.parseArchiveSource(flags, archive)
+		if err != nil {
+			return koyeb.CreateServicePool{}, err
+		}
+		def.SetArchive(*parsedArchive)
+	} else {
+		dockerSource := koyeb.NewDockerSourceWithDefaults()
+		parsedDocker, _, err := svcHandler.parseDockerSource(ctx, flags, dockerSource, dockerSourceParseOptions{
+			defaultImage: koyebSandboxImage,
+		})
+		if err != nil {
+			return koyeb.CreateServicePool{}, err
+		}
+		def.SetDocker(*parsedDocker)
 	}
-	def.SetDocker(*parsedDocker)
 
 	// Instance type and regions: the shared bundle applies both.
 	if err := svcHandler.parseInstanceTypeRegions(flags, def); err != nil {
