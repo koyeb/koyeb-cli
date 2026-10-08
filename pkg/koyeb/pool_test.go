@@ -217,6 +217,69 @@ func TestBuildCreateServicePoolPortsAndRoutes(t *testing.T) {
 	})
 }
 
+func TestBuildCreateServicePoolChecks(t *testing.T) {
+	t.Run("WEB pools carry the declared member healthchecks", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("checks", "8080:http:/health"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		checks := req.GetDefinition().HealthChecks
+		require.Len(t, checks, 1)
+		http, ok := checks[0].GetHttpOk()
+		require.True(t, ok)
+		assert.Equal(t, int64(8080), *http.Port)
+		assert.Equal(t, "/health", *http.Path)
+	})
+
+	t.Run("--checks-grace-period applies to the declared healthcheck", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("checks", "8080:tcp"))
+		require.NoError(t, cmd.Flags().Set("checks-grace-period", "8080=30"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		checks := req.GetDefinition().HealthChecks
+		require.Len(t, checks, 1)
+		require.NotNil(t, checks[0].GracePeriod)
+		assert.Equal(t, int64(30), *checks[0].GracePeriod)
+	})
+
+	t.Run("no flags emit no member healthchecks", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasHealthChecks(),
+			"the platform wiring is never health-checked implicitly")
+	})
+
+	t.Run("--checks are rejected on the SANDBOX default", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("checks", "8080:http:/health"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), `--checks can only be specified for "web" services`)
+	})
+
+	t.Run("--checks are rejected on WORKER pools", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "worker"))
+		require.NoError(t, cmd.Flags().Set("checks", "8080:tcp"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), `--checks can only be specified for "web" services`)
+	})
+}
+
 func TestBuildCreateServicePoolPrivileged(t *testing.T) {
 	t.Run("members run unprivileged by default", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
@@ -419,7 +482,7 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 	// definitions. Pool secrets and mesh stay off the pool surface per the
 	// cross-client contract.
 	for _, name := range []string{
-		"checks", "proxy-ports", "auth", "app", "wait", "wait-timeout",
+		"proxy-ports", "auth", "app", "wait", "wait-timeout",
 		"sandbox-secret", "enable-mesh",
 	} {
 		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
@@ -439,6 +502,7 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 		volumesFlagNames(),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
+		checksFlagNames(),
 	) {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on pool create", name)
 	}
@@ -475,13 +539,28 @@ func TestPoolCreateCmdFlagAliases(t *testing.T) {
 			"--docker-arg must normalize to the registered --docker-args flag")
 	})
 
+	t.Run("--check aliases --checks, matching the service commands", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("check", "8080:http:/health"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		checks := req.GetDefinition().HealthChecks
+		require.Len(t, checks, 1, "--check must normalize to the registered --checks flag")
+		http, ok := checks[0].GetHttpOk()
+		require.True(t, ok)
+		assert.Equal(t, int64(8080), *http.Port)
+	})
+
 	t.Run("aliases whose canonical flag is not registered stay inert", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
 
-		// --check would normalize to --checks, which pool create does not
-		// register: the alias must not resolve to any flag.
-		err := cmd.Flags().Set("check", "8080:http:/health")
-		assert.Error(t, err, "--check must stay inert on pool create")
+		// --proxy would normalize to --proxy-ports, which pool create does
+		// not register: the alias must not resolve to any flag.
+		err := cmd.Flags().Set("proxy", "8080:http")
+		assert.Error(t, err, "--proxy must stay inert on pool create")
 	})
 }
 

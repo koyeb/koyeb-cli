@@ -454,6 +454,77 @@ func TestBuildUpdateServicePool(t *testing.T) {
 	})
 }
 
+func TestBuildUpdateServicePoolChecks(t *testing.T) {
+	t.Run("unchanged flags keep the live member healthchecks verbatim", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveWebPoolFixture()
+		live.Definition.HealthChecks = liveChecks()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Equal(t, live.Definition, req.Definition,
+			"unchanged --checks flags must keep the live healthchecks")
+	})
+
+	t.Run("--checks adds a member healthcheck on WEB pools", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("checks", "9000:tcp"))
+		live := liveWebPoolFixture()
+		live.Definition.HealthChecks = liveChecks()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		checks := req.GetDefinition().HealthChecks
+		require.Len(t, checks, 2)
+		http, ok := checks[0].GetHttpOk()
+		require.True(t, ok)
+		assert.Equal(t, int64(8080), *http.Port, "the live healthcheck must be kept")
+		tcp, ok := checks[1].GetTcpOk()
+		require.True(t, ok)
+		assert.Equal(t, int64(9000), *tcp.Port)
+	})
+
+	t.Run("--checks-grace-period updates the live healthcheck", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("checks-grace-period", "8080=30"))
+		live := liveWebPoolFixture()
+		live.Definition.HealthChecks = liveChecks()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		checks := req.GetDefinition().HealthChecks
+		require.Len(t, checks, 1)
+		require.NotNil(t, checks[0].GracePeriod)
+		assert.Equal(t, int64(30), *checks[0].GracePeriod)
+	})
+
+	t.Run("'!' deletes a live member healthcheck", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("checks", "!8080"))
+		live := liveWebPoolFixture()
+		live.Definition.HealthChecks = liveChecks()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Empty(t, req.GetDefinition().HealthChecks,
+			"deleting the last healthcheck must clear the list, not silently no-op")
+	})
+
+	t.Run("SANDBOX pools reject --checks", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("checks", "8080:http:/health"))
+		live := liveSandboxPoolFixture()
+
+		_, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), `--checks can only be specified for "web" services`)
+	})
+}
+
 func TestBuildUpdateServicePoolScalings(t *testing.T) {
 	t.Run("unchanged scalings are kept verbatim", func(t *testing.T) {
 		cmd := newPoolUpdateCmd()
@@ -604,6 +675,7 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 		volumesFlagNames(),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
+		checksFlagNames(),
 	) {
 		assert.NotNil(t, cmd.Flags().Lookup(name), "flag --%s must be registered on pool update", name)
 	}

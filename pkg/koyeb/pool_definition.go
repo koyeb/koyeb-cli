@@ -36,6 +36,11 @@ func addPoolFlags(flags *pflag.FlagSet) {
 			"To remove a route on update, prefix its path with '!', for example --route '!/foo'\n",
 	)
 
+	// Member healthchecks (--checks, --checks-grace-period): the shared
+	// bundle. parseChecks gates them to WEB pools — SANDBOX and WORKER
+	// pools reject them fail-fast, mirroring the service surfaces.
+	addChecksFlags(flags)
+
 	addDockerSourceFlags(flags, sandboxPoolDockerSourceFlagUsage)
 	flags.Bool("privileged", false, "Whether the member containers run in privileged mode")
 
