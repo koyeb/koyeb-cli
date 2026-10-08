@@ -74,10 +74,11 @@ func NewAppCmd() *cobra.Command {
 	serviceHandler.addServiceAccountIdFlag(initAppCmd.Flags())
 
 	getAppCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get app",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get app",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeAppIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	appCmd.AddCommand(getAppCmd)
 
@@ -89,17 +90,19 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(listAppCmd)
 
 	describeAppCmd := &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe app",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Describe),
+		Use:               "describe NAME",
+		Short:             "Describe app",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeAppIdentifiers,
+		RunE:              WithCLIContext(h.Describe),
 	}
 	appCmd.AddCommand(describeAppCmd)
 
 	updateAppCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update app",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update app",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeAppIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			updateApp := koyeb.NewUpdateAppWithDefaults()
 			SyncFlags(cmd, args, updateApp)
@@ -139,26 +142,29 @@ func NewAppCmd() *cobra.Command {
 	appCmd.AddCommand(updateAppCmd)
 
 	deleteAppCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete app",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Delete),
+		Use:               "delete NAME",
+		Short:             "Delete app",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeAppIdentifiers,
+		RunE:              WithCLIContext(h.Delete),
 	}
 	appCmd.AddCommand(deleteAppCmd)
 
 	pauseServiceCmd := &cobra.Command{
-		Use:   "pause NAME",
-		Short: "Pause app",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Pause),
+		Use:               "pause NAME",
+		Short:             "Pause app",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeAppIdentifiers,
+		RunE:              WithCLIContext(h.Pause),
 	}
 	appCmd.AddCommand(pauseServiceCmd)
 
 	resumeServiceCmd := &cobra.Command{
-		Use:   "resume NAME",
-		Short: "Resume app",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Resume),
+		Use:               "resume NAME",
+		Short:             "Resume app",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeAppIdentifiers,
+		RunE:              WithCLIContext(h.Resume),
 	}
 	appCmd.AddCommand(resumeServiceCmd)
 

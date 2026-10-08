@@ -2,6 +2,7 @@ package koyeb
 
 import (
 	"context"
+	"time"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/idmapper"
@@ -26,6 +27,12 @@ func SetupCLIContext(cmd *cobra.Command, organization string) error {
 	apiClient, err := getApiClient()
 	if err != nil {
 		return err
+	}
+
+	// Shell completion runs on every keypress of an interactive shell: cap the
+	// HTTP timeout so a slow or unresponsive API cannot freeze the shell.
+	if shellCompletionRequest {
+		apiClient.GetConfig().HTTPClient.Timeout = 10 * time.Second
 	}
 
 	ctx := cmd.Context()

@@ -78,29 +78,32 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	serviceCmd.AddCommand(createServiceCmd)
 
 	getServiceCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	getServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(getServiceCmd)
 
 	unappliedChangesCmd := &cobra.Command{
-		Use:   "unapplied-changes SERVICE_NAME",
-		Short: "Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.ShowUnappliedChanges),
+		Use:               "unapplied-changes SERVICE_NAME",
+		Short:             "Show unapplied changes saved with the --save-only flag, which will be applied in the next deployment",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.ShowUnappliedChanges),
 	}
 	unappliedChangesCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(unappliedChangesCmd)
 
 	var since dates.HumanFriendlyDate
 	logsServiceCmd := &cobra.Command{
-		Use:     "logs NAME",
-		Aliases: []string{"l", "log"},
-		Short:   "Get the service logs",
-		Args:    cobra.ExactArgs(1),
+		Use:               "logs NAME",
+		Aliases:           []string{"l", "log"},
+		Short:             "Get the service logs",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return h.Logs(ctx, cmd, since.Time, args)
 		}),
@@ -108,6 +111,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	logsServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	logsServiceCmd.Flags().String("instance", "", "Instance")
 	logsServiceCmd.Flags().StringP("type", "t", "", "Type (runtime, build)")
+	logsServiceCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions([]string{"runtime", "build"}, cobra.ShellCompDirectiveNoFileComp)) //nolint:errcheck
 	logsServiceCmd.Flags().Var(&since, "since", "DEPRECATED. Use --tail --start-time instead.")
 	logsServiceCmd.Flags().Bool("tail", false, "Tail logs if no --end-time is provided.")
 	logsServiceCmd.Flags().String("start-time", "", "Return logs after this date")
@@ -115,6 +119,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	logsServiceCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
 	logsServiceCmd.Flags().String("text-search", "", "Filter logs returned with this text")
 	logsServiceCmd.Flags().String("order", "asc", "Order logs by `asc` or `desc`")
+	logsServiceCmd.RegisterFlagCompletionFunc("order", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp)) //nolint:errcheck
 	serviceCmd.AddCommand(logsServiceCmd)
 
 	listServiceCmd := &cobra.Command{
@@ -127,28 +132,31 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
 	listServiceCmd.Flags().StringP("name", "n", "", "Service name")
 
 	describeServiceCmd := &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Describe),
+		Use:               "describe NAME",
+		Short:             "Describe service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Describe),
 	}
 	describeServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(describeServiceCmd)
 
 	execServiceCmd := &cobra.Command{
-		Use:     "exec NAME CMD -- [args...]",
-		Short:   "Run a command in the context of an instance selected among the service instances",
-		Aliases: []string{"run", "attach"},
-		Args:    cobra.MinimumNArgs(2),
-		RunE:    WithCLIContext(h.Exec),
+		Use:               "exec NAME CMD -- [args...]",
+		Short:             "Run a command in the context of an instance selected among the service instances",
+		Aliases:           []string{"run", "attach"},
+		Args:              cobra.MinimumNArgs(2),
+		ValidArgsFunction: completeServiceExecArgs,
+		RunE:              WithCLIContext(h.Exec),
 	}
 	execServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(execServiceCmd)
 
 	updateServiceCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update service",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
 		Example: `
 # Update the service "myservice" in the app "myapp", upsert the environment variable PORT and delete the environment variable DEBUG
 $> koyeb service update myapp/myservice --env PORT=8001 --env '!DEBUG'
@@ -215,10 +223,11 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	serviceCmd.AddCommand(updateServiceCmd)
 
 	redeployServiceCmd := &cobra.Command{
-		Use:   "redeploy NAME",
-		Short: "Redeploy service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.ReDeploy),
+		Use:               "redeploy NAME",
+		Short:             "Redeploy service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.ReDeploy),
 	}
 	redeployServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	redeployServiceCmd.Flags().Bool("skip-build", false, "If there has been at least one past successfully build deployment, use the last one instead of rebuilding. WARNING: this can lead to unexpected behavior if the build depends, for example, on environment variables.")
@@ -228,36 +237,40 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
 	redeployServiceCmd.Flags().Bool("use-cache", false, "Use cache to redeploy")
 
 	deleteServiceCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Delete),
+		Use:               "delete NAME",
+		Short:             "Delete service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Delete),
 	}
 	deleteServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(deleteServiceCmd)
 
 	pauseServiceCmd := &cobra.Command{
-		Use:   "pause NAME",
-		Short: "Pause service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Pause),
+		Use:               "pause NAME",
+		Short:             "Pause service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Pause),
 	}
 	pauseServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(pauseServiceCmd)
 
 	resumeServiceCmd := &cobra.Command{
-		Use:   "resume NAME",
-		Short: "Resume service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Resume),
+		Use:               "resume NAME",
+		Short:             "Resume service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Resume),
 	}
 	resumeServiceCmd.Flags().StringP("app", "a", "", "Service application")
 	serviceCmd.AddCommand(resumeServiceCmd)
 
 	scaleCmd := &cobra.Command{
-		Use:   "scale NAME",
-		Short: "Set manual scaling configuration for service (replaces existing configuration)",
-		Args:  cobra.ExactArgs(1),
+		Use:               "scale NAME",
+		Short:             "Set manual scaling configuration for service (replaces existing configuration)",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
 		Example: `
 # Scale a service to 3 instances across all regions
 $> koyeb service scale app/podinfo --instances 3
@@ -280,9 +293,10 @@ $> koyeb service scale app/podinfo --scale fra:5 --scale was:3 --scale sin:2
 	serviceCmd.AddCommand(scaleCmd)
 
 	scaleUpdateCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update manual scaling configuration for service (patches existing configuration)",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update manual scaling configuration for service (patches existing configuration)",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
 		Example: `
 # Update instance count for specific regions, keeping other regions unchanged
 $> koyeb service scale update app/podinfo --scale fra:5
@@ -311,10 +325,11 @@ $> koyeb service scale update app/podinfo --scale fra:5 --scale '!was'
 	scaleCmd.AddCommand(scaleUpdateCmd)
 
 	scaleGetCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get manual scaling configuration for service",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.GetScale),
+		Use:               "get NAME",
+		Short:             "Get manual scaling configuration for service",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.GetScale),
 	}
 	scaleGetCmd.Flags().StringP("app", "a", "", "Service application")
 	scaleCmd.AddCommand(scaleGetCmd)
@@ -327,7 +342,8 @@ $> koyeb service scale update app/podinfo --scale fra:5 --scale '!was'
 # Remove all manual scaling configuration from a service
 $> koyeb service scale delete app/podinfo
 `,
-		RunE: WithCLIContext(h.DeleteScale),
+		RunE:              WithCLIContext(h.DeleteScale),
+		ValidArgsFunction: completeServiceIdentifiers,
 	}
 	scaleDeleteCmd.Flags().StringP("app", "a", "", "Service application")
 	scaleCmd.AddCommand(scaleDeleteCmd)

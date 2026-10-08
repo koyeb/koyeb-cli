@@ -26,27 +26,30 @@ func NewInstanceCmd() *cobra.Command {
 	instanceCmd.AddCommand(listInstanceCmd)
 
 	getInstanceCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get instance",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(instanceHandler.Get),
+		Use:               "get NAME",
+		Short:             "Get instance",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeInstanceIdentifiers,
+		RunE:              WithCLIContext(instanceHandler.Get),
 	}
 	instanceCmd.AddCommand(getInstanceCmd)
 
 	describeInstanceCmd := &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe instance",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(instanceHandler.Describe),
+		Use:               "describe NAME",
+		Short:             "Describe instance",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeInstanceIdentifiers,
+		RunE:              WithCLIContext(instanceHandler.Describe),
 	}
 	instanceCmd.AddCommand(describeInstanceCmd)
 
 	execInstanceCmd := &cobra.Command{
-		Use:     "exec NAME CMD -- [args...]",
-		Short:   "Run a command in the context of an instance",
-		Aliases: []string{"run", "attach"},
-		Args:    cobra.MinimumNArgs(2),
-		RunE:    WithCLIContext(instanceHandler.Exec),
+		Use:               "exec NAME CMD -- [args...]",
+		Short:             "Run a command in the context of an instance",
+		Aliases:           []string{"run", "attach"},
+		Args:              cobra.MinimumNArgs(2),
+		ValidArgsFunction: completeInstanceExecArgs,
+		RunE:              WithCLIContext(instanceHandler.Exec),
 	}
 	instanceCmd.AddCommand(execInstanceCmd)
 
@@ -62,10 +65,11 @@ func NewInstanceCmd() *cobra.Command {
 
 	var since dates.HumanFriendlyDate
 	logInstanceCmd := &cobra.Command{
-		Use:     "logs NAME",
-		Aliases: []string{"l", "log"},
-		Short:   "Get instance logs",
-		Args:    cobra.ExactArgs(1),
+		Use:               "logs NAME",
+		Aliases:           []string{"l", "log"},
+		Short:             "Get instance logs",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeInstanceIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return instanceHandler.Logs(ctx, cmd, since.Time, args)
 		}),
@@ -77,6 +81,7 @@ func NewInstanceCmd() *cobra.Command {
 	logInstanceCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
 	logInstanceCmd.Flags().String("text-search", "", "Filter logs returned with this text")
 	logInstanceCmd.Flags().String("order", "asc", "Order logs by `asc` or `desc`")
+	logInstanceCmd.RegisterFlagCompletionFunc("order", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp)) //nolint:errcheck
 	instanceCmd.AddCommand(logInstanceCmd)
 
 	return instanceCmd

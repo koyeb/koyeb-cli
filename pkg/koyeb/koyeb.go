@@ -32,6 +32,11 @@ var (
 	debug        bool
 	organization string
 
+	// shellCompletionRequest is true when the process was started by a shell
+	// completion script (the hidden cobra __complete command). It is set by
+	// the root command's PersistentPreRunE.
+	shellCompletionRequest bool
+
 	loginCmd   = newLoginCmd()
 	versionCmd = newVersionCmd()
 )
@@ -71,6 +76,15 @@ func skipConfigLoading(rootCmd *cobra.Command) bool {
 		completionCmd.CalledAs() != "" || isHelpCalled(rootCmd)
 }
 
+// isShellCompletionRequest returns true when the command being executed is the
+// hidden cobra command used by the shell completion scripts to request
+// completion candidates. It runs on every keypress of an interactive shell, so
+// anything slow or unnecessary should be skipped in that case.
+func isShellCompletionRequest(cmd *cobra.Command) bool {
+	calledAs := cmd.CalledAs()
+	return calledAs == cobra.ShellCompRequestCmd || calledAs == cobra.ShellCompNoDescRequestCmd
+}
+
 func GetRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:               "koyeb RESOURCE ACTION",
@@ -88,7 +102,10 @@ func GetRootCommand() *cobra.Command {
 			if err := initConfig(cmd.Root()); err != nil {
 				return err
 			}
-			DetectUpdates()
+			shellCompletionRequest = isShellCompletionRequest(cmd)
+			if !shellCompletionRequest {
+				DetectUpdates()
+			}
 			return SetupCLIContext(cmd, organization)
 		},
 	}
@@ -134,6 +151,9 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewSandboxCmd())
 	rootCmd.AddCommand(NewPoolCmd())
 	rootCmd.AddCommand(NewWhoAmICmd())
+
+	registerScopedFlagCompletions(rootCmd)
+
 	return rootCmd
 }
 

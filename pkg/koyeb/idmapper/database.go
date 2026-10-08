@@ -58,6 +58,17 @@ func (mapper *DatabaseMapper) ResolveID(val string) (string, error) {
 	)
 }
 
+// Complete returns the identifiers (names, then short IDs) that can be used to
+// refer to databases, for shell completion.
+func (mapper *DatabaseMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return append(mapper.nameMap.Values(), mapper.sidMap.Values()...), nil
+}
+
 func (mapper *DatabaseMapper) fetch() error {
 	page := int64(0)
 	offset := int64(0)

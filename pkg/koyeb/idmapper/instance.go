@@ -47,6 +47,17 @@ func (mapper *InstanceMapper) ResolveID(val string) (string, error) {
 	)
 }
 
+// Complete returns the identifiers (short IDs) that can be used to refer to
+// instances, for shell completion. Instances have no name.
+func (mapper *InstanceMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return mapper.sidMap.Values(), nil
+}
+
 func (mapper *InstanceMapper) fetch() error {
 	radix := NewRadixTree()
 

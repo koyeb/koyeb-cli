@@ -24,10 +24,11 @@ func NewRegionalDeploymentCmd() *cobra.Command {
 	regionalDeploymentCmd.AddCommand(listRegionalDeploymentCmd)
 
 	getRegionalDeploymentCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get regional deployment",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get regional deployment",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeRegionalDeploymentIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	regionalDeploymentCmd.AddCommand(getRegionalDeploymentCmd)
 

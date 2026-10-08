@@ -28,10 +28,11 @@ func NewDatabaseCmd() *cobra.Command {
 	databaseCmd.AddCommand(listDbCmd)
 
 	getDbCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get database",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get database",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDatabaseIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	getDbCmd.Flags().String("app", "", "Database application. If the application does not exist, it will be created. Can also be provided in the database name with the format `app-name/database-name`")
 	databaseCmd.AddCommand(getDbCmd)
@@ -61,9 +62,10 @@ func NewDatabaseCmd() *cobra.Command {
 	databaseCmd.AddCommand(createDbCmd)
 
 	updateDbCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update database",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update database",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDatabaseIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			serviceName, err := serviceHandler.parseServiceName(cmd, args[0])
 			if err != nil {
@@ -116,10 +118,11 @@ func NewDatabaseCmd() *cobra.Command {
 	databaseCmd.AddCommand(updateDbCmd)
 
 	deleteDbCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete database",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Delete),
+		Use:               "delete NAME",
+		Short:             "Delete database",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDatabaseIdentifiers,
+		RunE:              WithCLIContext(h.Delete),
 	}
 	databaseCmd.AddCommand(deleteDbCmd)
 
