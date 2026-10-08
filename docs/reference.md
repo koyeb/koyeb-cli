@@ -4188,9 +4188,9 @@ can be claimed later with 'koyeb pool claim'.
 --type selects the definition the pool members run: "sandbox" (the
 default), "web" or "worker". DATABASE pools are not supported. SANDBOX
 pools keep the sandbox auto-wiring (the platform owns ports 3030/3031
-and mints the executor secret); explicit --port/--route flags are
-rejected on them. WEB and WORKER pools carry exactly the declared
---port/--route values, verbatim.
+and mints the executor secret); explicit --port/--route/--proxy-ports
+flags are rejected on them. WEB and WORKER pools carry exactly the
+declared --port/--route/--proxy-ports values, verbatim.
 
 ```
 koyeb pool create NAME [flags]
@@ -4208,6 +4208,9 @@ $> koyeb pool create my-pool --project my-project
 
 # Create a WEB pool with explicit member ports and routes
 $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
+
+# Expose a TCP proxy port on a WEB pool's members
+$> koyeb pool create my-pool --type web --proxy-ports 5432:tcp
 
 ```
 
@@ -4245,6 +4248,9 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
                                                 To remove a port on update, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the member containers run in privileged mode
+      --proxy-ports strings                     Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                
       --regions strings                         Deployment regions
       --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
                                                 PORT defaults to 8000
@@ -4486,6 +4492,9 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
                                                 To remove a port on update, prefix its number with '!', for example --port '!80'
                                                 
       --privileged                              Whether the member containers run in privileged mode
+      --proxy-ports strings                     Update service proxy ports (available for services of type "web" only) using format PORT[:PROTOCOL], for example --proxy-ports 22:tcp
+                                                PROTOCOL defaults to "tcp". Supported protocols are "tcp".To delete a proxy port, prefix its number with '!', for example --proxy-ports '!80'
+                                                
       --regions strings                         Deployment regions
       --routes strings                          Member routes for WEB and WORKER pools using the format PATH[:PORT], for example --route /foo:8080
                                                 PORT defaults to 8000

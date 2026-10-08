@@ -525,6 +525,79 @@ func TestBuildUpdateServicePoolChecks(t *testing.T) {
 	})
 }
 
+func TestBuildUpdateServicePoolProxyPorts(t *testing.T) {
+	port22 := int64(22)
+	tcp := koyeb.PROXYPORTPROTOCOL_TCP
+	liveProxyPorts := []koyeb.DeploymentProxyPort{{Port: &port22, Protocol: &tcp}}
+
+	t.Run("WEB pools merge declared proxy ports over the live values", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "8022:tcp"))
+		live := liveWebPoolFixture()
+		live.Definition.ProxyPorts = liveProxyPorts
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		proxyPorts := req.GetDefinition().ProxyPorts
+		require.Len(t, proxyPorts, 2)
+		assert.Equal(t, int64(22), proxyPorts[0].GetPort(), "the live proxy port must be kept")
+		assert.Equal(t, int64(8022), proxyPorts[1].GetPort())
+		assert.Equal(t, koyeb.PROXYPORTPROTOCOL_TCP, proxyPorts[1].GetProtocol())
+	})
+
+	t.Run("deleting the last proxy port empties the member wiring", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "!22"))
+		live := liveWebPoolFixture()
+		live.Definition.ProxyPorts = liveProxyPorts
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Empty(t, req.GetDefinition().ProxyPorts,
+			"the last deletion must empty the wiring, not silently no-op")
+	})
+
+	t.Run("unchanged flags keep the live proxy ports verbatim", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveWebPoolFixture()
+		live.Definition.ProxyPorts = liveProxyPorts
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		assert.Equal(t, liveProxyPorts, req.GetDefinition().ProxyPorts,
+			"unchanged --proxy-ports flags must keep the live wiring")
+	})
+
+	t.Run("WORKER pools accept declared proxy ports", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "5432:tcp"))
+		live := liveWebPoolFixture()
+		defType := koyeb.DEPLOYMENTDEFINITIONTYPE_WORKER
+		live.Definition.Type = &defType
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		proxyPorts := req.GetDefinition().ProxyPorts
+		require.Len(t, proxyPorts, 1)
+		assert.Equal(t, int64(5432), proxyPorts[0].GetPort())
+	})
+
+	t.Run("SANDBOX pools reject explicit proxy ports", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "22:tcp"))
+		live := liveSandboxPoolFixture()
+
+		_, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not allowed on SANDBOX pools")
+		assert.Contains(t, err.Error(), "proxy-ports")
+	})
+}
+
 func TestBuildUpdateServicePoolScalings(t *testing.T) {
 	t.Run("unchanged scalings are kept verbatim", func(t *testing.T) {
 		cmd := newPoolUpdateCmd()
@@ -676,6 +749,7 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
 		checksFlagNames(),
+		proxyPortsFlagNames(),
 	) {
 		assert.NotNil(t, cmd.Flags().Lookup(name), "flag --%s must be registered on pool update", name)
 	}

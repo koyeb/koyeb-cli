@@ -41,6 +41,9 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	// pools reject them fail-fast, mirroring the service surfaces.
 	addChecksFlags(flags)
 
+	// Member proxy ports (TCP exposure), shared with the service surfaces.
+	addProxyPortsFlags(flags)
+
 	addDockerSourceFlags(flags, sandboxPoolDockerSourceFlagUsage)
 	flags.Bool("privileged", false, "Whether the member containers run in privileged mode")
 
@@ -133,14 +136,15 @@ func validatePoolSandboxKnobs(poolType koyeb.DeploymentDefinitionType, flags *pf
 }
 
 // validatePoolWiringFlags enforces the cross-client wiring rule: SANDBOX
-// pools never take explicit ports or routes — the sandbox wiring owns
-// ports 3030/3031, and user-declared wiring would break executor
-// connectivity. Never silently ignore the flags.
+// pools never take explicit ports, routes or proxy ports — the sandbox
+// wiring owns the member exposure (ports 3030/3031 and the TCP proxy),
+// and user-declared wiring would break executor connectivity. Never
+// silently ignore the flags.
 func validatePoolWiringFlags(poolType koyeb.DeploymentDefinitionType, flags *pflag.FlagSet) error {
 	if poolType != koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
 		return nil
 	}
-	for _, flag := range []string{"ports", "routes"} {
+	for _, flag := range []string{"ports", "routes", "proxy-ports"} {
 		if !flags.Lookup(flag).Changed {
 			continue
 		}
@@ -151,10 +155,10 @@ func validatePoolWiringFlags(poolType koyeb.DeploymentDefinitionType, flags *pfl
 				flag),
 			Additional: []string{
 				"The pool members' executor connectivity depends on the sandbox wiring; user-declared wiring would break it.",
-				`Create a WEB or WORKER pool with --type to declare member ports and routes.`,
+				`Create a WEB or WORKER pool with --type to declare member ports, routes and proxy ports.`,
 			},
 			Orig:     nil,
-			Solution: "Remove the --port/--route flags or set --type web|worker, and try again",
+			Solution: "Remove the --port/--route/--proxy-ports flags or set --type web|worker, and try again",
 		}
 	}
 	return nil

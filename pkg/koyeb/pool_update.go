@@ -200,6 +200,9 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	if err := setPoolPortsAndRoutes(poolType, flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
+	if err := setPoolProxyPorts(poolType, flags, &def); err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
 	if err := applyPoolSandboxKnobs(poolType, flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
