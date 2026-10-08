@@ -2268,10 +2268,10 @@ func (h *ServiceHandler) parseGitSourceDockerBuilder(flags *pflag.FlagSet, build
 
 // addArchiveSourceFlags registers the archive source flag bundle
 // (--archive and the --archive-* family). Today the services definition
-// umbrella (`service create`/`service update`, `app init`) and `deploy`
-// compose it; --privileged is registered by each surface itself: on
-// services it is shared with the docker source and the git and archive
-// docker builders.
+// umbrella (`service create`/`service update`, `app init`), `deploy` and
+// the pool surfaces (`pool create`/`pool update`) compose it; --privileged
+// is registered by each surface itself: on services and pools it is shared
+// with the docker source and the archive builders.
 func addArchiveSourceFlags(flags *pflag.FlagSet) {
 	flags.String("archive", "", "Archive ID to deploy")
 	flags.String("archive-builder", "buildpack", `Builder to use, either "buildpack" (default) or "docker"`)

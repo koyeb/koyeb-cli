@@ -45,6 +45,11 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	addProxyPortsFlags(flags)
 
 	addDockerSourceFlags(flags, sandboxPoolDockerSourceFlagUsage)
+	// Archive source: the shared bundle. The member source is either a
+	// Docker image or an archive — validatePoolSourceFlags rejects the
+	// combination, and --archive-ignore-dir stays inert (the pool
+	// surfaces reference an existing archive; they never upload one).
+	addArchiveSourceFlags(flags)
 	flags.Bool("privileged", false, "Whether the member containers run in privileged mode")
 
 	flags.String("exposed-port-protocol", "http",
@@ -132,6 +137,55 @@ func validatePoolSandboxKnobs(poolType koyeb.DeploymentDefinitionType, flags *pf
 		},
 		Orig:     nil,
 		Solution: "Remove the sandbox-only flags or set --type sandbox, and try again",
+	}
+}
+
+// hasPoolDockerSourceFlags reports whether the changed flags target the
+// docker source. --privileged is shared with the archive builders and
+// routes to the live source instead, the same way the service surface
+// routes it.
+func hasPoolDockerSourceFlags(flags *pflag.FlagSet) bool {
+	return flags.Lookup("docker").Changed ||
+		flags.Lookup("docker-private-registry-secret").Changed ||
+		flags.Lookup("docker-args").Changed ||
+		flags.Lookup("docker-command").Changed ||
+		flags.Lookup("docker-entrypoint").Changed
+}
+
+// hasPoolArchiveSourceFlags reports whether the changed flags target the
+// archive source — the flags the archive bundle's parse step consumes.
+// --archive-ignore-dir only feeds the local archive upload flow and is
+// not a source flag.
+func hasPoolArchiveSourceFlags(flags *pflag.FlagSet) bool {
+	return flags.Lookup("archive").Changed ||
+		flags.Lookup("archive-builder").Changed ||
+		flags.Lookup("archive-buildpack-build-command").Changed ||
+		flags.Lookup("archive-buildpack-run-command").Changed ||
+		flags.Lookup("archive-docker-dockerfile").Changed ||
+		flags.Lookup("archive-docker-entrypoint").Changed ||
+		flags.Lookup("archive-docker-command").Changed ||
+		flags.Lookup("archive-docker-args").Changed ||
+		flags.Lookup("archive-docker-target").Changed
+}
+
+// validatePoolSourceFlags enforces the pool source rule: the member
+// source is either a Docker image (--docker/--docker-*) or an archive
+// (--archive/--archive-*), never both. Mirrors the service surface's
+// fail-fast on conflicting source flags.
+func validatePoolSourceFlags(flags *pflag.FlagSet) error {
+	if !hasPoolDockerSourceFlags(flags) || !hasPoolArchiveSourceFlags(flags) {
+		return nil
+	}
+	return &errors.CLIError{
+		What: "Error while configuring the pool",
+		Why:  "invalid flag combination",
+		Additional: []string{
+			"The pool member source is either a Docker image or an archive: --docker*/--archive* cannot be combined.",
+			"To deploy a Docker image, specify --docker <image>",
+			"To deploy from an archive created with `koyeb archive create`, specify --archive <archive-id>",
+		},
+		Orig:     nil,
+		Solution: "Fix the flags and try again",
 	}
 }
 

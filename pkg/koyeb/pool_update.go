@@ -133,6 +133,9 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 			Solution: "Remove the --type flag or set it to the pool's current type, and try again",
 		}
 	}
+	if err := validatePoolSourceFlags(flags); err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
 	if err := validatePoolWiringFlags(poolType, flags); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}
@@ -141,16 +144,48 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 	}
 	def.SetType(poolType)
 
-	// Docker source: merge the changed bundle flags into the live image
-	// config. The pure option keeps the builder free of API calls.
-	dockerSource := def.GetDocker()
-	parsedDocker, dockerChanged, err := svcHandler.parseDockerSource(ctx, flags, &dockerSource,
-		dockerSourceParseOptions{})
-	if err != nil {
-		return koyeb.UpdateServicePool{}, err
-	}
-	if dockerChanged {
+	// Member source: the docker and archive bundles are mutually
+	// exclusive (validatePoolSourceFlags). A changed bundle replaces the
+	// live source; without source flags the shared --privileged applies
+	// to the live source's builders. The pure options keep the builders
+	// free of API calls.
+	switch {
+	case hasPoolArchiveSourceFlags(flags):
+		archive := def.GetArchive()
+		parsedArchive, err := svcHandler.parseArchiveSource(flags, &archive)
+		if err != nil {
+			return koyeb.UpdateServicePool{}, err
+		}
+		def.SetArchive(*parsedArchive)
+		def.Docker = nil
+	case hasPoolDockerSourceFlags(flags):
+		dockerSource := def.GetDocker()
+		parsedDocker, _, err := svcHandler.parseDockerSource(ctx, flags, &dockerSource,
+			dockerSourceParseOptions{})
+		if err != nil {
+			return koyeb.UpdateServicePool{}, err
+		}
 		def.SetDocker(*parsedDocker)
+		def.Archive = nil
+	case def.HasArchive():
+		// No source flag passed: keep the live archive and apply the
+		// shared flags to its builder.
+		archive := def.GetArchive()
+		parsedArchive, err := svcHandler.parseArchiveSource(flags, &archive)
+		if err != nil {
+			return koyeb.UpdateServicePool{}, err
+		}
+		def.SetArchive(*parsedArchive)
+	default:
+		dockerSource := def.GetDocker()
+		parsedDocker, dockerChanged, err := svcHandler.parseDockerSource(ctx, flags, &dockerSource,
+			dockerSourceParseOptions{})
+		if err != nil {
+			return koyeb.UpdateServicePool{}, err
+		}
+		if dockerChanged {
+			def.SetDocker(*parsedDocker)
+		}
 	}
 
 	// Instance type and regions: the shared bundle merges both over the

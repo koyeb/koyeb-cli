@@ -75,6 +75,106 @@ func liveWebPoolFixture() koyeb.ServicePool {
 	return pool
 }
 
+// liveArchivePoolFixture returns a pool as the API serves it when the
+// members boot from an archive: the definition carries an archive
+// source with a buildpack builder next to the platform wiring.
+func liveArchivePoolFixture() koyeb.ServicePool {
+	pool := liveSandboxPoolFixture()
+	archiveID := "live-archive"
+	pool.Definition.Docker = nil
+	pool.Definition.Archive = &koyeb.ArchiveSource{
+		Id:        &archiveID,
+		Buildpack: &koyeb.BuildpackBuilder{},
+	}
+	return pool
+}
+
+func TestBuildUpdateServicePoolArchiveSource(t *testing.T) {
+	t.Run("--archive replaces the live Docker source", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+		live := liveSandboxPoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		archive := def.Archive
+		require.NotNil(t, archive, "the definition must carry the archive source")
+		assert.Equal(t, "my-archive", archive.GetId())
+		assert.False(t, def.HasDocker(), "the archive source replaces the live docker source")
+	})
+
+	t.Run("no flags changed resends the live archive verbatim", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveArchivePoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.Equal(t, live.Definition, &def, "the live archive source must be resent verbatim")
+	})
+
+	t.Run("--archive merges the changed flags over the live archive", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("archive", "new-archive"))
+		require.NoError(t, cmd.Flags().Set("archive-buildpack-run-command", "run"))
+		live := liveArchivePoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		archive := req.GetDefinition().Archive
+		require.NotNil(t, archive)
+		assert.Equal(t, "new-archive", archive.GetId())
+		buildpack := archive.GetBuildpack()
+		assert.Equal(t, "run", *buildpack.RunCommand)
+	})
+
+	t.Run("--privileged applies to the live archive builder", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("privileged", "true"))
+		live := liveArchivePoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasDocker(), "--privileged must not inject a docker source")
+		archive := def.Archive
+		require.NotNil(t, archive)
+		buildpack := archive.GetBuildpack()
+		assert.True(t, buildpack.GetPrivileged())
+	})
+
+	t.Run("--docker replaces the live archive source", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("docker", "ghcr.io/acme/sandbox:v2"))
+		live := liveArchivePoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasArchive(), "the docker source replaces the live archive source")
+		docker := def.Docker
+		require.NotNil(t, docker)
+		assert.Equal(t, "ghcr.io/acme/sandbox:v2", docker.GetImage())
+	})
+
+	t.Run("conflicting --docker and --archive flags are rejected", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("docker", "ghcr.io/acme/sandbox"))
+		require.NoError(t, cmd.Flags().Set("archive", "my-archive"))
+		live := liveSandboxPoolFixture()
+
+		_, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid flag combination")
+	})
+}
+
 func TestBuildUpdateServicePool(t *testing.T) {
 	t.Run("no flags changed resends the live size and definition", func(t *testing.T) {
 		cmd := newPoolUpdateCmd()
@@ -743,6 +843,7 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 			"exposed-port-protocol", "enable-tcp-proxy",
 		},
 		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
+		archiveSourceFlagNames(),
 		networkPolicyFlagNames(),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		volumesFlagNames(),
