@@ -32,17 +32,30 @@ var (
 	debug        bool
 	organization string
 
-	loginCmd = &cobra.Command{
+	loginCmd   = newLoginCmd()
+	versionCmd = newVersionCmd()
+)
+
+// newLoginCmd and newVersionCmd build the login and version commands. They
+// exist as constructors, like for every other command, so that the
+// package-level loginCmd and versionCmd singletons can be rebuilt with the
+// state of a fresh process: cobra remembers that a command was called for the
+// lifetime of the process, and skipConfigLoading relies on that state.
+func newLoginCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "login",
 		Short: "Login to your Koyeb account",
 		RunE:  Login,
 	}
-	versionCmd = &cobra.Command{
+}
+
+func newVersionCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "version",
 		Short: "Get version",
 		Run:   PrintVersion,
 	}
-)
+}
 
 func isHelpCalled(rootCmd *cobra.Command) bool {
 	for _, subcmd := range rootCmd.Commands() {
@@ -124,7 +137,20 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func Run() error {
+// Run executes the koyeb CLI with the given arguments and returns the exit
+// code the process should terminate with: 0 when the command succeeds (help,
+// version, and completion included), 1 on any error, including errors
+// recovered from an unexpected panic.
+func Run(args []string) int {
+	rootCmd := GetRootCommand()
+	rootCmd.SetArgs(args)
+	return run(rootCmd)
+}
+
+// run executes the root command and returns the process exit code. It is the
+// single exit-code decision point of the CLI: errors returned by the command
+// tree and recovered panics both print the CLI error box and exit 1.
+func run(rootCmd *cobra.Command) (exitCode int) {
 	defer func() {
 		if r := recover(); r != nil {
 			stacktrace := make([]byte, 4096)
@@ -141,13 +167,11 @@ func Run() error {
 				Orig:     fmt.Errorf("%s", r),
 				Solution: "Please open an issue at https://github.com/koyeb/koyeb-cli/issues/new and provide the command you ran, the error message, and the output of `koyeb version`",
 			})
+			exitCode = 1
 		}
 	}()
 
-	rootCmd := GetRootCommand()
-
-	ctx := context.Background()
-	err := rootCmd.ExecuteContext(ctx)
+	err := rootCmd.ExecuteContext(context.Background())
 	if err != nil {
 		var cliErr *koyeb_errors.CLIError
 
@@ -168,8 +192,9 @@ func Run() error {
 		}
 
 		fmt.Fprintf(os.Stderr, "%s", err)
+		return 1
 	}
-	return err
+	return 0
 }
 
 func PrintVersion(cmd *cobra.Command, args []string) {

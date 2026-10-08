@@ -7,7 +7,5 @@ import (
 )
 
 func main() {
-	if err := koyeb.Run(); err != nil {
-		os.Exit(1)
-	}
+	os.Exit(koyeb.Run(os.Args[1:]))
 }
