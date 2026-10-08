@@ -3,7 +3,9 @@ package koyeb
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/blang/semver"
@@ -13,7 +15,32 @@ import (
 
 const DevVersion = "develop"
 
-var detectLatestRelease = selfupdate.DetectLatest
+var (
+	ghAuthToken = func() ([]byte, error) {
+		return exec.Command("gh", "auth", "token").Output()
+	}
+	detectLatestRelease = func(slug string) (*selfupdate.Release, bool, error) {
+		updater, err := selfupdate.NewUpdater(selfupdate.Config{APIToken: githubAPIToken()})
+		if err != nil {
+			return nil, false, err
+		}
+		return updater.DetectLatest(slug)
+	}
+)
+
+func githubAPIToken() string {
+	for _, env := range []string{"GH_TOKEN", "GITHUB_TOKEN"} {
+		if token := strings.TrimSpace(os.Getenv(env)); token != "" {
+			return token
+		}
+	}
+
+	token, err := ghAuthToken()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(token))
+}
 
 func DetectUpdates() {
 	if Version == DevVersion {
