@@ -4215,6 +4215,14 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
 
 ```
       --block-network                           Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
+      --checks strings                          Update service healthchecks (available for services of type "web" only)
+                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
+      --checks-grace-period strings             Set healthcheck grace period in seconds.
+                                                Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
+                                                
       --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
       --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --docker string                           Docker image (default: koyeb/sandbox)
@@ -4448,6 +4456,14 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
 
 ```
       --block-network                           Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
+      --checks strings                          Update service healthchecks (available for services of type "web" only)
+                                                For HTTP healthchecks, use the format <PORT>:http:<PATH>, for example --checks 8080:http:/health
+                                                For TCP healthchecks, use the format <PORT>:tcp, for example --checks 8080:tcp
+                                                To delete a healthcheck, use !PORT, for example --checks '!8080'
+                                                
+      --checks-grace-period strings             Set healthcheck grace period in seconds.
+                                                Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
+                                                
       --config-file strings                     Config files (LOCAL:REMOTE:PERMS)
       --deep-sleep-delay duration               Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --docker string                           Docker image (default: koyeb/sandbox)

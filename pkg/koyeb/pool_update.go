@@ -204,6 +204,16 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 		return koyeb.UpdateServicePool{}, err
 	}
 
+	// Member healthchecks, merged over the live checks (unchanged flags
+	// keep the live values): the shared bundle parses --checks and
+	// --checks-grace-period; parseChecks rejects them on non-WEB pools,
+	// matching the service surfaces.
+	healthChecks, err := svcHandler.parseChecks(poolType, flags, def.HealthChecks)
+	if err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
+	def.SetHealthChecks(healthChecks)
+
 	size := current.GetSize()
 	if flags.Lookup("size").Changed {
 		size, _ = flags.GetInt64("size")

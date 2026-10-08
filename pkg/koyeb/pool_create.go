@@ -135,6 +135,15 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		return koyeb.CreateServicePool{}, err
 	}
 
+	// Member healthchecks: the shared bundle parses and merges --checks
+	// and --checks-grace-period; parseChecks rejects them on non-WEB
+	// pools, matching the service surfaces.
+	healthChecks, err := svcHandler.parseChecks(poolType, flags, def.HealthChecks)
+	if err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
+	def.SetHealthChecks(healthChecks)
+
 	// The server requires the definition name to be set (SANDBOX case).
 	def.SetName(name)
 
