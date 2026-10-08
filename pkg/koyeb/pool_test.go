@@ -240,6 +240,57 @@ func TestBuildCreateServicePoolPrivileged(t *testing.T) {
 	})
 }
 
+func TestBuildCreateServicePoolVolumes(t *testing.T) {
+	t.Run("--volumes mounts the declared member volumes", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("volumes", "323e4567-e89b-42d3-a456-426614174000:/data"))
+		require.NoError(t, cmd.Flags().Set("volumes", "423e4567-e89b-42d3-a456-426614174000:/other"))
+
+		req, err := buildCreateServicePool(sandboxTestContext(&fakeAPI{}), cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		volumes := def.GetVolumes()
+		require.Len(t, volumes, 2)
+		assert.Equal(t, "323e4567-e89b-42d3-a456-426614174000", volumes[0].GetId())
+		assert.Equal(t, "/data", volumes[0].GetPath())
+		assert.Equal(t, "423e4567-e89b-42d3-a456-426614174000", volumes[1].GetId())
+		assert.Equal(t, "/other", volumes[1].GetPath())
+	})
+
+	t.Run("--volume aliases --volumes, matching the service commands", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("volume", "323e4567-e89b-42d3-a456-426614174000:/data"))
+
+		req, err := buildCreateServicePool(sandboxTestContext(&fakeAPI{}), cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		volumes := def.GetVolumes()
+		require.Len(t, volumes, 1)
+		assert.Equal(t, "/data", volumes[0].GetPath())
+	})
+
+	t.Run("a volume declared without a mount path is rejected", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("volumes", "323e4567-e89b-42d3-a456-426614174000"))
+
+		_, err := buildCreateServicePool(sandboxTestContext(&fakeAPI{}), cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unable to parse the volume")
+	})
+
+	t.Run("members carry no volumes by default", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.False(t, def.HasVolumes())
+	})
+}
+
 func TestBuildCreateServicePoolNetworkPolicy(t *testing.T) {
 	t.Run("--block-network denies all member egress", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
@@ -385,6 +436,7 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
 		networkPolicyFlagNames(),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
+		volumesFlagNames(),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
 	) {

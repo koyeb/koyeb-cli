@@ -48,6 +48,10 @@ func addPoolFlags(flags *pflag.FlagSet) {
 
 	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)
 
+	// Member volumes, shared with the service surfaces: the bundle's
+	// changed-only merge mounts, remounts and unmounts on update.
+	addVolumesFlags(flags)
+
 	// Scaling and sleep delays: the shared bundle (pools run
 	// single-instance).
 	addScalingSleepDelayFlags(flags, sandboxPoolScalingSleepDelayFlagUsage)

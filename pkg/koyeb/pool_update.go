@@ -163,6 +163,14 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 		return koyeb.UpdateServicePool{}, err
 	}
 
+	// Member volumes: the shared bundle merges the flags over the live
+	// mounts (unchanged flags keep the live values).
+	volumes, err := svcHandler.parseVolumes(ctx, flags, def.Volumes)
+	if err != nil {
+		return koyeb.UpdateServicePool{}, err
+	}
+	def.SetVolumes(volumes)
+
 	// Scaling and sleep delays: the shared bundle merges over the live
 	// scaling (unchanged flags keep the live values).
 	if err := svcHandler.parseScalingSleepDelay(flags, &def, scalingSleepDelayParseOptions{
