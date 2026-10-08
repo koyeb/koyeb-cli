@@ -56,6 +56,17 @@ func (mapper *PoolMapper) ResolveID(val string) (string, error) {
 	)
 }
 
+// Complete returns the identifiers (names, then short IDs) that can be used to
+// refer to pools, for shell completion.
+func (mapper *PoolMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return append(mapper.nameMap.Values(), mapper.sidMap.Values()...), nil
+}
+
 func (mapper *PoolMapper) fetch() error {
 	radix := NewRadixTree()
 

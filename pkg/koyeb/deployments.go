@@ -26,41 +26,46 @@ func NewDeploymentCmd() *cobra.Command {
 	deploymentCmd.AddCommand(listDeploymentCmd)
 
 	getDeploymentCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get deployment",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get deployment",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDeploymentIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	deploymentCmd.AddCommand(getDeploymentCmd)
 
 	describeDeploymentCmd := &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe deployment",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Describe),
+		Use:               "describe NAME",
+		Short:             "Describe deployment",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDeploymentIdentifiers,
+		RunE:              WithCLIContext(h.Describe),
 	}
 	deploymentCmd.AddCommand(describeDeploymentCmd)
 
 	cancelDeploymentCmd := &cobra.Command{
-		Use:   "cancel NAME",
-		Short: "Cancel deployment",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Cancel),
+		Use:               "cancel NAME",
+		Short:             "Cancel deployment",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDeploymentIdentifiers,
+		RunE:              WithCLIContext(h.Cancel),
 	}
 	deploymentCmd.AddCommand(cancelDeploymentCmd)
 
 	var since dates.HumanFriendlyDate
 	logDeploymentCmd := &cobra.Command{
-		Use:     "logs NAME",
-		Aliases: []string{"l", "log"},
-		Short:   "Get deployment logs",
-		Args:    cobra.ExactArgs(1),
+		Use:               "logs NAME",
+		Aliases:           []string{"l", "log"},
+		Short:             "Get deployment logs",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDeploymentIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return h.Logs(ctx, cmd, since.Time, args)
 		}),
 	}
 	deploymentCmd.AddCommand(logDeploymentCmd)
 	logDeploymentCmd.Flags().StringP("type", "t", "", "Type of log (runtime, build)")
+	logDeploymentCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions([]string{"runtime", "build"}, cobra.ShellCompDirectiveNoFileComp)) //nolint:errcheck
 	logDeploymentCmd.Flags().Var(&since, "since", "DEPRECATED. Use --tail --start-time instead.")
 	logDeploymentCmd.Flags().Bool("tail", false, "Tail logs if no --end-time is provided.")
 	logDeploymentCmd.Flags().StringP("start-time", "s", "", "Return logs after this date")
@@ -68,6 +73,7 @@ func NewDeploymentCmd() *cobra.Command {
 	logDeploymentCmd.Flags().String("regex-search", "", "Filter logs returned with this regex")
 	logDeploymentCmd.Flags().String("text-search", "", "Filter logs returned with this text")
 	logDeploymentCmd.Flags().String("order", "asc", "Order logs by `asc` or `desc`")
+	logDeploymentCmd.RegisterFlagCompletionFunc("order", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp)) //nolint:errcheck
 	return deploymentCmd
 }
 

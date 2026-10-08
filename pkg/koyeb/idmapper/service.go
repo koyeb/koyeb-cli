@@ -16,16 +16,21 @@ type ServiceMapper struct {
 	fetched   bool
 	sidMap    *IDMap
 	slugMap   *IDMap
+	// nameSlugMap stores the "<app_name>/<service_name>" slugs only, used for
+	// shell completion. The slugMap contains many more variants (raw IDs,
+	// short IDs), which would be too noisy to suggest.
+	nameSlugMap *IDMap
 }
 
 func NewServiceMapper(ctx context.Context, client *koyeb.APIClient, appMapper *AppMapper) *ServiceMapper {
 	return &ServiceMapper{
-		ctx:       ctx,
-		client:    client,
-		appMapper: appMapper,
-		fetched:   false,
-		sidMap:    NewIDMap(),
-		slugMap:   NewIDMap(),
+		ctx:         ctx,
+		client:      client,
+		appMapper:   appMapper,
+		fetched:     false,
+		sidMap:      NewIDMap(),
+		slugMap:     NewIDMap(),
+		nameSlugMap: NewIDMap(),
 	}
 }
 
@@ -76,6 +81,17 @@ func (mapper *ServiceMapper) GetSlug(id string) (string, error) {
 	return slug, nil
 }
 
+// Complete returns the identifiers ("<app_name>/<service_name>" slugs, then
+// short IDs) that can be used to refer to services, for shell completion.
+func (mapper *ServiceMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return append(mapper.nameSlugMap.Values(), mapper.sidMap.Values()...), nil
+}
+
 func (mapper *ServiceMapper) fetch() error {
 	radix := NewRadixTree()
 
@@ -119,6 +135,7 @@ func (mapper *ServiceMapper) fetch() error {
 		}
 
 		mapper.sidMap.Set(service.GetId(), getShortID(service.GetId(), minLength))
+		mapper.nameSlugMap.Set(service.GetId(), fmt.Sprint(appName, "/", service.GetName()))
 
 		// Possible values:
 		// <app_name>/<service_id>

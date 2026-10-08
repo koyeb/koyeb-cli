@@ -72,6 +72,17 @@ func (mapper *DomainMapper) GetName(id string) (string, error) {
 	return name, nil
 }
 
+// Complete returns the identifiers (names, then short IDs) that can be used to
+// refer to domains, for shell completion.
+func (mapper *DomainMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return append(mapper.nameMap.Values(), mapper.sidMap.Values()...), nil
+}
+
 func (mapper *DomainMapper) fetch() error {
 	radix := NewRadixTree()
 

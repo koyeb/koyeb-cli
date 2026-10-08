@@ -16,10 +16,11 @@ func NewDomainCmd() *cobra.Command {
 	domainCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	getDomainCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get domain",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get domain",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDomainIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	domainCmd.AddCommand(getDomainCmd)
 
@@ -33,10 +34,11 @@ func NewDomainCmd() *cobra.Command {
 	domainCmd.AddCommand(createDomainCmd)
 
 	describeDomainCmd := &cobra.Command{
-		Use:   "describe",
-		Short: "Describe domain",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Describe),
+		Use:               "describe",
+		Short:             "Describe domain",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDomainIdentifiers,
+		RunE:              WithCLIContext(h.Describe),
 	}
 	domainCmd.AddCommand(describeDomainCmd)
 
@@ -48,33 +50,37 @@ func NewDomainCmd() *cobra.Command {
 	domainCmd.AddCommand(listDomainCmd)
 
 	deleteDomainCmd := &cobra.Command{
-		Use:   "delete",
-		Short: "Delete domain",
-		RunE:  WithCLIContext(h.Delete),
+		Use:               "delete",
+		Short:             "Delete domain",
+		ValidArgsFunction: completeDomainIdentifiers,
+		RunE:              WithCLIContext(h.Delete),
 	}
 	domainCmd.AddCommand(deleteDomainCmd)
 
 	refreshDomainCmd := &cobra.Command{
-		Use:   "refresh NAME",
-		Short: "Refresh a custom domain verification status",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Refresh),
+		Use:               "refresh NAME",
+		Short:             "Refresh a custom domain verification status",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDomainIdentifiers,
+		RunE:              WithCLIContext(h.Refresh),
 	}
 	domainCmd.AddCommand(refreshDomainCmd)
 
 	attachDomainCmd := &cobra.Command{
-		Use:   "attach NAME APP",
-		Short: "Attach a custom domain to an existing app",
-		Args:  cobra.ExactArgs(2),
-		RunE:  WithCLIContext(h.Attach),
+		Use:               "attach NAME APP",
+		Short:             "Attach a custom domain to an existing app",
+		Args:              cobra.ExactArgs(2),
+		ValidArgsFunction: completeDomainAttachArgs,
+		RunE:              WithCLIContext(h.Attach),
 	}
 	domainCmd.AddCommand(attachDomainCmd)
 
 	detachDomainCmd := &cobra.Command{
-		Use:   "detach NAME",
-		Short: "Detach a custom domain from the app it is currently attached to",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Detach),
+		Use:               "detach NAME",
+		Short:             "Detach a custom domain from the app it is currently attached to",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeDomainIdentifiers,
+		RunE:              WithCLIContext(h.Detach),
 	}
 	domainCmd.AddCommand(detachDomainCmd)
 

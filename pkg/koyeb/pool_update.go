@@ -24,7 +24,8 @@ Flags that are not passed keep their current values.
 The NAME argument identifies the pool (name, short ID or full UUID);
 renaming a pool is not supported. The pool type is fixed at creation:
 --type must match the live type (restating it is allowed).`,
-		Args: cobra.ExactArgs(1),
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completePoolIdentifiers,
 		Example: `
 # Resize a pool
 $> koyeb pool update my-pool --size 5

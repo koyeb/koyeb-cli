@@ -1,5 +1,7 @@
 package idmapper
 
+import "sort"
+
 // IDMap is a bidirectional map to store value <> id translations.
 // A value could either be a short id, a name and/or a slug.
 type IDMap struct {
@@ -31,4 +33,15 @@ func (idmap *IDMap) GetValue(id string) (string, bool) {
 func (idmap *IDMap) Set(id string, val string) {
 	idmap.idCache[id] = val
 	idmap.valCache[val] = id
+}
+
+// Values returns all the values (names, short IDs, slugs) known to the map,
+// sorted alphabetically. It is used to provide shell completion candidates.
+func (idmap *IDMap) Values() []string {
+	values := make([]string, 0, len(idmap.valCache))
+	for val := range idmap.valCache {
+		values = append(values, val)
+	}
+	sort.Strings(values)
+	return values
 }

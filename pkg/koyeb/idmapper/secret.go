@@ -55,6 +55,17 @@ func (mapper *SecretMapper) ResolveID(val string) (string, error) {
 	)
 }
 
+// Complete returns the identifiers (names, then short IDs) that can be used to
+// refer to secrets, for shell completion.
+func (mapper *SecretMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return append(mapper.nameMap.Values(), mapper.sidMap.Values()...), nil
+}
+
 func (mapper *SecretMapper) fetch() error {
 	radix := NewRadixTree()
 

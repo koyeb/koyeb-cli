@@ -190,7 +190,8 @@ linear --retry-delay × attempt backoff (default 1s). Permanent failures
 
 With --wait, the readiness poll runs until the claimed service is ready,
 bounded by --wait-timeout (default 5m) at --poll-interval (default 2s).`,
-		Args: cobra.ExactArgs(1),
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completePoolIdentifiers,
 		Example: `
 # Claim an instance from a pool
 $> koyeb pool claim my-pool

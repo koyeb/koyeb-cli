@@ -135,10 +135,11 @@ func NewSecretCmd() *cobra.Command {
 	secretCmd.AddCommand(createSecretCmd)
 
 	getSecretCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get secret",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Get),
+		Use:               "get NAME",
+		Short:             "Get secret",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSecretIdentifiers,
+		RunE:              WithCLIContext(h.Get),
 	}
 	secretCmd.AddCommand(getSecretCmd)
 
@@ -150,17 +151,19 @@ func NewSecretCmd() *cobra.Command {
 	secretCmd.AddCommand(listSecretCmd)
 
 	describeSecretCmd := &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe secret",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Describe),
+		Use:               "describe NAME",
+		Short:             "Describe secret",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSecretIdentifiers,
+		RunE:              WithCLIContext(h.Describe),
 	}
 	secretCmd.AddCommand(describeSecretCmd)
 
 	updateSecretCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update secret",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update secret",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSecretIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			secretID, err := ResolveSecretArgs(ctx, args[0])
 			if err != nil {
@@ -211,19 +214,21 @@ func NewSecretCmd() *cobra.Command {
 	secretCmd.AddCommand(updateSecretCmd)
 
 	deleteSecretCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete secret",
-		Args:  cobra.ExactArgs(1),
-		RunE:  WithCLIContext(h.Delete),
+		Use:               "delete NAME",
+		Short:             "Delete secret",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSecretIdentifiers,
+		RunE:              WithCLIContext(h.Delete),
 	}
 	secretCmd.AddCommand(deleteSecretCmd)
 
 	revealSecretCmd := &cobra.Command{
-		Use:     "reveal NAME",
-		Aliases: []string{"show"},
-		Short:   "Show secret value",
-		Args:    cobra.ExactArgs(1),
-		RunE:    WithCLIContext(h.Reveal),
+		Use:               "reveal NAME",
+		Aliases:           []string{"show"},
+		Short:             "Show secret value",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSecretIdentifiers,
+		RunE:              WithCLIContext(h.Reveal),
 	}
 	secretCmd.AddCommand(revealSecretCmd)
 

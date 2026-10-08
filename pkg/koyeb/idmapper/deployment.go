@@ -47,6 +47,17 @@ func (mapper *DeploymentMapper) ResolveID(val string) (string, error) {
 	)
 }
 
+// Complete returns the identifiers (short IDs) that can be used to refer to
+// deployments, for shell completion. Deployments have no name.
+func (mapper *DeploymentMapper) Complete() ([]string, error) {
+	if !mapper.fetched {
+		if err := mapper.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	return mapper.sidMap.Values(), nil
+}
+
 func (mapper *DeploymentMapper) fetch() error {
 	radix := NewRadixTree()
 

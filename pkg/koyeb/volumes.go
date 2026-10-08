@@ -105,9 +105,10 @@ func NewVolumeCmd() *cobra.Command {
 	volumeCmd.AddCommand(createVolumeCmd)
 
 	getVolumeCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get a volume",
-		Args:  cobra.ExactArgs(1),
+		Use:               "get NAME",
+		Short:             "Get a volume",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeVolumeIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return h.Get(ctx, cmd, args)
 		}),
@@ -124,9 +125,10 @@ func NewVolumeCmd() *cobra.Command {
 	volumeCmd.AddCommand(listVolumeCmd)
 
 	updateVolumeCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update a volume",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update a volume",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeVolumeIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			req := koyeb.NewUpdatePersistentVolumeRequestWithDefaults()
 
@@ -151,9 +153,10 @@ func NewVolumeCmd() *cobra.Command {
 	volumeCmd.AddCommand(updateVolumeCmd)
 
 	deleteVolumeCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete a volume",
-		Args:  cobra.ExactArgs(1),
+		Use:               "delete NAME",
+		Short:             "Delete a volume",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeVolumeIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return h.Delete(ctx, cmd, args)
 		}),

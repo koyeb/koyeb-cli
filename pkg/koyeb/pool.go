@@ -58,9 +58,10 @@ func newPoolListCmd() *cobra.Command {
 
 func newPoolGetCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get a service pool",
-		Args:  cobra.ExactArgs(1),
+		Use:               "get NAME",
+		Short:             "Get a service pool",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completePoolIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return NewPoolHandler().Get(ctx, cmd, args)
 		}),
@@ -69,9 +70,10 @@ func newPoolGetCmd() *cobra.Command {
 
 func newPoolDescribeCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "describe NAME",
-		Short: "Describe a service pool",
-		Args:  cobra.ExactArgs(1),
+		Use:               "describe NAME",
+		Short:             "Describe a service pool",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completePoolIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return NewPoolHandler().Describe(ctx, cmd, args)
 		}),
@@ -80,9 +82,10 @@ func newPoolDescribeCmd() *cobra.Command {
 
 func newPoolDeleteCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete a service pool",
-		Args:  cobra.ExactArgs(1),
+		Use:               "delete NAME",
+		Short:             "Delete a service pool",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completePoolIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return NewPoolHandler().Delete(ctx, cmd, args)
 		}),

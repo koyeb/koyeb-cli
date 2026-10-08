@@ -19,9 +19,10 @@ func NewSnapshotCmd() *cobra.Command {
 	snapshotCmd.PersistentFlags().String("workspace", "", "Workspace ID or name (alias for --project)")
 
 	createSnapshotCmd := &cobra.Command{
-		Use:   "create NAME PARENT_VOLUME",
-		Short: "Create a new snapshot",
-		Args:  cobra.ExactArgs(2),
+		Use:               "create NAME PARENT_VOLUME",
+		Short:             "Create a new snapshot",
+		Args:              cobra.ExactArgs(2),
+		ValidArgsFunction: completeSnapshotCreateArgs,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			req := koyeb.NewCreateSnapshotRequestWithDefaults()
 
@@ -39,9 +40,10 @@ func NewSnapshotCmd() *cobra.Command {
 	snapshotCmd.AddCommand(createSnapshotCmd)
 
 	getSnapshotCmd := &cobra.Command{
-		Use:   "get NAME",
-		Short: "Get a snapshot",
-		Args:  cobra.ExactArgs(1),
+		Use:               "get NAME",
+		Short:             "Get a snapshot",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSnapshotIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return h.Get(ctx, cmd, args)
 		}),
@@ -58,9 +60,10 @@ func NewSnapshotCmd() *cobra.Command {
 	snapshotCmd.AddCommand(listSnapshotCmd)
 
 	updateSnapshotCmd := &cobra.Command{
-		Use:   "update NAME",
-		Short: "Update a snapshot",
-		Args:  cobra.ExactArgs(1),
+		Use:               "update NAME",
+		Short:             "Update a snapshot",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSnapshotIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			req := koyeb.NewUpdateSnapshotRequestWithDefaults()
 
@@ -76,9 +79,10 @@ func NewSnapshotCmd() *cobra.Command {
 	snapshotCmd.AddCommand(updateSnapshotCmd)
 
 	deleteSnapshotCmd := &cobra.Command{
-		Use:   "delete NAME",
-		Short: "Delete a snapshot",
-		Args:  cobra.ExactArgs(1),
+		Use:               "delete NAME",
+		Short:             "Delete a snapshot",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeSnapshotIdentifiers,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			return h.Delete(ctx, cmd, args)
 		}),
