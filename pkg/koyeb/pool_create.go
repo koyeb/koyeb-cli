@@ -97,6 +97,15 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		return koyeb.CreateServicePool{}, err
 	}
 
+	// Member volumes: the shared bundle mounts the declared VOLUME:PATH
+	// pairs onto the member definition. Volume IDs resolve through the
+	// mapper (UUIDs pass through without any API call).
+	volumes, err := svcHandler.parseVolumes(ctx, flags, def.Volumes)
+	if err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
+	def.SetVolumes(volumes)
+
 	// Member network policy (egress).
 	networkPolicy, policyChanged, err := svcHandler.parseNetworkPolicy(flags, nil)
 	if err != nil {

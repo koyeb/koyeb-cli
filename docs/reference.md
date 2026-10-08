@@ -4245,6 +4245,8 @@ $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
                                                 
       --size int                                Number of instances kept ready in the pool (default 1)
       --type string                             Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
+      --volumes strings                         Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                
 ```
 
 ### Options inherited from parent commands
@@ -4476,6 +4478,8 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
                                                 
       --size int                                Number of instances kept ready in the pool (default 1)
       --type string                             Pool type: "web", "worker" or "sandbox" (default) (default "sandbox")
+      --volumes strings                         Update service volumes using the format VOLUME:PATH, for example --volume myvolume:/data.To delete a volume, use !VOLUME, for example --volume '!myvolume'
+                                                
 ```
 
 ### Options inherited from parent commands

@@ -270,6 +270,63 @@ func TestBuildUpdateServicePool(t *testing.T) {
 		assert.Equal(t, "debug", env[1].GetValue())
 	})
 
+	t.Run("--volumes mounts a member volume", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("volumes", "423e4567-e89b-42d3-a456-426614174000:/other"))
+		live := liveSandboxPoolFixture()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		volumes := def.GetVolumes()
+		require.Len(t, volumes, 1)
+		assert.Equal(t, "423e4567-e89b-42d3-a456-426614174000", volumes[0].GetId())
+		assert.Equal(t, "/other", volumes[0].GetPath())
+	})
+
+	t.Run("unchanged --volumes keeps the live mounts verbatim", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := liveSandboxPoolFixture()
+		live.Definition.Volumes = liveVolumes()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.Equal(t, liveVolumes(), def.GetVolumes(),
+			"unchanged flags must keep the live volume mounts")
+	})
+
+	t.Run("--volumes remounts a live volume to a new path", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("volumes", "323e4567-e89b-42d3-a456-426614174000:/new"))
+		live := liveSandboxPoolFixture()
+		live.Definition.Volumes = liveVolumes()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		volumes := def.GetVolumes()
+		require.Len(t, volumes, 1)
+		assert.Equal(t, "323e4567-e89b-42d3-a456-426614174000", volumes[0].GetId())
+		assert.Equal(t, "/new", volumes[0].GetPath())
+	})
+
+	t.Run("--volumes '!VOLUME' unmounts a live volume", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("volumes", "!323e4567-e89b-42d3-a456-426614174000"))
+		live := liveSandboxPoolFixture()
+		live.Definition.Volumes = liveVolumes()
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		assert.Empty(t, def.GetVolumes(), "'!' must unmount the live volume")
+	})
+
 	t.Run("SANDBOX pools reject explicit ports", func(t *testing.T) {
 		cmd := newPoolUpdateCmd()
 		require.NoError(t, cmd.Flags().Set("ports", "8080"))
@@ -544,6 +601,7 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
 		networkPolicyFlagNames(),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
+		volumesFlagNames(),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
 	) {
