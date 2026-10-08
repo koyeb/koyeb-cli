@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -346,8 +347,7 @@ func (query *WatchLogsQuery) reconnect(ctx context.Context, isFirstconnection bo
 			Solution: "Try again in a few seconds",
 		}
 	}
-	ret := NewWebsocketPingConnection(conn)
-	return &ret, nil
+	return NewWebsocketPingConnection(conn), nil
 }
 
 func (query *WatchLogsQuery) Execute(ctx context.Context) (chan WatchLogsEntry, error) {
@@ -493,11 +493,12 @@ func (query *WatchLogsQuery) Execute(ctx context.Context) (chan WatchLogsEntry, 
 // sending ping messages.
 type WebsocketPingConnection struct {
 	Conn     *websocket.Conn
-	stopChan chan (struct{})
+	stopChan chan struct{}
+	stopOnce sync.Once
 }
 
-func NewWebsocketPingConnection(conn *websocket.Conn) WebsocketPingConnection {
-	ret := WebsocketPingConnection{Conn: conn, stopChan: make(chan struct{})}
+func NewWebsocketPingConnection(conn *websocket.Conn) *WebsocketPingConnection {
+	ret := &WebsocketPingConnection{Conn: conn, stopChan: make(chan struct{})}
 
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
@@ -512,7 +513,6 @@ func NewWebsocketPingConnection(conn *websocket.Conn) WebsocketPingConnection {
 					return
 				}
 			case <-ret.stopChan:
-				close(ret.stopChan)
 				return
 			}
 		}
@@ -520,9 +520,11 @@ func NewWebsocketPingConnection(conn *websocket.Conn) WebsocketPingConnection {
 	return ret
 }
 
-// Stop sendings ping messages to the websocket connection.
+// Stop stops sending ping messages to the websocket connection. It is safe
+// to call more than once and after the ping goroutine already exited on its
+// own.
 func (conn *WebsocketPingConnection) Stop() {
-	conn.stopChan <- struct{}{}
+	conn.stopOnce.Do(func() { close(conn.stopChan) })
 }
 
 // PrintAll prints all the logs returned by WatchLogsQuery.Execute(). It returns

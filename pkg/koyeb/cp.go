@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
@@ -48,7 +49,10 @@ func (manager *CopyManager) copyToInstance(ctx *CLIContext) error {
 	reader, writer := io.Pipe()
 
 	var tarErr error
+	var tarDone sync.WaitGroup
+	tarDone.Add(1)
 	go func(srcPath string, writer io.WriteCloser) {
+		defer tarDone.Done()
 		defer writer.Close()
 		tarErr = Tar(srcPath, writer)
 	}(manager.Src.FilePath, writer)
@@ -66,7 +70,14 @@ func (manager *CopyManager) copyToInstance(ctx *CLIContext) error {
 		},
 		[]string{"tar", "-C", manager.Dst.FilePath, "-xf", "-"},
 	)
-	if err != nil || retCode != 0 {
+
+	// Close the read end so the tar goroutine unblocks even if the exec
+	// failed before draining the pipe, then read its error only once it
+	// has finished writing it.
+	reader.Close()
+	tarDone.Wait()
+
+	if err != nil || retCode != 0 || tarErr != nil {
 		return &errors.CLIError{
 			What:       "Error while copying",
 			Why:        fmt.Sprintf("Failed copying path %v", manager.Src.FilePath),
@@ -83,7 +94,10 @@ func (manager *CopyManager) copyFromInstance(ctx *CLIContext) error {
 	reader, writer := io.Pipe()
 
 	var untarErr error
+	var untarDone sync.WaitGroup
+	untarDone.Add(1)
 	go func(dstPath string, reader io.ReadCloser) {
+		defer untarDone.Done()
 		defer reader.Close()
 
 		untarErr = Untar(dstPath, reader)
@@ -104,7 +118,14 @@ func (manager *CopyManager) copyFromInstance(ctx *CLIContext) error {
 		},
 		[]string{"tar", "-C", pathDir, "-czf", "-", pathBase},
 	)
-	if err != nil || retCode != 0 {
+
+	// Close the write end so the untar goroutine unblocks even if the
+	// exec failed before the remote tar finished, then read its error
+	// only once it has finished writing it.
+	writer.Close()
+	untarDone.Wait()
+
+	if err != nil || retCode != 0 || untarErr != nil {
 		return &errors.CLIError{
 			What:       "Error while copying",
 			Why:        fmt.Sprintf("Failed copying path %v", manager.Src.FilePath),
