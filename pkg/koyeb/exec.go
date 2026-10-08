@@ -19,6 +19,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ExecClient is the seam commands use to stream through the exec API.
+// Production wires *ExecAPIClient; tests provide fakes.
+type ExecClient interface {
+	Exec(ctx context.Context, id ExecId, cmd []string) (int, error)
+	ExecWithStreams(ctx context.Context, stdStreams *StdStreams, id ExecId, cmd []string) (int, error)
+}
+
 type ExecAPIClient struct {
 	url    *url.URL
 	header http.Header

@@ -41,7 +41,6 @@ func NewComposeLogsCmd() *cobra.Command {
 			defer cancel()
 
 			wg := sync.WaitGroup{}
-			wg.Add(1)
 
 			for _, svc := range serviceList.Services {
 				lq := LogsQuery{
@@ -49,7 +48,9 @@ func NewComposeLogsCmd() *cobra.Command {
 					Order:     "asc",
 					Tail:      true,
 				}
+				wg.Add(1)
 				go func() {
+					defer wg.Done()
 					if err := ctx.LogsClient.PrintLogs(ctx, lq); err != nil {
 						log.Errorf("Error while getting logs: %s", err)
 						return

@@ -70,7 +70,7 @@ type CLIContext struct {
 	Client       *koyeb.APIClient
 	API          koyebAPI
 	LogsClient   *LogsAPIClient
-	ExecClient   *ExecAPIClient
+	ExecClient   ExecClient
 	Mapper       *idmapper.Mapper
 	Token        string
 	Renderer     renderer.Renderer
