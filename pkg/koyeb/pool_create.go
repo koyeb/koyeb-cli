@@ -27,9 +27,9 @@ can be claimed later with 'koyeb pool claim'.
 --type selects the definition the pool members run: "sandbox" (the
 default), "web" or "worker". DATABASE pools are not supported. SANDBOX
 pools keep the sandbox auto-wiring (the platform owns ports 3030/3031
-and mints the executor secret); explicit --port/--route flags are
-rejected on them. WEB and WORKER pools carry exactly the declared
---port/--route values, verbatim.`,
+and mints the executor secret); explicit --port/--route/--proxy-ports
+flags are rejected on them. WEB and WORKER pools carry exactly the
+declared --port/--route/--proxy-ports values, verbatim.`,
 		Args: cobra.ExactArgs(1),
 		Example: `
 # Create a pool of 3 instances
@@ -40,6 +40,9 @@ $> koyeb pool create my-pool --project my-project
 
 # Create a WEB pool with explicit member ports and routes
 $> koyeb pool create my-pool --type web --port 8080:http --route /:8080
+
+# Expose a TCP proxy port on a WEB pool's members
+$> koyeb pool create my-pool --type web --proxy-ports 5432:tcp
 `,
 		RunE: WithCLIContext(func(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 			req, err := buildCreateServicePool(ctx, cmd, args[0])
@@ -129,6 +132,9 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 	// SANDBOX wiring (ports 3030/3031 and the sandbox routes) stays
 	// server-owned; non-SANDBOX pools carry the declared values verbatim.
 	if err := setPoolPortsAndRoutes(poolType, flags, def); err != nil {
+		return koyeb.CreateServicePool{}, err
+	}
+	if err := setPoolProxyPorts(poolType, flags, def); err != nil {
 		return koyeb.CreateServicePool{}, err
 	}
 	if err := applyPoolSandboxKnobs(poolType, flags, def); err != nil {
@@ -230,6 +236,29 @@ func setPoolPortsAndRoutes(poolType koyeb.DeploymentDefinitionType,
 	}
 	if flags.Lookup("routes").Changed || len(routes) > 0 {
 		def.SetRoutes(routes)
+	}
+	return nil
+}
+
+// setPoolProxyPorts applies the proxy-ports flag bundle (--proxy-ports)
+// onto the definition. WEB and WORKER pools merge the declared proxy
+// ports over the live values with the bundle's changed-only conventions;
+// SANDBOX pools never take them — the sandbox knobs own the pool's
+// proxy-port surface and validatePoolWiringFlags rejects the flag first.
+func setPoolProxyPorts(poolType koyeb.DeploymentDefinitionType,
+	flags *pflag.FlagSet, def *koyeb.DeploymentDefinition) error {
+	if poolType == koyeb.DEPLOYMENTDEFINITIONTYPE_SANDBOX {
+		return nil
+	}
+
+	proxyPorts, err := parseListFlags("proxy-ports", flags_list.NewProxyPortListFromFlags, flags, def.ProxyPorts)
+	if err != nil {
+		return err
+	}
+	// Set on change even when the merge empties the list: deleting the
+	// last proxy port must clear the wiring, not silently no-op.
+	if flags.Lookup("proxy-ports").Changed || len(proxyPorts) > 0 {
+		def.SetProxyPorts(proxyPorts)
 	}
 	return nil
 }

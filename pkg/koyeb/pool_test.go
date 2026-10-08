@@ -280,6 +280,58 @@ func TestBuildCreateServicePoolChecks(t *testing.T) {
 	})
 }
 
+func TestBuildCreateServicePoolProxyPorts(t *testing.T) {
+	t.Run("web pools carry declared proxy ports verbatim", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "22:tcp"))
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "8022"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		proxyPorts := req.GetDefinition().ProxyPorts
+		require.Len(t, proxyPorts, 2)
+		assert.Equal(t, int64(22), proxyPorts[0].GetPort())
+		assert.Equal(t, koyeb.PROXYPORTPROTOCOL_TCP, proxyPorts[0].GetProtocol())
+		assert.Equal(t, int64(8022), proxyPorts[1].GetPort())
+		assert.Equal(t, koyeb.PROXYPORTPROTOCOL_TCP, proxyPorts[1].GetProtocol(), "PROTOCOL defaults to tcp")
+	})
+
+	t.Run("worker pools accept declared proxy ports", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "worker"))
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "5432:tcp"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		proxyPorts := req.GetDefinition().ProxyPorts
+		require.Len(t, proxyPorts, 1)
+		assert.Equal(t, int64(5432), proxyPorts[0].GetPort())
+	})
+
+	t.Run("explicit proxy ports are rejected on SANDBOX pools", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "22:tcp"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not allowed on SANDBOX pools")
+		assert.Contains(t, err.Error(), "proxy-ports")
+	})
+
+	t.Run("invalid proxy port values are rejected", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("type", "web"))
+		require.NoError(t, cmd.Flags().Set("proxy-ports", "not-a-port"))
+
+		_, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unable to parse the port")
+	})
+}
+
 func TestBuildCreateServicePoolPrivileged(t *testing.T) {
 	t.Run("members run unprivileged by default", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
@@ -482,7 +534,7 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 	// definitions. Pool secrets and mesh stay off the pool surface per the
 	// cross-client contract.
 	for _, name := range []string{
-		"proxy-ports", "auth", "app", "wait", "wait-timeout",
+		"auth", "app", "wait", "wait-timeout",
 		"sandbox-secret", "enable-mesh",
 	} {
 		assert.Nil(t, flags.Lookup(name), "flag --%s must not be registered on pool create", name)
@@ -503,6 +555,7 @@ func TestPoolCreateCmdFlagSet(t *testing.T) {
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(sandboxPoolScalingSleepDelayFlagUsage),
 		checksFlagNames(),
+		proxyPortsFlagNames(),
 	) {
 		assert.NotNil(t, flags.Lookup(name), "flag --%s must be registered on pool create", name)
 	}
@@ -557,10 +610,11 @@ func TestPoolCreateCmdFlagAliases(t *testing.T) {
 	t.Run("aliases whose canonical flag is not registered stay inert", func(t *testing.T) {
 		cmd := newPoolCreateCmd()
 
-		// --proxy would normalize to --proxy-ports, which pool create does
-		// not register: the alias must not resolve to any flag.
-		err := cmd.Flags().Set("proxy", "8080:http")
-		assert.Error(t, err, "--proxy must stay inert on pool create")
+		// --archive-docker-arg would normalize to --archive-docker-args,
+		// which pool create does not register: the alias must not resolve
+		// to any flag.
+		err := cmd.Flags().Set("archive-docker-arg", "nginx")
+		assert.Error(t, err, "--archive-docker-arg must stay inert on pool create")
 	})
 }
 
