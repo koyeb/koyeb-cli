@@ -47,6 +47,16 @@ managing processes, filesystem operations, and port exposure.`,
 	listSandboxCmd.Flags().StringP("name", "n", "", "Sandbox name")
 	sandboxCmd.AddCommand(listSandboxCmd)
 
+	// get command - get a sandbox's status and connection info
+	getSandboxCmd := &cobra.Command{
+		Use:               "get NAME",
+		Short:             "Get sandbox status and connection info",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Get),
+	}
+	sandboxCmd.AddCommand(getSandboxCmd)
+
 	// create command - create a new sandbox
 	createSandboxCmd := &cobra.Command{
 		Use:   "create NAME",
@@ -70,6 +80,16 @@ $> koyeb sandbox create myapp/mysandbox --wait
 	// Add only sandbox-compatible flags (not the full service definition flags)
 	addSandboxCreateFlags(createSandboxCmd)
 	sandboxCmd.AddCommand(createSandboxCmd)
+
+	// delete command - delete a sandbox
+	deleteSandboxCmd := &cobra.Command{
+		Use:               "delete NAME",
+		Short:             "Delete a sandbox",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeServiceIdentifiers,
+		RunE:              WithCLIContext(h.Delete),
+	}
+	sandboxCmd.AddCommand(deleteSandboxCmd)
 
 	// run command - execute a command synchronously
 	runSandboxCmd := &cobra.Command{
@@ -342,6 +362,17 @@ type SandboxInfo struct {
 	RoutingKey string
 }
 
+// ConnectionURL returns the URL used to reach the sandbox executor: the
+// API-provided base URL when DeploymentMetadata.Sandbox exposes one, and
+// the legacy https://{Domain}/koyeb-sandbox URL otherwise. It is the same
+// URL NewClient builds its client from.
+func (i *SandboxInfo) ConnectionURL() string {
+	if i.BaseURL != "" {
+		return i.BaseURL
+	}
+	return fmt.Sprintf("https://%s/koyeb-sandbox", i.Domain)
+}
+
 // NewClient creates a SandboxClient using the connection information in i.
 // When BaseURL is set (provided by the API via DeploymentMetadata.Sandbox),
 // it is used as-is and the RoutingKey is sent as the X-Routing-Key header.
@@ -427,11 +458,11 @@ func withSandboxClient(ctx *CLIContext, sandboxName string, op sandboxOp, opts .
 	return op(info.NewClient(opts...), info)
 }
 
-// fetchSandboxInfo retrieves sandbox info from the API
-func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
-	// Resolve service ID
-	serviceMapper := ctx.Mapper.Service()
-	serviceID, err := serviceMapper.ResolveID(name)
+// resolveSandboxService resolves a sandbox reference (name, short ID, or
+// full UUID) to its service through the id mapper, failing unless the
+// service is a SANDBOX.
+func resolveSandboxService(ctx *CLIContext, name string) (*koyeb.Service, error) {
+	serviceID, err := ctx.Mapper.Service().ResolveID(name)
 	if err != nil {
 		return nil, &errors.CLIError{
 			What:       "Error while resolving sandbox",
@@ -442,7 +473,6 @@ func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 		}
 	}
 
-	// Get service details
 	serviceRes, resp, err := ctx.API.GetService(ctx.Context, serviceID)
 	if err != nil {
 		return nil, errors.NewCLIErrorFromAPIError(
@@ -453,8 +483,6 @@ func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 	}
 
 	service := serviceRes.GetService()
-
-	// Verify it's a sandbox type
 	if service.GetType() != koyeb.SERVICETYPE_SANDBOX {
 		return nil, &errors.CLIError{
 			What:       "Error while accessing sandbox",
@@ -463,7 +491,22 @@ func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 			Solution:   "Use a service created with --type=sandbox",
 		}
 	}
+	return &service, nil
+}
 
+// fetchSandboxInfo retrieves sandbox info from the API
+func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
+	service, err := resolveSandboxService(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return sandboxConnectionInfo(ctx, name, service)
+}
+
+// sandboxConnectionInfo computes the executor connection information of a
+// resolved sandbox: the domain, the SANDBOX_SECRET and, when the API exposes
+// DeploymentMetadata.Sandbox, the public base URL and routing key.
+func sandboxConnectionInfo(ctx *CLIContext, name string, service *koyeb.Service) (*SandboxInfo, error) {
 	appID := service.GetAppId()
 
 	// Get app to find domain
@@ -559,7 +602,7 @@ func fetchSandboxInfo(ctx *CLIContext, name string) (*SandboxInfo, error) {
 	}
 
 	return &SandboxInfo{
-		ServiceID:     serviceID,
+		ServiceID:     service.GetId(),
 		AppID:         appID,
 		Domain:        domain,
 		SandboxSecret: sandboxSecret,

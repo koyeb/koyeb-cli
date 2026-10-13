@@ -116,6 +116,11 @@ var commandsWithCompletion = []struct {
 	{[]string{"pool", "delete"}, completePoolIdentifiers},
 	{[]string{"pool", "update"}, completePoolIdentifiers},
 	{[]string{"pool", "claim"}, completePoolIdentifiers},
+
+	// Sandboxes are SANDBOX-type services: the service identifier completion
+	// suggests the same slugs and short IDs these commands resolve.
+	{[]string{"sandbox", "get"}, completeServiceIdentifiers},
+	{[]string{"sandbox", "delete"}, completeServiceIdentifiers},
 }
 
 // commandsWithoutCompletion lists commands taking a NAME argument that is a
