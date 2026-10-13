@@ -3040,6 +3040,7 @@ managing processes, filesystem operations, and port exposure.
 * [koyeb sandbox run](#koyeb-sandbox-run)	 - Execute a command in the sandbox
 * [koyeb sandbox start](#koyeb-sandbox-start)	 - Start a background process in the sandbox
 * [koyeb sandbox unexpose-port](#koyeb-sandbox-unexpose-port)	 - Unexpose the currently exposed port
+* [koyeb sandbox update](#koyeb-sandbox-update)	 - Update a running sandbox's lifecycle and network policy
 
 ## koyeb sandbox create
 
@@ -4005,6 +4006,86 @@ koyeb sandbox unexpose-port NAME [flags]
 
 ```
   -h, --help   help for unexpose-port
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox update
+
+Update a running sandbox's lifecycle and network policy
+
+### Synopsis
+
+Update a running sandbox's lifecycle and egress network policy, mirroring
+the SDKs' update_lifecycle and update_network_policy.
+
+Lifecycle flags update only the fields you supply: the other settings keep
+their current values, and a 0 duration disables the corresponding delay.
+
+Network policy flags configure outbound (egress) traffic: --block-network
+denies all outbound traffic, --outbound-allowlist denies by default and
+allows only the listed destinations (bare IPs are normalized to /32 (IPv4)
+or /128 (IPv6)), and --no-network-policy reverts to the platform default
+(unrestricted outbound access).
+
+Applying an update redeploys the sandbox: it is restarted and any
+in-memory or non-persisted state is lost.
+
+```
+koyeb sandbox update NAME [flags]
+```
+
+### Examples
+
+```
+
+# Auto-delete the sandbox 24 hours after creation
+$> koyeb sandbox update myapp/mysandbox --delete-after-delay 24h
+
+# Auto-delete the sandbox 30 minutes after it sleeps due to inactivity
+$> koyeb sandbox update myapp/mysandbox --delete-after-inactivity-delay 30m
+
+# Disable the delete-after-creation delay
+$> koyeb sandbox update myapp/mysandbox --delete-after-delay 0
+
+# Block all outbound network traffic
+$> koyeb sandbox update myapp/mysandbox --block-network
+
+# Allow outbound traffic only to specific destinations
+$> koyeb sandbox update myapp/mysandbox --outbound-allowlist 10.0.0.0/8
+
+# Revert to the platform default network policy
+$> koyeb sandbox update myapp/mysandbox --no-network-policy
+
+```
+
+### Options
+
+```
+      --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
+      --delete-after-delay duration              Auto-delete after duration (e.g., '24h')
+      --delete-after-inactivity-delay duration   Auto-delete after inactivity (e.g., '1h')
+  -h, --help                                     help for update
+      --no-network-policy                        Revert to the platform default network policy. Mutually exclusive with --block-network and --outbound-allowlist.
+      --outbound-allowlist strings               Allow outbound traffic only to the listed destinations (deny-by-default). Each entry is a CIDR or bare IP (e.g. 10.0.0.0/8, 203.0.113.42). Bare IPs are normalized to /32 (IPv4) or /128 (IPv6). Prefix an entry with '!' to remove it (e.g. --outbound-allowlist '!10.0.0.0/8'). Mutually exclusive with --block-network and --no-network-policy.
 ```
 
 ### Options inherited from parent commands

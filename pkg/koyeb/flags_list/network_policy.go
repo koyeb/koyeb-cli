@@ -82,6 +82,11 @@ func (f *FlagNetworkPolicyRule) CreateNewItem() *koyeb.NetworkPolicyDestination 
 // is just enough to reject obviously-bad input and provide a stable
 // identity for the !entry merge.
 func classifyNetworkPolicyDestination(s string) (string, error) {
+	// Scoped/zone-ID addresses (e.g. fe80::1%eth0) are rejected, like in
+	// the Koyeb SDKs: the platform policy cannot express them.
+	if strings.Contains(s, "%") {
+		return "", fmt.Errorf("scoped/zone-ID addresses are not allowed: %q", s)
+	}
 	if prefix, err := netip.ParsePrefix(s); err == nil {
 		return prefix.Masked().String(), nil
 	}

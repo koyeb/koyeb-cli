@@ -9,6 +9,7 @@ import (
 	"github.com/koyeb/koyeb-api-client-go/api/v1/koyeb"
 	"github.com/koyeb/koyeb-cli/pkg/koyeb/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // Constants for sandbox operations
@@ -90,6 +91,50 @@ $> koyeb sandbox create myapp/mysandbox --wait
 		RunE:              WithCLIContext(h.Delete),
 	}
 	sandboxCmd.AddCommand(deleteSandboxCmd)
+
+	// update command - update lifecycle and network policy of a running sandbox
+	updateSandboxCmd := &cobra.Command{
+		Use:   "update NAME",
+		Short: "Update a running sandbox's lifecycle and network policy",
+		Args:  cobra.ExactArgs(1),
+		Long: `Update a running sandbox's lifecycle and egress network policy, mirroring
+the SDKs' update_lifecycle and update_network_policy.
+
+Lifecycle flags update only the fields you supply: the other settings keep
+their current values, and a 0 duration disables the corresponding delay.
+
+Network policy flags configure outbound (egress) traffic: --block-network
+denies all outbound traffic, --outbound-allowlist denies by default and
+allows only the listed destinations (bare IPs are normalized to /32 (IPv4)
+or /128 (IPv6)), and --no-network-policy reverts to the platform default
+(unrestricted outbound access).
+
+Applying an update redeploys the sandbox: it is restarted and any
+in-memory or non-persisted state is lost.`,
+		Example: `
+# Auto-delete the sandbox 24 hours after creation
+$> koyeb sandbox update myapp/mysandbox --delete-after-delay 24h
+
+# Auto-delete the sandbox 30 minutes after it sleeps due to inactivity
+$> koyeb sandbox update myapp/mysandbox --delete-after-inactivity-delay 30m
+
+# Disable the delete-after-creation delay
+$> koyeb sandbox update myapp/mysandbox --delete-after-delay 0
+
+# Block all outbound network traffic
+$> koyeb sandbox update myapp/mysandbox --block-network
+
+# Allow outbound traffic only to specific destinations
+$> koyeb sandbox update myapp/mysandbox --outbound-allowlist 10.0.0.0/8
+
+# Revert to the platform default network policy
+$> koyeb sandbox update myapp/mysandbox --no-network-policy
+`,
+		RunE: WithCLIContext(h.Update),
+	}
+	addSandboxLifeCycleFlags(updateSandboxCmd.Flags())
+	addNetworkPolicyFlags(updateSandboxCmd.Flags())
+	sandboxCmd.AddCommand(updateSandboxCmd)
 
 	// run command - execute a command synchronously
 	runSandboxCmd := &cobra.Command{
@@ -657,6 +702,13 @@ func (h *SandboxHandler) Health(ctx *CLIContext, cmd *cobra.Command, args []stri
 	})
 }
 
+// addSandboxLifeCycleFlags registers the lifecycle flags shared by
+// `sandbox create` and `sandbox update`.
+func addSandboxLifeCycleFlags(flags *pflag.FlagSet) {
+	flags.Duration("delete-after-delay", 0, "Auto-delete after duration (e.g., '24h')")
+	flags.Duration("delete-after-inactivity-delay", 0, "Auto-delete after inactivity (e.g., '1h')")
+}
+
 func addSandboxCreateFlags(cmd *cobra.Command) {
 	flags := cmd.Flags()
 
@@ -684,8 +736,7 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 	addEnvConfigFilesFlags(flags, sandboxPoolEnvConfigFilesFlagUsage)
 
 	// Lifecycle flags
-	flags.Duration("delete-after-delay", 0, "Auto-delete after duration (e.g., '24h')")
-	flags.Duration("delete-after-inactivity-delay", 0, "Auto-delete after inactivity (e.g., '1h')")
+	addSandboxLifeCycleFlags(flags)
 
 	// Scaling and sleep delay flags: the shared bundle (sandboxes always
 	// run at max-scale=1, no autoscaling).

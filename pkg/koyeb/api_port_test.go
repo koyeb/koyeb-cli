@@ -31,6 +31,11 @@ type fakeAPI struct {
 	createServiceReply *koyeb.Service
 	createServiceErr   error
 
+	updateServiceCalls []string
+	updateServiceReq   *koyeb.UpdateService
+	updateServiceReply *koyeb.Service
+	updateServiceErr   error
+
 	snapshot      *koyeb.InstanceSnapshot
 	snapshotErr   error
 	snapshots     []koyeb.InstanceSnapshot
@@ -85,6 +90,25 @@ func (f *fakeAPI) CreateService(_ context.Context, req koyeb.CreateService) (
 		service = &koyeb.Service{Id: &id}
 	}
 	return &koyeb.CreateServiceReply{Service: service}, nil, nil
+}
+
+func (f *fakeAPI) UpdateService(_ context.Context, serviceID string, req koyeb.UpdateService) (
+	*koyeb.UpdateServiceReply, *http.Response, error) {
+	f.updateServiceCalls = append(f.updateServiceCalls, serviceID)
+	stored := req
+	f.updateServiceReq = &stored
+	if f.updateServiceErr != nil {
+		return nil, nil, f.updateServiceErr
+	}
+	service := f.updateServiceReply
+	if service == nil {
+		service = f.service
+	}
+	if service == nil {
+		id := "323e4567-e89b-42d3-a456-426614174000"
+		service = &koyeb.Service{Id: &id}
+	}
+	return &koyeb.UpdateServiceReply{Service: service}, nil, nil
 }
 
 func (f *fakeAPI) GetApp(_ context.Context, _ string) (*koyeb.GetAppReply, *http.Response, error) {

@@ -13,6 +13,8 @@ import (
 type koyebAPI interface {
 	GetService(ctx context.Context, serviceID string) (*koyeb.GetServiceReply, *http.Response, error)
 	CreateService(ctx context.Context, req koyeb.CreateService) (*koyeb.CreateServiceReply, *http.Response, error)
+	UpdateService(ctx context.Context, serviceID string, req koyeb.UpdateService) (
+		*koyeb.UpdateServiceReply, *http.Response, error)
 	GetApp(ctx context.Context, appID string) (*koyeb.GetAppReply, *http.Response, error)
 	CreateApp(ctx context.Context, req koyeb.CreateApp) (*koyeb.CreateAppReply, *http.Response, error)
 	ListApps(ctx context.Context, name, offset, limit string) (*koyeb.ListAppsReply, *http.Response, error)
@@ -47,6 +49,11 @@ func (a apiPort) GetService(ctx context.Context, serviceID string) (*koyeb.GetSe
 func (a apiPort) CreateService(ctx context.Context, req koyeb.CreateService) (
 	*koyeb.CreateServiceReply, *http.Response, error) {
 	return a.client.ServicesApi.CreateService(ctx).Service(req).Execute()
+}
+
+func (a apiPort) UpdateService(ctx context.Context, serviceID string, req koyeb.UpdateService) (
+	*koyeb.UpdateServiceReply, *http.Response, error) {
+	return a.client.ServicesApi.UpdateService(ctx, serviceID).Service(req).Execute()
 }
 
 func (a apiPort) GetApp(ctx context.Context, appID string) (*koyeb.GetAppReply, *http.Response, error) {
