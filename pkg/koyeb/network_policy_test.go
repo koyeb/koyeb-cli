@@ -81,6 +81,19 @@ func TestParseNetworkPolicy_BlockNetworkOverridesExistingAllowlist(t *testing.T)
 	assert.Empty(t, policy.GetEgress().AllowList, "--block-network drops existing rules")
 }
 
+func TestParseNetworkPolicy_AllowlistRejectsScopedZoneAddresses(t *testing.T) {
+	h := &ServiceHandler{}
+	fs := newNetworkPolicyFlagSet()
+	require.NoError(t, fs.Parse([]string{
+		"--outbound-allowlist", "fe80::1%eth0",
+	}))
+
+	_, _, err := h.parseNetworkPolicy(fs, nil)
+	require.Error(t, err, "scoped/zone-ID addresses must be rejected like in the Koyeb SDKs")
+	assert.Contains(t, err.Error(), "could not parse")
+	assert.Contains(t, err.Error(), "as a CIDR or IP")
+}
+
 func TestParseNetworkPolicy_AllowlistFreshCreate(t *testing.T) {
 	h := &ServiceHandler{}
 	fs := newNetworkPolicyFlagSet()
