@@ -56,6 +56,7 @@ type fakeAPI struct {
 	listPoolsName   string
 	listPoolsOffset string
 	listPoolsLimit  string
+	listPoolsStatus string
 }
 
 func (f *fakeAPI) GetService(_ context.Context, serviceID string) (*koyeb.GetServiceReply, *http.Response, error) {
@@ -164,11 +165,12 @@ func (f *fakeAPI) GetServicePool(_ context.Context, poolID string) (
 	return &koyeb.GetServicePoolReply{ServicePool: f.pool}, nil, nil
 }
 
-func (f *fakeAPI) ListServicePools(_ context.Context, name, offset, limit string) (
+func (f *fakeAPI) ListServicePools(_ context.Context, name, offset, limit, status string) (
 	*koyeb.ListServicePoolsReply, *http.Response, error) {
 	f.listPoolsName = name
 	f.listPoolsOffset = offset
 	f.listPoolsLimit = limit
+	f.listPoolsStatus = status
 	count := int64(len(f.pools))
 	return &koyeb.ListServicePoolsReply{
 		ServicePools: f.pools,

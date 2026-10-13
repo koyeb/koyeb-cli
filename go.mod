@@ -10,7 +10,7 @@ require (
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/iancoleman/strcase v0.2.0
-	github.com/koyeb/koyeb-api-client-go v0.0.0-20260925132615-2ca96ef5512d
+	github.com/koyeb/koyeb-api-client-go v0.0.0-20261010005317-9c122502bb6a
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mitchellh/go-homedir v1.1.0

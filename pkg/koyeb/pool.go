@@ -53,6 +53,10 @@ func newPoolListCmd() *cobra.Command {
 	cmd.Flags().String("name", "", "Filter pools by name")
 	cmd.Flags().Int64("limit", 0, "Limit the number of pools returned")
 	cmd.Flags().Int64("offset", 0, "Offset the pools returned")
+	cmd.Flags().String("status", "", "Filter pools by status (ready, provisioning, error, deleting)")
+	cmd.RegisterFlagCompletionFunc("status", //nolint:errcheck
+		cobra.FixedCompletions([]string{"ready", "provisioning", "error", "deleting"},
+			cobra.ShellCompDirectiveNoFileComp))
 	return cmd
 }
 

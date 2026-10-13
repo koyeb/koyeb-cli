@@ -30,7 +30,7 @@ type koyebAPI interface {
 	GetServicePool(ctx context.Context, poolID string) (*koyeb.GetServicePoolReply, *http.Response, error)
 	UpdateServicePool(ctx context.Context, poolID string, req koyeb.UpdateServicePool) (
 		*koyeb.UpdateServicePoolReply, *http.Response, error)
-	ListServicePools(ctx context.Context, name, offset, limit string) (
+	ListServicePools(ctx context.Context, name, offset, limit, status string) (
 		*koyeb.ListServicePoolsReply, *http.Response, error)
 	DeleteServicePool(ctx context.Context, poolID string) (*http.Response, error)
 }
@@ -112,11 +112,14 @@ func (a apiPort) UpdateServicePool(ctx context.Context, poolID string, req koyeb
 	return a.client.ServicePoolsApi.UpdateServicePool(ctx, poolID).ServicePool(req).Execute()
 }
 
-func (a apiPort) ListServicePools(ctx context.Context, name, offset, limit string) (
+func (a apiPort) ListServicePools(ctx context.Context, name, offset, limit, status string) (
 	*koyeb.ListServicePoolsReply, *http.Response, error) {
 	req := a.client.ServicePoolsApi.ListServicePools(ctx)
 	if name != "" {
 		req = req.Name(name)
+	}
+	if status != "" {
+		req = req.Status(status)
 	}
 	return req.Offset(offset).Limit(limit).Execute()
 }

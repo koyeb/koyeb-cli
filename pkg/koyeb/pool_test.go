@@ -732,6 +732,14 @@ func TestPoolListCmdRegistersNameFilter(t *testing.T) {
 	assert.Equal(t, "", nameFlag.DefValue, "the name filter is opt-in")
 }
 
+func TestPoolListCmdRegistersStatusFilter(t *testing.T) {
+	cmd := newPoolListCmd()
+
+	statusFlag := cmd.Flags().Lookup("status")
+	require.NotNil(t, statusFlag, "pool list must register --status")
+	assert.Equal(t, "", statusFlag.DefValue, "the status filter is opt-in")
+}
+
 func TestPoolListCmdRegistersPaginationFlags(t *testing.T) {
 	cmd := newPoolListCmd()
 
@@ -759,6 +767,23 @@ func TestPoolListFlow(t *testing.T) {
 
 		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
 		assert.Equal(t, "", fake.listPoolsName)
+	})
+
+	t.Run("--status filters the listing", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+		require.NoError(t, cmd.Flags().Set("status", "provisioning"))
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "provisioning", fake.listPoolsStatus, "the filter must reach the API request")
+	})
+
+	t.Run("without --status the listing is unfiltered", func(t *testing.T) {
+		fake := &fakeAPI{pools: []koyeb.ServicePool{servicePoolFixture()}}
+		cmd := newPoolListCmd()
+
+		require.NoError(t, NewPoolHandler().List(sandboxTestContext(fake), cmd, nil))
+		assert.Equal(t, "", fake.listPoolsStatus)
 	})
 
 	t.Run("--limit and --offset reach the request", func(t *testing.T) {

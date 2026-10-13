@@ -11,10 +11,11 @@ import (
 )
 
 // List lists the service pools of the current scope, optionally filtered
-// by --name. Unset --limit/--offset keep the fetch-all walk bounded by the
-// reported total; set flags bound the listing window.
+// by --name/--status. Unset --limit/--offset keep the fetch-all walk bounded
+// by the reported total; set flags bound the listing window.
 func (h *PoolHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	name, _ := cmd.Flags().GetString("name")
+	status, _ := cmd.Flags().GetString("status")
 
 	offset, offsetSet := int64(0), cmd.Flags().Changed("offset")
 	if offsetSet {
@@ -40,6 +41,7 @@ func (h *PoolHandler) List(ctx *CLIContext, cmd *cobra.Command, args []string) e
 			name,
 			strconv.FormatInt(offset+pageOffset, 10),
 			strconv.FormatInt(reqLimit, 10),
+			status,
 		)
 		if err != nil {
 			return nil, 0, errors.NewCLIErrorFromAPIError("Error while listing pools", err, resp)

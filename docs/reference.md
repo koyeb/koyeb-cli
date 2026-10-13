@@ -4411,10 +4411,11 @@ koyeb pool list [flags]
 ### Options
 
 ```
-  -h, --help          help for list
-      --limit int     Limit the number of pools returned
-      --name string   Filter pools by name
-      --offset int    Offset the pools returned
+  -h, --help            help for list
+      --limit int       Limit the number of pools returned
+      --name string     Filter pools by name
+      --offset int      Offset the pools returned
+      --status string   Filter pools by status (ready, provisioning, error, deleting)
 ```
 
 ### Options inherited from parent commands
