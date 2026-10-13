@@ -40,6 +40,17 @@ type fakeAPI struct {
 	snapshotErr   error
 	snapshots     []koyeb.InstanceSnapshot
 	snapshotCalls int
+	// snapshotStatuses, when set, overrides the returned snapshot status per
+	// Get call (clamped to the last value) to pin wait transitions.
+	snapshotStatuses []koyeb.InstanceSnapshotStatus
+
+	createSnapshotReq      *koyeb.CreateInstanceSnapshotRequest
+	createSnapshotReply    *koyeb.InstanceSnapshot
+	createSnapshotErr      error
+	instances              []koyeb.InstanceListItem
+	listInstancesServiceID string
+	listInstancesStatuses  []string
+	listInstancesLimit     string
 
 	deployments map[string]koyeb.Deployment
 
@@ -164,10 +175,42 @@ func (f *fakeAPI) GetInstanceSnapshot(_ context.Context, _ string) (
 	if f.snapshotErr != nil {
 		return nil, nil, f.snapshotErr
 	}
-	if f.snapshot == nil {
-		return &koyeb.GetInstanceSnapshotReply{}, nil, nil
+	snapshot := f.snapshot
+	if snapshot == nil {
+		if len(f.snapshotStatuses) == 0 {
+			return &koyeb.GetInstanceSnapshotReply{}, nil, nil
+		}
+		snapshot = &koyeb.InstanceSnapshot{}
 	}
-	return &koyeb.GetInstanceSnapshotReply{InstanceSnapshot: f.snapshot}, nil, nil
+	if len(f.snapshotStatuses) > 0 {
+		last := min(f.snapshotCalls, len(f.snapshotStatuses)) - 1
+		withStatus := *snapshot
+		withStatus.Status = &f.snapshotStatuses[last]
+		snapshot = &withStatus
+	}
+	return &koyeb.GetInstanceSnapshotReply{InstanceSnapshot: snapshot}, nil, nil
+}
+
+func (f *fakeAPI) CreateInstanceSnapshot(_ context.Context, req koyeb.CreateInstanceSnapshotRequest) (
+	*koyeb.CreateInstanceSnapshotReply, *http.Response, error) {
+	stored := req
+	f.createSnapshotReq = &stored
+	if f.createSnapshotErr != nil {
+		return nil, nil, f.createSnapshotErr
+	}
+	snapshot := f.createSnapshotReply
+	if snapshot == nil {
+		snapshot = &koyeb.InstanceSnapshot{}
+	}
+	return &koyeb.CreateInstanceSnapshotReply{InstanceSnapshot: snapshot}, nil, nil
+}
+
+func (f *fakeAPI) ListInstancesByService(_ context.Context, serviceID string, statuses []string, limit string) (
+	*koyeb.ListInstancesReply, *http.Response, error) {
+	f.listInstancesServiceID = serviceID
+	f.listInstancesStatuses = statuses
+	f.listInstancesLimit = limit
+	return &koyeb.ListInstancesReply{Instances: f.instances}, nil, nil
 }
 
 func (f *fakeAPI) ListInstanceSnapshotsByName(_ context.Context, _ string) (
@@ -260,16 +303,21 @@ func sandboxTestContext(fake *fakeAPI) *CLIContext {
 	}
 }
 
-// sandboxServiceFixture wires a resolvable sandbox through the fake port:
+// sandboxFixtureAPI wires a resolvable sandbox through the fake port:
 // mapper resolution passes full UUIDs through without fetching, so the
 // service/app/deployment chain below is all the resolution needs.
 func sandboxFixtureAPI() *fakeAPI {
+	return sandboxFixtureAPIWithURL("https://myapp-myapp.koyeb.app")
+}
+
+// sandboxFixtureAPIWithURL is sandboxFixtureAPI with an overridable sandbox
+// public URL, so handler tests can point the connection at a test server.
+func sandboxFixtureAPIWithURL(publicURL string) *fakeAPI {
 	serviceID := "323e4567-e89b-42d3-a456-426614174000"
 	appID := "223e4567-e89b-42d3-a456-426614174000"
 	deploymentID := "123e4567-e89b-42d3-a456-426614174000"
 	secret := "sandbox-secret"
 	domain := "myapp-myapp.koyeb.app"
-	publicURL := "https://myapp-myapp.koyeb.app"
 	routingKey := "routing-key"
 	serviceType := koyeb.SERVICETYPE_SANDBOX
 	publicURLField := publicURL

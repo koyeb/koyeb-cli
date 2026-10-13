@@ -98,6 +98,11 @@ type fakeSandboxClient struct {
 	runReqs []*RunRequest
 	runResp *RunResponse
 	runErr  error
+
+	processes []ProcessInfo
+	listErr   error
+	killErrs  map[string]error
+	killed    []string
 }
 
 func (f *fakeSandboxClient) Run(_ context.Context, req *RunRequest) (*RunResponse, error) {
@@ -143,9 +148,18 @@ func (f *fakeSandboxClient) StartProcess(context.Context, *ProcessRequest) (*Sta
 	return nil, nil
 }
 func (f *fakeSandboxClient) ListProcesses(context.Context) ([]ProcessInfo, error) {
-	return nil, nil
+	if f.listErr != nil {
+		return nil, f.listErr
+	}
+	return f.processes, nil
 }
-func (f *fakeSandboxClient) KillProcess(context.Context, string) error { return nil }
+func (f *fakeSandboxClient) KillProcess(_ context.Context, processID string) error {
+	f.killed = append(f.killed, processID)
+	if err, ok := f.killErrs[processID]; ok {
+		return err
+	}
+	return nil
+}
 func (f *fakeSandboxClient) StreamProcessLogs(context.Context, string, bool, func(string, string, string)) error {
 	return nil
 }

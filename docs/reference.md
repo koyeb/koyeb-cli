@@ -3034,10 +3034,12 @@ managing processes, filesystem operations, and port exposure.
 * [koyeb sandbox get](#koyeb-sandbox-get)	 - Get sandbox status and connection info
 * [koyeb sandbox health](#koyeb-sandbox-health)	 - Check sandbox health status
 * [koyeb sandbox kill](#koyeb-sandbox-kill)	 - Kill a background process in the sandbox
+* [koyeb sandbox kill-all](#koyeb-sandbox-kill-all)	 - Kill all running background processes in the sandbox
 * [koyeb sandbox list](#koyeb-sandbox-list)	 - List sandboxes
 * [koyeb sandbox logs](#koyeb-sandbox-logs)	 - Stream logs from a background process
 * [koyeb sandbox ps](#koyeb-sandbox-ps)	 - List background processes in the sandbox
 * [koyeb sandbox run](#koyeb-sandbox-run)	 - Execute a command in the sandbox
+* [koyeb sandbox snapshot](#koyeb-sandbox-snapshot)	 - Instance snapshot operations
 * [koyeb sandbox start](#koyeb-sandbox-start)	 - Start a background process in the sandbox
 * [koyeb sandbox unexpose-port](#koyeb-sandbox-unexpose-port)	 - Unexpose the currently exposed port
 * [koyeb sandbox update](#koyeb-sandbox-update)	 - Update a running sandbox's lifecycle and network policy
@@ -3745,6 +3747,57 @@ koyeb sandbox health NAME [flags]
 
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 
+## koyeb sandbox kill-all
+
+Kill all running background processes in the sandbox
+
+### Synopsis
+
+Kill all running background processes in the sandbox.
+
+Every running process is killed in one call; a process that fails to die does
+not stop the remaining ones. The killed count is reported. Mirrors the Koyeb
+SDKs' kill_all.
+
+```
+koyeb sandbox kill-all NAME [flags]
+```
+
+### Examples
+
+```
+
+# Kill every running background process in one call
+$> koyeb sandbox kill-all myapp/mysandbox
+
+```
+
+### Options
+
+```
+  -h, --help   help for kill-all
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
 ## koyeb sandbox kill
 
 Kill a background process in the sandbox
@@ -3945,6 +3998,100 @@ $> koyeb sandbox run myapp/mysandbox --timeout 120 long-running-command
 
 
 * [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox snapshot
+
+Instance snapshot operations
+
+### Synopsis
+
+Instance snapshot operations for sandboxes.
+
+An instance snapshot captures the state of a running sandbox. Snapshots boot
+new sandboxes via 'koyeb sandbox create --snapshot' and are what the Koyeb
+SDKs' snapshot() and spawn() consume. These are distinct from the volume
+snapshots managed by 'koyeb snapshots'.
+
+### Options
+
+```
+  -h, --help   help for snapshot
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+* [koyeb sandbox snapshot create](#koyeb-sandbox-snapshot-create)	 - Create an instance snapshot of a running sandbox
+
+## koyeb sandbox snapshot create
+
+Create an instance snapshot of a running sandbox
+
+```
+koyeb sandbox snapshot create NAME [flags]
+```
+
+### Examples
+
+```
+
+# Snapshot a running sandbox
+$> koyeb sandbox snapshot create myapp/mysandbox
+
+# Name the snapshot and wait until it is available
+$> koyeb sandbox snapshot create myapp/mysandbox --name my-snap --wait
+
+# Capture a full snapshot (filesystem plus running processes)
+$> koyeb sandbox snapshot create myapp/mysandbox --type full
+
+```
+
+### Options
+
+```
+  -h, --help                    help for create
+      --name string             Snapshot name (default: <sandbox>-snapshot-<unix timestamp>)
+      --poll-interval float     Seconds between availability polls when --wait is set (default 5)
+      --type string             Snapshot type: filesystem or full (default "filesystem")
+      --wait                    Wait until the snapshot is available (opt-in; the Koyeb SDKs wait by default)
+      --wait-timeout duration   Wait timeout duration (default 10m0s)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox snapshot](#koyeb-sandbox-snapshot)	 - Instance snapshot operations
 
 ## koyeb sandbox start
 
