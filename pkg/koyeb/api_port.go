@@ -26,6 +26,10 @@ type koyebAPI interface {
 	GetInstanceSnapshot(ctx context.Context, id string) (*koyeb.GetInstanceSnapshotReply, *http.Response, error)
 	ListInstanceSnapshotsByName(ctx context.Context, name string) (
 		*koyeb.ListInstanceSnapshotsReply, *http.Response, error)
+	CreateInstanceSnapshot(ctx context.Context, req koyeb.CreateInstanceSnapshotRequest) (
+		*koyeb.CreateInstanceSnapshotReply, *http.Response, error)
+	ListInstancesByService(ctx context.Context, serviceID string, statuses []string, limit string) (
+		*koyeb.ListInstancesReply, *http.Response, error)
 	Claim(ctx context.Context, req koyeb.PoolClaimRequest) (*koyeb.PoolClaimReply, *http.Response, error)
 	CreateServicePool(ctx context.Context, req koyeb.CreateServicePool) (
 		*koyeb.CreateServicePoolReply, *http.Response, error)
@@ -97,6 +101,16 @@ func (a apiPort) GetInstanceSnapshot(ctx context.Context, id string) (
 func (a apiPort) ListInstanceSnapshotsByName(ctx context.Context, name string) (
 	*koyeb.ListInstanceSnapshotsReply, *http.Response, error) {
 	return a.client.InstanceSnapshotsApi.ListInstanceSnapshots(ctx).Name(name).Execute()
+}
+
+func (a apiPort) CreateInstanceSnapshot(ctx context.Context, req koyeb.CreateInstanceSnapshotRequest) (
+	*koyeb.CreateInstanceSnapshotReply, *http.Response, error) {
+	return a.client.InstanceSnapshotsApi.CreateInstanceSnapshot(ctx).Body(req).Execute()
+}
+
+func (a apiPort) ListInstancesByService(ctx context.Context, serviceID string, statuses []string, limit string) (
+	*koyeb.ListInstancesReply, *http.Response, error) {
+	return a.client.InstancesApi.ListInstances(ctx).ServiceId(serviceID).Statuses(statuses).Limit(limit).Execute()
 }
 
 func (a apiPort) Claim(ctx context.Context, req koyeb.PoolClaimRequest) (

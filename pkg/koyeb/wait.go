@@ -73,7 +73,8 @@ func waitTimeoutFlag(cmd *cobra.Command) (time.Duration, error) {
 }
 
 // waitPollInterval returns the --wait polling interval: --poll-interval when
-// the command registers it (sandbox create), 2s otherwise (services).
+// the command registers it (sandbox create, snapshot create), 2s otherwise
+// (services).
 // Unusable values fall back to the registered flag default — NaN would
 // panic time.NewTicker and Inf would never tick.
 func waitPollInterval(cmd *cobra.Command) time.Duration {

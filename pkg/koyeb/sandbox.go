@@ -206,6 +206,24 @@ $> koyeb sandbox start myapp/mysandbox --cwd /app npm start
 	}
 	sandboxCmd.AddCommand(killCmd)
 
+	// kill-all command - kill every running background process
+	killAllCmd := &cobra.Command{
+		Use:   "kill-all NAME",
+		Short: "Kill all running background processes in the sandbox",
+		Long: `Kill all running background processes in the sandbox.
+
+Every running process is killed in one call; a process that fails to die does
+not stop the remaining ones. The killed count is reported. Mirrors the Koyeb
+SDKs' kill_all.`,
+		Args: cobra.ExactArgs(1),
+		Example: `
+# Kill every running background process in one call
+$> koyeb sandbox kill-all myapp/mysandbox
+`,
+		RunE: WithCLIContext(h.KillAllProcesses),
+	}
+	sandboxCmd.AddCommand(killAllCmd)
+
 	// logs command - stream process logs
 	processLogsCmd := &cobra.Command{
 		Use:   "logs NAME PROCESS_ID",
@@ -246,6 +264,42 @@ $> koyeb sandbox expose-port myapp/mysandbox 8080
 		RunE:  WithCLIContext(h.Health),
 	}
 	sandboxCmd.AddCommand(healthCmd)
+
+	// snapshot subcommand - instance snapshots of a running sandbox
+	sandboxSnapshotCmd := &cobra.Command{
+		Use:   "snapshot",
+		Short: "Instance snapshot operations",
+		Long: `Instance snapshot operations for sandboxes.
+
+An instance snapshot captures the state of a running sandbox. Snapshots boot
+new sandboxes via 'koyeb sandbox create --snapshot' and are what the Koyeb
+SDKs' snapshot() and spawn() consume. These are distinct from the volume
+snapshots managed by 'koyeb snapshots'.`,
+	}
+
+	createSandboxSnapshotCmd := &cobra.Command{
+		Use:   "create NAME",
+		Short: "Create an instance snapshot of a running sandbox",
+		Args:  cobra.ExactArgs(1),
+		Example: `
+# Snapshot a running sandbox
+$> koyeb sandbox snapshot create myapp/mysandbox
+
+# Name the snapshot and wait until it is available
+$> koyeb sandbox snapshot create myapp/mysandbox --name my-snap --wait
+
+# Capture a full snapshot (filesystem plus running processes)
+$> koyeb sandbox snapshot create myapp/mysandbox --type full
+`,
+		RunE: WithCLIContext(h.SnapshotCreate),
+	}
+	createSandboxSnapshotCmd.Flags().String("name", "", "Snapshot name (default: <sandbox>-snapshot-<unix timestamp>)")
+	createSandboxSnapshotCmd.Flags().String("type", "filesystem", "Snapshot type: filesystem or full")
+	createSandboxSnapshotCmd.Flags().Bool("wait", false, "Wait until the snapshot is available (opt-in; the Koyeb SDKs wait by default)")
+	createSandboxSnapshotCmd.Flags().Duration("wait-timeout", 10*time.Minute, "Wait timeout duration")
+	createSandboxSnapshotCmd.Flags().Float64("poll-interval", 5, "Seconds between availability polls when --wait is set")
+	sandboxSnapshotCmd.AddCommand(createSandboxSnapshotCmd)
+	sandboxCmd.AddCommand(sandboxSnapshotCmd)
 
 	// filesystem subcommand
 	fsCmd := &cobra.Command{

@@ -718,6 +718,10 @@ type ProcessInfo struct {
 	StartTime string `json:"start_time,omitempty"`
 }
 
+// processStatusRunning is the executor's status of a live background process —
+// the only one the kill-all flow targets.
+const processStatusRunning = "running"
+
 // StartProcessResponse is the response from starting a process
 type StartProcessResponse struct {
 	ID     string `json:"id"`

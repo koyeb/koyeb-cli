@@ -1,6 +1,7 @@
 package koyeb
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -122,6 +123,58 @@ func (h *SandboxHandler) KillProcess(ctx *CLIContext, cmd *cobra.Command, args [
 		log.Infof("Process %s killed successfully", processID)
 		return nil
 	})
+}
+
+// KillAllProcesses kills every running background process in the sandbox,
+// continuing past individual failures, and reports the killed count.
+func (h *SandboxHandler) KillAllProcesses(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	sandboxName := args[0]
+
+	return withSandboxClient(ctx, sandboxName, func(client SandboxClientInterface, _ *SandboxInfo) error {
+		killed, err := killAllProcesses(ctx.Context, client)
+		if err != nil {
+			return &errors.CLIError{
+				What:     "Error while killing processes in sandbox",
+				Why:      "failed to list background processes",
+				Orig:     err,
+				Solution: "Check that the sandbox is running",
+			}
+		}
+
+		if killed == 0 {
+			fmt.Println("No running background processes")
+			return nil
+		}
+		noun := "processes"
+		if killed == 1 {
+			noun = "process"
+		}
+		fmt.Printf("Killed %d %s\n", killed, noun)
+		return nil
+	})
+}
+
+// killAllProcesses kills every running background process and returns how
+// many were killed, mirroring the SDKs' kill_all: only running processes
+// are targeted and one failure never stops the rest.
+func killAllProcesses(ctx context.Context, client SandboxClientInterface) (int, error) {
+	processes, err := client.ListProcesses(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	killed := 0
+	for _, process := range processes {
+		if process.ID == "" || process.Status != processStatusRunning {
+			continue
+		}
+		if err := client.KillProcess(ctx, process.ID); err != nil {
+			log.Warnf("Failed to kill process %s: %v", process.ID, err)
+			continue
+		}
+		killed++
+	}
+	return killed, nil
 }
 
 // ProcessLogs streams logs from a background process
