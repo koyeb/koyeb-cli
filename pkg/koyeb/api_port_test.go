@@ -22,8 +22,10 @@ type fakeAPI struct {
 	deletedServices []string
 	app             *koyeb.App
 
-	servicesFetched []string
-	service         *koyeb.Service
+	servicesFetched  []string
+	service          *koyeb.Service
+	getServiceErr    error
+	deleteServiceErr error
 
 	createServiceReq   *koyeb.CreateService
 	createServiceReply *koyeb.Service
@@ -61,6 +63,9 @@ type fakeAPI struct {
 
 func (f *fakeAPI) GetService(_ context.Context, serviceID string) (*koyeb.GetServiceReply, *http.Response, error) {
 	f.servicesFetched = append(f.servicesFetched, serviceID)
+	if f.getServiceErr != nil {
+		return nil, nil, f.getServiceErr
+	}
 	if f.service == nil {
 		return &koyeb.GetServiceReply{}, nil, nil
 	}
@@ -110,6 +115,9 @@ func (f *fakeAPI) DeleteApp(_ context.Context, appID string) (*http.Response, er
 
 func (f *fakeAPI) DeleteService(_ context.Context, serviceID string) (*http.Response, error) {
 	f.deletedServices = append(f.deletedServices, serviceID)
+	if f.deleteServiceErr != nil {
+		return nil, f.deleteServiceErr
+	}
 	return nil, nil
 }
 

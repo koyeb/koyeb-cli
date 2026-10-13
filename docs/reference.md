@@ -3028,8 +3028,10 @@ managing processes, filesystem operations, and port exposure.
 
 * [koyeb](#koyeb)	 - Koyeb CLI
 * [koyeb sandbox create](#koyeb-sandbox-create)	 - Create a new sandbox
+* [koyeb sandbox delete](#koyeb-sandbox-delete)	 - Delete a sandbox
 * [koyeb sandbox expose-port](#koyeb-sandbox-expose-port)	 - Expose a port from the sandbox via TCP proxy
 * [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+* [koyeb sandbox get](#koyeb-sandbox-get)	 - Get sandbox status and connection info
 * [koyeb sandbox health](#koyeb-sandbox-health)	 - Check sandbox health status
 * [koyeb sandbox kill](#koyeb-sandbox-kill)	 - Kill a background process in the sandbox
 * [koyeb sandbox list](#koyeb-sandbox-list)	 - List sandboxes
@@ -3097,6 +3099,40 @@ $> koyeb sandbox create myapp/mysandbox --wait
       --snapshot string                          Instance snapshot ID or name to boot the sandbox from
       --wait                                     Wait until the sandbox deployment is ready (opt-in; the Koyeb SDKs wait by default)
       --wait-timeout duration                    Wait timeout duration (default 5m0s)
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
+
+## koyeb sandbox delete
+
+Delete a sandbox
+
+```
+koyeb sandbox delete NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for delete
 ```
 
 ### Options inherited from parent commands
@@ -3639,6 +3675,40 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
 
 
 * [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox get
+
+Get sandbox status and connection info
+
+```
+koyeb sandbox get NAME [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for get
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox](#koyeb-sandbox)	 - Sandbox - interactive execution environments
 
 ## koyeb sandbox health
 
