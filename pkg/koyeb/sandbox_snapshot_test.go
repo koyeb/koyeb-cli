@@ -205,6 +205,22 @@ func TestSandboxSnapshotCreateWaitFlow(t *testing.T) {
 		assert.GreaterOrEqual(t, fake.snapshotCalls, 3, "the wait must poll until available")
 	})
 
+	t.Run("transient fetch errors keep polling", func(t *testing.T) {
+		// A failed status fetch says nothing about the snapshot: the wait
+		// must keep polling, not succeed on the error.
+		fake := snapshotFixtureAPI()
+		fake.snapshotGetErrs = []error{fmt.Errorf("transient fetch failure"), nil}
+		fake.snapshotStatuses = []koyeb.InstanceSnapshotStatus{koyeb.INSTANCESNAPSHOTSTATUS_AVAILABLE}
+		cmd := waitCmd(t)
+		require.NoError(t, cmd.Flags().Set("wait-timeout", "5s"), "bound the wait so a regression fails fast")
+
+		out, err := runSnapshotCreate(t, fake, cmd)
+
+		require.NoError(t, err)
+		assert.Contains(t, out, "Status: "+string(koyeb.INSTANCESNAPSHOTSTATUS_AVAILABLE))
+		assert.GreaterOrEqual(t, fake.snapshotCalls, 2, "a transient fetch error must not end the wait")
+	})
+
 	t.Run("ERROR is terminal", func(t *testing.T) {
 		fake := snapshotFixtureAPI()
 		fake.snapshotStatuses = []koyeb.InstanceSnapshotStatus{koyeb.INSTANCESNAPSHOTSTATUS_ERROR}
