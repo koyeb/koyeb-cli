@@ -27,7 +27,7 @@ type SandboxClientInterface interface {
 	MakeDir(ctx context.Context, path string) error
 	DeleteDir(ctx context.Context, path string) error
 	ListDir(ctx context.Context, path string) ([]DirEntry, error)
-	StatFile(ctx context.Context, path string) (*DirEntry, error)
+	StatFile(ctx context.Context, path string) (*FileStat, error)
 	BindPort(ctx context.Context, port string) (*PortResponse, error)
 	UnbindPort(ctx context.Context) (*PortResponse, error)
 	StartProcess(ctx context.Context, req *ProcessRequest) (*StartProcessResponse, error)
@@ -550,62 +550,6 @@ func (c *SandboxClient) ListDir(ctx context.Context, path string) ([]DirEntry, e
 			entries[i] = DirEntry{Name: name}
 		}
 		return entries, nil
-	}
-
-	return nil, fmt.Errorf("failed to decode response: %s", string(body))
-}
-
-// StatFile gets file/directory metadata
-func (c *SandboxClient) StatFile(ctx context.Context, path string) (*DirEntry, error) {
-	resp, err := c.request(ctx, "POST", "/stat_file", &FileRequest{Path: path})
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	// Try nested entry format first
-	var nestedResult struct {
-		Entry *DirEntry `json:"entry"`
-		Error string    `json:"error,omitempty"`
-	}
-	if err := json.Unmarshal(body, &nestedResult); err == nil && nestedResult.Entry != nil {
-		return nestedResult.Entry, nil
-	}
-	if nestedResult.Error != "" {
-		return nil, fmt.Errorf("stat file failed: %s", nestedResult.Error)
-	}
-
-	// Try direct DirEntry format
-	var entry DirEntry
-	if err := json.Unmarshal(body, &entry); err == nil && entry.Name != "" {
-		return &entry, nil
-	}
-
-	// Try flat format with fields at top level
-	var flatResult struct {
-		Name    string `json:"name"`
-		IsDir   bool   `json:"is_dir"`
-		Size    int64  `json:"size"`
-		ModTime string `json:"mod_time"`
-		Mode    string `json:"mode"`
-		Error   string `json:"error,omitempty"`
-	}
-	if err := json.Unmarshal(body, &flatResult); err == nil {
-		if flatResult.Error != "" {
-			return nil, fmt.Errorf("stat file failed: %s", flatResult.Error)
-		}
-		return &DirEntry{
-			Name:    flatResult.Name,
-			IsDir:   flatResult.IsDir,
-			Size:    flatResult.Size,
-			ModTime: flatResult.ModTime,
-			Mode:    flatResult.Mode,
-		}, nil
 	}
 
 	return nil, fmt.Errorf("failed to decode response: %s", string(body))

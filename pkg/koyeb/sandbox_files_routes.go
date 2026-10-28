@@ -218,6 +218,118 @@ func (t *streamDebugTransport) RoundTrip(req *http.Request) (*http.Response, err
 	return resp, nil
 }
 
+// FileStat is a file's metadata: the /files/stat answer on executor
+// v0.0.24+ (type, size, octal permission bits, RFC 3339 UTC mtime with
+// nanoseconds), with the legacy /stat_file formats mapped onto the same
+// shape on older executors.
+type FileStat struct {
+	Type  string `json:"type"` // file, dir, symlink or other
+	Size  int64  `json:"size"`
+	Mode  string `json:"mode"`            // octal permission bits, e.g. "0644"
+	MTime string `json:"mtime,omitempty"` // RFC 3339 UTC, nanoseconds
+}
+
+// StatFile returns a file's metadata: GET /files/stat on executor
+// v0.0.24+; the legacy POST /stat_file on older ones.
+func (c *SandboxClient) StatFile(ctx context.Context, path string) (*FileStat, error) {
+	routed, err := c.hasFilesRoutes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !routed {
+		return c.legacyStatFile(ctx, path)
+	}
+
+	resp, err := c.request(ctx, http.MethodGet, filesStatPath(path), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, filesRouteError(resp)
+	}
+
+	var stat FileStat
+	if err := json.NewDecoder(resp.Body).Decode(&stat); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+	return &stat, nil
+}
+
+// statFromDirEntry maps a legacy DirEntry onto FileStat.
+func statFromDirEntry(e *DirEntry) *FileStat {
+	return &FileStat{
+		Type:  dirEntryType(e.IsDir),
+		Size:  e.Size,
+		Mode:  e.Mode,
+		MTime: e.ModTime,
+	}
+}
+
+// dirEntryType renders the legacy is_dir flag as a type name.
+func dirEntryType(isDir bool) string {
+	if isDir {
+		return "dir"
+	}
+	return "file"
+}
+
+// legacyStatFile stats a file through the legacy JSON route: POST
+// /stat_file, in any of the formats older deployments answered with.
+func (c *SandboxClient) legacyStatFile(ctx context.Context, path string) (*FileStat, error) {
+	resp, err := c.request(ctx, http.MethodPost, "/stat_file", &FileRequest{Path: path})
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	// Try nested entry format first
+	var nestedResult struct {
+		Entry *DirEntry `json:"entry"`
+		Error string    `json:"error,omitempty"`
+	}
+	if err := json.Unmarshal(body, &nestedResult); err == nil && nestedResult.Entry != nil {
+		return statFromDirEntry(nestedResult.Entry), nil
+	}
+	if nestedResult.Error != "" {
+		return nil, fmt.Errorf("stat file failed: %s", nestedResult.Error)
+	}
+
+	// Try direct DirEntry format
+	var entry DirEntry
+	if err := json.Unmarshal(body, &entry); err == nil && entry.Name != "" {
+		return statFromDirEntry(&entry), nil
+	}
+
+	// Try flat format with fields at top level
+	var flatResult struct {
+		Name    string `json:"name"`
+		IsDir   bool   `json:"is_dir"`
+		Size    int64  `json:"size"`
+		ModTime string `json:"mod_time"`
+		Mode    string `json:"mode"`
+		Error   string `json:"error,omitempty"`
+	}
+	if err := json.Unmarshal(body, &flatResult); err == nil {
+		if flatResult.Error != "" {
+			return nil, fmt.Errorf("stat file failed: %s", flatResult.Error)
+		}
+		return &FileStat{
+			Type:  dirEntryType(flatResult.IsDir),
+			Size:  flatResult.Size,
+			Mode:  flatResult.Mode,
+			MTime: flatResult.ModTime,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("failed to decode response: %s", string(body))
+}
+
 // legacyReadFile reads a file through the legacy JSON route: POST
 // /read_file, with the is_base64 negotiation kept as it was.
 func (c *SandboxClient) legacyReadFile(ctx context.Context, path string) ([]byte, error) {

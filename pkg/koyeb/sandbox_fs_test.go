@@ -105,6 +105,9 @@ type fakeSandboxClient struct {
 	downloadContent []byte
 	downloadErr     error
 
+	stat    *FileStat
+	statErr error
+
 	processes []ProcessInfo
 	listErr   error
 	killErrs  map[string]error
@@ -151,8 +154,14 @@ func (f *fakeSandboxClient) DeleteDir(context.Context, string) error  { return n
 func (f *fakeSandboxClient) ListDir(context.Context, string) ([]DirEntry, error) {
 	return nil, nil
 }
-func (f *fakeSandboxClient) StatFile(context.Context, string) (*DirEntry, error) {
-	return nil, nil
+func (f *fakeSandboxClient) StatFile(_ context.Context, path string) (*FileStat, error) {
+	if f.statErr != nil {
+		return nil, f.statErr
+	}
+	if f.stat == nil {
+		return &FileStat{}, nil
+	}
+	return f.stat, nil
 }
 func (f *fakeSandboxClient) BindPort(context.Context, string) (*PortResponse, error) {
 	return nil, nil

@@ -3240,6 +3240,7 @@ Filesystem operations
 * [koyeb sandbox fs read](#koyeb-sandbox-fs-read)	 - Read a file from the sandbox
 * [koyeb sandbox fs rename](#koyeb-sandbox-fs-rename)	 - Rename a file or directory in the sandbox
 * [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
+* [koyeb sandbox fs stat](#koyeb-sandbox-fs-stat)	 - Show a file's metadata in the sandbox
 * [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
 * [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
 
@@ -3563,6 +3564,40 @@ koyeb sandbox fs rm NAME PATH [flags]
 ```
   -h, --help        help for rm
   -r, --recursive   Remove directories recursively
+```
+
+### Options inherited from parent commands
+
+```
+  -c, --config string         config file (default is $HOME/.koyeb.yaml, or $KOYEB_CONFIG if set)
+  -d, --debug                 enable the debug output
+      --debug-full            do not hide sensitive information (tokens) in the debug output
+      --force-ascii           only output ascii characters (no unicode emojis)
+      --full                  do not truncate output
+      --organization string   organization ID
+  -o, --output output         output format (yaml,json,table)
+  -p, --project string        Workspace ID or name
+      --token string          API token
+      --url string            url of the api (default "https://app.koyeb.com")
+      --workspace string      Workspace ID or name (alias for --project)
+```
+
+
+
+* [koyeb sandbox fs](#koyeb-sandbox-fs)	 - Filesystem operations
+
+## koyeb sandbox fs stat
+
+Show a file's metadata in the sandbox
+
+```
+koyeb sandbox fs stat NAME PATH [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for stat
 ```
 
 ### Options inherited from parent commands

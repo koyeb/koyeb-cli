@@ -431,6 +431,15 @@ Parent directories on the sandbox must already exist (create them first with fs 
 	}
 	fsCmd.AddCommand(fsDownloadCmd)
 
+	// fs stat
+	fsStatCmd := &cobra.Command{
+		Use:   "stat NAME PATH",
+		Short: "Show a file's metadata in the sandbox",
+		Args:  cobra.ExactArgs(2),
+		RunE:  WithCLIContext(h.FsStat),
+	}
+	fsCmd.AddCommand(fsStatCmd)
+
 	sandboxCmd.AddCommand(fsCmd)
 
 	return sandboxCmd
