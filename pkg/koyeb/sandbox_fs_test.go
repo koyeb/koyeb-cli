@@ -1,8 +1,10 @@
 package koyeb
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -99,6 +101,10 @@ type fakeSandboxClient struct {
 	runResp *RunResponse
 	runErr  error
 
+	downloadPath    string
+	downloadContent []byte
+	downloadErr     error
+
 	processes []ProcessInfo
 	listErr   error
 	killErrs  map[string]error
@@ -128,6 +134,16 @@ func (f *fakeSandboxClient) RunStreaming(
 func (f *fakeSandboxClient) WriteFile(context.Context, string, []byte) error { return nil }
 func (f *fakeSandboxClient) ReadFile(context.Context, string) ([]byte, error) {
 	return nil, nil
+}
+func (f *fakeSandboxClient) DownloadFile(_ context.Context, path string, w io.Writer) (int64, error) {
+	f.downloadPath = path
+	if f.downloadErr != nil {
+		return 0, f.downloadErr
+	}
+	if f.downloadContent == nil {
+		return 0, nil
+	}
+	return io.Copy(w, bytes.NewReader(f.downloadContent))
 }
 func (f *fakeSandboxClient) DeleteFile(context.Context, string) error { return nil }
 func (f *fakeSandboxClient) MakeDir(context.Context, string) error    { return nil }

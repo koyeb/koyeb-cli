@@ -20,6 +20,9 @@ type SandboxClientInterface interface {
 	RunStreaming(ctx context.Context, req *RunRequest, onOutput func(stream, data string), onComplete func(code int, hasError bool)) error
 	WriteFile(ctx context.Context, path string, content []byte) error
 	ReadFile(ctx context.Context, path string) ([]byte, error)
+	// DownloadFile streams the file into w with constant memory where the
+	// executor supports it, returning the number of bytes written.
+	DownloadFile(ctx context.Context, path string, w io.Writer) (int64, error)
 	DeleteFile(ctx context.Context, path string) error
 	MakeDir(ctx context.Context, path string) error
 	DeleteDir(ctx context.Context, path string) error
@@ -52,6 +55,11 @@ type SandboxClient struct {
 	maxRetries    int
 	retryDelay    time.Duration
 	streamTimeout time.Duration
+	// streamClient is the HTTP client for streamed transfers. It shares
+	// nothing with httpClient on purpose: no total timeout, so a large
+	// download is bounded by the context alone, and a transport that never
+	// drains the body (see streamDebugTransport).
+	streamClient *http.Client
 
 	// filesMu guards the legacy-fallback verdict of the /files routes probe
 	// (see sandbox_files_routes.go): one client is one sandbox handle, so the
@@ -115,6 +123,10 @@ func newSandboxClient(baseURL, secret, routingKey string, opts ...SandboxClientO
 			// matching the behavior of the main API client.
 			Transport: &DebugTransport{http.DefaultTransport},
 		},
+		// Streamed transfers share nothing with httpClient: no total
+		// timeout, so a large download is bounded by the context alone,
+		// and a transport that never drains the body.
+		streamClient:  &http.Client{Transport: &streamDebugTransport{http.DefaultTransport}},
 		maxRetries:    3,
 		retryDelay:    time.Second,
 		streamTimeout: 30 * time.Minute,

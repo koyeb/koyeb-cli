@@ -414,6 +414,47 @@ func (h *SandboxHandler) uploadDirectory(
 	return nil
 }
 
+// downloadFile streams a remote file into the local path with constant
+// memory on executors v0.0.24+ (one GET /files; the legacy fallback buffers).
+func downloadFile(ctx context.Context, client SandboxClientInterface, remotePath, localPath string) error {
+	f, err := os.OpenFile(localPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return &errors.CLIError{
+			What:       "Error while downloading file from sandbox",
+			Why:        fmt.Sprintf("failed to open local file: %s", localPath),
+			Additional: nil,
+			Orig:       err,
+			Solution:   "Check that the local path is writable",
+		}
+	}
+
+	written, err := client.DownloadFile(ctx, remotePath, f)
+	if err != nil {
+		f.Close()
+		return &errors.CLIError{
+			What:       "Error while downloading file from sandbox",
+			Why:        fmt.Sprintf("failed to read remote file: %s", remotePath),
+			Additional: nil,
+			Orig:       err,
+			Solution:   "Check that the remote file exists",
+		}
+	}
+
+	// Close explicitly: the data must be on the disk before the log line.
+	if err := f.Close(); err != nil {
+		return &errors.CLIError{
+			What:       "Error while downloading file from sandbox",
+			Why:        fmt.Sprintf("failed to write local file: %s", localPath),
+			Additional: nil,
+			Orig:       err,
+			Solution:   "Check that the local path is writable",
+		}
+	}
+
+	log.Infof("Downloaded %s to %s (%d bytes)", remotePath, localPath, written)
+	return nil
+}
+
 // shellQuote quotes s for safe use in a shell command run on the sandbox
 // executor (POSIX single quotes, like the Python SDK's shlex.quote).
 func shellQuote(s string) string {
@@ -546,29 +587,6 @@ func (h *SandboxHandler) FsDownload(ctx *CLIContext, cmd *cobra.Command, args []
 	}
 
 	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
-		content, err := client.ReadFile(ctx.Context, remotePath)
-		if err != nil {
-			return &errors.CLIError{
-				What:       "Error while downloading file from sandbox",
-				Why:        fmt.Sprintf("failed to read remote file: %s", remotePath),
-				Additional: nil,
-				Orig:       err,
-				Solution:   "Check that the remote file exists",
-			}
-		}
-
-		err = os.WriteFile(localPath, content, 0644)
-		if err != nil {
-			return &errors.CLIError{
-				What:       "Error while downloading file from sandbox",
-				Why:        fmt.Sprintf("failed to write local file: %s", localPath),
-				Additional: nil,
-				Orig:       err,
-				Solution:   "Check that the local path is writable",
-			}
-		}
-
-		log.Infof("Downloaded %s to %s (%d bytes)", remotePath, localPath, len(content))
-		return nil
+		return downloadFile(ctx.Context, client, remotePath, localPath)
 	})
 }
