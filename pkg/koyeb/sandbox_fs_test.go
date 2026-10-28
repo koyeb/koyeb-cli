@@ -1,8 +1,10 @@
 package koyeb
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -99,6 +101,13 @@ type fakeSandboxClient struct {
 	runResp *RunResponse
 	runErr  error
 
+	downloadPath    string
+	downloadContent []byte
+	downloadErr     error
+
+	stat    *FileStat
+	statErr error
+
 	processes []ProcessInfo
 	listErr   error
 	killErrs  map[string]error
@@ -129,14 +138,30 @@ func (f *fakeSandboxClient) WriteFile(context.Context, string, []byte) error { r
 func (f *fakeSandboxClient) ReadFile(context.Context, string) ([]byte, error) {
 	return nil, nil
 }
+func (f *fakeSandboxClient) DownloadFile(_ context.Context, path string, w io.Writer) (int64, error) {
+	f.downloadPath = path
+	if f.downloadErr != nil {
+		return 0, f.downloadErr
+	}
+	if f.downloadContent == nil {
+		return 0, nil
+	}
+	return io.Copy(w, bytes.NewReader(f.downloadContent))
+}
 func (f *fakeSandboxClient) DeleteFile(context.Context, string) error { return nil }
 func (f *fakeSandboxClient) MakeDir(context.Context, string) error    { return nil }
 func (f *fakeSandboxClient) DeleteDir(context.Context, string) error  { return nil }
 func (f *fakeSandboxClient) ListDir(context.Context, string) ([]DirEntry, error) {
 	return nil, nil
 }
-func (f *fakeSandboxClient) StatFile(context.Context, string) (*DirEntry, error) {
-	return nil, nil
+func (f *fakeSandboxClient) StatFile(_ context.Context, path string) (*FileStat, error) {
+	if f.statErr != nil {
+		return nil, f.statErr
+	}
+	if f.stat == nil {
+		return &FileStat{}, nil
+	}
+	return f.stat, nil
 }
 func (f *fakeSandboxClient) BindPort(context.Context, string) (*PortResponse, error) {
 	return nil, nil

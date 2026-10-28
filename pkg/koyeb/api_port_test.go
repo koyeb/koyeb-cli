@@ -43,6 +43,10 @@ type fakeAPI struct {
 	// snapshotStatuses, when set, overrides the returned snapshot status per
 	// Get call (clamped to the last value) to pin wait transitions.
 	snapshotStatuses []koyeb.InstanceSnapshotStatus
+	// snapshotGetErrs, when set, fails the Get call at that position (clamped
+	// to the last value; a nil entry answers normally) to pin transient fetch
+	// errors during a wait.
+	snapshotGetErrs []error
 
 	createSnapshotReq      *koyeb.CreateInstanceSnapshotRequest
 	createSnapshotReply    *koyeb.InstanceSnapshot
@@ -174,6 +178,9 @@ func (f *fakeAPI) GetInstanceSnapshot(_ context.Context, _ string) (
 	f.snapshotCalls++
 	if f.snapshotErr != nil {
 		return nil, nil, f.snapshotErr
+	}
+	if len(f.snapshotGetErrs) > 0 && f.snapshotGetErrs[min(f.snapshotCalls, len(f.snapshotGetErrs))-1] != nil {
+		return nil, nil, f.snapshotGetErrs[min(f.snapshotCalls, len(f.snapshotGetErrs))-1]
 	}
 	snapshot := f.snapshot
 	if snapshot == nil {

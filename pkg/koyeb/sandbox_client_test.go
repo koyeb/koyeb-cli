@@ -155,39 +155,6 @@ func TestSandboxClientRetryOnServerErrors(t *testing.T) {
 	})
 }
 
-func TestSandboxClientStatFileFormats(t *testing.T) {
-	formats := map[string]string{
-		"nested entry": `{"entry":{"name":"app.py","is_dir":false,"size":128,"mode":"0644"},"error":""}`,
-		"direct":       `{"name":"app.py","is_dir":false,"size":128,"mode":"0644"}`,
-		"flat":         `{"name":"app.py","is_dir":false,"size":128,"mode":"0644"}`,
-	}
-	for name, body := range formats {
-		t.Run(name, func(t *testing.T) {
-			client, _ := executorServer(t, "secret", "", func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, "/stat_file", r.URL.Path)
-				writeChecked(w, body)
-			})
-
-			entry, err := client.StatFile(context.Background(), "/app/app.py")
-			require.NoError(t, err)
-			assert.Equal(t, "app.py", entry.Name)
-			assert.False(t, entry.IsDir)
-			assert.Equal(t, int64(128), entry.Size)
-			assert.Equal(t, "0644", entry.Mode)
-		})
-	}
-
-	t.Run("stat errors surface", func(t *testing.T) {
-		client, _ := executorServer(t, "secret", "", func(w http.ResponseWriter, r *http.Request) {
-			writeChecked(w, `{"error":"NO_SUCH_FILE"}`)
-		})
-
-		_, err := client.StatFile(context.Background(), "/missing")
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "NO_SUCH_FILE")
-	})
-}
-
 func TestSandboxClientRunStreamingRoundTrip(t *testing.T) {
 	client, _ := executorServer(t, "secret", "", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/run_streaming", r.URL.Path)

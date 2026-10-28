@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,11 +20,14 @@ type SandboxClientInterface interface {
 	RunStreaming(ctx context.Context, req *RunRequest, onOutput func(stream, data string), onComplete func(code int, hasError bool)) error
 	WriteFile(ctx context.Context, path string, content []byte) error
 	ReadFile(ctx context.Context, path string) ([]byte, error)
+	// DownloadFile streams the file into w with constant memory where the
+	// executor supports it, returning the number of bytes written.
+	DownloadFile(ctx context.Context, path string, w io.Writer) (int64, error)
 	DeleteFile(ctx context.Context, path string) error
 	MakeDir(ctx context.Context, path string) error
 	DeleteDir(ctx context.Context, path string) error
 	ListDir(ctx context.Context, path string) ([]DirEntry, error)
-	StatFile(ctx context.Context, path string) (*DirEntry, error)
+	StatFile(ctx context.Context, path string) (*FileStat, error)
 	BindPort(ctx context.Context, port string) (*PortResponse, error)
 	UnbindPort(ctx context.Context) (*PortResponse, error)
 	StartProcess(ctx context.Context, req *ProcessRequest) (*StartProcessResponse, error)
@@ -53,6 +55,18 @@ type SandboxClient struct {
 	maxRetries    int
 	retryDelay    time.Duration
 	streamTimeout time.Duration
+	// streamClient is the HTTP client for streamed transfers. It shares
+	// nothing with httpClient on purpose: no total timeout, so a large
+	// download is bounded by the context alone, and a transport that never
+	// drains the body (see streamDebugTransport).
+	streamClient *http.Client
+
+	// filesMu guards the legacy-fallback verdict of the /files routes probe
+	// (see sandbox_files_routes.go): one client is one sandbox handle, so the
+	// probe runs at most once per client and its warning is logged at most once.
+	filesMu     sync.Mutex
+	filesProbed bool
+	filesRoutes bool
 }
 
 // SandboxClientOption is a functional option for configuring SandboxClient
@@ -109,6 +123,10 @@ func newSandboxClient(baseURL, secret, routingKey string, opts ...SandboxClientO
 			// matching the behavior of the main API client.
 			Transport: &DebugTransport{http.DefaultTransport},
 		},
+		// Streamed transfers share nothing with httpClient: no total
+		// timeout, so a large download is bounded by the context alone,
+		// and a transport that never drains the body.
+		streamClient:  &http.Client{Transport: &streamDebugTransport{http.DefaultTransport}},
 		maxRetries:    3,
 		retryDelay:    time.Second,
 		streamTimeout: 30 * time.Minute,
@@ -425,32 +443,6 @@ func (c *SandboxClient) WriteFile(ctx context.Context, path string, content []by
 	return nil
 }
 
-// ReadFile reads content from a file (handles binary data via base64)
-func (c *SandboxClient) ReadFile(ctx context.Context, path string) ([]byte, error) {
-	req := &FileRequest{Path: path}
-	resp, err := c.request(ctx, "POST", "/read_file", req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var result FileResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	if result.Error != "" {
-		return nil, fmt.Errorf("read file failed: %s", result.Error)
-	}
-
-	// Decode base64 content if the response indicates it
-	if result.IsB64 {
-		return base64.StdEncoding.DecodeString(result.Content)
-	}
-
-	return []byte(result.Content), nil
-}
-
 // DeleteFile deletes a file
 func (c *SandboxClient) DeleteFile(ctx context.Context, path string) error {
 	resp, err := c.request(ctx, "POST", "/delete_file", &FileRequest{Path: path})
@@ -558,62 +550,6 @@ func (c *SandboxClient) ListDir(ctx context.Context, path string) ([]DirEntry, e
 			entries[i] = DirEntry{Name: name}
 		}
 		return entries, nil
-	}
-
-	return nil, fmt.Errorf("failed to decode response: %s", string(body))
-}
-
-// StatFile gets file/directory metadata
-func (c *SandboxClient) StatFile(ctx context.Context, path string) (*DirEntry, error) {
-	resp, err := c.request(ctx, "POST", "/stat_file", &FileRequest{Path: path})
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	// Try nested entry format first
-	var nestedResult struct {
-		Entry *DirEntry `json:"entry"`
-		Error string    `json:"error,omitempty"`
-	}
-	if err := json.Unmarshal(body, &nestedResult); err == nil && nestedResult.Entry != nil {
-		return nestedResult.Entry, nil
-	}
-	if nestedResult.Error != "" {
-		return nil, fmt.Errorf("stat file failed: %s", nestedResult.Error)
-	}
-
-	// Try direct DirEntry format
-	var entry DirEntry
-	if err := json.Unmarshal(body, &entry); err == nil && entry.Name != "" {
-		return &entry, nil
-	}
-
-	// Try flat format with fields at top level
-	var flatResult struct {
-		Name    string `json:"name"`
-		IsDir   bool   `json:"is_dir"`
-		Size    int64  `json:"size"`
-		ModTime string `json:"mod_time"`
-		Mode    string `json:"mode"`
-		Error   string `json:"error,omitempty"`
-	}
-	if err := json.Unmarshal(body, &flatResult); err == nil {
-		if flatResult.Error != "" {
-			return nil, fmt.Errorf("stat file failed: %s", flatResult.Error)
-		}
-		return &DirEntry{
-			Name:    flatResult.Name,
-			IsDir:   flatResult.IsDir,
-			Size:    flatResult.Size,
-			ModTime: flatResult.ModTime,
-			Mode:    flatResult.Mode,
-		}, nil
 	}
 
 	return nil, fmt.Errorf("failed to decode response: %s", string(body))
