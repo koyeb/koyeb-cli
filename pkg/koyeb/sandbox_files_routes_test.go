@@ -300,8 +300,7 @@ func TestDownloadFileDeliversBytesWhileExecutorMidBody(t *testing.T) {
 	case <-writer.first:
 	case <-time.After(5 * time.Second):
 		close(release)
-		<-done
-		t.Fatal("bytes only arrived after the executor finished the body: the response was buffered whole")
+		t.Fatalf("bytes only arrived after the executor finished the body: the response was buffered whole (download returned: %v)", <-done)
 	}
 	close(release)
 	require.NoError(t, <-done)
