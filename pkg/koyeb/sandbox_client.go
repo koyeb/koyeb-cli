@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -53,6 +52,13 @@ type SandboxClient struct {
 	maxRetries    int
 	retryDelay    time.Duration
 	streamTimeout time.Duration
+
+	// filesMu guards the legacy-fallback verdict of the /files routes probe
+	// (see sandbox_files_routes.go): one client is one sandbox handle, so the
+	// probe runs at most once per client and its warning is logged at most once.
+	filesMu     sync.Mutex
+	filesProbed bool
+	filesRoutes bool
 }
 
 // SandboxClientOption is a functional option for configuring SandboxClient
@@ -423,32 +429,6 @@ func (c *SandboxClient) WriteFile(ctx context.Context, path string, content []by
 	}
 
 	return nil
-}
-
-// ReadFile reads content from a file (handles binary data via base64)
-func (c *SandboxClient) ReadFile(ctx context.Context, path string) ([]byte, error) {
-	req := &FileRequest{Path: path}
-	resp, err := c.request(ctx, "POST", "/read_file", req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var result FileResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	if result.Error != "" {
-		return nil, fmt.Errorf("read file failed: %s", result.Error)
-	}
-
-	// Decode base64 content if the response indicates it
-	if result.IsB64 {
-		return base64.StdEncoding.DecodeString(result.Content)
-	}
-
-	return []byte(result.Content), nil
 }
 
 // DeleteFile deletes a file
