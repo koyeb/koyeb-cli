@@ -306,19 +306,17 @@ func (c *SandboxClient) legacyStatFile(ctx context.Context, path string) (*FileS
 		return statFromDirEntry(&entry), nil
 	}
 
-	// Try flat format with fields at top level
+	// Try flat format with fields at top level. Its Error field is handled
+	// above: any string "error" is caught by the nested check, which runs
+	// unconditionally — a flat error check here could never fire.
 	var flatResult struct {
 		Name    string `json:"name"`
 		IsDir   bool   `json:"is_dir"`
 		Size    int64  `json:"size"`
 		ModTime string `json:"mod_time"`
 		Mode    string `json:"mode"`
-		Error   string `json:"error,omitempty"`
 	}
 	if err := json.Unmarshal(body, &flatResult); err == nil {
-		if flatResult.Error != "" {
-			return nil, fmt.Errorf("stat file failed: %s", flatResult.Error)
-		}
 		return &FileStat{
 			Type:  dirEntryType(flatResult.IsDir),
 			Size:  flatResult.Size,

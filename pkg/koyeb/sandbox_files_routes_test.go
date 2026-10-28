@@ -331,6 +331,44 @@ func TestDownloadFileFilesRoutesErrorMapping(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "status 404")
 	assert.Contains(t, err.Error(), "file does not exist")
+
+	// The executor's {"error": ...} body is only trusted when it parses
+	// cleanly: trailing garbage keeps the raw body in the message instead.
+	garbled := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		writeChecked(w, `{"error":"boom"}garbage`)
+	}
+	client, _ = executorServer(t, "the-secret", "", garbled, WithRetries(0, time.Millisecond))
+
+	_, err = client.DownloadFile(context.Background(), "/missing", &out)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "garbage")
+	assert.NotContains(t, err.Error(), "sandbox API error (status 404): boom")
+}
+
+func TestStreamGetSendsRoutingKey(t *testing.T) {
+	var gotRoutingKey atomic.Value
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		gotRoutingKey.Store(r.Header.Get("X-Routing-Key"))
+		w.Header().Set("Content-Type", "application/octet-stream")
+		writeChecked(w, "data")
+	}
+	client, _ := executorServer(t, "the-secret", "route-42", handler, WithRetries(0, time.Millisecond))
+
+	var out bytes.Buffer
+	_, err := client.DownloadFile(context.Background(), "/tmp/data.bin", &out)
+	require.NoError(t, err)
+	assert.Equal(t, "route-42", gotRoutingKey.Load(), "the routing key must ride the streamed GET")
 }
 
 func TestDownloadFileRetriesServerErrorsBeforeStreaming(t *testing.T) {
@@ -360,6 +398,34 @@ func TestDownloadFileRetriesServerErrorsBeforeStreaming(t *testing.T) {
 	assert.Equal(t, content, out.Bytes())
 	assert.Equal(t, int64(len(content)), n)
 	assert.Equal(t, int32(3), gets.Load(), "two 502s then the 200")
+
+	// Status 500 is a 5xx like any other: the boundary is >=, so an
+	// exact 500 retries too.
+	t.Run("status 500 retries like any 5xx", func(t *testing.T) {
+		var gets atomic.Int32
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/files/stat" {
+				w.WriteHeader(http.StatusBadRequest)
+				writeChecked(w, `{"error":"path is required"}`)
+				return
+			}
+			if gets.Add(1) == 1 {
+				w.WriteHeader(http.StatusInternalServerError)
+				writeChecked(w, `{"error":"waking up"}`)
+				return
+			}
+			w.Header().Set("Content-Type", "application/octet-stream")
+			writeChecked(w, "after 500")
+		}
+		client, _ := executorServer(t, "the-secret", "", handler, WithRetries(1, time.Millisecond))
+
+		var out bytes.Buffer
+		n, err := client.DownloadFile(context.Background(), "/tmp/data.bin", &out)
+		require.NoError(t, err)
+		assert.Equal(t, []byte("after 500"), out.Bytes())
+		assert.Equal(t, int64(len("after 500")), n)
+		assert.Equal(t, int32(2), gets.Load(), "one 500 then the 200")
+	})
 }
 
 func TestFsDownloadWritesLocalFile(t *testing.T) {
@@ -478,6 +544,61 @@ func TestStatFileLegacyFormats(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "NO_SUCH_FILE")
 	})
+
+	// A body that parses in no legacy format surfaces the decode error,
+	// never a partially-populated stat.
+	t.Run("malformed bodies surface the decode error", func(t *testing.T) {
+		for name, body := range map[string]string{
+			"named entry with a malformed size":    `{"entry":123,"name":"f","is_dir":false,"size":"x","mode":"0644"}`,
+			"entry mismatch with a malformed size": `{"entry":123,"is_dir":true,"size":"x","mode":"0755"}`,
+		} {
+			t.Run(name, func(t *testing.T) {
+				fake := &fakeLegacyExecutor{statBody: body}
+				client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+				_, err := client.StatFile(context.Background(), "/app/app.py")
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), "failed to decode response")
+			})
+		}
+	})
+}
+
+func TestStreamDebugTransportRedactsTheToken(t *testing.T) {
+	// The streamed request dump hides the token by default and shows it
+	// with --debug-full; the response dump stays header-only either way.
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		w.Header().Set("Content-Type", "application/octet-stream")
+		writeChecked(w, "data")
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(0, time.Millisecond))
+
+	oldLevel := log.GetLevel()
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.SetLevel(oldLevel) })
+	read := captureLog(t)
+
+	var out bytes.Buffer
+	_, err := client.DownloadFile(context.Background(), "/tmp/data.bin", &out)
+	require.NoError(t, err)
+
+	dump := read()
+	assert.Contains(t, dump, "Authorization: <HIDDEN", "the token must be redacted by default")
+	assert.NotContains(t, dump, "the-secret")
+
+	debugFull = true
+	t.Cleanup(func() { debugFull = false })
+
+	var out2 bytes.Buffer
+	_, err = client.DownloadFile(context.Background(), "/tmp/data.bin", &out2)
+	require.NoError(t, err)
+
+	assert.Contains(t, read(), "the-secret", "--debug-full must show the token")
 }
 
 func TestStatFileFilesRoutesErrorMapping(t *testing.T) {
