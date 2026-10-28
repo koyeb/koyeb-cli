@@ -5,9 +5,12 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -219,6 +222,162 @@ func TestFilesRoutesProbeFailureUncachedAndSurfaced(t *testing.T) {
 		assert.Contains(t, err.Error(), "files")
 	}
 	assert.Equal(t, int32(2), probes.Load(), "an inconclusive probe is retried on the next call")
+}
+
+// signalingWriter closes first on its first Write, then keeps the bytes.
+type signalingWriter struct {
+	first chan struct{}
+	buf   bytes.Buffer
+	once  sync.Once
+}
+
+func (w *signalingWriter) Write(p []byte) (int, error) {
+	w.once.Do(func() { close(w.first) })
+	return w.buf.Write(p)
+}
+
+func TestDownloadFileStreamsRawBytesOnFilesRoutes(t *testing.T) {
+	// 300 KiB of binary: spans io.Copy's 32 KiB buffer many times.
+	content := make([]byte, 300*1024)
+	for i := range content {
+		content[i] = byte(i * 7)
+	}
+	fake := &fakeFilesExecutor{files: map[string][]byte{"/tmp/data.bin": content}}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	var out bytes.Buffer
+	n, err := client.DownloadFile(context.Background(), "/tmp/data.bin", &out)
+	require.NoError(t, err)
+	assert.Equal(t, int64(len(content)), n)
+	assert.Equal(t, content, out.Bytes(), "multi-chunk binary must arrive byte-exact")
+	assert.Equal(t, int32(1), fake.probes.Load())
+	assert.Equal(t, int32(1), fake.gets.Load())
+	assert.Equal(t, int32(0), fake.legacyHits.Load())
+}
+
+func TestDownloadFileDeliversBytesWhileExecutorMidBody(t *testing.T) {
+	// A true stream: bytes reach the caller while the executor is still
+	// writing the body. A client that buffers the response whole (an eager
+	// debug body dump, a buffered legacy read) never delivers in time.
+	firstChunk := bytes.Repeat([]byte{0xAB}, 64*1024)
+	secondChunk := []byte("the tail")
+	firstFlushed := make(chan struct{})
+	release := make(chan struct{})
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		writeChecked(w, string(firstChunk))
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+		close(firstFlushed)
+		<-release
+		writeChecked(w, string(secondChunk))
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(0, time.Millisecond))
+
+	writer := &signalingWriter{first: make(chan struct{})}
+	done := make(chan error, 1)
+	go func() {
+		_, err := client.DownloadFile(context.Background(), "/tmp/data.bin", writer)
+		done <- err
+	}()
+
+	select {
+	case <-writer.first:
+	case <-time.After(5 * time.Second):
+		close(release)
+		<-done
+		t.Fatal("bytes only arrived after the executor finished the body: the response was buffered whole")
+	}
+	close(release)
+	require.NoError(t, <-done)
+	want := append(append([]byte{}, firstChunk...), secondChunk...)
+	assert.Equal(t, want, writer.buf.Bytes())
+}
+
+func TestDownloadFileFallsBackToLegacyExecutor(t *testing.T) {
+	fake := &fakeLegacyExecutor{content: "legacy bytes"}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	var out bytes.Buffer
+	n, err := client.DownloadFile(context.Background(), "/tmp/a.txt", &out)
+	require.NoError(t, err)
+	assert.Equal(t, int64(len("legacy bytes")), n)
+	assert.Equal(t, []byte("legacy bytes"), out.Bytes())
+	assert.Equal(t, int32(1), fake.probes.Load())
+	assert.Equal(t, int32(1), fake.reads.Load())
+}
+
+func TestDownloadFileFilesRoutesErrorMapping(t *testing.T) {
+	fake := &fakeFilesExecutor{files: map[string][]byte{}}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	var out bytes.Buffer
+	_, err := client.DownloadFile(context.Background(), "/missing", &out)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "status 404")
+	assert.Contains(t, err.Error(), "file does not exist")
+}
+
+func TestDownloadFileRetriesServerErrorsBeforeStreaming(t *testing.T) {
+	// 5xx statuses are retried like request does; a mid-body failure is
+	// not (no resume — the caller reruns).
+	var gets atomic.Int32
+	content := []byte("after retries")
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		if gets.Add(1) <= 2 {
+			w.WriteHeader(http.StatusBadGateway)
+			writeChecked(w, `{"error":"waking up"}`)
+			return
+		}
+		w.Header().Set("Content-Type", "application/octet-stream")
+		writeChecked(w, string(content))
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(2, time.Millisecond))
+
+	var out bytes.Buffer
+	n, err := client.DownloadFile(context.Background(), "/tmp/data.bin", &out)
+	require.NoError(t, err)
+	assert.Equal(t, content, out.Bytes())
+	assert.Equal(t, int64(len(content)), n)
+	assert.Equal(t, int32(3), gets.Load(), "two 502s then the 200")
+}
+
+func TestFsDownloadWritesLocalFile(t *testing.T) {
+	ctx := &CLIContext{Context: context.Background()}
+
+	t.Run("streams the remote file to the local path", func(t *testing.T) {
+		fake := &fakeSandboxClient{downloadContent: []byte("remote bytes")}
+		local := filepath.Join(t.TempDir(), "out.bin")
+
+		require.NoError(t, downloadFile(ctx.Context, fake, "/remote/file.bin", local))
+
+		got, err := os.ReadFile(local)
+		require.NoError(t, err)
+		assert.Equal(t, []byte("remote bytes"), got)
+		info, err := os.Stat(local)
+		require.NoError(t, err)
+		assert.Equal(t, fs.FileMode(0o644), info.Mode().Perm())
+		assert.Equal(t, "/remote/file.bin", fake.downloadPath)
+	})
+
+	t.Run("client errors map to the download CLI error", func(t *testing.T) {
+		fake := &fakeSandboxClient{downloadErr: fmt.Errorf("connection reset")}
+		err := downloadFile(ctx.Context, fake, "/remote/file.bin", filepath.Join(t.TempDir(), "x"))
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "downloading file from sandbox")
+		assert.Contains(t, err.Error(), "connection reset")
+	})
 }
 
 func TestReadFileFilesRoutesErrorMapping(t *testing.T) {
