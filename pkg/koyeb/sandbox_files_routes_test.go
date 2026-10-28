@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -49,6 +50,9 @@ type fakeFilesExecutor struct {
 	files      map[string][]byte
 	probes     atomic.Int32 // GET /files/stat without a path (the probe)
 	gets       atomic.Int32 // GET /files with a path
+	stats      atomic.Int32 // GET /files/stat with a path
+	statQuery  string       // the raw query of the last stat call
+	statJSON   string       // body served for a stat with a path
 	legacyHits atomic.Int32 // any legacy JSON route (must stay 0 here)
 }
 
@@ -58,6 +62,11 @@ func (f *fakeFilesExecutor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		f.probes.Add(1)
 		w.WriteHeader(http.StatusBadRequest)
 		writeChecked(w, `{"error":"path is required"}`)
+	case r.URL.Path == "/files/stat":
+		f.stats.Add(1)
+		f.statQuery = r.URL.RawQuery
+		w.Header().Set("Content-Type", "application/json")
+		writeChecked(w, f.statJSON)
 	case r.URL.Path == "/files" && r.Method == http.MethodGet:
 		f.gets.Add(1)
 		content, ok := f.files[r.URL.Query().Get("path")]
@@ -377,6 +386,162 @@ func TestFsDownloadWritesLocalFile(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "downloading file from sandbox")
 		assert.Contains(t, err.Error(), "connection reset")
+	})
+}
+
+// captureStdout redirects os.Stdout into a pipe for the duration of one
+// test, returning a read function.
+func captureStdout(t *testing.T) func() string {
+	t.Helper()
+	old := os.Stdout
+	r, w, err := os.Pipe()
+	require.NoError(t, err)
+	os.Stdout = w
+	t.Cleanup(func() { os.Stdout = old })
+	return func() string {
+		w.Close()
+		out, _ := io.ReadAll(r)
+		return string(out)
+	}
+}
+
+func TestStatFileOnFilesRoutes(t *testing.T) {
+	fake := &fakeFilesExecutor{
+		statJSON: `{"type":"file","size":5,"mode":"0644","mtime":"2026-10-08T15:04:05.123456789Z"}`,
+	}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	stat, err := client.StatFile(context.Background(), "/tmp/a b.bin")
+	require.NoError(t, err)
+	assert.Equal(t, &FileStat{
+		Type:  "file",
+		Size:  5,
+		Mode:  "0644",
+		MTime: "2026-10-08T15:04:05.123456789Z",
+	}, stat)
+	assert.Equal(t, int32(1), fake.stats.Load())
+	assert.Equal(t, int32(1), fake.probes.Load(), "the probe runs once, shared with the read verdict")
+	assert.Equal(t, "path=%2Ftmp%2Fa+b.bin", fake.statQuery, "the path is URL-encoded as a query parameter")
+}
+
+func TestStatFileFallsBackToLegacyExecutor(t *testing.T) {
+	fake := &fakeLegacyExecutor{
+		statBody: `{"entry":{"name":"app.py","is_dir":false,"size":128,"mode":"0644","mod_time":"2026-01-02T03:04:05Z"}}`,
+	}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	stat, err := client.StatFile(context.Background(), "/app/app.py")
+	require.NoError(t, err)
+	assert.Equal(t, &FileStat{
+		Type:  "file",
+		Size:  128,
+		Mode:  "0644",
+		MTime: "2026-01-02T03:04:05Z",
+	}, stat)
+	assert.Equal(t, int32(1), fake.probes.Load())
+	assert.Equal(t, int32(1), fake.stats.Load())
+}
+
+func TestStatFileLegacyFormats(t *testing.T) {
+	formats := map[string]string{
+		"nested entry": `{"entry":{"name":"app.py","is_dir":false,"size":128,"mode":"0644"},"error":""}`,
+		"direct":       `{"name":"app.py","is_dir":false,"size":128,"mode":"0644"}`,
+		"flat":         `{"name":"app.py","is_dir":false,"size":128,"mode":"0644"}`,
+	}
+	for name, body := range formats {
+		t.Run(name, func(t *testing.T) {
+			fake := &fakeLegacyExecutor{statBody: body}
+			client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+			stat, err := client.StatFile(context.Background(), "/app/app.py")
+			require.NoError(t, err)
+			assert.Equal(t, "file", stat.Type)
+			assert.Equal(t, int64(128), stat.Size)
+			assert.Equal(t, "0644", stat.Mode)
+		})
+	}
+
+	t.Run("directories map to type dir", func(t *testing.T) {
+		fake := &fakeLegacyExecutor{statBody: `{"entry":{"name":"pkg","is_dir":true,"size":4096,"mode":"0755"}}`}
+		client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+		stat, err := client.StatFile(context.Background(), "/app/pkg")
+		require.NoError(t, err)
+		assert.Equal(t, "dir", stat.Type)
+	})
+
+	t.Run("stat errors surface", func(t *testing.T) {
+		fake := &fakeLegacyExecutor{statBody: `{"error":"NO_SUCH_FILE"}`}
+		client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+		_, err := client.StatFile(context.Background(), "/missing")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "NO_SUCH_FILE")
+	})
+}
+
+func TestStatFileFilesRoutesErrorMapping(t *testing.T) {
+	client, _ := executorServer(t, "the-secret", "", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" && r.URL.Query().Get("path") == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		writeChecked(w, `{"error":"file does not exist"}`)
+	}, WithRetries(0, time.Millisecond))
+
+	_, err := client.StatFile(context.Background(), "/missing")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "status 404")
+	assert.Contains(t, err.Error(), "file does not exist")
+}
+
+func TestFsStatWiring(t *testing.T) {
+	cmd := NewSandboxCmd()
+	fsCmd, _, err := cmd.Find([]string{"fs"})
+	require.NoError(t, err)
+	statCmd, _, err := fsCmd.Find([]string{"stat"})
+	require.NoError(t, err, "sandbox fs must register the stat subcommand")
+	assert.Equal(t, "stat NAME PATH", statCmd.Use)
+	require.NoError(t, statCmd.Args(statCmd, []string{"sb", "/tmp/a"}))
+	require.Error(t, statCmd.Args(statCmd, []string{"sb"}))
+}
+
+func TestFsStatPrintsMetadata(t *testing.T) {
+	ctx := &CLIContext{Context: context.Background()}
+
+	t.Run("prints type, size, mode and mtime", func(t *testing.T) {
+		fake := &fakeSandboxClient{stat: &FileStat{
+			Type: "file", Size: 5, Mode: "0644", MTime: "2026-10-08T15:04:05.123456789Z",
+		}}
+		out := captureStdout(t)
+
+		require.NoError(t, fsStat(ctx, fake, "/tmp/data.bin"))
+		printed := out()
+		assert.Contains(t, printed, "path:  /tmp/data.bin")
+		assert.Contains(t, printed, "type:  file")
+		assert.Contains(t, printed, "size:  5")
+		assert.Contains(t, printed, "mode:  0644")
+		assert.Contains(t, printed, "mtime: 2026-10-08T15:04:05.123456789Z")
+	})
+
+	t.Run("empty legacy fields print a dash", func(t *testing.T) {
+		fake := &fakeSandboxClient{stat: &FileStat{Type: "file", Size: 1}}
+		out := captureStdout(t)
+
+		require.NoError(t, fsStat(ctx, fake, "/tmp/a"))
+		printed := out()
+		assert.Contains(t, printed, "mode:  -")
+		assert.Contains(t, printed, "mtime: -")
+	})
+
+	t.Run("stat errors map to the CLI error", func(t *testing.T) {
+		fake := &fakeSandboxClient{statErr: fmt.Errorf("status 404: file does not exist")}
+		err := fsStat(ctx, fake, "/missing")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "reading file metadata")
+		assert.Contains(t, err.Error(), "file does not exist")
 	})
 }
 

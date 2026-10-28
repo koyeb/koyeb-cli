@@ -555,6 +555,39 @@ func fsTest(ctx *CLIContext, client SandboxClientInterface, path, expression str
 	return nil
 }
 
+// FsStat shows a file's metadata in the sandbox
+func (h *SandboxHandler) FsStat(ctx *CLIContext, cmd *cobra.Command, args []string) error {
+	return withSandboxClient(ctx, args[0], func(client SandboxClientInterface, _ *SandboxInfo) error {
+		return fsStat(ctx, client, args[1])
+	})
+}
+
+// fsStat prints a file's metadata: type, size, octal mode and mtime.
+func fsStat(ctx *CLIContext, client SandboxClientInterface, path string) error {
+	stat, err := client.StatFile(ctx.Context, path)
+	if err != nil {
+		return &errors.CLIError{
+			What:       "Error while reading file metadata in sandbox",
+			Why:        fmt.Sprintf("failed to stat: %s", path),
+			Additional: nil,
+			Orig:       err,
+			Solution:   "Check that the path exists",
+		}
+	}
+
+	mode := stat.Mode
+	if mode == "" {
+		mode = "-"
+	}
+	mtime := stat.MTime
+	if mtime == "" {
+		mtime = "-"
+	}
+
+	fmt.Printf("path:  %s\ntype:  %s\nsize:  %d\nmode:  %s\nmtime: %s\n", path, stat.Type, stat.Size, mode, mtime)
+	return nil
+}
+
 // FsDownload downloads a file from the sandbox
 func (h *SandboxHandler) FsDownload(ctx *CLIContext, cmd *cobra.Command, args []string) error {
 	remotePath := args[1]
