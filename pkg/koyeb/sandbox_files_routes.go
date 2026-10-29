@@ -3,7 +3,9 @@ package koyeb
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -31,7 +33,7 @@ import (
 // handle to the legacy JSON routes.
 const legacyFilesWarning = "sandbox executor has no streamed /files routes (pre-v0.0.24): file transfers use the legacy JSON routes"
 
-// filesRoutePath builds the query for GET /files.
+// filesRoutePath builds the query for the /files routes.
 func filesRoutePath(path string) string {
 	return "/files?" + url.Values{"path": []string{path}}.Encode()
 }
@@ -140,6 +142,82 @@ func (c *SandboxClient) DownloadFile(ctx context.Context, path string, w io.Writ
 	return io.Copy(w, resp.Body)
 }
 
+// WriteFile writes raw bytes to a file: one PUT /files on executor
+// v0.0.24+, the body sent and stored byte-exact with no base64
+// negotiation. The content's sha256 rides the X-Content-SHA256 header,
+// which precedes the body on the wire, so the executor verifies the
+// transfer while streaming and rejects a corrupted body with 400.
+// Older executors fall back to the legacy JSON route, where non-UTF-8
+// bytes may not survive — byte-exactness is the documented behavior
+// change only on the new routes.
+func (c *SandboxClient) WriteFile(ctx context.Context, path string, content []byte) error {
+	routed, err := c.hasFilesRoutes(ctx)
+	if err != nil {
+		return err
+	}
+	if !routed {
+		return c.legacyWriteFile(ctx, path, content)
+	}
+
+	resp, err := c.streamPut(ctx, path, content)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return filesRouteError(resp)
+	}
+	// The executor already verified the body against X-Content-SHA256
+	// while streaming; the {size, sha256} answer carries nothing the
+	// caller needs, so it is only drained for the connection's sake.
+	_, _ = io.Copy(io.Discard, resp.Body)
+	return nil
+}
+
+// streamPut issues the upload PUT on the streaming client, retrying
+// 5xx statuses and network errors like streamGet. Every attempt
+// replays the whole body from memory, and the executor's
+// temp-then-rename makes a PUT idempotent, so a retry after a
+// committed-but-unrelayed write sends the same bytes to the same
+// destination.
+func (c *SandboxClient) streamPut(ctx context.Context, path string, content []byte) (*http.Response, error) {
+	sum := sha256.Sum256(content)
+	var lastErr error
+	for attempt := 0; attempt <= c.maxRetries; attempt++ {
+		if attempt > 0 {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(c.retryDelay * time.Duration(attempt)):
+			}
+		}
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseURL+filesRoutePath(path), bytes.NewReader(content))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %w", err)
+		}
+		req.Header.Set("Authorization", "Bearer "+c.secret)
+		if c.routingKey != "" {
+			req.Header.Set("X-Routing-Key", c.routingKey)
+		}
+		req.Header.Set("Content-Type", "application/octet-stream")
+		req.Header.Set("X-Content-SHA256", hex.EncodeToString(sum[:]))
+
+		resp, err := c.streamClient.Do(req)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		if resp.StatusCode >= 500 {
+			lastErr = fmt.Errorf("server error: status %d", resp.StatusCode)
+			resp.Body.Close()
+			continue
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("request failed after %d retries: %w", c.maxRetries, lastErr)
+}
+
 // streamGet issues the download GET on the streaming client, retrying 5xx
 // statuses like request does. A read that fails mid-body is not retried:
 // the bytes already written to the caller cannot be taken back, and there
@@ -197,15 +275,7 @@ type streamDebugTransport struct {
 }
 
 func (t *streamDebugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	if reqData, dumpErr := httputil.DumpRequestOut(req, true); dumpErr == nil {
-		var safeReqData string
-		if !debugFull {
-			safeReqData = authorizationHeaderRegexp.ReplaceAllString(string(reqData), "Authorization: <HIDDEN, add --debug-full to show the token>")
-		} else {
-			safeReqData = string(reqData)
-		}
-		log.Debug(fmt.Sprintf("========== HTTP request ==========\n%s\n========== end of request ==========\n", safeReqData))
-	}
+	log.Debug(fmt.Sprintf("========== HTTP request ==========\n%s\n========== end of request ==========\n", streamRequestDump(req)))
 
 	resp, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
@@ -216,6 +286,42 @@ func (t *streamDebugTransport) RoundTrip(req *http.Request) (*http.Response, err
 		log.Debug(fmt.Sprintf("========== HTTP response ==========\n%s\n========== end of response ==========\n", respData))
 	}
 	return resp, nil
+}
+
+// streamRequestDump renders a request for --debug without ever
+// buffering a body: httputil.DumpRequestOut materializes the whole
+// body — or, with it omitted, a same-length dummy — which would double
+// the memory of a streamed upload. Body-less requests keep the
+// faithful wire dump; a body-carrying request gets its request line,
+// length and headers rendered directly.
+func streamRequestDump(req *http.Request) string {
+	if req.Body == nil || req.ContentLength == 0 {
+		if reqData, err := httputil.DumpRequestOut(req, true); err == nil {
+			return redactRequestDump(string(reqData))
+		}
+	}
+
+	var b strings.Builder
+	host := req.Host
+	if host == "" {
+		host = req.URL.Host
+	}
+	fmt.Fprintf(&b, "%s %s HTTP/1.1\r\nHost: %s\r\n", req.Method, req.URL.RequestURI(), host)
+	if req.ContentLength >= 0 {
+		fmt.Fprintf(&b, "Content-Length: %d\r\n", req.ContentLength)
+	}
+	_ = req.Header.Write(&b)
+	b.WriteString("\r\n")
+	return redactRequestDump(b.String())
+}
+
+// redactRequestDump hides the token in the Authorization header unless
+// --debug-full is set, the same way DebugTransport does.
+func redactRequestDump(reqData string) string {
+	if debugFull {
+		return reqData
+	}
+	return authorizationHeaderRegexp.ReplaceAllString(reqData, "Authorization: <HIDDEN, add --debug-full to show the token>")
 }
 
 // FileStat is a file's metadata: the /files/stat answer on executor
@@ -353,4 +459,33 @@ func (c *SandboxClient) legacyReadFile(ctx context.Context, path string) ([]byte
 	}
 
 	return []byte(result.Content), nil
+}
+
+// legacyWriteFile writes a file through the legacy JSON route: POST
+// /write_file with the content as a JSON string, kept exactly as it
+// was. The legacy executor has no is_base64 field on this route, so a
+// binary payload is stored with whatever the JSON encoding made of it
+// — the corruption the streamed PUT above fixes.
+func (c *SandboxClient) legacyWriteFile(ctx context.Context, path string, content []byte) error {
+	req := &FileRequest{
+		Path:    path,
+		Content: string(content),
+	}
+
+	resp, err := c.request(ctx, http.MethodPost, "/write_file", req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var result FileResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if !result.Success {
+		return fmt.Errorf("write file failed: %s", result.Error)
+	}
+
+	return nil
 }

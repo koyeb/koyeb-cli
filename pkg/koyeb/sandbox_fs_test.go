@@ -5,7 +5,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -101,6 +105,10 @@ type fakeSandboxClient struct {
 	runResp *RunResponse
 	runErr  error
 
+	writePath    string
+	writeContent []byte
+	writeErr     error
+
 	downloadPath    string
 	downloadContent []byte
 	downloadErr     error
@@ -112,6 +120,53 @@ type fakeSandboxClient struct {
 	listErr   error
 	killErrs  map[string]error
 	killed    []string
+}
+
+// fakeUploadInfo is an fs.FileInfo carrying only what uploadFile branches
+// on.
+type fakeUploadInfo struct{ size int64 }
+
+func (i fakeUploadInfo) Name() string       { return "fake" }
+func (i fakeUploadInfo) Size() int64        { return i.size }
+func (i fakeUploadInfo) Mode() fs.FileMode  { return 0o644 }
+func (i fakeUploadInfo) ModTime() time.Time { return time.Time{} }
+func (i fakeUploadInfo) IsDir() bool        { return false }
+func (i fakeUploadInfo) Sys() any           { return nil }
+
+func TestUploadFileWiresThroughWriteFile(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("the local file's bytes reach WriteFile untouched", func(t *testing.T) {
+		content := binaryTestPayload()
+		dir := t.TempDir()
+		local := filepath.Join(dir, "upload.bin")
+		require.NoError(t, os.WriteFile(local, content, 0o644))
+		info, err := os.Stat(local)
+		require.NoError(t, err)
+		fake := &fakeSandboxClient{}
+
+		require.NoError(t, new(SandboxHandler).uploadFile(ctx, fake, local, "/remote/upload.bin", info))
+
+		assert.Equal(t, "/remote/upload.bin", fake.writePath)
+		assert.Equal(t, content, fake.writeContent, "fs upload inherits WriteFile's binary safety")
+
+		t.Run("client errors map to the upload CLI error", func(t *testing.T) {
+			fake := &fakeSandboxClient{writeErr: fmt.Errorf("connection reset")}
+			err := new(SandboxHandler).uploadFile(ctx, fake, local, "/remote/x", info)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "uploading file to sandbox")
+			assert.Contains(t, err.Error(), "connection reset")
+		})
+	})
+
+	t.Run("files over 1G are refused before any upload", func(t *testing.T) {
+		// Pins the single-shot cap that slice 3 (multipart) drops.
+		fake := &fakeSandboxClient{}
+		err := new(SandboxHandler).uploadFile(ctx, fake, "big.bin", "/remote/x", fakeUploadInfo{size: MaxUploadSize + 1})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "1G")
+		assert.Empty(t, fake.writePath, "nothing is uploaded")
+	})
 }
 
 func (f *fakeSandboxClient) Run(_ context.Context, req *RunRequest) (*RunResponse, error) {
@@ -134,7 +189,11 @@ func (f *fakeSandboxClient) RunStreaming(
 	return nil
 }
 
-func (f *fakeSandboxClient) WriteFile(context.Context, string, []byte) error { return nil }
+func (f *fakeSandboxClient) WriteFile(_ context.Context, path string, content []byte) error {
+	f.writePath = path
+	f.writeContent = content
+	return f.writeErr
+}
 func (f *fakeSandboxClient) ReadFile(context.Context, string) ([]byte, error) {
 	return nil, nil
 }
