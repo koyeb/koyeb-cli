@@ -1,3 +1,7 @@
+## Unreleased
+
+* `sandbox fs` read/write/upload/download are binary-safe (byte-exact) on executors v0.0.24+; previously writing non-UTF-8 content silently corrupted it. Older executors are detected automatically and keep the legacy behavior. Added `sandbox fs stat`.
+
 ## v5.12.0 (2026-09-10)
 
 * Add `workspaces list` subcommand and `--project`/`--workspace` global flags.

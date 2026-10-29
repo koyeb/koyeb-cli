@@ -418,31 +418,6 @@ type DirEntry struct {
 	Mode    string `json:"mode,omitempty"`
 }
 
-// WriteFile writes content to a file
-func (c *SandboxClient) WriteFile(ctx context.Context, path string, content []byte) error {
-	req := &FileRequest{
-		Path:    path,
-		Content: string(content),
-	}
-
-	resp, err := c.request(ctx, "POST", "/write_file", req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	var result FileResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	if !result.Success {
-		return fmt.Errorf("write file failed: %s", result.Error)
-	}
-
-	return nil
-}
-
 // DeleteFile deletes a file
 func (c *SandboxClient) DeleteFile(ctx context.Context, path string) error {
 	resp, err := c.request(ctx, "POST", "/delete_file", &FileRequest{Path: path})

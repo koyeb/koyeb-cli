@@ -3,11 +3,14 @@ package koyeb
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,6 +53,10 @@ type fakeFilesExecutor struct {
 	files      map[string][]byte
 	probes     atomic.Int32 // GET /files/stat without a path (the probe)
 	gets       atomic.Int32 // GET /files with a path
+	puts       atomic.Int32 // PUT /files
+	putQuery   atomic.Value // the raw query of the last PUT
+	putCT      atomic.Value // the last PUT's Content-Type
+	putSHA     atomic.Value // the last PUT's X-Content-SHA256
 	stats      atomic.Int32 // GET /files/stat with a path
 	statQuery  string       // the raw query of the last stat call
 	statJSON   string       // body served for a stat with a path
@@ -67,6 +74,22 @@ func (f *fakeFilesExecutor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		f.statQuery = r.URL.RawQuery
 		w.Header().Set("Content-Type", "application/json")
 		writeChecked(w, f.statJSON)
+	case r.URL.Path == "/files" && r.Method == http.MethodPut:
+		f.puts.Add(1)
+		f.putQuery.Store(r.URL.RawQuery)
+		f.putCT.Store(r.Header.Get("Content-Type"))
+		f.putSHA.Store(r.Header.Get("X-Content-SHA256"))
+		body, _ := io.ReadAll(r.Body)
+		sum := sha256.Sum256(body)
+		got := hex.EncodeToString(sum[:])
+		if want := strings.ToLower(f.putSHA.Load().(string)); want != "" && want != got {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, fmt.Sprintf(`{"error":"sha256 mismatch: got %s, expected %s"}`, got, want))
+			return
+		}
+		f.files[r.URL.Query().Get("path")] = body
+		w.Header().Set("Content-Type", "application/json")
+		writeChecked(w, fmt.Sprintf(`{"size":%d,"sha256":%q}`, len(body), got))
 	case r.URL.Path == "/files" && r.Method == http.MethodGet:
 		f.gets.Add(1)
 		content, ok := f.files[r.URL.Query().Get("path")]
@@ -87,12 +110,14 @@ func (f *fakeFilesExecutor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // routes; every other path — /files/stat included — answers 404 like the
 // real mux, which is exactly what the fallback probe keys on.
 type fakeLegacyExecutor struct {
-	probes   atomic.Int32 // any /files hit (the probe)
-	reads    atomic.Int32 // POST /read_file
-	stats    atomic.Int32 // POST /stat_file
-	content  string       // /read_file response content
-	b64      bool         // respond is_base64 with base64 content
-	statBody string       // /stat_file response body
+	probes    atomic.Int32 // any /files hit (the probe)
+	reads     atomic.Int32 // POST /read_file
+	writes    atomic.Int32 // POST /write_file
+	writeBody atomic.Value // the raw JSON body of the last write
+	stats     atomic.Int32 // POST /stat_file
+	content   string       // /read_file response content
+	b64       bool         // respond is_base64 with base64 content
+	statBody  string       // /stat_file response body
 }
 
 func (f *fakeLegacyExecutor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +125,11 @@ func (f *fakeLegacyExecutor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasPrefix(r.URL.Path, "/files"):
 		f.probes.Add(1)
 		http.NotFound(w, r)
+	case r.URL.Path == "/write_file" && r.Method == http.MethodPost:
+		f.writes.Add(1)
+		body, _ := io.ReadAll(r.Body)
+		f.writeBody.Store(string(body))
+		writeChecked(w, `{"success":true}`)
 	case r.URL.Path == "/read_file" && r.Method == http.MethodPost:
 		f.reads.Add(1)
 		if f.b64 {
@@ -693,4 +723,229 @@ func TestReadFileFilesRoutesErrorMapping(t *testing.T) {
 			assert.NotContains(t, err.Error(), `"error"`, "the JSON body is unwrapped, not echoed")
 		})
 	}
+}
+
+func TestWriteFileStreamsRawBytesOnFilesRoutes(t *testing.T) {
+	content := binaryTestPayload()
+	fake := &fakeFilesExecutor{files: map[string][]byte{}}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	require.NoError(t, client.WriteFile(context.Background(), "/tmp/data.bin", content))
+
+	assert.Equal(t, content, fake.files["/tmp/data.bin"], "every byte value and invalid UTF-8 must arrive byte-exact")
+	assert.Equal(t, int32(1), fake.probes.Load(), "the probe runs once")
+	assert.Equal(t, int32(1), fake.puts.Load(), "the bytes go in one PUT /files")
+	assert.Equal(t, int32(0), fake.legacyHits.Load(), "the legacy JSON routes are never touched")
+
+	// Raw bytes both ways: the body is not a JSON envelope, so there is no
+	// is_base64 negotiation and no Content-Type that a proxy might parse.
+	assert.Equal(t, "application/octet-stream", fake.putCT.Load())
+	q, err := url.ParseQuery(fake.putQuery.Load().(string))
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/data.bin"}, q["path"], "the destination rides the query")
+	assert.NotContains(t, q, "mode", "no mode parameter: the CLI has no mode flag and the legacy route had none")
+	assert.NotContains(t, q, "parents", "no parents parameter: the remote directory must exist, as before")
+
+	t.Run("an empty file uploads as a zero-length body", func(t *testing.T) {
+		fake := &fakeFilesExecutor{files: map[string][]byte{}}
+		client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+		require.NoError(t, client.WriteFile(context.Background(), "/tmp/empty", nil))
+
+		assert.Empty(t, fake.files["/tmp/empty"], "the destination ends up an empty file, not a missing one")
+	})
+}
+
+func TestWriteFileSendsContentSHA256(t *testing.T) {
+	// The digest rides X-Content-SHA256, which precedes the body on the
+	// wire: the executor verifies the transfer while streaming and fails
+	// with 400 on a corrupted body. The fake enforces the same contract.
+	content := binaryTestPayload()
+	fake := &fakeFilesExecutor{files: map[string][]byte{}}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	require.NoError(t, client.WriteFile(context.Background(), "/tmp/data.bin", content))
+
+	sum := sha256.Sum256(content)
+	assert.Equal(t, hex.EncodeToString(sum[:]), fake.putSHA.Load(), "the header must carry the content's sha256")
+}
+
+func TestWriteFileFallsBackToLegacyExecutor(t *testing.T) {
+	fake := &fakeLegacyExecutor{}
+	client, _ := executorServer(t, "the-secret", "", fake.ServeHTTP, WithRetries(0, time.Millisecond))
+
+	require.NoError(t, client.WriteFile(context.Background(), "/tmp/a.txt", []byte("legacy write")))
+
+	assert.Equal(t, int32(1), fake.probes.Load(), "the 404 probe pins the handle to legacy")
+	assert.Equal(t, int32(1), fake.writes.Load(), "the write goes to the legacy POST /write_file")
+	body, _ := fake.writeBody.Load().(string)
+	assert.Contains(t, body, `"path":"/tmp/a.txt"`)
+	assert.Contains(t, body, `"content":"legacy write"`, "the legacy route keeps its JSON-string shape")
+}
+
+func TestWriteFileFilesRoutesErrorMapping(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		status int
+		body   string
+	}{
+		{"missing parent directory", http.StatusNotFound, `{"error":"no such file or directory"}`},
+		{"sha256 mismatch", http.StatusBadRequest, `{"error":"sha256 mismatch: got aa, expected bb"}`},
+		{"permission denied", http.StatusForbidden, `{"error":"permission denied"}`},
+		{"destination is a directory", http.StatusConflict, `{"error":"destination is a directory"}`},
+		{"proxy body cap", http.StatusRequestEntityTooLarge, `{"error":"request body too large"}`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/files/stat" && r.URL.Query().Get("path") == "" {
+					w.WriteHeader(http.StatusBadRequest)
+					writeChecked(w, `{"error":"path is required"}`)
+					return
+				}
+				w.WriteHeader(tt.status)
+				writeChecked(w, tt.body)
+			}
+			client, _ := executorServer(t, "the-secret", "", handler, WithRetries(0, time.Millisecond))
+
+			err := client.WriteFile(context.Background(), "/tmp/a", []byte("data"))
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), fmt.Sprintf("status %d", tt.status))
+			assert.NotContains(t, err.Error(), `"error"`, "the JSON body is unwrapped, not echoed")
+		})
+	}
+}
+
+func TestWriteFileVerdictNeverInferredFromFailedPut(t *testing.T) {
+	// A 404 on PUT /files (a missing parent directory) must neither
+	// re-run the probe nor flip the handle: only the body-less probe
+	// decides, never a failed transfer.
+	var puts, gets atomic.Int32
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/files/stat" && r.URL.Query().Get("path") == "":
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+		case r.URL.Path == "/files" && r.Method == http.MethodPut:
+			puts.Add(1)
+			w.WriteHeader(http.StatusNotFound)
+			writeChecked(w, `{"error":"no such file or directory"}`)
+		case r.URL.Path == "/files" && r.Method == http.MethodGet:
+			gets.Add(1)
+			w.Header().Set("Content-Type", "application/octet-stream")
+			writeChecked(w, "still routed")
+		default:
+			http.NotFound(w, r)
+		}
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(0, time.Millisecond))
+
+	for range 2 {
+		err := client.WriteFile(context.Background(), "/missing/dir/a", []byte("data"))
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "status 404")
+	}
+
+	got, err := client.ReadFile(context.Background(), "/tmp/a")
+	require.NoError(t, err)
+	assert.Equal(t, []byte("still routed"), got)
+	assert.Equal(t, int32(2), puts.Load())
+	assert.Equal(t, int32(1), gets.Load(), "the handle stays on the new routes after failed PUTs")
+}
+
+func TestWriteFileRetriesServerErrorsWithTheBodyReplayed(t *testing.T) {
+	// 5xx statuses retry like request does, and every attempt carries the
+	// full body: the executor's temp-then-rename makes a PUT idempotent,
+	// so a retry after a committed-but-unrelayed write sends the same
+	// bytes to the same destination.
+	content := binaryTestPayload()
+	wantSum := sha256.Sum256(content)
+	wantSHA := hex.EncodeToString(wantSum[:])
+	var mu sync.Mutex
+	var attempts []string // per attempt: "size:sha" of the received body
+	var puts atomic.Int32
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" && r.URL.Query().Get("path") == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		sum := sha256.Sum256(body)
+		got := hex.EncodeToString(sum[:])
+		mu.Lock()
+		attempts = append(attempts, fmt.Sprintf("%d:%s:%s", len(body), got, r.Header.Get("X-Content-SHA256")))
+		mu.Unlock()
+		if puts.Add(1) <= 2 {
+			w.WriteHeader(http.StatusBadGateway)
+			writeChecked(w, `{"error":"waking up"}`)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		writeChecked(w, fmt.Sprintf(`{"size":%d,"sha256":%q}`, len(body), got))
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(2, time.Millisecond))
+
+	require.NoError(t, client.WriteFile(context.Background(), "/tmp/a.bin", content))
+
+	mu.Lock()
+	defer mu.Unlock()
+	require.Len(t, attempts, 3, "two 502s then the 200")
+	for i, a := range attempts {
+		assert.Equal(t, fmt.Sprintf("%d:%s:%s", len(content), wantSHA, wantSHA), a,
+			"attempt %d must replay the whole body with its digest", i+1)
+	}
+}
+
+func TestWriteFileNotBoundByTheClientTimeout(t *testing.T) {
+	// The PUT rides the untimed stream client: the default 2-minute
+	// httpClient timeout would kill any upload longer than 2 minutes
+	// (slice 1's finding). The probe answers instantly, so only the PUT
+	// sees the delay.
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" && r.URL.Query().Get("path") == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		time.Sleep(250 * time.Millisecond)
+		w.Header().Set("Content-Type", "application/json")
+		writeChecked(w, `{"size":1,"sha256":"x"}`)
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(0, time.Millisecond), WithTimeout(100*time.Millisecond))
+
+	require.NoError(t, client.WriteFile(context.Background(), "/tmp/a", []byte("x")))
+}
+
+func TestStreamedUploadDumpNeverBuffersTheBody(t *testing.T) {
+	// The streamed request dump is headers-only for a body-carrying
+	// request: a wire dump buffers the whole body — or a same-length
+	// dummy — in memory, which would double the RSS of a large upload.
+	payload := bytes.Repeat([]byte{0xA5}, 128*1024)
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/files/stat" && r.URL.Query().Get("path") == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeChecked(w, `{"error":"path is required"}`)
+			return
+		}
+		_, _ = io.ReadAll(r.Body)
+		w.Header().Set("Content-Type", "application/json")
+		writeChecked(w, `{"size":0,"sha256":"x"}`)
+	}
+	client, _ := executorServer(t, "the-secret", "", handler, WithRetries(0, time.Millisecond))
+
+	oldLevel := log.GetLevel()
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.SetLevel(oldLevel) })
+	read := captureLog(t)
+
+	require.NoError(t, client.WriteFile(context.Background(), "/tmp/big.bin", payload))
+
+	dump := read()
+	assert.Contains(t, dump, "PUT /files?path=")
+	// Header.Set canonicalizes the casing; HTTP headers are
+	// case-insensitive and the executor's Header.Get matches it.
+	assert.Contains(t, dump, "X-Content-Sha256:")
+	assert.Contains(t, dump, "Authorization: <HIDDEN", "the token stays redacted")
+	assert.NotContains(t, dump, "\xa5", "the body bytes never enter the log")
+	assert.Less(t, len(dump), 8*1024, "the dump stays headers-sized, not body-sized")
 }
