@@ -1,6 +1,7 @@
 ## Unreleased
 
 * `sandbox fs` read/write/upload/download are binary-safe (byte-exact) on executors v0.0.24+; previously writing non-UTF-8 content silently corrupted it. Older executors are detected automatically and keep the legacy behavior. Added `sandbox fs stat`.
+* `sandbox fs upload` streams files from disk instead of reading them whole into memory, and uploads files larger than 50 MiB as multipart parts (4 parts of up to 100 MiB in flight, with per-part checksums) on executors v0.0.24+ — the 1G per-file limit is lifted there. On older executors uploads remain single-request and are now refused above 100 MiB (the platform proxy's request body cap) with a message naming the cause, instead of failing opaquely at the proxy.
 
 ## v5.12.0 (2026-09-10)
 

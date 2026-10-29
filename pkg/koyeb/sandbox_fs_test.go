@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 	"time"
 
@@ -109,6 +110,12 @@ type fakeSandboxClient struct {
 	writeContent []byte
 	writeErr     error
 
+	uploadLocal string
+	uploadPath  string
+	uploadPaths []string
+	uploadErr   error
+	makeDirs    []string
+
 	downloadPath    string
 	downloadContent []byte
 	downloadErr     error
@@ -133,10 +140,10 @@ func (i fakeUploadInfo) ModTime() time.Time { return time.Time{} }
 func (i fakeUploadInfo) IsDir() bool        { return false }
 func (i fakeUploadInfo) Sys() any           { return nil }
 
-func TestUploadFileWiresThroughWriteFile(t *testing.T) {
+func TestUploadFileWiresThroughUploadFile(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("the local file's bytes reach WriteFile untouched", func(t *testing.T) {
+	t.Run("the local file's path reaches UploadFile", func(t *testing.T) {
 		content := binaryTestPayload()
 		dir := t.TempDir()
 		local := filepath.Join(dir, "upload.bin")
@@ -147,11 +154,11 @@ func TestUploadFileWiresThroughWriteFile(t *testing.T) {
 
 		require.NoError(t, new(SandboxHandler).uploadFile(ctx, fake, local, "/remote/upload.bin", info))
 
-		assert.Equal(t, "/remote/upload.bin", fake.writePath)
-		assert.Equal(t, content, fake.writeContent, "fs upload inherits WriteFile's binary safety")
+		assert.Equal(t, local, fake.uploadLocal)
+		assert.Equal(t, "/remote/upload.bin", fake.uploadPath)
 
 		t.Run("client errors map to the upload CLI error", func(t *testing.T) {
-			fake := &fakeSandboxClient{writeErr: fmt.Errorf("connection reset")}
+			fake := &fakeSandboxClient{uploadErr: fmt.Errorf("connection reset")}
 			err := new(SandboxHandler).uploadFile(ctx, fake, local, "/remote/x", info)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), "uploading file to sandbox")
@@ -159,14 +166,38 @@ func TestUploadFileWiresThroughWriteFile(t *testing.T) {
 		})
 	})
 
-	t.Run("files over 1G are refused before any upload", func(t *testing.T) {
-		// Pins the single-shot cap that slice 3 (multipart) drops.
+	t.Run("no file size is refused by the handler", func(t *testing.T) {
+		// The 1G cap is dropped: multipart carries any size on
+		// files-routes executors, and the legacy fallback's own guard
+		// lives in the client where the route verdict is known.
+		dir := t.TempDir()
+		local := filepath.Join(dir, "big.bin")
+		require.NoError(t, os.WriteFile(local, []byte("x"), 0o644))
 		fake := &fakeSandboxClient{}
-		err := new(SandboxHandler).uploadFile(ctx, fake, "big.bin", "/remote/x", fakeUploadInfo{size: MaxUploadSize + 1})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "1G")
-		assert.Empty(t, fake.writePath, "nothing is uploaded")
+
+		require.NoError(t, new(SandboxHandler).uploadFile(ctx, fake, local, "/remote/x", fakeUploadInfo{size: 5 << 30}))
+		assert.Equal(t, "/remote/x", fake.uploadPath, "the client decides, not the handler")
 	})
+}
+
+func TestUploadDirectoryWalksThroughUploadFile(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "a.txt"), []byte("a"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "b.bin"), []byte{0xFF, 0x00}, 0o644))
+	require.NoError(t, os.Mkdir(filepath.Join(dir, "sub"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "sub", "c.txt"), []byte("c"), 0o644))
+
+	// The walk's remote-existence check stats the target; an error there
+	// reads as "remote missing", which is the walk's normal case.
+	fake := &fakeSandboxClient{statErr: fmt.Errorf("no such file")}
+	require.NoError(t, new(SandboxHandler).uploadDirectory(ctx, fake, dir, "/remote", false))
+
+	assert.Equal(t, []string{"/remote", "/remote/sub"}, fake.makeDirs,
+		"the root and the walked subdirectories are created")
+	sort.Strings(fake.uploadPaths)
+	assert.Equal(t, []string{"/remote/a.txt", "/remote/b.bin", "/remote/sub/c.txt"}, fake.uploadPaths,
+		"every file goes through the streaming upload with its mapped remote path")
 }
 
 func (f *fakeSandboxClient) Run(_ context.Context, req *RunRequest) (*RunResponse, error) {
@@ -194,6 +225,19 @@ func (f *fakeSandboxClient) WriteFile(_ context.Context, path string, content []
 	f.writeContent = content
 	return f.writeErr
 }
+func (f *fakeSandboxClient) UploadFile(_ context.Context, localPath, remotePath string) (int64, error) {
+	f.uploadLocal = localPath
+	f.uploadPath = remotePath
+	f.uploadPaths = append(f.uploadPaths, remotePath)
+	if f.uploadErr != nil {
+		return 0, f.uploadErr
+	}
+	info, err := os.Stat(localPath)
+	if err != nil {
+		return 0, err
+	}
+	return info.Size(), nil
+}
 func (f *fakeSandboxClient) ReadFile(context.Context, string) ([]byte, error) {
 	return nil, nil
 }
@@ -208,8 +252,11 @@ func (f *fakeSandboxClient) DownloadFile(_ context.Context, path string, w io.Wr
 	return io.Copy(w, bytes.NewReader(f.downloadContent))
 }
 func (f *fakeSandboxClient) DeleteFile(context.Context, string) error { return nil }
-func (f *fakeSandboxClient) MakeDir(context.Context, string) error    { return nil }
-func (f *fakeSandboxClient) DeleteDir(context.Context, string) error  { return nil }
+func (f *fakeSandboxClient) MakeDir(_ context.Context, path string) error {
+	f.makeDirs = append(f.makeDirs, path)
+	return nil
+}
+func (f *fakeSandboxClient) DeleteDir(context.Context, string) error { return nil }
 func (f *fakeSandboxClient) ListDir(context.Context, string) ([]DirEntry, error) {
 	return nil, nil
 }

@@ -19,6 +19,10 @@ type SandboxClientInterface interface {
 	Run(ctx context.Context, req *RunRequest) (*RunResponse, error)
 	RunStreaming(ctx context.Context, req *RunRequest, onOutput func(stream, data string), onComplete func(code int, hasError bool)) error
 	WriteFile(ctx context.Context, path string, content []byte) error
+	// UploadFile streams a local file to the sandbox, multipart for
+	// large files where the executor supports it, returning the number
+	// of bytes uploaded.
+	UploadFile(ctx context.Context, localPath, remotePath string) (int64, error)
 	ReadFile(ctx context.Context, path string) ([]byte, error)
 	// DownloadFile streams the file into w with constant memory where the
 	// executor supports it, returning the number of bytes written.

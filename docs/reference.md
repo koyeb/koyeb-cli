@@ -3241,7 +3241,7 @@ Filesystem operations
 * [koyeb sandbox fs rename](#koyeb-sandbox-fs-rename)	 - Rename a file or directory in the sandbox
 * [koyeb sandbox fs rm](#koyeb-sandbox-fs-rm)	 - Remove a file or directory from the sandbox
 * [koyeb sandbox fs stat](#koyeb-sandbox-fs-stat)	 - Show a file's metadata in the sandbox
-* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox (max 1G per file)
+* [koyeb sandbox fs upload](#koyeb-sandbox-fs-upload)	 - Upload a local file or directory to the sandbox
 * [koyeb sandbox fs write](#koyeb-sandbox-fs-write)	 - Write content to a file in the sandbox
 
 ## koyeb sandbox fs download
@@ -3622,12 +3622,13 @@ koyeb sandbox fs stat NAME PATH [flags]
 
 ## koyeb sandbox fs upload
 
-Upload a local file or directory to the sandbox (max 1G per file)
+Upload a local file or directory to the sandbox
 
 ### Synopsis
 
 Upload a local file or directory to the sandbox.
 Parent directories on the sandbox must already exist (create them first with fs mkdir).
+On executors v0.0.24+ files larger than 50 MiB upload as multipart parts, so any file size is supported.
 
 ```
 koyeb sandbox fs upload NAME LOCAL_PATH REMOTE_PATH [flags]
