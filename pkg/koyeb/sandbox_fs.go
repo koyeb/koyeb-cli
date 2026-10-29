@@ -13,10 +13,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	LargeFileWarnSize = 10 * 1024 * 1024       // 10MB
-	MaxUploadSize     = 1 * 1024 * 1024 * 1024 // 1G
-)
+// LargeFileWarnSize is the size above which fs upload logs its "may take
+// a while" warning.
+const LargeFileWarnSize = 10 * 1024 * 1024 // 10MB
 
 // FsRead reads a file from the sandbox
 func (h *SandboxHandler) FsRead(ctx *CLIContext, cmd *cobra.Command, args []string) error {
@@ -268,48 +267,31 @@ func (h *SandboxHandler) FsUpload(ctx *CLIContext, cmd *cobra.Command, args []st
 	})
 }
 
-// uploadFile uploads a single file to the sandbox
+// uploadFile uploads a single file to the sandbox, streaming from disk:
+// the client sends it as one PUT or as multipart parts depending on size
+// and executor generation.
 func (h *SandboxHandler) uploadFile(
 	ctx context.Context,
 	client SandboxClientInterface,
 	localPath, remotePath string,
 	fileInfo fs.FileInfo,
 ) error {
-	if fileInfo.Size() > MaxUploadSize {
-		return &errors.CLIError{
-			What:     "Error while uploading file to sandbox",
-			Why:      fmt.Sprintf("file size %d exceeds 1G limit", fileInfo.Size()),
-			Solution: "Reduce the file size to 1G or less",
-		}
-	}
-
 	if fileInfo.Size() > LargeFileWarnSize {
 		log.Warnf("Uploading large file (%d bytes) - this may take a while", fileInfo.Size())
 	}
 
-	data, err := os.ReadFile(localPath)
+	written, err := client.UploadFile(ctx, localPath, remotePath)
 	if err != nil {
 		return &errors.CLIError{
 			What:       "Error while uploading file to sandbox",
-			Why:        fmt.Sprintf("failed to read local file: %s", localPath),
+			Why:        fmt.Sprintf("failed to upload file: %s", remotePath),
 			Additional: nil,
 			Orig:       err,
-			Solution:   "Check that the local file exists and is readable",
+			Solution:   "Check that the local file is readable and the remote path is valid",
 		}
 	}
 
-	err = client.WriteFile(ctx, remotePath, data)
-	if err != nil {
-		return &errors.CLIError{
-			What:       "Error while uploading file to sandbox",
-			Why:        fmt.Sprintf("failed to write remote file: %s", remotePath),
-			Additional: nil,
-			Orig:       err,
-			Solution:   "Check that the remote path is valid",
-		}
-	}
-
-	log.Infof("Uploaded %s to %s (%d bytes)", localPath, remotePath, len(data))
+	log.Infof("Uploaded %s to %s (%d bytes)", localPath, remotePath, written)
 	return nil
 }
 
@@ -369,24 +351,11 @@ func (h *SandboxHandler) uploadDirectory(
 				return fmt.Errorf("failed to get file info for %s: %w", path, err)
 			}
 
-			if info.Size() > MaxUploadSize {
-				return &errors.CLIError{
-					What:     "Error while uploading directory to sandbox",
-					Why:      fmt.Sprintf("file %s exceeds 1G limit (%d bytes)", path, info.Size()),
-					Solution: "Reduce the file size to 1G or less",
-				}
-			}
-
 			if info.Size() > LargeFileWarnSize {
 				log.Warnf("Uploading large file %s (%d bytes)", path, info.Size())
 			}
 
-			data, err := os.ReadFile(path)
-			if err != nil {
-				return fmt.Errorf("failed to read file %s: %w", path, err)
-			}
-
-			if err := client.WriteFile(ctx, targetPath, data); err != nil {
+			if _, err := client.UploadFile(ctx, path, targetPath); err != nil {
 				return fmt.Errorf("failed to upload file %s: %w", targetPath, err)
 			}
 			fileCount++
