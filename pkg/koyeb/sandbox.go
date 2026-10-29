@@ -369,9 +369,10 @@ $> koyeb sandbox fs write myapp/mysandbox /tmp/script.py -f ./local-script.py
 	// fs upload
 	fsUploadCmd := &cobra.Command{
 		Use:   "upload NAME LOCAL_PATH REMOTE_PATH",
-		Short: "Upload a local file or directory to the sandbox (max 1G per file)",
+		Short: "Upload a local file or directory to the sandbox",
 		Long: `Upload a local file or directory to the sandbox.
-Parent directories on the sandbox must already exist (create them first with fs mkdir).`,
+Parent directories on the sandbox must already exist (create them first with fs mkdir).
+On executors v0.0.24+ files larger than 50 MiB upload as multipart parts, so any file size is supported.`,
 		Args: cobra.ExactArgs(3),
 		RunE: WithCLIContext(h.FsUpload),
 	}
