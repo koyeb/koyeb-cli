@@ -8,7 +8,7 @@ require (
 	github.com/briandowns/spinner v1.23.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.3.0+incompatible
-	github.com/gorilla/websocket v1.5.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/iancoleman/strcase v0.2.0
 	github.com/koyeb/koyeb-api-client-go v0.0.0-20261010005317-9c122502bb6a
 	github.com/logrusorgru/aurora v2.0.3+incompatible
@@ -55,7 +55,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/tcnksm/go-gitconfig v0.1.2 // indirect
-	github.com/ulikunitz/xz v0.5.14 // indirect
+	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	golang.org/x/crypto v0.52.0 // indirect
