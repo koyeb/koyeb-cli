@@ -89,6 +89,9 @@ func (h *ArchiveHandler) uploadArchive(file *os.File, size int64, url string) er
 		log.Debugf("Error while creating the request: %v", err)
 		return err
 	}
+	// Go can't infer the length of an *os.File body and would otherwise use chunked
+	// encoding, omitting Content-Length, which S3 includes in its signature.
+	req.ContentLength = size
 
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("x-goog-content-length-range", fmt.Sprintf("%d,%d", size, size))
