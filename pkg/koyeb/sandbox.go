@@ -811,4 +811,6 @@ func addSandboxCreateFlags(cmd *cobra.Command) {
 
 	// Other compatible flags
 	flags.Bool("privileged", false, "Run in privileged mode")
+
+	addContainerRuntimeFlags(flags)
 }

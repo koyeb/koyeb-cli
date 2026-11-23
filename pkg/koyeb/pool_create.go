@@ -111,6 +111,10 @@ func buildCreateServicePool(ctx *CLIContext, cmd *cobra.Command, name string) (k
 		return koyeb.CreateServicePool{}, err
 	}
 
+	// Container runtime: changed-only, empty default keeps the region
+	// default runtime.
+	applyContainerRuntimeFlag(flags, def)
+
 	// Environment variables and config files: the shared bundle applies
 	// both.
 	if err := svcHandler.parseEnvConfigFiles(ctx, flags, def); err != nil {

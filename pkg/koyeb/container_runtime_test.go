@@ -72,3 +72,67 @@ func TestApplyContainerRuntimeFlagServices(t *testing.T) {
 		assert.Equal(t, "hyperdrive", def.GetContainerRuntime())
 	})
 }
+
+func TestApplyContainerRuntimeFlagSandboxes(t *testing.T) {
+	t.Run("--container-runtime kata reads back as kata", func(t *testing.T) {
+		def, err := parseSandboxDefinition(t, []string{"--container-runtime", "kata"})
+		require.NoError(t, err)
+		require.True(t, def.HasContainerRuntime())
+		assert.Equal(t, "kata", def.GetContainerRuntime())
+	})
+
+	t.Run("unset leaves the definition empty (region default)", func(t *testing.T) {
+		def, err := parseSandboxDefinition(t, nil)
+		require.NoError(t, err)
+		assert.False(t, def.HasContainerRuntime())
+	})
+}
+
+func TestApplyContainerRuntimeFlagPools(t *testing.T) {
+	t.Run("--container-runtime kata reads back as kata on create", func(t *testing.T) {
+		cmd := newPoolCreateCmd()
+		require.NoError(t, cmd.Flags().Set("container-runtime", "kata"))
+
+		req, err := buildCreateServicePool(&CLIContext{}, cmd, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		require.True(t, def.HasContainerRuntime())
+		assert.Equal(t, "kata", def.GetContainerRuntime())
+	})
+
+	t.Run("unset keeps the live runtime on update", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		live := livePoolFixtureWithRuntime("kata")
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		require.True(t, def.HasContainerRuntime())
+		assert.Equal(t, "kata", def.GetContainerRuntime())
+	})
+
+	t.Run("--container-runtime overwrites the live runtime on update", func(t *testing.T) {
+		cmd := newPoolUpdateCmd()
+		require.NoError(t, cmd.Flags().Set("container-runtime", "gvisor"))
+		live := livePoolFixtureWithRuntime("kata")
+
+		req, err := buildUpdateServicePool(sandboxTestContext(&fakeAPI{}), cmd.Flags(), live, "my-pool")
+		require.NoError(t, err)
+
+		def := req.GetDefinition()
+		require.True(t, def.HasContainerRuntime())
+		assert.Equal(t, "gvisor", def.GetContainerRuntime())
+	})
+}
+
+// livePoolFixtureWithRuntime builds a pool fixture whose definition carries
+// the given container runtime.
+func livePoolFixtureWithRuntime(runtime string) koyeb.ServicePool {
+	live := liveSandboxPoolFixture()
+	def := live.GetDefinition()
+	def.SetContainerRuntime(runtime)
+	live.SetDefinition(def)
+	return live
+}

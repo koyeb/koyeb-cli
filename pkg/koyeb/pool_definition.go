@@ -52,6 +52,8 @@ func addPoolFlags(flags *pflag.FlagSet) {
 	addArchiveSourceFlags(flags)
 	flags.Bool("privileged", false, "Whether the member containers run in privileged mode")
 
+	addContainerRuntimeFlags(flags)
+
 	flags.String("exposed-port-protocol", "http",
 		"Protocol for the exposed application port 3031 (http or http2), SANDBOX pools only")
 	flags.Bool("enable-tcp-proxy", false,
