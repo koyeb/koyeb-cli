@@ -195,6 +195,10 @@ func buildUpdateServicePool(ctx *CLIContext, flags *pflag.FlagSet, current koyeb
 		return koyeb.UpdateServicePool{}, err
 	}
 
+	// Container runtime: changed-only, so an update without the flag
+	// round-trips the stored runtime through the full replace.
+	applyContainerRuntimeFlag(flags, &def)
+
 	if err := svcHandler.parseEnvConfigFiles(ctx, flags, &def); err != nil {
 		return koyeb.UpdateServicePool{}, err
 	}

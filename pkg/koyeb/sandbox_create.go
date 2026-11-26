@@ -265,6 +265,10 @@ func parseSandboxDefinitionFlags(ctx *CLIContext, cmd *cobra.Command, def *koyeb
 	}
 	def.SetDocker(*parsedDocker)
 
+	// Container runtime: changed-only, empty default keeps the region
+	// default runtime.
+	applyContainerRuntimeFlag(flags, def)
+
 	// Instance type and regions: the shared bundle applies both.
 	if err := svcHandler.parseInstanceTypeRegions(flags, def); err != nil {
 		return err

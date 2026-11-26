@@ -845,6 +845,7 @@ func TestPoolUpdateCmdFlagSet(t *testing.T) {
 		dockerSourceFlagNames(sandboxPoolDockerSourceFlagUsage),
 		archiveSourceFlagNames(),
 		networkPolicyFlagNames(),
+		containerRuntimeFlagNames(),
 		envConfigFilesFlagNames(sandboxPoolEnvConfigFilesFlagUsage),
 		volumesFlagNames(),
 		instanceTypeRegionsFlagNames(sandboxPoolInstanceTypeRegionsFlagUsage),

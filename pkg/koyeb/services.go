@@ -399,6 +399,7 @@ func (h *ServiceHandler) addServiceDefinitionFlagsForAllSources(flags *pflag.Fla
 
 	addEnvConfigFilesFlags(flags, serviceEnvConfigFilesFlagUsage)
 	addInstanceTypeRegionsFlags(flags, serviceInstanceTypeRegionsFlagUsage)
+	addContainerRuntimeFlags(flags)
 
 	var strategy DeploymentStrategy
 	flags.Var(&strategy, "deployment-strategy", `Deployment strategy, either "rolling" (default), "blue-green" or "immediate".`)
@@ -498,6 +499,10 @@ func (h *ServiceHandler) parseServiceDefinitionFlags(ctx *CLIContext, flags *pfl
 
 	skipCache, _ := flags.GetBool("skip-cache")
 	definition.SetSkipCache(skipCache)
+
+	// Container runtime: changed-only, so the update path round-trips the
+	// stored runtime when the flag is not passed.
+	applyContainerRuntimeFlag(flags, definition)
 
 	// Env and config files: the shared bundle applies both with the
 	// changed-only merge conventions.

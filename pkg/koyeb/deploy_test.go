@@ -32,6 +32,7 @@ func TestDeployCmdFlagSet(t *testing.T) {
 		instanceTypeRegionsFlagNames(serviceInstanceTypeRegionsFlagUsage),
 		scalingSleepDelayFlagNames(serviceScalingSleepDelayFlagUsage),
 		networkPolicyFlagNames(),
+		containerRuntimeFlagNames(),
 		checksFlagNames(),
 		volumesFlagNames(),
 		proxyPortsFlagNames(),

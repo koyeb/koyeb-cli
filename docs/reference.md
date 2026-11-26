@@ -315,6 +315,7 @@ See examples of koyeb service create --help
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
@@ -655,6 +656,7 @@ koyeb deploy <path> <app>/<service> [flags]
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
@@ -1513,6 +1515,7 @@ $> koyeb service create myservice --app myapp --docker nginx --port 80:tcp
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
@@ -2026,6 +2029,7 @@ $> koyeb service update myapp/myservice --port 80:tcp --route '!/'
                                                  for example --config-file /etc/data.yaml:/etc/data.yaml:0644
                                                  To delete a config file, use !PATH, for example --config-file !/etc/data.yaml
                                                  
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Automatically delete the service after this duration from creation. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
       --delete-after-inactivity-delay duration   Automatically delete the service after being inactive (sleeping) for this duration. Use duration format (e.g., '1h', '30m', '24h'). Set to 0 to disable.
@@ -3077,6 +3081,7 @@ $> koyeb sandbox create myapp/mysandbox --wait
       --block-network                            Block all outbound network traffic from the service. Mutually exclusive with --outbound-allowlist and --no-network-policy.
       --cleanup-on-failure                       Delete the sandbox when --wait fails or times out (default true)
       --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --delete-after-delay duration              Auto-delete after duration (e.g., '24h')
       --delete-after-inactivity-delay duration   Auto-delete after inactivity (e.g., '1h')
@@ -4576,6 +4581,7 @@ $> koyeb pool create my-pool --archive my-archive
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
       --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --docker string                            Docker image (default: koyeb/sandbox)
       --docker-args strings                      Docker command arguments
@@ -4833,6 +4839,7 @@ $> koyeb pool update my-pool --env LOG_LEVEL=debug
                                                  Use the format <healthcheck>=<seconds>, for example --checks-grace-period 8080=10
                                                  
       --config-file strings                      Config files (LOCAL:REMOTE:PERMS)
+      --container-runtime string                 Container runtime of the workload: "docker", "kata" or "gvisor". Empty (the default) uses the region default runtime
       --deep-sleep-delay duration                Delay after which an idle service is put to deep sleep. Use duration format (e.g., '5m', '30m', '1h'). Set to 0 to disable.
       --docker string                            Docker image (default: koyeb/sandbox)
       --docker-args strings                      Docker command arguments
